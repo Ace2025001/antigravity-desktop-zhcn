@@ -730,6 +730,98 @@ test("model quota policy description and comprehensive UI strings are covered", 
   }
 });
 
+test("Antigravity 2.23.0 agent execution mode popover and permission policy strings are fully covered", async () => {
+  const current = await loadDomTranslations();
+  const testCases = [
+    {
+      source: "Every command requires approval.",
+      expected: "每条命令都需要批准。",
+    },
+    {
+      source: "Run all commands without restrictions.",
+      expected: "无限制运行所有命令。",
+    },
+    {
+      source: "Use Global Settings",
+      expected: "使用全局设置",
+    },
+    {
+      source: "Ask before sensitive operations.",
+      expected: "在执行敏感操作前进行确认。",
+    },
+    {
+      source: "Security agent decides if commands run.",
+      expected: "由安全智能体决定是否运行命令。",
+    },
+    {
+      source: "Automatically decide if commands run.",
+      expected: "由系统自动决定是否执行命令。",
+    },
+    {
+      source: "Request Review",
+      expected: "请求评审",
+    },
+    {
+      source: "Vetted (Preview)",
+      expected: "审核模式（预览）",
+    },
+    {
+      source: "Auto (Preview)",
+      expected: "自动（预览版）",
+    },
+    {
+      source: "Turbo",
+      expected: "极速",
+    },
+    {
+      source: "Project Settings",
+      expected: "项目设置",
+    },
+    {
+      source: "Workspace Settings",
+      expected: "工作区设置",
+    },
+    {
+      source: "Global Settings",
+      expected: "全局设置",
+    },
+    {
+      source: "This project overrides your global permission settings.",
+      expected: "此项目覆盖了您的全局权限设置。",
+    },
+    {
+      source: "This workspace overrides your global permission settings.",
+      expected: "此工作区覆盖了您的全局权限设置。",
+    },
+    {
+      source: "Agent permissions preset selector, current: Default",
+      expected: "智能体权限预设选择器，当前：Default",
+    },
+    {
+      source: "Terminal commands the agent can execute in this workspace.",
+      expected: "智能体在此工作区中可执行的终端命令。",
+    },
+    {
+      source: "Background Task Output",
+      expected: "后台任务输出",
+    },
+    {
+      source: "Custom View",
+      expected: "自定义视图",
+    },
+  ];
+
+  for (const { source, expected } of testCases) {
+    const translated = translateDictionaryValue(source, current);
+    assert.equal(
+      translated,
+      expected,
+      `execution mode and permission translation mismatch for: ${source}`,
+    );
+  }
+});
+
+
 
 
 

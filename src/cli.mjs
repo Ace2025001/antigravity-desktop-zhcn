@@ -181,7 +181,19 @@ async function generateLocalizedPreview(
 }
 
 async function preview() {
-  const inspection = await inspectInstallation();
+  const existingState = await readInstallState();
+  let inspection = await inspectInstallation();
+  if (
+    !inspection.target &&
+    existingState?.status === "installed" &&
+    areSamePaths(existingState.installRoot, inspection.installRoot) &&
+    existingState.appVersion === inspection.packageVersion
+  ) {
+    const installedTarget = await findInstalledTarget(existingState);
+    if (installedTarget) {
+      inspection = { ...inspection, target: installedTarget };
+    }
+  }
   printStaticReport(inspection);
   const outputPath = path.join(
     getRuntimePreviewRoot(),
@@ -330,16 +342,39 @@ async function installLocalizedBundle({
 
 async function findInstalledTarget(state) {
   const manifest = await loadEffectiveCompatibilityManifest();
-  return (
-    manifest.targets.find(
-      (target) =>
-        target.platform === process.platform &&
-        target.arch === process.arch &&
-        target.appVersion === state.appVersion &&
-        target.appAsarSha256 === state.originalAsarSha256 &&
-        target.customSchemeSha256 === state.originalCustomSchemeSha256,
-    ) ?? null
+  const matched = manifest.targets.find(
+    (target) =>
+      target.platform === process.platform &&
+      target.arch === process.arch &&
+      target.appVersion === state.appVersion &&
+      target.appAsarSha256 === state.originalAsarSha256 &&
+      target.customSchemeSha256 === state.originalCustomSchemeSha256,
   );
+  if (matched) {
+    return matched;
+  }
+
+  if (
+    state.status === "installed" &&
+    state.appVersion &&
+    state.originalAsarSha256 &&
+    state.originalCustomSchemeSha256
+  ) {
+    return {
+      platform: process.platform,
+      arch: process.arch,
+      appVersion: state.appVersion,
+      packageVersion: state.appVersion,
+      appAsarSha256: state.originalAsarSha256,
+      customSchemePath: "dist/customScheme.js",
+      customSchemeSha256: state.originalCustomSchemeSha256,
+      uiBundleSha256: state.sourceBundleSha256 ?? "",
+      uiBundleSize: 0,
+      notes: "动态自适应目标（源自本地已验证安装状态）",
+    };
+  }
+
+  return null;
 }
 
 async function updateInstalledLocalization({
@@ -471,7 +506,10 @@ async function install({ assumeYes = false } = {}) {
 
   printStaticReport(initialInspection);
   if (!initialInspection.target) {
-    throw new Error("当前安装文件不在兼容性白名单中，拒绝安装。");
+    throw new Error(
+      `当前安装文件版本 (${initialInspection.packageVersion}) 尚未登记在离线白名单中。\n` +
+      `提示：您可以直接运行【启动 Antigravity（自动汉化）】进行自适应无感安装，或从 Releases 下载最新版本。`,
+    );
   }
 
   printStep(2, totalSteps, "获取并验证运行时 UI，生成中文文件");

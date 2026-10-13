@@ -80,5 +80,10 @@ if ($Action -eq "AutoUpdate") {
 } else {
     $cliAction = $Action.ToLowerInvariant()
     & $nodePath (Join-Path $ProjectRoot "src\cli.mjs") $cliAction
+    if ($LASTEXITCODE -ne 0 -and $Action -eq "Install") {
+        Write-Host ""
+        Write-Host "提示：静态校验未通过，正在自动切换至自适应安全汉化模式..." -ForegroundColor Yellow
+        & $nodePath (Join-Path $ProjectRoot "scripts\auto-follow-update.mjs")
+    }
 }
 exit $LASTEXITCODE
