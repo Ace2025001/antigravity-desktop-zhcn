@@ -221,7 +221,7 @@ assert(
   "PowerShell 入口未支持便携运行时、缓存清理或完全卸载。",
 );
 
-for (const script of ["run.ps1", "build-portable.ps1"]) {
+for (const script of ["run.ps1", "build-portable.ps1", "create-shortcut.ps1"]) {
   const buffer = await readFile(path.join(projectRoot, "scripts", script));
   assert(
     buffer[0] === 0xef && buffer[1] === 0xbb && buffer[2] === 0xbf,

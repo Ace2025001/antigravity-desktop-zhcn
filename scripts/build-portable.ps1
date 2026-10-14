@@ -109,6 +109,7 @@ try {
         "一键恢复英文.bat",
         "清理缓存.bat",
         "完全卸载.bat",
+        "生成桌面快捷方式.bat",
         "README.md",
         "LICENSE",
         "package.json",

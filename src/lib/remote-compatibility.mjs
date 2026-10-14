@@ -25,7 +25,7 @@ function validateTrustConfig(trust) {
     manifestUrl.protocol !== "https:" ||
     manifestUrl.hostname !== "raw.githubusercontent.com" ||
     !manifestUrl.pathname.startsWith(
-      "/Ann2025001/antigravity-desktop-zhcn/",
+      "/Ace2025001/antigravity-desktop-zhcn/",
     ) ||
     !manifestUrl.pathname.endsWith(
       "/config/remote/compatibility-manifest.json",
