@@ -11,6 +11,7 @@ import { getAntigravityUserDataRoot, getStateRoot } from "../src/lib/paths.mjs";
 import { findLatestUiPort, fetchUiBundle } from "../src/lib/runtime-bundle.mjs";
 import { createLocalizedBundle, loadDomTranslations, writeLocalizedBundle } from "../src/lib/translator.mjs";
 import { readInstallState, writeInstallState } from "../src/lib/state.mjs";
+import { gracefulCloseAntigravity } from "../src/lib/processes.mjs";
 
 const execFileAsync = promisify(execFile);
 const CUSTOM_SCHEME_PATH = "dist/customScheme.js";
@@ -42,10 +43,7 @@ async function waitForRuntimeUi(executablePath) {
 }
 
 async function closeAntigravity() {
-  await execFileAsync("taskkill.exe", ["/F", "/T", "/IM", "Antigravity.exe"], { windowsHide: true }).catch((error) => {
-    if (error?.code !== 128) throw error;
-  });
-  await sleep(1_500);
+  await gracefulCloseAntigravity({ maxWaitMs: 5_000 });
 }
 
 async function ensureBackup(sourcePath, backupPath, expectedHash) {

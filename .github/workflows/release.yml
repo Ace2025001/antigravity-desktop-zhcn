@@ -13,8 +13,8 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22.12.0
           cache: npm
@@ -24,7 +24,7 @@ jobs:
       - name: Build portable ZIP
         shell: pwsh
         run: ./scripts/build-portable.ps1
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v4
         with:
           name: antigravity-desktop-zhcn-portable-win-x64
           path: |
