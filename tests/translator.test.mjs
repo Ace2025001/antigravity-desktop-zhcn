@@ -821,6 +821,42 @@ test("Antigravity 2.23.0 agent execution mode popover and permission policy stri
   }
 });
 
+test("Antigravity model subscriber availability tooltip strings and patterns are covered", async () => {
+  const current = await loadDomTranslations();
+  const testCases = [
+    {
+      source: "Gemini 4 Argon is currently available to Ultra plan subscribers.",
+      expected: "Gemini 4 Argon 当前仅向 Ultra 方案订阅者开放。",
+    },
+    {
+      source: "Claude 3.7 Sonnet is currently available to Pro plan subscribers.",
+      expected: "Claude 3.7 Sonnet 当前仅向 Pro 方案订阅者开放。",
+    },
+    {
+      source: "GPT-5 is currently available to Enterprise plan subscribers.",
+      expected: "GPT-5 当前仅向 Enterprise 方案订阅者开放。",
+    },
+    {
+      source: "DeepSeek R2 is available to Team plan subscribers.",
+      expected: "DeepSeek R2 仅向 Team 方案订阅者开放。",
+    },
+    {
+      source: "Model X is currently available to Ultra subscribers.",
+      expected: "Model X 当前仅向 Ultra 订阅者开放。",
+    },
+  ];
+
+  for (const { source, expected } of testCases) {
+    const translated = translateDictionaryValue(source, current);
+    assert.equal(
+      translated,
+      expected,
+      `model subscriber availability translation mismatch for: ${source}`,
+    );
+  }
+});
+
+
 
 
 

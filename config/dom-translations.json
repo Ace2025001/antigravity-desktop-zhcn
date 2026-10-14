@@ -2433,7 +2433,8 @@
     "Remount workspace": "重新挂载工作区",
     "Failed to stop agent": "停止智能体失败",
     "This project overrides your global permission settings.": "此项目覆盖了您的全局权限设置。",
-    "This workspace overrides your global permission settings.": "此工作区覆盖了您的全局权限设置。"
+    "This workspace overrides your global permission settings.": "此工作区覆盖了您的全局权限设置。",
+    "Gemini 4 Argon is currently available to Ultra plan subscribers.": "Gemini 4 Argon 当前仅向 Ultra 方案订阅者开放。"
   },
   "patterns": [
     {
@@ -4269,6 +4270,26 @@
     {
       "source": "^This workspace overrides your global permission settings\\\\.$",
       "target": "此工作区覆盖了您的全局权限设置。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) is currently available to (.+?) plan subscribers\\.?$",
+      "target": "$1 当前仅向 $2 方案订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) is available to (.+?) plan subscribers\\.?$",
+      "target": "$1 仅向 $2 方案订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) is currently available to (.+?) subscribers\\.?$",
+      "target": "$1 当前仅向 $2 订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) is available to (.+?) subscribers\\.?$",
+      "target": "$1 仅向 $2 订阅者开放。",
       "flags": "u"
     }
   ]
