@@ -856,6 +856,49 @@ test("Antigravity model subscriber availability tooltip strings and patterns are
   }
 });
 
+test("relative time strings including seconds, minutes, hours, days, weeks, months, years are fully covered", async () => {
+  const current = await loadDomTranslations();
+  const testCases = [
+    { source: "just now", expected: "刚刚" },
+    { source: "a few seconds ago", expected: "刚刚" },
+    { source: "a moment ago", expected: "刚刚" },
+    { source: "1s ago", expected: "1 秒前" },
+    { source: "10s ago", expected: "10 秒前" },
+    { source: "1m ago", expected: "1 分钟前" },
+    { source: "5m ago", expected: "5 分钟前" },
+    { source: "59m ago", expected: "59 分钟前" },
+    { source: "1 min ago", expected: "1 分钟前" },
+    { source: "2 mins ago", expected: "2 分钟前" },
+    { source: "1h ago", expected: "1 小时前" },
+    { source: "3h ago", expected: "3 小时前" },
+    { source: "23h ago", expected: "23 小时前" },
+    { source: "1 hour ago", expected: "1 小时前" },
+    { source: "2 hours ago", expected: "2 小时前" },
+    { source: "1d ago", expected: "1 天前" },
+    { source: "2d ago", expected: "2 天前" },
+    { source: "1w ago", expected: "1 周前" },
+    { source: "3w ago", expected: "3 周前" },
+    { source: "1mo ago", expected: "1 个月前" },
+    { source: "6mo ago", expected: "6 个月前" },
+    { source: "1y ago", expected: "1 年前" },
+    { source: "2y ago", expected: "2 年前" },
+    { source: "yesterday", expected: "昨天" },
+    { source: "in 5m", expected: "5 分钟后" },
+    { source: "in 2h", expected: "2 小时后" },
+    { source: "in 3d", expected: "3 天后" },
+  ];
+
+  for (const { source, expected } of testCases) {
+    const translated = translateDictionaryValue(source, current);
+    assert.equal(
+      translated,
+      expected,
+      `relative time translation mismatch for: ${source}`,
+    );
+  }
+});
+
+
 
 
 

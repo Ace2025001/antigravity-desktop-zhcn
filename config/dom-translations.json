@@ -903,6 +903,15 @@
     "Invoking": "正在调用",
     "Jetski Chat": "Jetski 聊天",
     "just now": "刚刚",
+    "a few seconds ago": "刚刚",
+    "a moment ago": "刚刚",
+    "a minute ago": "1 分钟前",
+    "an hour ago": "1 小时前",
+    "a day ago": "1 天前",
+    "a week ago": "1 周前",
+    "a month ago": "1 个月前",
+    "a year ago": "1 年前",
+    "yesterday": "昨天",
     "Keep changes": "保留更改",
     "Keep Editing": "继续编辑",
     "Keep In Menu Bar": "保持在菜单栏中",
@@ -3083,18 +3092,53 @@
       "flags": "u"
     },
     {
-      "source": "^(\\d+)\\s*mins?\\s*ago$",
+      "source": "^(\\d+)\\s*(?:s|secs?|seconds?)\\s*ago$",
+      "target": "$1 秒前",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s*(?:m|mins?|minutes?)\\s*ago$",
       "target": "$1 分钟前",
       "flags": "u"
     },
     {
-      "source": "^(\\d+)\\s*hours?\\s*ago$",
+      "source": "^(\\d+)\\s*(?:h|hrs?|hours?)\\s*ago$",
       "target": "$1 小时前",
       "flags": "u"
     },
     {
-      "source": "^(\\d+)\\s*days?\\s*ago$",
+      "source": "^(\\d+)\\s*(?:d|days?)\\s*ago$",
       "target": "$1 天前",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s*(?:w|wks?|weeks?)\\s*ago$",
+      "target": "$1 周前",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s*(?:mo|mos?|mths?|months?)\\s*ago$",
+      "target": "$1 个月前",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s*(?:y|yrs?|years?)\\s*ago$",
+      "target": "$1 年前",
+      "flags": "u"
+    },
+    {
+      "source": "^in\\s+(\\d+)\\s*(?:m|mins?|minutes?)$",
+      "target": "$1 分钟后",
+      "flags": "u"
+    },
+    {
+      "source": "^in\\s+(\\d+)\\s*(?:h|hrs?|hours?)$",
+      "target": "$1 小时后",
+      "flags": "u"
+    },
+    {
+      "source": "^in\\s+(\\d+)\\s*(?:d|days?)$",
+      "target": "$1 天后",
       "flags": "u"
     },
     {
@@ -3590,11 +3634,6 @@
     {
       "source": "^Select Worktree\\s+(.+)$",
       "target": "选择工作树 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^(\\d+)\\s*secs?\\s+ago$",
-      "target": "$1 秒前",
       "flags": "u"
     },
     {
