@@ -1,7 +1,7 @@
-# Antigravity Desktop 中文汉化补丁
+# Antigravity 汉化补丁 (Antigravity Desktop 中文语言包)
 ### Google Antigravity Desktop Chinese Localization Patch
 
-[![Release Version](https://img.shields.io/badge/Release-v1.5.0-blue.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases)
+[![Release Version](https://img.shields.io/badge/Release-v1.6.0-blue.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)
 [![Client Compatibility](https://img.shields.io/badge/Antigravity-2.2.1~2.23.0+-green.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn)
 [![Rules Count](https://img.shields.io/badge/Dictionary-2431%20Exact%20%2B%20371%20Patterns-orange.svg)](config/dom-translations.json)
 [![Automated Tests](https://img.shields.io/badge/Tests-75%20Passed-brightgreen.svg)](tests/)
@@ -11,6 +11,14 @@
 专为 Windows 平台 Google Antigravity Desktop 打造的高性能、安全无损中文本地化增强补丁。
 
 **核心特性**：内置 **2431 条精确词条映射 + 371 条动态正则规则**，覆盖全界面、设置面板、系统托盘、原生右键菜单、智能体权限弹窗及交互提示。支持**客户端自动跟进更新**、**温和退出落盘保护**、**一键生成桌面快捷方式**与**百分百无损还原官方英文**。
+
+## 📢 v1.6.0 更新内容
+
+- **修复版本声明歧义**：剔除未收录的 `2.20.0` 误写声明，严格以真实收录的 21 个构建目标（包含 `2.19.1`、`2.23.0` 等）为准；
+- **新增一键生成桌面快捷方式**：提供 `生成桌面快捷方式.bat`，一键在桌面创建带官方图标的“启动 Antigravity（自动汉化）”图标，随手双击即可中文运行；
+- **新增温和退出落盘机制**：进程管理升级为两阶段退出，先请求常规关闭并等待数据写入磁盘，避免暴力强杀导致项目损坏；
+- **全库消除失效链接**：清理全部历史用户名失效链接，修复持续集成构建工作流；
+- **依赖安全加固**：修复全部上游高危依赖安全漏洞，`npm audit` 维持 0 漏洞。
 
 ---
 
@@ -58,7 +66,7 @@
 | 客户端版本 / Client Version | 内部构建目标 / Build Target | 指纹校验 / SHA-256 Fingerprint | 验证级别 / Verification Status | 自动跟进适配 / Auto Follow |
 | :--- | :--- | :--- | :--- | :--- |
 | **Antigravity 2.23.0** | `2.23.0-full` | 白名单已收录 (`config/compatibility-trust.json`) | 自动化测试通过（75 项单测绿标） | ✅ 支持自适应提取与校验 |
-| **Antigravity 2.20.0** | `2.20.0-full` | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
+| **Antigravity 2.19.1** | `2.19.1-full` | 白名单已收录 (`config/compatibility/2.19.1`) | 实机运行验证通过 | ✅ 支持 |
 | **Antigravity 2.17.0** | `2.17.0-full` | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
 | **Antigravity 2.16.0** | `2.16.0-full` | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
 | **Antigravity 2.15.1** | `2.15.1-full` | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |

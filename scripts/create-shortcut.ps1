@@ -3,6 +3,7 @@
 param()
 
 $ErrorActionPreference = "Stop"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 
 Write-Host "==========================================" -ForegroundColor Cyan
