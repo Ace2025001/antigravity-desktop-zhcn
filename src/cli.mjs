@@ -98,7 +98,8 @@ function printStaticReport(inspection) {
 
   if (inspection.target) {
     const custom = inspection.customSchemes[inspection.target.customSchemePath];
-    console.log(`customScheme SHA256: ${custom.sha256}`);
+    const customSha = custom?.sha256 || inspection.target.customSchemeSha256 || "未知";
+    console.log(`customScheme SHA256: ${customSha}`);
     console.log("静态兼容性: 通过");
   } else if (inspection.versionKnown) {
     console.log(

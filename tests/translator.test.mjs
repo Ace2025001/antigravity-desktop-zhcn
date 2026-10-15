@@ -898,6 +898,86 @@ test("relative time strings including seconds, minutes, hours, days, weeks, mont
   }
 });
 
+test("customizations marketplace plugins, empty notes, and see more expansion buttons are fully covered", async () => {
+  const current = await loadDomTranslations();
+  const testCases = [
+    {
+      source: "Search customizations...",
+      expected: "搜索自定义项...",
+    },
+    {
+      source: "Find skills, agents, and more in the Marketplace.",
+      expected: "在插件市场中探索技能、智能体及更多内容。",
+    },
+    {
+      source: "Browse the Marketplace",
+      expected: "浏览插件市场",
+    },
+    {
+      source: "No custom agents yet.",
+      expected: "暂无自定义智能体。",
+    },
+    {
+      source: "No MCP servers yet. Use Add to browse the store.",
+      expected: "暂无 MCP 服务器。使用“添加”浏览商店。",
+    },
+    {
+      source: "+ See 6 more",
+      expected: "+ 查看更多 (6)",
+    },
+    {
+      source: "+ See 10 more",
+      expected: "+ 查看更多 (10)",
+    },
+    {
+      source: "Connect to Google Workspace, including Docs, Sheets, Slides, Drive, and Calendar.",
+      expected: "连接至 Google Workspace，包含文档、表格、幻灯片、云端硬盘与日历。",
+    },
+    {
+      source: "Build with Google",
+      expected: "使用 Google 技术构建",
+    },
+    {
+      source: "Read, draft, and edit docs.",
+      expected: "阅读、起草和编辑文档。",
+    },
+    {
+      source: "Read, write, and format spreadsheets.",
+      expected: "读取、编写和设置电子表格格式。",
+    },
+    {
+      source: "Search, upload, download, and share files.",
+      expected: "搜索、上传、下载和共享文件。",
+    },
+    {
+      source: "Check availability, schedule events, and RSVP.",
+      expected: "查看空闲状态、安排日程活动与回复邀请。",
+    },
+    {
+      source: "Core tools and knowledge required to develop for Android.",
+      expected: "Android 开发所需的核心工具与专业知识。",
+    },
+    {
+      source: "Using the Google Antigravity Python SDK to build AI agents",
+      expected: "使用 Google Antigravity Python SDK 构建 AI 智能体。",
+    },
+    {
+      source: "Keep your coding agent up to date with the latest web best practices.",
+      expected: "让您的代码智能体始终与最新的 Web 最佳实践保持同步。",
+    },
+  ];
+
+  for (const { source, expected } of testCases) {
+    const translated = translateDictionaryValue(source, current);
+    assert.equal(
+      translated,
+      expected,
+      `customizations marketplace translation mismatch for: ${source}`,
+    );
+  }
+});
+
+
 
 
 

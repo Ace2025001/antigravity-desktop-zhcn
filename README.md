@@ -2,23 +2,24 @@
 ### Google Antigravity Desktop Chinese Localization Patch
 
 [![Release Version](https://img.shields.io/badge/Release-v1.6.0-blue.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)
-[![Client Compatibility](https://img.shields.io/badge/Antigravity-2.2.1~2.23.0+-green.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn)
-[![Rules Count](https://img.shields.io/badge/Dictionary-2439%20Exact%20%2B%20377%20Patterns-orange.svg)](config/dom-translations.json)
-[![Automated Tests](https://img.shields.io/badge/Tests-76%20Passed-brightgreen.svg)](tests/)
+[![Client Compatibility](https://img.shields.io/badge/Antigravity-2.2.1~2.23.1+-green.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn)
+[![Rules Count](https://img.shields.io/badge/Dictionary-2473%20Exact%20%2B%20380%20Patterns-orange.svg)](config/dom-translations.json)
+[![Automated Tests](https://img.shields.io/badge/Tests-77%20Passed-brightgreen.svg)](tests/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-lightgrey.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn)
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
 专为 Windows 平台 Google Antigravity Desktop 打造的高性能、安全无损中文本地化增强补丁。
 
-**核心特性**：内置 **2439 条精确词条映射 + 377 条动态正则规则**，覆盖全界面、设置面板、系统托盘、原生右键菜单、智能体权限弹窗及交互提示。支持**客户端自动跟进更新**、**温和退出落盘保护**、**一键生成桌面快捷方式**与**百分百无损还原官方英文**。
+**核心特性**：内置 **2473 条精确词条映射 + 380 条动态正则规则**，覆盖全界面、设置面板、系统托盘、原生右键菜单、智能体权限弹窗及交互提示。支持**客户端自动跟进更新**、**温和退出落盘保护**、**一键生成桌面快捷方式**与**百分百无损还原官方英文**。
 
 ## 📢 v1.6.0 更新内容
 
-- **修复版本声明歧义**：剔除未收录的 `2.20.0` 误写声明，严格以真实收录的 21 个构建目标（包含 `2.19.1`、`2.23.0` 等）为准；
-- **新增一键生成桌面快捷方式**：提供 `生成桌面快捷方式.bat`，一键在桌面创建带官方图标的“启动 Antigravity（自动汉化）”图标，随手双击即可中文运行；
-- **新增温和退出落盘机制**：进程管理升级为两阶段退出，先请求常规关闭并等待数据写入磁盘，避免暴力强杀导致项目损坏；
-- **全库消除失效链接**：清理全部历史用户名失效链接，修复持续集成构建工作流；
-- **依赖安全加固**：修复全部上游高危依赖安全漏洞，`npm audit` 维持 0 漏洞。
+- **适配官方最新 2.23.1 版本**：全面收录并实机验证 Antigravity Desktop `2.23.1`，支持自动跟进更新与完整指纹校验；
+- **全量汉化自定义与插件市场面板**：补齐 Google Workspace、Build with Google 等 17 个官方扩展的完整描述、展开更多按钮及各类空状态提示；
+- **全量覆盖相对时间动态表达**：穷举并支持秒、分、时、日、周、月、年缩写与完整写法（如 `1m ago`、`1h ago`、`2d ago` 等）；
+- **新增一键生成桌面快捷方式**：提供 `生成桌面快捷方式.bat`，一键在桌面创建带官方图标的“启动 Antigravity（自动汉化）”图标；
+- **新增温和退出落盘机制**：进程管理升级为两阶段退出，保护工程数据避免强杀损坏；
+- **全库消除失效链接与依赖加固**：清理全部历史失效死链，依赖安全高危漏洞 0 检出。
 
 ---
 
@@ -61,11 +62,12 @@
 
 ## 📊 版本兼容矩阵 / Compatibility Matrix
 
-本项目采用严格的白名单指纹与语法树结构检测机制。目前已收录适配 21 个目标构建版本：
+本项目采用严格的白名单指纹与语法树结构检测机制。目前已收录适配 22 个目标构建版本：
 
 | 客户端版本 / Client Version | 内部构建目标 / Build Target | 指纹校验 / SHA-256 Fingerprint | 验证级别 / Verification Status | 自动跟进适配 / Auto Follow |
 | :--- | :--- | :--- | :--- | :--- |
-| **Antigravity 2.23.0** | `2.23.0-full` | 白名单已收录 (`config/compatibility-trust.json`) | 自动化测试通过（75 项单测绿标） | ✅ 支持自适应提取与校验 |
+| **Antigravity 2.23.1** | `2.23.1-full` | 白名单已收录 (`config/compatibility/2.23.1`) | 实机运行验证通过 | ✅ 支持自适应提取与校验 |
+| **Antigravity 2.23.0** | `2.23.0-full` | 白名单已收录 (`config/compatibility/2.23.0`) | 实机运行验证通过 | ✅ 支持自适应提取与校验 |
 | **Antigravity 2.19.1** | `2.19.1-full` | 白名单已收录 (`config/compatibility/2.19.1`) | 实机运行验证通过 | ✅ 支持 |
 | **Antigravity 2.17.0** | `2.17.0-full` | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
 | **Antigravity 2.16.0** | `2.16.0-full` | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
@@ -85,13 +87,13 @@
 
 | 对比维度 / Feature | 本项目 (Ace2025001) | 竞品 A (静态文件替换类) | 竞品 B (简单注入类) | 优势说明 |
 | :--- | :--- | :--- | :--- | :--- |
-| **汉化覆盖规模** | **2439 词条 + 377 正则** | 约 500 ~ 1200 词条 | 约 800 ~ 1500 词条 | 业内最全词库，全量覆盖欢迎引导、模型配额、设置和原生托盘 |
+| **汉化覆盖规模** | **2473 词条 + 380 正则** | 约 500 ~ 1200 词条 | 约 800 ~ 1500 词条 | 业内最全词库，全量覆盖欢迎引导、模型配额、设置和原生托盘 |
 | **客户端自动升级跟进** | **原生自适应更新注入** | ❌ 升级即失效需重新下载 | ⚠️ 需手动重新覆盖 | 支持启动自适应跟进，客户端静默升级也能保持中文 |
 | **客户端退出安全性** | **温和退出 + 超时兜底** | ❌ 强制杀进程 (`taskkill /F`) | ❌ 强制杀进程 | 先请求优雅关闭等待数据落盘，避免破坏工作区与未保存文件 |
 | **桌面使用便捷度** | **一键生成桌面快捷方式** | ❌ 需每次进文件夹点击 | ❌ 需手动创建快捷方式 | 双击 `生成桌面快捷方式.bat` 即可生成一键汉化启动图标 |
 | **安全与指纹机制** | **SHA-256 + 语法树结构校验** | ❌ 无指纹校验，容易损坏 | ⚠️ 仅匹配版本号文本 | 白名单防呆拦截，杜绝未知破坏性篡改 |
 | **无损还原英文** | **原子备份与一键原样恢复** | ⚠️ 需手动备份或重装客户端 | ⚠️ 部分遗留残留文件 | 提供 `一键恢复英文.bat`，随时无损回到纯净官方英文 |
-| **测试与质量保障** | **76 项自动化回归测试套件** | ❌ 无自动化测试 | ❌ 无自动化测试 | 覆盖词库冲突、正则防误伤、注入逆向、网络签名与模型隔离 |
+| **测试与质量保障** | **77 项自动化回归测试套件** | ❌ 无自动化测试 | ❌ 无自动化测试 | 覆盖词库冲突、正则防误伤、注入逆向、网络签名与模型隔离 |
 
 ---
 

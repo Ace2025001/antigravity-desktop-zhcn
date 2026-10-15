@@ -2443,7 +2443,41 @@
     "Failed to stop agent": "停止智能体失败",
     "This project overrides your global permission settings.": "此项目覆盖了您的全局权限设置。",
     "This workspace overrides your global permission settings.": "此工作区覆盖了您的全局权限设置。",
-    "Gemini 4 Argon is currently available to Ultra plan subscribers.": "Gemini 4 Argon 当前仅向 Ultra 方案订阅者开放。"
+    "Gemini 4 Argon is currently available to Ultra plan subscribers.": "Gemini 4 Argon 当前仅向 Ultra 方案订阅者开放。",
+    "Search customizations...": "搜索自定义项...",
+    "Find skills, agents, and more in the Marketplace.": "在插件市场中探索技能、智能体及更多内容。",
+    "Browse the Marketplace": "浏览插件市场",
+    "No custom agents yet.": "暂无自定义智能体。",
+    "No MCP servers yet. Use Add to browse the store.": "暂无 MCP 服务器。使用“添加”浏览商店。",
+    "No skills or rules yet.": "暂无技能或规则。",
+    "No resources added yet.": "尚未添加任何资源。",
+    "No folders added yet.": "尚未添加任何文件夹。",
+    "Connect to Google Workspace, including Docs, Sheets, Slides, Drive, and Calendar.": "连接至 Google Workspace，包含文档、表格、幻灯片、云端硬盘与日历。",
+    "Build with Google": "使用 Google 技术构建",
+    "Build on Google's developer platforms, including Android, Chrome, Gemini, and Google Cloud.": "基于 Google 开发者平台进行构建，涵盖 Android、Chrome、Gemini 与 Google Cloud。",
+    "Read, draft, and edit docs.": "阅读、起草和编辑文档。",
+    "Read, write, and format spreadsheets.": "读取、编写和设置电子表格格式。",
+    "Read, edit, and export presentations.": "阅读、编辑和导出演示文稿。",
+    "Search, upload, download, and share files.": "搜索、上传、下载和共享文件。",
+    "Check availability, schedule events, and RSVP.": "查看空闲状态、安排日程活动与回复邀请。",
+    "Core tools and knowledge required to develop for Android.": "Android 开发所需的核心工具与专业知识。",
+    "Reliable automation, in-depth debugging, and performance analysis in Chrome using Chrome DevTools and Puppeteer": "在 Chrome 中利用 Chrome DevTools 和 Puppeteer 实现可靠的自动化、深度调试与性能分析。",
+    "Prototype, build & run modern apps that users love with Firebase's backend, AI, and operational infrastructure.": "利用 Firebase 的后端、AI 和运维基础设施，原型设计、构建并运行深受用户喜爱的现代化应用。",
+    "Using the Google Antigravity Python SDK to build AI agents": "使用 Google Antigravity Python SDK 构建 AI 智能体。",
+    "Search and retrieve official documentation across Google Cloud, Gemini, Android, Firebase, Flutter, and Web. Requires Google Cloud credentials (ADC) or an API key.": "检索 Google Cloud、Gemini、Android、Firebase、Flutter 和 Web 的官方文档。需要 Google Cloud 凭据 (ADC) 或 API 密钥。",
+    "Integration skill and tools for Google Maps Platform APIs": "Google Maps Platform API 的集成技能与工具。",
+    "Curated collection of agent skills for science tasks.": "精选用于科学研究任务的智能体技能集合。",
+    "Build applications with the Gemini Interactions API and Live API, including text, image, video, and speech generation, managed agents, and real-time multimodal streaming.": "使用 Gemini Interactions API 和 Live API 构建应用，包括文本、图像、视频和语音生成、托管智能体以及实时多模态流式传输。",
+    "Google Cloud guidance for coding agents: first-project onboarding, authentication and credential selection, and safety-critical validation for gcloud CLI commands. Includes the Google Developer Knowledge MCP server for grounded, up-to-date Google Cloud documentation.": "代码智能体的 Google Cloud 指南：首个项目入门、身份验证与凭据选择，以及 gcloud CLI 命令的安全关键验证。包含 Google Developer Knowledge MCP 服务器，提供可靠、最新的 Google Cloud 文档。",
+    "Keep your coding agent up to date with the latest web best practices.": "让您的代码智能体始终与最新的 Web 最佳实践保持同步。",
+    "Official plugin for Dart and Flutter that installs Flutter/Dart Skills, Rules, Custom Agents, and Dart MCP server for building natively compiled, visually stunning applications for mobile, web, desktop, and embedded devices from a single codebase": "Dart 和 Flutter 的官方插件，安装 Flutter/Dart 技能、规则、自定义智能体和 Dart MCP 服务器，用于从单一代码库为移动设备、Web、桌面和嵌入式设备构建原生编译且精美绝伦的应用程序。",
+    "This plugin provides a specialized suite of skills for data engineers and database practitioners working on Google Cloud. It acts as an expert assistant, allowing you to use natural language prompts in your preferred coding agent to architect complex data pipelines, transform data with dbt, write Spark and BigQuery SQL notebooks, and orchestrate end-to-end workflows across GCP's data ecosystem.": "此插件为在 Google Cloud 上工作的数据工程师和数据库从业人员提供了一套专业技能库。它充当专家助手，让您能在首选的代码智能体中使用自然语言提示构建复杂数据流水线、使用 dbt 转换数据、编写 Spark 和 BigQuery SQL 笔记本，并在 GCP 数据生态系统中编排端到端工作流。",
+    "Data Agent Kit": "数据智能体工具包 (Data Agent Kit)",
+    "Modern Web Guidance": "现代 Web 开发指南 (Modern Web Guidance)",
+    "Google Developer Knowledge": "Google 开发者知识库",
+    "Google Cloud Developer": "Google Cloud 开发者指南",
+    "Google Maps Platform": "Google 地图平台 (Maps Platform)",
+    "Dart and Flutter": "Dart 与 Flutter"
   },
   "patterns": [
     {
@@ -3639,6 +3673,21 @@
     {
       "source": "^See all \\((\\d+)\\)$",
       "target": "查看全部 ($1)",
+      "flags": "u"
+    },
+    {
+      "source": "^\\+\\s*See\\s+(\\d+)\\s+more$",
+      "target": "+ 查看更多 ($1)",
+      "flags": "u"
+    },
+    {
+      "source": "^See\\s+(\\d+)\\s+more$",
+      "target": "查看更多 ($1)",
+      "flags": "u"
+    },
+    {
+      "source": "^\\+\\s*See\\s+more$",
+      "target": "+ 查看更多",
       "flags": "u"
     },
     {
