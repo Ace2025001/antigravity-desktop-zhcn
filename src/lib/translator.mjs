@@ -113,8 +113,7 @@ export function createRuntimeOverlay(dictionary) {
     "[data-model-selector-list]",
     "[data-testid='model-selector-item']",
     "[data-testid='model-selector-effort-group']",
-    "[data-testid='model-selector-effort-option']",
-    ".overscroll-y-none.scrollbar-none"
+    "[data-testid='model-selector-effort-option']"
   ].join(",");
   const blockedAttributeSelector = [
     "script",
@@ -123,8 +122,7 @@ export function createRuntimeOverlay(dictionary) {
     "pre",
     ".monaco-editor",
     "[data-model-selector-list]",
-    "[data-testid='model-selector-item']",
-    ".overscroll-y-none.scrollbar-none"
+    "[data-testid='model-selector-item']"
   ].join(",");
   const translatedAttributes = ["aria-label", "title", "placeholder", "data-tooltip", "data-title"];
   const pendingRoots = new Set();
@@ -405,6 +403,22 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('"Cannot revert messages while the agent is running"', '"智能体运行期间无法还原消息"');
   // 计划评审策略原生汉化
   sourceText = sourceText.replaceAll('label:"Plan Review Policy"', 'label:"计划评审策略"');
+  // 核心下拉菜单与项目管理原生汉化
+  sourceText = sourceText.replaceAll('label:"New Project"', 'label:"新建项目"');
+  sourceText = sourceText.replaceAll('tooltipText:"Select a folder."', 'tooltipText:"选择文件夹。"');
+  sourceText = sourceText.replaceAll('label:"Quick Start"', 'label:"快速开始"');
+  sourceText = sourceText.replaceAll('projectSearchPlaceholder:"Search Projects"', 'projectSearchPlaceholder:"搜索项目"');
+  sourceText = sourceText.replaceAll('label:"Archive project"', 'label:"归档项目"');
+  sourceText = sourceText.replaceAll('label:"Archive Workspace"', 'label:"归档工作区"');
+  sourceText = sourceText.replaceAll('"No projects found"', '"未找到项目"');
+  sourceText = sourceText.replaceAll('"No projects created"', '"未创建任何项目"');
+  sourceText = sourceText.replaceAll('"No projects yet"', '"暂无项目"');
+  sourceText = sourceText.replaceAll('"No conversations found"', '"未找到对话"');
+  sourceText = sourceText.replaceAll('"No tasks found"', '"未找到任务"');
+  sourceText = sourceText.replaceAll('"No files or folders found"', '"未找到文件或文件夹"');
+  sourceText = sourceText.replaceAll('"No environments found"', '"未找到环境"');
+  sourceText = sourceText.replaceAll('"No workspaces found"', '"未找到工作区"');
+  sourceText = sourceText.replaceAll('"No results found"', '"未找到结果"');
   // 标记模型选择器选项列表容器，使其内部全部保持英文原样
   sourceText = sourceText.replace(
     'return z.createElement("div",{className:"relative flex flex-col flex-grow min-h-0"},',

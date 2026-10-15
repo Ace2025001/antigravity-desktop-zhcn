@@ -977,6 +977,80 @@ test("customizations marketplace plugins, empty notes, and see more expansion bu
   }
 });
 
+test("entity empty states, dropdowns, and common action phrases are fully covered by exact and patterns", async () => {
+  const current = await loadDomTranslations();
+  const testCases = [
+    // 项目下拉与空状态
+    { source: "No projects found", expected: "未找到项目" },
+    { source: "No projects found.", expected: "未找到项目。" },
+    { source: "No project found", expected: "未找到项目" },
+    { source: "No matching projects found", expected: "未找到匹配的项目" },
+    { source: "No projects created", expected: "未创建任何项目" },
+    { source: "No projects yet", expected: "暂无项目" },
+    { source: "No Project", expected: "未选择项目" },
+    { source: "No project selected", expected: "未选择项目" },
+    { source: "Select a folder.", expected: "选择文件夹。" },
+    { source: "Select a folder to create a new project.", expected: "选择一个文件夹以创建新项目。" },
+    { source: "Quick Start", expected: "快速开始" },
+    { source: "Instantly create a new project and folder to start building.", expected: "立即创建新项目和文件夹以开始构建。" },
+    { source: "Search Projects", expected: "搜索项目" },
+    { source: "Search projects...", expected: "搜索项目..." },
+
+    // 动态模式规则测试（各种动静态句式，无半中半英）
+    { source: "No conversations found", expected: "未找到对话" },
+    { source: "No conversations found.", expected: "未找到对话。" },
+    { source: "No matching conversations found", expected: "未找到匹配的对话" },
+    { source: "No conversations match your search criteria.", expected: "没有匹配您搜索条件的对话。" },
+    { source: "No tasks found", expected: "未找到任务" },
+    { source: "No background tasks", expected: "无后台任务" },
+    { source: "No automations configured.", expected: "未配置计划任务。" },
+    { source: "No scheduled tasks configured.", expected: "未配置计划任务。" },
+    { source: "No plugins found", expected: "未找到插件" },
+    { source: "No plugins available", expected: "暂无可用插件" },
+    { source: "No matching plugins found.", expected: "未找到匹配的插件。" },
+    { source: "No skills found", expected: "未找到技能" },
+    { source: "No recommended skills found in workspace", expected: "工作区中未找到推荐技能" },
+    { source: "No customizations found", expected: "未找到自定义项" },
+    { source: "No matching customizations found.", expected: "未找到匹配的自定义项。" },
+    { source: "No files or folders found", expected: "未找到文件或文件夹" },
+    { source: "No environments found", expected: "未找到环境" },
+    { source: "No repositories found.", expected: "未找到代码仓库。" },
+    { source: "No workspaces found", expected: "未找到工作区" },
+    { source: "No active terminals", expected: "无活跃终端" },
+    { source: "No file changes detected", expected: "未检测到文件更改" },
+    { source: "No artifacts generated", expected: "未生成工件" },
+    { source: "No step data available", expected: "暂无步骤数据" },
+    { source: "No trajectory metadata available", expected: "暂无轨迹元数据" },
+    { source: "No description available", expected: "暂无可用描述" },
+    { source: "No data available", expected: "暂无可用数据" },
+    { source: "No content available", expected: "暂无可用内容" },
+    { source: "No internet. Agent features may not work.", expected: "无网络连接。智能体功能可能无法正常工作。" },
+
+    // 常见操作短语
+    { source: "Select project, current: No Project", expected: "选择项目，当前：未选择项目" },
+    { source: "Select Project Ctrl+;", expected: "选择项目 Ctrl+;" },
+    { source: "Select Model Ctrl+/", expected: "选择模型 Ctrl+/" },
+    { source: "Create Project", expected: "创建项目" },
+    { source: "Create Cloud Project", expected: "创建云端项目" },
+    { source: "Create a Plugin with the Agent", expected: "使用智能体创建插件" },
+    { source: "Create a new scratch file", expected: "创建新的临时暂存文件" },
+    { source: "Choose the experience that fits how you work.", expected: "选择适合您工作方式的体验。" },
+    { source: "Choose a model", expected: "选择模型" },
+    { source: "Archive project", expected: "归档项目" },
+    { source: "Archive Workspace", expected: "归档工作区" }
+  ];
+
+  for (const { source, expected } of testCases) {
+    const translated = translateDictionaryValue(source, current);
+    assert.equal(
+      translated,
+      expected,
+      `empty state / action phrase mismatch for: ${source}`,
+    );
+  }
+});
+
+
 
 
 
