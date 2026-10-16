@@ -844,6 +844,26 @@ test("Antigravity model subscriber availability tooltip strings and patterns are
       source: "Model X is currently available to Ultra subscribers.",
       expected: "Model X 当前仅向 Ultra 订阅者开放。",
     },
+    {
+      source: "Gemini 4 Argon is now available to paid Pro plan subscribers.",
+      expected: "Gemini 4 Argon 现已面向付费 Pro 方案订阅者开放。",
+    },
+    {
+      source: "Gemini 4 Argon is now available to paid Pro plan subscribers",
+      expected: "Gemini 4 Argon 现已面向付费 Pro 方案订阅者开放。",
+    },
+    {
+      source: "Gemini 4 Argon is available to paid Pro plan subscribers.",
+      expected: "Gemini 4 Argon 适用于付费 Pro 方案订阅者。",
+    },
+    {
+      source: "Gemini 4 Argon is now available to paid Pro and Ultra plan subscribers.",
+      expected: "Gemini 4 Argon 现已面向付费 Pro 与 Ultra 方案订阅者开放。",
+    },
+    {
+      source: "Claude 3.7 Sonnet is now available to paid Ultra subscribers.",
+      expected: "Claude 3.7 Sonnet 现已面向付费 Ultra 订阅者开放。",
+    },
   ];
 
   for (const { source, expected } of testCases) {

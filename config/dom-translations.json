@@ -1021,7 +1021,18 @@
     "GPT-OSS will be removed from Antigravity on November 2, 2026": "GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除",
     "GPT-OSS will be removed from Antigravity on November 2, 2026.": "GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。",
     "Gemini 3.6 & 3.7 Flash Deprecation": "Gemini 3.6 & 3.7 Flash 弃用通知",
+    "Gemini 4 Argon is available to paid Pro plan subscribers": "Gemini 4 Argon 适用于付费 Pro 方案订阅者。",
+    "Gemini 4 Argon is available to paid Pro plan subscribers.": "Gemini 4 Argon 适用于付费 Pro 方案订阅者。",
+    "Gemini 4 Argon is currently available to Ultra plan subscribers": "Gemini 4 Argon 当前仅向 Ultra 方案订阅者开放。",
     "Gemini 4 Argon is currently available to Ultra plan subscribers.": "Gemini 4 Argon 当前仅向 Ultra 方案订阅者开放。",
+    "Gemini 4 Argon is now available to Pro plan subscribers": "Gemini 4 Argon 现已面向 Pro 方案订阅者开放。",
+    "Gemini 4 Argon is now available to Pro plan subscribers.": "Gemini 4 Argon 现已面向 Pro 方案订阅者开放。",
+    "Gemini 4 Argon is now available to Ultra plan subscribers": "Gemini 4 Argon 现已面向 Ultra 方案订阅者开放。",
+    "Gemini 4 Argon is now available to Ultra plan subscribers.": "Gemini 4 Argon 现已面向 Ultra 方案订阅者开放。",
+    "Gemini 4 Argon is now available to paid Pro plan subscribers": "Gemini 4 Argon 现已面向付费 Pro 方案订阅者开放。",
+    "Gemini 4 Argon is now available to paid Pro plan subscribers.": "Gemini 4 Argon 现已面向付费 Pro 方案订阅者开放。",
+    "Gemini 4 Argon is now available to paid Ultra plan subscribers": "Gemini 4 Argon 现已面向付费 Ultra 方案订阅者开放。",
+    "Gemini 4 Argon is now available to paid Ultra plan subscribers.": "Gemini 4 Argon 现已面向付费 Ultra 方案订阅者开放。",
     "Gemini Models": "Gemini 模型",
     "General": "通用",
     "General Feedback": "一般反馈",
@@ -8430,6 +8441,86 @@
     {
       "source": "^No\\s+plugins\\s+found\\s+for\\s+\"(.+)\"\\.?$",
       "target": "未找到匹配“$1”的插件。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) now available to paid Pro and Ultra plan subscribers\\.?$",
+      "target": "$1 现已面向付费 Pro 与 Ultra 方案订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) now available to paid Pro and Ultra subscribers\\.?$",
+      "target": "$1 现已面向付费 Pro 与 Ultra 订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) available to paid Pro and Ultra plan subscribers\\.?$",
+      "target": "$1 适用于付费 Pro 与 Ultra 方案订阅者。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) available to paid Pro and Ultra subscribers\\.?$",
+      "target": "$1 适用于付费 Pro 与 Ultra 订阅者。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) now available to paid (.+?) plan subscribers\\.?$",
+      "target": "$1 现已面向付费 $2 方案订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) now available to paid (.+?) subscribers\\.?$",
+      "target": "$1 现已面向付费 $2 订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) currently available to paid (.+?) plan subscribers\\.?$",
+      "target": "$1 当前仅向付费 $2 方案订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) currently available to paid (.+?) subscribers\\.?$",
+      "target": "$1 当前仅向付费 $2 订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) available to paid (.+?) plan subscribers\\.?$",
+      "target": "$1 适用于付费 $2 方案订阅者。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) available to paid (.+?) subscribers\\.?$",
+      "target": "$1 适用于付费 $2 订阅者。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) now available to (.+?) plan subscribers\\.?$",
+      "target": "$1 现已面向 $2 方案订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) now available to (.+?) subscribers\\.?$",
+      "target": "$1 现已面向 $2 订阅者开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) now available on paid (.+?) plans?\\.?$",
+      "target": "$1 现已在付费 $2 方案中可用。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) available on paid (.+?) plans?\\.?$",
+      "target": "$1 适用于付费 $2 方案。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) now available to paid users\\.?$",
+      "target": "$1 现已面向付费用户开放。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) (?:is|are) available to paid users\\.?$",
+      "target": "$1 适用于付费用户。",
       "flags": "u"
     }
   ]
