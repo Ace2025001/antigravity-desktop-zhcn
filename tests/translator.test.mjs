@@ -495,6 +495,38 @@ test("welcome and onboarding authentication strings are fully covered", async ()
     {
       source: "Yes, I'd like to receive product updates, tips, and promotions from Google Antigravity via email.",
       expected: "是的，我希望通过电子邮件接收来自 Google Antigravity 的产品更新、技巧与促销信息。"
+    },
+    {
+      source: "Get started",
+      expected: "开始使用"
+    },
+    {
+      source: "Get Started",
+      expected: "开始使用"
+    },
+    {
+      source: "The full developer experience with code and tooling.",
+      expected: "包含代码与工具链的完整开发者体验。"
+    },
+    {
+      source: "General work",
+      expected: "常规办公"
+    },
+    {
+      source: "Research, writing, and everyday tasks, without code.",
+      expected: "研究、写作与日常任务，无需编写代码。"
+    },
+    {
+      source: "Copy sign-in link",
+      expected: "复制登录链接"
+    },
+    {
+      source: "Continue with SSO",
+      expected: "通过单点登录 (SSO) 继续"
+    },
+    {
+      source: "Use Business Account",
+      expected: "使用企业账号"
     }
   ];
 

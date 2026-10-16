@@ -419,6 +419,10 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('"No environments found"', '"未找到环境"');
   sourceText = sourceText.replaceAll('"No workspaces found"', '"未找到工作区"');
   sourceText = sourceText.replaceAll('"No results found"', '"未找到结果"');
+  // 引导流程与协议条款原生汉化
+  sourceText = sourceText.replaceAll('b?"Get started":"Next"', 'b?"开始使用":"下一步"');
+  sourceText = sourceText.replaceAll('primaryCtaText:a.primaryCtaText||"Get Started"', 'primaryCtaText:a.primaryCtaText||"开始使用"');
+  sourceText = sourceText.replaceAll('" ","and"," "', '" 与 "');
   // 标记模型选择器选项列表容器，使其内部全部保持英文原样
   sourceText = sourceText.replace(
     'return z.createElement("div",{className:"relative flex flex-col flex-grow min-h-0"},',
