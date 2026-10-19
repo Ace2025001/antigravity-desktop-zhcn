@@ -896,6 +896,22 @@ test("Antigravity model subscriber availability tooltip strings and patterns are
       source: "Claude 3.7 Sonnet is now available to paid Ultra subscribers.",
       expected: "Claude 3.7 Sonnet 现已面向付费 Ultra 订阅者开放。",
     },
+    {
+      source: "Gemini 4 Argon is now available to paid Pro plan subscribers. As part of Pro, we've rolled out a separate weekly-only Argon quota on top of your existing Gemini quota for 3.8 Flash.",
+      expected: "Gemini 4 Argon 现已面向付费 Pro 方案订阅者开放。作为 Pro 权益的一部分，我们在你现有的 Gemini（3.8 Flash）配额之外，额外推出了独立的仅限周额度的 Argon 配额。",
+    },
+    {
+      source: "Gemini 4 Argon is now available to paid Pro plan subscribers. As part of Pro, we've rolled out a separate weekly-only Argon quota on top of your existing Gemini quota for 3.8 Flash",
+      expected: "Gemini 4 Argon 现已面向付费 Pro 方案订阅者开放。作为 Pro 权益的一部分，我们在你现有的 Gemini（3.8 Flash）配额之外，额外推出了独立的仅限周额度的 Argon 配额。",
+    },
+    {
+      source: "Notice ⓘ",
+      expected: "提示 ⓘ",
+    },
+    {
+      source: "Notice",
+      expected: "提示",
+    },
   ];
 
   for (const { source, expected } of testCases) {

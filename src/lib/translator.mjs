@@ -428,6 +428,11 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('"aria-label":"Search for content to open"', '"aria-label":"搜索要打开的内容"');
   sourceText = sourceText.replaceAll('"Open File"', '"打开文件"');
   sourceText = sourceText.replaceAll('title:"Open File"', 'title:"打开文件"');
+  // 模型选择器标签徽章（提示、新建）与提示说明原生汉化
+  sourceText = sourceText.replace(
+    'var RFb=({option:a})=>{var b=OD();return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",null,a.tagTitle),A.createElement(X,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(jz,{id:b},A.createElement("div",{className:"max-w-[200px]"},a.tagDescription))):a.tagTitle?A.createElement("div",{className:"bg-secondary rounded-full px-1.5 text-xs"},a.tagTitle):null};',
+    'var RFb=({option:a})=>{var b=OD(),tT=a.tagTitle==="Notice"?"提示":a.tagTitle==="New"?"新建":a.tagTitle,tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription;return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",null,tT),A.createElement(X,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(jz,{id:b},A.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?A.createElement("div",{className:"bg-secondary rounded-full px-1.5 text-xs"},tT):null};'
+  );
   // 标记模型选择器选项列表容器，使其内部全部保持英文原样
   sourceText = sourceText.replace(
     'return z.createElement("div",{className:"relative flex flex-col flex-grow min-h-0"},',
