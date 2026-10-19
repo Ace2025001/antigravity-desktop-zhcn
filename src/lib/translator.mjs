@@ -437,6 +437,17 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     /var RFb=\(\{option:a\}\)=>\{var b=OD\(\);return a\.tagTitle&&a\.tagDescription\?A\.createElement\(A\.Fragment,null,A\.createElement\("div",\{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1\.5 text-xs"\},A\.createElement\("span",null,a\.tagTitle\),A\.createElement\(X,\{name:"info",className:"h-3 w-3 flex-none"\}\)\),A\.createElement\(jz,\{id:b\},A\.createElement\("div",\{className:"max-w-\[200px\]"\},a\.tagDescription\)\)\):a\.tagTitle\?A\.createElement\("div",\{className:"bg-secondary rounded-full px-1\.5 text-xs"\},\s*a\.tagTitle\):null\};/,
     'var RFb=({option:a})=>{var b=OD(),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription;return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",{"data-model-selector-badge":"true"},a.tagTitle),A.createElement(X,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(jz,{id:b},A.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?A.createElement("div",{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-xs"},a.tagTitle):null};'
   );
+  // 账号资格与地区限制错误页面原生汉化
+  sourceText = sourceText.replaceAll('"Sorry, this account is ineligible to use ",a', '"抱歉，该账号暂无使用 ",a," 的权限"');
+  sourceText = sourceText.replaceAll('`Sorry, this account is ineligible to use ${a}`', '`抱歉，该账号暂无使用 ${a} 的权限`');
+  sourceText = sourceText.replaceAll('`Further action is required to use ${a}`', '`需要进一步操作方可使用 ${a}`');
+  sourceText = sourceText.replaceAll('h=e?.linkText??"Submit Appeal"', 'h=e?.linkText??"提交申诉"');
+  sourceText = sourceText.replaceAll('"Please verify your account, then sign in again to continue. Learn more by visiting our"', '"请先验证你的账号，然后重新登录以继续。访问我们的"');
+  sourceText = sourceText.replaceAll('"Learn more by visiting our"', '"访问我们的"');
+  sourceText = sourceText.replaceAll('h=e?h:"Verify"', 'h=e?h:"验证"');
+  sourceText = sourceText.replaceAll('e=e?"Continue with different account":"Sign in again"', 'e=e?"使用其他账号继续":"重新登录"');
+  sourceText = sourceText.replaceAll('"There was an unexpected issue setting up your account."', '"设置你的账号时发生了意外问题。"');
+  sourceText = sourceText.replaceAll('a||"We apologize for the inconvenience. Please try again later."', 'a||"给您带来不便，我们深表歉意。请稍后再试。"');
   // 工作流状态汇总原生汉化（根治 running X commands 与半中半英状态）
   sourceText = sourceText.replace(
     'zX={files:["file","files"],folders:["folder","folders"],edits:["file","files"],searches:["search","searches"],terminal:["command","commands"],tasks:["task","tasks"],web:["page","pages"],browser:["browser","browsers"],images:["image","images"],actions:["action","actions"],artifacts:["artifact","artifacts"]}',

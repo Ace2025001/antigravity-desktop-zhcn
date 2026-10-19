@@ -1146,6 +1146,132 @@ test("entity empty states, dropdowns, and common action phrases are fully covere
   }
 });
 
+test("account eligibility, regional availability, and authentication error strings are fully covered", async () => {
+  const current = await loadDomTranslations();
+
+  const testCases = [
+    // 截图核心标题与动态正文
+    {
+      source: "Sorry, this account is ineligible to use Antigravity",
+      expected: "抱歉，该账号暂无使用 Antigravity 的权限",
+    },
+    {
+      source: "Sorry, this account is ineligible to use Antigravity.",
+      expected: "抱歉，该账号暂无使用 Antigravity 的权限。",
+    },
+    {
+      source: "Your current account is not eligible for Antigravity, because it is not currently available in your location.",
+      expected: "你当前的账号暂无使用 Antigravity 的资格，因为该服务目前尚未在你所在的地区提供。",
+    },
+    {
+      source: "Your current account is not eligible for Antigravity, because it is not currently available in your region.",
+      expected: "你当前的账号暂无使用 Antigravity 的资格，因为该服务目前尚未在你所在的地区提供。",
+    },
+    {
+      source: "Your account is not eligible for Antigravity, because it is not currently available in your country.",
+      expected: "你当前的账号暂无使用 Antigravity 的资格，因为该服务目前尚未在你所在的地区提供。",
+    },
+    {
+      source: "Your current account is not eligible for Antigravity",
+      expected: "你当前的账号暂无使用 Antigravity 的资格",
+    },
+    {
+      source: "Your account is not eligible for Antigravity",
+      expected: "你的账号暂无使用 Antigravity 的资格",
+    },
+    {
+      source: "Further action is required to use Antigravity",
+      expected: "需要进一步操作方可使用 Antigravity",
+    },
+    {
+      source: "Please verify your account, then sign in again to continue.",
+      expected: "请先验证你的账号，然后重新登录以继续。",
+    },
+    {
+      source: "Please verify your account to continue using Antigravity.",
+      expected: "请先验证你的账号以继续使用 Antigravity。",
+    },
+    {
+      source: "Learn more by visiting our",
+      expected: "访问我们的",
+    },
+    {
+      source: "FAQ",
+      expected: "常见问题解答",
+    },
+    {
+      source: "Submit Appeal",
+      expected: "提交申诉",
+    },
+    {
+      source: "Sign in again",
+      expected: "重新登录",
+    },
+    {
+      source: "Verify",
+      expected: "验证",
+    },
+    {
+      source: "There was an unexpected issue setting up your account.",
+      expected: "设置你的账号时发生了意外问题。",
+    },
+    {
+      source: "Business Account Sign In",
+      expected: "企业账号登录",
+    },
+    {
+      source: "Connect your account to browse",
+      expected: "关联账号以进行浏览",
+    },
+    {
+      source: "Log in to use the agent",
+      expected: "登录以使用智能体",
+    },
+    {
+      source: "Sign in required",
+      expected: "需要登录",
+    },
+    {
+      source: "Signed-in accounts",
+      expected: "已登录账号",
+    },
+    {
+      source: "This Google Cloud project is not supported. Input a different project, or sign in with another account.",
+      expected: "不支持此 Google Cloud 项目。请输入其他项目，或使用其他账号登录。",
+    },
+    {
+      source: "This sign-in option is only available to invited teams.",
+      expected: "此登录方式仅适用于受邀团队。",
+    },
+    {
+      source: "Browser tools are not available in the Antigravity Android desktop app.",
+      expected: "Antigravity 安卓桌面应用中不支持浏览器工具。",
+    },
+    {
+      source: "Concierge conversation is unavailable",
+      expected: "引导对话不可用",
+    },
+    {
+      source: "No agent client available to start conversation",
+      expected: "没有可用的智能体客户端来发起对话",
+    },
+    {
+      source: "No workspace window available",
+      expected: "暂无可用的工作区窗口",
+    },
+  ];
+
+  for (const { source, expected } of testCases) {
+    const translated = translateDictionaryValue(source, current);
+    assert.equal(
+      translated,
+      expected,
+      `auth eligibility string mismatch for: ${source}`,
+    );
+  }
+});
+
+
 
 
 

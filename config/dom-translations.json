@@ -2296,7 +2296,7 @@
     "There may be agents or background tasks running.": "可能有正在运行的智能体或后台任务。",
     "There was a network issue connecting to the server, please try again": "连接服务器时出现网络问题，请重试",
     "There was a network issue connecting to the server, please try again.": "连接服务器时出现网络问题，请重试。",
-    "There was an unexpected issue setting up your account.": "设置您的账户时发生了意外问题。",
+    "There was an unexpected issue setting up your account.": "设置你的账号时发生了意外问题。",
     "These allowed domain rules are set by your organization's administrator and cannot be removed.": "这些允许的域名规则由组织管理员设定，无法移除。",
     "These servers need you to sign in before the agent can use their tools.": "智能体使用这些工具前需要你登录相应服务器。",
     "These settings can only be changed on the computer running the app, not from a remote session.": "这些设置只能在运行应用的计算机上修改，无法在远程会话中修改。",
@@ -2692,7 +2692,69 @@
     "user_global": "用户全局",
     "when working in this project": "在当前项目中生效",
     "when working in this project.": "在当前项目中生效。",
-    "yesterday": "昨天"
+    "yesterday": "昨天",
+    "Sorry, this account is ineligible to use Antigravity": "抱歉，该账号暂无使用 Antigravity 的权限",
+    "Sorry, this account is ineligible to use Antigravity.": "抱歉，该账号暂无使用 Antigravity 的权限。",
+    "Your current account is not eligible for Antigravity, because it is not currently available in your location.": "你当前的账号暂无使用 Antigravity 的资格，因为该服务目前尚未在你所在的地区提供。",
+    "Your current account is not eligible for Antigravity, because it is not currently available in your location": "你当前的账号暂无使用 Antigravity 的资格，因为该服务目前尚未在你所在的地区提供",
+    "Your current account is not eligible for Antigravity": "你当前的账号暂无使用 Antigravity 的资格",
+    "Your account is not eligible for Antigravity": "你的账号暂无使用 Antigravity 的资格",
+    "This account is ineligible to use Antigravity": "该账号暂无使用 Antigravity 的权限",
+    "This account is ineligible to use Antigravity.": "该账号暂无使用 Antigravity 的权限。",
+    "Further action is required to use Antigravity": "需要进一步操作方可使用 Antigravity",
+    "Further action is required to use Antigravity.": "需要进一步操作方可使用 Antigravity。",
+    "Please verify your account, then sign in again to continue.": "请先验证你的账号，然后重新登录以继续。",
+    "Please verify your account to continue using": "请先验证你的账号以继续使用",
+    "Please verify your account to continue using Antigravity.": "请先验证你的账号以继续使用 Antigravity。",
+    "Please verify your account to continue using Jetski.": "请先验证你的账号以继续使用 Jetski。",
+    "Learn more by visiting our": "访问我们的",
+    "FAQ": "常见问题解答",
+    "Submit Appeal": "提交申诉",
+    "Verify": "验证",
+    "Business Account Sign In": "企业账号登录",
+    "Connect your account to browse": "关联账号以进行浏览",
+    "Log in to use the agent": "登录以使用智能体",
+    "Sign in required": "需要登录",
+    "Signed-in accounts": "已登录账号",
+    "There was an error with your authentication. To log in, click": "身份验证时出错。如需登录，请点击",
+    "This Google Cloud project is not supported. Input a different project, or sign in with another account.": "不支持此 Google Cloud 项目。请输入其他项目，或使用其他账号登录。",
+    "This sign-in option is only available to invited teams.": "此登录方式仅适用于受邀团队。",
+    "Use this if your admin gave you a WIF config. Paste it below to sign in.": "如果管理员提供了 WIF 配置，请使用此选项。将其粘贴在下方以进行登录。",
+    "Available licenses": "可用许可证",
+    "License Required": "需要许可证",
+    "Loading licenses...": "正在加载许可证...",
+    "Manage License": "管理许可证",
+    "Other License": "其他许可证",
+    "No license available for this project and location": "该项目与位置暂无可用许可证",
+    "Failed to inspect license for this project": "检查该项目的许可证失败",
+    "Verify that these licenses were provided by your administrator and that you trust the project ID before proceeding. Account activity and data may be logged by your organization.": "在继续操作之前，请确认这些许可证是由管理员提供的，并且你信任该项目 ID。你的组织可能会记录账号活动和数据。",
+    "Your Antigravity use will be associated with provided project. Make sure you trust the project ID before proceeding. Account activity and data may be logged by your organization.": "你的 Antigravity 使用将与所提供的项目关联。在继续操作之前，请确保你信任该项目 ID。你的组织可能会记录账号活动和数据。",
+    "Browser tools are not available in the Antigravity Android desktop app.": "Antigravity 安卓桌面应用中不支持浏览器工具。",
+    "Concierge conversation is unavailable": "引导对话不可用",
+    "Failed to unarchive project: project management feature not available": "取消归档项目失败：项目管理功能不可用",
+    "File system provider not available": "文件系统提供者不可用",
+    "Jetski Chat configuration is not available in the current environment.": "当前环境中 Jetski 聊天配置不可用。",
+    "Language server client not available": "语言服务器客户端不可用",
+    "Magic Workspace capability is not available": "智能工作区功能不可用",
+    "Multi-conversation view is not available": "多对话视图不可用",
+    "No agent client available to start conversation": "没有可用的智能体客户端来发起对话",
+    "No cloud plugins available.": "暂无可用云插件。",
+    "No plugins available in the marketplace.": "插件市场中暂无可用插件。",
+    "No workspace window available": "暂无可用的工作区窗口",
+    "Preview unavailable due to a notebook parsing error.": "由于笔记本解析错误，预览不可用。",
+    "Project management is not available": "项目管理功能不可用",
+    "Pseudo-project capability is not available": "虚拟项目功能不可用",
+    "Sidecar feature is not available.": "Sidecar 功能不可用。",
+    "Skill deletion is not available.": "技能删除功能不可用。",
+    "Streaming audio feature is not available": "音频流功能不可用",
+    "Text layer data unavailable": "文本层数据不可用",
+    "Worktrees are not available for this project": "此项目不支持工作树",
+    "available for download": "可供下载",
+    "Agent data is not available": "智能体数据不可用",
+    "Available workspaces": "可用工作区",
+    "File location": "文件位置",
+    "Goal Verification": "目标验证",
+    "Sorry, this account is ineligible to use": "抱歉，该账号暂无权限使用"
   },
   "patterns": [
     {
@@ -8898,6 +8960,36 @@
     {
       "source": "^As part of (.+?), we've rolled out a separate weekly-only (.+?) quota on top of your existing (.+?) quota for (.+?)\\.?$",
       "target": "作为 $1 权益的一部分，我们在你现有的 $3（$4）配额之外，额外推出了独立的仅限周额度的 $2 配额。",
+      "flags": "u"
+    },
+    {
+      "source": "^Sorry, this account is ineligible to use\\s*(.+?)\\.?$",
+      "target": "抱歉，该账号暂无使用 $1 的权限。",
+      "flags": "u"
+    },
+    {
+      "source": "^Your (?:current )?account is not eligible for (.+?), because it is not currently available in your (?:location|country|region)\\.?$",
+      "target": "你当前的账号暂无使用 $1 的资格，因为该服务目前尚未在你所在的地区提供。",
+      "flags": "u"
+    },
+    {
+      "source": "^Your (?:current )?account is not eligible for (.+?)\\.?$",
+      "target": "你当前的账号暂无使用 $1 的资格。",
+      "flags": "u"
+    },
+    {
+      "source": "^Further action is required to use\\s*(.+?)\\.?$",
+      "target": "需要进一步操作方可使用 $1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Please verify your account to continue using\\s*(.+?)\\.?$",
+      "target": "请先验证你的账号以继续使用 $1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Please verify your account, then sign in again to continue\\.?\\s*(?:Learn more by visiting our)?$",
+      "target": "请先验证你的账号，然后重新登录以继续。访问我们的",
       "flags": "u"
     }
   ]
