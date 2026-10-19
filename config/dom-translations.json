@@ -733,16 +733,24 @@
     "Delete": "删除",
     "Delete ABFS Workspace": "删除 ABFS 工作区",
     "Delete Conversation": "删除对话",
+    "Delete Group": "删除分组",
     "Delete Handler": "删除处理程序",
     "Delete Hook": "删除钩子",
     "Delete MCP Server": "删除 MCP 服务器",
     "Delete Permanently": "永久删除",
     "Delete Project": "删除项目",
+    "Delete Skill": "删除技能",
     "Delete Task": "删除任务",
+    "Delete Terminal": "删除终端",
     "Delete Workspace": "删除工作区",
+    "Delete agent": "删除智能体",
     "Delete command": "删除命令",
+    "Delete comment": "删除评论",
     "Delete conversation": "删除对话",
+    "Delete plugin": "删除插件",
+    "Delete server": "删除服务器",
     "Delete task": "删除任务",
+    "Delete workspace": "删除工作区",
     "Deleted": "已删除",
     "Deleting": "正在删除",
     "Deleting...": "正在删除...",
@@ -816,11 +824,16 @@
     "Duplicate": "创建副本",
     "Duplicate Conversation": "复制此对话",
     "Edit": "编辑",
+    "Edit Comment": "编辑评论",
+    "Edit Config": "编辑配置",
     "Edit Model": "编辑模型",
     "Edit Permission": "编辑权限",
     "Edit Rule": "编辑规则",
     "Edit Scheduled Task": "编辑计划任务",
+    "Edit comment": "编辑评论",
+    "Edit config": "编辑配置",
     "Edit permission target": "编辑权限目标",
+    "Edit title": "编辑标题",
     "Edited": "已编辑",
     "Editing": "正在编辑",
     "Editor": "编辑器",
@@ -1362,27 +1375,34 @@
     "Network Permissions": "网络权限",
     "Never": "从不",
     "New": "新建",
+    "New Browser": "新建浏览器",
     "New Conversation": "新建对话",
     "New Conversation in Project": "在项目中新建对话",
     "New Editor Window": "新建编辑器窗口",
     "New Features Available": "新功能现已推出",
     "New Features Available!": "新功能现已推出！",
+    "New Group": "新建分组",
     "New Model Available": "新模型现已推出",
     "New Model Available!": "新模型现已推出！",
     "New Models Available": "新模型现已推出",
     "New Models Available!": "新模型现已推出！",
+    "New Preview": "新建预览",
     "New Project": "新建项目",
+    "New Tab": "新建标签页",
     "New Task": "新建任务",
+    "New Terminal": "新建终端",
     "New Terminal Tab": "新建终端标签页",
     "New Updates Available": "发现新更新",
     "New Version Available": "新版本现已推出",
     "New Window": "新建窗口",
     "New Workspace": "新建工作区",
+    "New Worktree": "新建工作树",
     "New chats will be grouped by workspace.": "新对话将按工作区分组。",
     "New conversation": "新建对话",
     "New features available": "新功能现已推出",
     "New features available!": "新功能现已推出！",
     "New hook name": "新建钩子名称",
+    "New tab": "新建标签页",
     "New task": "新建任务",
     "New updates available": "发现新更新",
     "New version available": "新版本现已推出",
@@ -1621,7 +1641,10 @@
     "Open Conversation": "打开对话",
     "Open Conversation History": "打开对话历史",
     "Open Conversation Picker": "打开对话选择器",
+    "Open Diff": "打开差异对比",
+    "Open File": "打开文件",
     "Open File Search": "打开文件搜索",
+    "Open File.": "打开文件。",
     "Open Folder": "打开文件夹",
     "Open IDE": "打开 IDE",
     "Open Keyboard Shortcuts": "打开快捷键列表",
@@ -1629,15 +1652,22 @@
     "Open MCP Config": "打开 MCP 配置",
     "Open Preferences": "打开偏好设置",
     "Open Preview": "打开预览",
+    "Open Search": "打开搜索",
     "Open Settings": "打开设置",
     "Open System Preferences": "打开系统设置",
+    "Open Tabs": "打开标签页",
     "Open Terminal": "打开终端",
+    "Open URL": "打开网址",
     "Open Workspace": "打开工作区",
     "Open Workspace Selector": "打开工作区选择器",
     "Open a browser URL": "打开浏览器 URL",
+    "Open allowlist": "打开允许名单",
     "Open containing folder": "打开所在文件夹",
+    "Open file": "打开文件",
+    "Open file.": "打开文件。",
     "Open files in the background if Agent creates or edits them": "当智能体创建或编辑文件时，在后台自动打开这些文件。",
     "Open files in the background if the agent creates or edits them": "如果智能体创建或编辑了文件，则在后台自动打开这些文件",
+    "Open folder": "打开文件夹",
     "Open in Browser": "在浏览器中打开",
     "Open in Code Search": "在代码搜索中打开",
     "Open in Editor": "在编辑器中打开",
@@ -1647,6 +1677,7 @@
     "Open in Tab": "在标签页中打开",
     "Open in editor": "在编辑器中打开",
     "Open in terminal": "在终端中打开",
+    "Open link": "打开链接",
     "Open settings file": "打开配置文件",
     "Open settings menu": "打开设置菜单",
     "Open the agent panel on window reload": "窗口重新加载时自动打开智能体面板",
@@ -1926,8 +1957,10 @@
     "Saturday": "星期六",
     "Save": "保存",
     "Save Changes": "保存更改",
+    "Save Comment": "保存评论",
     "Save Configuration": "保存配置",
     "Save Image": "保存图片",
+    "Save Video": "保存视频",
     "Save and Close": "保存并关闭",
     "Save changes": "保存更改",
     "Save changes before closing?": "关闭前是否保存更改？",
@@ -1972,10 +2005,13 @@
     "Search files...": "搜索文件...",
     "Search flags": "搜索标记",
     "Search for MCP servers to add to your configuration": "搜索要添加到配置的 MCP 服务器",
+    "Search for content to open": "搜索要打开的内容",
     "Search past workspaces...": "搜索历史工作区...",
     "Search past worktrees...": "搜索历史工作树...",
     "Search projects": "搜索项目",
     "Search projects...": "搜索项目...",
+    "Search tabs, files, plugins, subagents, artifacts, tasks": "搜索标签页、文件、插件、子智能体、工件、任务",
+    "Search tabs, files, plugins, subagents, artifacts, tasks...": "搜索标签页、文件、插件、子智能体、工件、任务...",
     "Search tasks": "搜索任务",
     "Search tasks...": "搜索任务...",
     "Search, upload, download, and share files.": "搜索、上传、下载和共享文件。",
@@ -2905,11 +2941,6 @@
       "flags": "u"
     },
     {
-      "source": "^Open\\s+(.+)$",
-      "target": "打开 $1",
-      "flags": "u"
-    },
-    {
       "source": "^Send feedback as (.+)$",
       "target": "以 $1 身份发送反馈",
       "flags": "u"
@@ -3620,43 +3651,8 @@
       "flags": "u"
     },
     {
-      "source": "^Search\\s+(.+)\\.\\.\\.$",
-      "target": "搜索 $1...",
-      "flags": "u"
-    },
-    {
-      "source": "^Filter\\s+(.+)\\.\\.\\.$",
-      "target": "过滤 $1...",
-      "flags": "u"
-    },
-    {
       "source": "^\\+\\s*New\\s+(.+)$",
       "target": "+ 新建 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^New\\s+(.+)$",
-      "target": "新建 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^Delete\\s+(.+)$",
-      "target": "删除 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^Edit\\s+(.+)$",
-      "target": "编辑 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^Save\\s+(.+)$",
-      "target": "保存 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^Create\\s+(.+)$",
-      "target": "创建 $1",
       "flags": "u"
     },
     {
@@ -8537,6 +8533,356 @@
     {
       "source": "^(.+?) (?:is|are) available to paid users\\.?$",
       "target": "$1 适用于付费用户。",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:files?|Files?)$",
+      "target": "打开文件",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:files?|Files?)$",
+      "target": "新建文件",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:files?|Files?)$",
+      "target": "删除文件",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:files?|Files?)$",
+      "target": "编辑文件",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:files?|Files?)$",
+      "target": "保存文件",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:folders?|Folders?)$",
+      "target": "打开文件夹",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:folders?|Folders?)$",
+      "target": "新建文件夹",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:folders?|Folders?)$",
+      "target": "删除文件夹",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:folders?|Folders?)$",
+      "target": "编辑文件夹",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:folders?|Folders?)$",
+      "target": "保存文件夹",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:tabs?|Tabs?)$",
+      "target": "打开标签页",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:tabs?|Tabs?)$",
+      "target": "新建标签页",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:tabs?|Tabs?)$",
+      "target": "删除标签页",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:tabs?|Tabs?)$",
+      "target": "编辑标签页",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:tabs?|Tabs?)$",
+      "target": "保存标签页",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:projects?|Projects?)$",
+      "target": "打开项目",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:projects?|Projects?)$",
+      "target": "新建项目",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:projects?|Projects?)$",
+      "target": "删除项目",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:projects?|Projects?)$",
+      "target": "编辑项目",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:projects?|Projects?)$",
+      "target": "保存项目",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:workspaces?|Workspaces?)$",
+      "target": "打开工作区",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:workspaces?|Workspaces?)$",
+      "target": "新建工作区",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:workspaces?|Workspaces?)$",
+      "target": "删除工作区",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:workspaces?|Workspaces?)$",
+      "target": "编辑工作区",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:workspaces?|Workspaces?)$",
+      "target": "保存工作区",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:worktrees?|Worktrees?)$",
+      "target": "打开工作树",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:worktrees?|Worktrees?)$",
+      "target": "新建工作树",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:worktrees?|Worktrees?)$",
+      "target": "删除工作树",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:worktrees?|Worktrees?)$",
+      "target": "编辑工作树",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:worktrees?|Worktrees?)$",
+      "target": "保存工作树",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:tasks?|Tasks?)$",
+      "target": "打开任务",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:tasks?|Tasks?)$",
+      "target": "新建任务",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:tasks?|Tasks?)$",
+      "target": "删除任务",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:tasks?|Tasks?)$",
+      "target": "编辑任务",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:tasks?|Tasks?)$",
+      "target": "保存任务",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:skills?|Skills?)$",
+      "target": "打开技能",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:skills?|Skills?)$",
+      "target": "新建技能",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:skills?|Skills?)$",
+      "target": "删除技能",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:skills?|Skills?)$",
+      "target": "编辑技能",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:skills?|Skills?)$",
+      "target": "保存技能",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:rules?|Rules?)$",
+      "target": "打开规则",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:rules?|Rules?)$",
+      "target": "新建规则",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:rules?|Rules?)$",
+      "target": "删除规则",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:rules?|Rules?)$",
+      "target": "编辑规则",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:rules?|Rules?)$",
+      "target": "保存规则",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:agents?|Agents?)$",
+      "target": "打开智能体",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:agents?|Agents?)$",
+      "target": "新建智能体",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:agents?|Agents?)$",
+      "target": "删除智能体",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:agents?|Agents?)$",
+      "target": "编辑智能体",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:agents?|Agents?)$",
+      "target": "保存智能体",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:plugins?|Plugins?)$",
+      "target": "打开插件",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:plugins?|Plugins?)$",
+      "target": "新建插件",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:plugins?|Plugins?)$",
+      "target": "删除插件",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:plugins?|Plugins?)$",
+      "target": "编辑插件",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:plugins?|Plugins?)$",
+      "target": "保存插件",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:terminals?|Terminals?)$",
+      "target": "打开终端",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:terminals?|Terminals?)$",
+      "target": "新建终端",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:terminals?|Terminals?)$",
+      "target": "删除终端",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:terminals?|Terminals?)$",
+      "target": "编辑终端",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:terminals?|Terminals?)$",
+      "target": "保存终端",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:comments?|Comments?)$",
+      "target": "打开评论",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:comments?|Comments?)$",
+      "target": "新建评论",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:comments?|Comments?)$",
+      "target": "删除评论",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:comments?|Comments?)$",
+      "target": "编辑评论",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:comments?|Comments?)$",
+      "target": "保存评论",
+      "flags": "u"
+    },
+    {
+      "source": "^Open\\s+(?:configs?|Configs?|configurations?|Configurations?)$",
+      "target": "打开配置",
+      "flags": "u"
+    },
+    {
+      "source": "^New\\s+(?:configs?|Configs?|configurations?|Configurations?)$",
+      "target": "新建配置",
+      "flags": "u"
+    },
+    {
+      "source": "^Delete\\s+(?:configs?|Configs?|configurations?|Configurations?)$",
+      "target": "删除配置",
+      "flags": "u"
+    },
+    {
+      "source": "^Edit\\s+(?:configs?|Configs?|configurations?|Configurations?)$",
+      "target": "编辑配置",
+      "flags": "u"
+    },
+    {
+      "source": "^Save\\s+(?:configs?|Configs?|configurations?|Configurations?)$",
+      "target": "保存配置",
       "flags": "u"
     }
   ]

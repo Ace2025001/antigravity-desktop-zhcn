@@ -1089,7 +1089,23 @@ test("entity empty states, dropdowns, and common action phrases are fully covere
     { source: "Choose the experience that fits how you work.", expected: "选择适合您工作方式的体验。" },
     { source: "Choose a model", expected: "选择模型" },
     { source: "Archive project", expected: "归档项目" },
-    { source: "Archive Workspace", expected: "归档工作区" }
+    { source: "Archive Workspace", expected: "归档工作区" },
+
+    // 快速打开与新标签页短语测试（杜绝“打开 File”与“搜索 tabs...”半中半英）
+    { source: "Search tabs, files, plugins, subagents, artifacts, tasks...", expected: "搜索标签页、文件、插件、子智能体、工件、任务..." },
+    { source: "Search for content to open", expected: "搜索要打开的内容" },
+    { source: "Open File", expected: "打开文件" },
+    { source: "Open file", expected: "打开文件" },
+    { source: "Open link", expected: "打开链接" },
+    { source: "Open Tabs", expected: "打开标签页" },
+    { source: "Open Search", expected: "打开搜索" },
+    { source: "New Tab", expected: "新建标签页" },
+    { source: "New tab", expected: "新建标签页" },
+    { source: "Delete comment", expected: "删除评论" },
+    { source: "Delete Skill", expected: "删除技能" },
+    { source: "Delete workspace", expected: "删除工作区" },
+    { source: "Edit comment", expected: "编辑评论" },
+    { source: "Edit config", expected: "编辑配置" }
   ];
 
   for (const { source, expected } of testCases) {

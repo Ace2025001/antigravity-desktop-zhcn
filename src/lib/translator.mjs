@@ -423,6 +423,11 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('b?"Get started":"Next"', 'b?"开始使用":"下一步"');
   sourceText = sourceText.replaceAll('primaryCtaText:a.primaryCtaText||"Get Started"', 'primaryCtaText:a.primaryCtaText||"开始使用"');
   sourceText = sourceText.replaceAll('" ","and"," "', '" 与 "');
+  // 新标签页与快捷命令面板原生汉化
+  sourceText = sourceText.replaceAll('placeholder:"Search tabs, files, plugins, subagents, artifacts, tasks..."', 'placeholder:"搜索标签页、文件、插件、子智能体、工件、任务..."');
+  sourceText = sourceText.replaceAll('"aria-label":"Search for content to open"', '"aria-label":"搜索要打开的内容"');
+  sourceText = sourceText.replaceAll('"Open File"', '"打开文件"');
+  sourceText = sourceText.replaceAll('title:"Open File"', 'title:"打开文件"');
   // 标记模型选择器选项列表容器，使其内部全部保持英文原样
   sourceText = sourceText.replace(
     'return z.createElement("div",{className:"relative flex flex-col flex-grow min-h-0"},',
