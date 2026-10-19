@@ -2754,7 +2754,19 @@
     "Available workspaces": "可用工作区",
     "File location": "文件位置",
     "Goal Verification": "目标验证",
-    "Sorry, this account is ineligible to use": "抱歉，该账号暂无权限使用"
+    "Sorry, this account is ineligible to use": "抱歉，该账号暂无权限使用",
+    "Drag to select a region to comment": "拖动以选择要评论的区域",
+    "Leave a comment": "写下评论",
+    "Add Comment": "添加评论",
+    "Add comment": "添加评论",
+    "Submit comment": "提交评论",
+    "1 comment": "1 条评论",
+    "Click to view or edit comment": "点击以查看或编辑评论",
+    "View or edit comment": "查看或编辑评论",
+    "View comments": "查看评论",
+    "Comments unavailable at this screen size": "当前屏幕尺寸下无法显示评论",
+    "Select text in the PDF and click + Add to start commenting.": "在 PDF 中选择文本并点击 + 添加 以开始评论。",
+    "Open in New Window": "在新窗口中打开"
   },
   "patterns": [
     {

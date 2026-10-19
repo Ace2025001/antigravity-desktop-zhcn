@@ -448,6 +448,19 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('e=e?"Continue with different account":"Sign in again"', 'e=e?"使用其他账号继续":"重新登录"');
   sourceText = sourceText.replaceAll('"There was an unexpected issue setting up your account."', '"设置你的账号时发生了意外问题。"');
   sourceText = sourceText.replaceAll('a||"We apologize for the inconvenience. Please try again later."', 'a||"给您带来不便，我们深表歉意。请稍后再试。"');
+  // 图片查看器、批注与评论框原生汉化
+  sourceText = sourceText.replaceAll('"Drag to select a region to comment"', '"拖动以选择要评论的区域"');
+  sourceText = sourceText.replaceAll('placeholder:h="Leave a comment"', 'placeholder:h="写下评论"');
+  sourceText = sourceText.replaceAll('submitLabel:k="Add Comment"', 'submitLabel:k="添加评论"');
+  sourceText = sourceText.replaceAll('placeholder:f?"Edit comment":"Leave a comment"', 'placeholder:f?"编辑评论":"写下评论"');
+  sourceText = sourceText.replaceAll('submitLabel:f?"Save Comment":"Submit"', 'submitLabel:f?"保存评论":"提交"');
+  // 图片与文件右键上下文菜单原生汉化
+  sourceText = sourceText.replaceAll('label:"Copy File Path"', 'label:"复制文件路径"');
+  sourceText = sourceText.replaceAll('label:"Copy File Name"', 'label:"复制文件名"');
+  sourceText = sourceText.replaceAll('label:"Copy Image"', 'label:"复制图片"');
+  sourceText = sourceText.replaceAll('label:a==="video"?"Save Video":"Save Image"', 'label:a==="video"?"保存视频":"保存图片"');
+  sourceText = sourceText.replaceAll('id:"copy",label:"Copy"', 'id:"copy",label:"复制"');
+  sourceText = sourceText.replaceAll('label:"Add to Chat",accelerator:h==="Hub"', 'label:"添加到对话",accelerator:h==="Hub"');
   // 工作流状态汇总原生汉化（根治 running X commands 与半中半英状态）
   sourceText = sourceText.replace(
     'zX={files:["file","files"],folders:["folder","folders"],edits:["file","files"],searches:["search","searches"],terminal:["command","commands"],tasks:["task","tasks"],web:["page","pages"],browser:["browser","browsers"],images:["image","images"],actions:["action","actions"],artifacts:["artifact","artifacts"]}',

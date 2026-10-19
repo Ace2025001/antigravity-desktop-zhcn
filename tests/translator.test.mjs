@@ -1271,14 +1271,58 @@ test("account eligibility, regional availability, and authentication error strin
   }
 });
 
+test("image comments and context menu strings are covered", async () => {
+  const current = await loadDomTranslations();
+  const testCases = [
+    {
+      source: "Leave a comment",
+      expected: "写下评论",
+    },
+    {
+      source: "Add Comment",
+      expected: "添加评论",
+    },
+    {
+      source: "Edit comment",
+      expected: "编辑评论",
+    },
+    {
+      source: "Save Comment",
+      expected: "保存评论",
+    },
+    {
+      source: "Drag to select a region to comment",
+      expected: "拖动以选择要评论的区域",
+    },
+    {
+      source: "Copy Image",
+      expected: "复制图片",
+    },
+    {
+      source: "Save Image",
+      expected: "保存图片",
+    },
+    {
+      source: "Copy File Path",
+      expected: "复制文件路径",
+    },
+    {
+      source: "Copy File Name",
+      expected: "复制文件名",
+    },
+    {
+      source: "Add to Chat",
+      expected: "添加到对话",
+    },
+  ];
 
-
-
-
-
-
-
-
-
-
+  for (const { source, expected } of testCases) {
+    const translated = translateDictionaryValue(source, current);
+    assert.equal(
+      translated,
+      expected,
+      `image comment or context menu string mismatch for: ${source}`,
+    );
+  }
+});
 
