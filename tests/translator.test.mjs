@@ -545,7 +545,7 @@ test("third-party model access notice and notifications are covered by exact and
   const testCases = [
     { source: "Changes to third-party model access", expected: "第三方模型访问权限变更" },
     { source: "Third-party model access", expected: "第三方模型访问" },
-    { source: "Notice", expected: "提示" },
+    { source: "Notice", expected: null },
     {
       source: "Opus 5.5 and Sonnet 5.5 are available on paid Pro and Ultra plans. Third-party model access will no longer be available on your current plan starting on November 2, 2026.",
       expected: "Opus 5.5 与 Sonnet 5.5 仅适用于付费的 Pro 和 Ultra 方案。自 2026 年 11 月 2 日起，你当前的方案将不再支持第三方模型访问。"
@@ -905,12 +905,16 @@ test("Antigravity model subscriber availability tooltip strings and patterns are
       expected: "Gemini 4 Argon 现已面向付费 Pro 方案订阅者开放。作为 Pro 权益的一部分，我们在你现有的 Gemini（3.8 Flash）配额之外，额外推出了独立的仅限周额度的 Argon 配额。",
     },
     {
-      source: "Notice ⓘ",
-      expected: "提示 ⓘ",
+      source: "New",
+      expected: null,
     },
     {
       source: "Notice",
-      expected: "提示",
+      expected: null,
+    },
+    {
+      source: "Notice ⓘ",
+      expected: null,
     },
   ];
 
@@ -922,6 +926,14 @@ test("Antigravity model subscriber availability tooltip strings and patterns are
       `model subscriber availability translation mismatch for: ${source}`,
     );
   }
+
+  // 验证含原生换行符 \n 的 RFb 源码被准确替换并保留英文 a.tagTitle
+  const realMultilineRFb = 'var RFb=({option:a})=>{var b=OD();return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",null,a.tagTitle),A.createElement(X,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(jz,{id:b},A.createElement("div",{className:"max-w-[200px]"},a.tagDescription))):a.tagTitle?A.createElement("div",{className:"bg-secondary rounded-full px-1.5 text-xs"},\na.tagTitle):null};';
+  const localized = createLocalizedBundle(Buffer.from(realMultilineRFb, "utf8"), current);
+  const bundleOut = localized.buffer.toString("utf8");
+  assert.match(bundleOut, /"data-model-selector-badge":"true"/);
+  assert.doesNotMatch(bundleOut, /a\.tagTitle==="New"\?"新建"/);
+  assert.doesNotMatch(bundleOut, /a\.tagTitle==="Notice"\?"提示"/);
 });
 
 test("relative time strings including seconds, minutes, hours, days, weeks, months, years are fully covered", async () => {

@@ -110,6 +110,7 @@ export function createRuntimeOverlay(dictionary) {
     "[contenteditable='true']",
     "[data-lexical-editor='true']",
     ".monaco-editor",
+    "[data-model-selector-badge]",
     "[data-model-selector-list]",
     "[data-testid='model-selector-item']",
     "[data-testid='model-selector-effort-group']",
@@ -121,6 +122,7 @@ export function createRuntimeOverlay(dictionary) {
     "code",
     "pre",
     ".monaco-editor",
+    "[data-model-selector-badge]",
     "[data-model-selector-list]",
     "[data-testid='model-selector-item']"
   ].join(",");
@@ -428,15 +430,12 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('"aria-label":"Search for content to open"', '"aria-label":"搜索要打开的内容"');
   sourceText = sourceText.replaceAll('"Open File"', '"打开文件"');
   sourceText = sourceText.replaceAll('title:"Open File"', 'title:"打开文件"');
-  // 模型选择器标签徽章（提示、新建）与提示说明原生汉化
+  // 侧边栏与自定义面板新建按钮精准汉化（避免全局字典 New 词条误伤模型徽章）
+  sourceText = sourceText.replaceAll('A.createElement(X,{name:"add",size:16}),A.createElement("span",null,"New")', 'A.createElement(X,{name:"add",size:16}),A.createElement("span",null,"新建")');
+  // 模型选择器标签徽章（兼容原生换行符，保持英文 New 与 Notice 原样）与提示说明汉化
   sourceText = sourceText.replace(
-    'var RFb=({option:a})=>{var b=OD();return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",null,a.tagTitle),A.createElement(X,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(jz,{id:b},A.createElement("div",{className:"max-w-[200px]"},a.tagDescription))):a.tagTitle?A.createElement("div",{className:"bg-secondary rounded-full px-1.5 text-xs"},a.tagTitle):null};',
-    'var RFb=({option:a})=>{var b=OD(),tT=a.tagTitle==="Notice"?"提示":a.tagTitle==="New"?"新建":a.tagTitle,tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription;return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",null,tT),A.createElement(X,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(jz,{id:b},A.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?A.createElement("div",{className:"bg-secondary rounded-full px-1.5 text-xs"},tT):null};'
-  );
-  // 标记模型选择器选项列表容器，使其内部全部保持英文原样
-  sourceText = sourceText.replace(
-    'return z.createElement("div",{className:"relative flex flex-col flex-grow min-h-0"},',
-    'return z.createElement("div",{"data-model-selector-list":"true",className:"relative flex flex-col flex-grow min-h-0"},'
+    /var RFb=\(\{option:a\}\)=>\{var b=OD\(\);return a\.tagTitle&&a\.tagDescription\?A\.createElement\(A\.Fragment,null,A\.createElement\("div",\{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1\.5 text-xs"\},A\.createElement\("span",null,a\.tagTitle\),A\.createElement\(X,\{name:"info",className:"h-3 w-3 flex-none"\}\)\),A\.createElement\(jz,\{id:b\},A\.createElement\("div",\{className:"max-w-\[200px\]"\},a\.tagDescription\)\)\):a\.tagTitle\?A\.createElement\("div",\{className:"bg-secondary rounded-full px-1\.5 text-xs"\},\s*a\.tagTitle\):null\};/,
+    'var RFb=({option:a})=>{var b=OD(),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription;return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",{"data-model-selector-badge":"true"},a.tagTitle),A.createElement(X,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(jz,{id:b},A.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?A.createElement("div",{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-xs"},a.tagTitle):null};'
   );
   // 工作流状态汇总原生汉化（根治 running X commands 与半中半英状态）
   sourceText = sourceText.replace(
