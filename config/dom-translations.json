@@ -534,8 +534,8 @@
     "Configure GitHub access policies.": "配置 GitHub 访问策略。",
     "Configure MCP Server": "配置 MCP 服务器",
     "Configure agent execution, queued message delivery, and permissions.": "配置智能体执行、消息排队发送和权限。",
-    "Configure allowed and denied URLs for browser actuation.": "配置浏览器执行时允许和拒绝的 URL。",
-    "Configure allowed and denied URLs for reading.": "配置读取时允许和拒绝的 URL。",
+    "Configure allowed and denied URLs for browser actuation.": "配置浏览器执行时允许和拒绝的网址。",
+    "Configure allowed and denied URLs for reading.": "配置读取时允许和拒绝的网址。",
     "Configure allowed and denied paths for file reads and writes.": "配置文件读写时允许和拒绝的路径。",
     "Configure allowed commands outside the sandbox.": "配置沙箱外允许执行的命令。",
     "Configure allowed terminal commands.": "配置允许的终端命令。",
@@ -2774,7 +2774,8 @@
     "in these conversations": "在这些对话中",
     "in these conversations.": "在这些对话中。",
     "Also includes Global Permissions when working in these conversations.": "同时包含在这些对话中生效的全局权限。",
-    "Also includes Global Permissions when working in this project.": "同时包含在当前项目中生效的全局权限。"
+    "Also includes Global Permissions when working in this project.": "同时包含在当前项目中生效的全局权限。",
+    "Modified in": "修改于"
   },
   "patterns": [
     {
