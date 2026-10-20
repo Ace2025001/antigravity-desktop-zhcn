@@ -60,11 +60,7 @@
 
 ## 📸 效果预览 / Screenshots
 
-### 1. Antigravity 设置页面汉化效果
-![Antigravity 设置页面汉化效果](docs/images/antigravity-zhcn-settings.png)
-
-### 2. Antigravity 主界面汉化效果
-![Antigravity 主界面汉化效果](docs/images/antigravity-zhcn-main.png)
+![Antigravity 深度中文汉化效果示意图](docs/images/antigravity-zhcn-preview.png)
 
 ---
 
