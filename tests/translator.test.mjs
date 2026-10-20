@@ -343,6 +343,18 @@ test("system tray and native menu strings are covered by exact and pattern rules
     { source: "Check for Updates", expected: "检查更新" },
     { source: "1 agent running", expected: "1 个智能体正在运行" },
     { source: "3 agents running", expected: "3 个智能体正在运行" },
+    {
+      source: "when working in these conversations.",
+      expected: "在这些对话中生效。",
+    },
+    {
+      source: "when working in these conversations",
+      expected: "在这些对话中生效",
+    },
+    {
+      source: "Inherits your Global Permissions when working in these conversations.",
+      expected: "在这些对话中工作时继承你的全局权限。",
+    },
   ];
 
   for (const { source, expected } of testCases) {

@@ -461,6 +461,12 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('label:a==="video"?"Save Video":"Save Image"', 'label:a==="video"?"保存视频":"保存图片"');
   sourceText = sourceText.replaceAll('id:"copy",label:"Copy"', 'id:"copy",label:"复制"');
   sourceText = sourceText.replaceAll('label:"Add to Chat",accelerator:h==="Hub"', 'label:"添加到对话",accelerator:h==="Hub"');
+  // 对话本地权限与继承全局权限说明原生汉化
+  sourceText = sourceText.replace(
+    /A\.createElement\("span",\{onClick:Ea,\s*className:"text-link hover:underline cursor-pointer font-medium"\},"Global Permissions"\)," ","when working ",E,"\."/,
+    'A.createElement("span",{onClick:Ea,className:"text-link hover:underline cursor-pointer font-medium"},"全局权限"),"（在",E==="in these conversations"?"这些对话":"当前项目","中生效）。"'
+  );
+  sourceText = sourceText.replaceAll('ab==="use_global"?`Inherits your Global Permissions when working ${E}.`', 'ab==="use_global"?`在${E==="in these conversations"?"这些对话":"此项目"}中工作时继承你的全局权限。`');
   // 工作流状态汇总原生汉化（根治 running X commands 与半中半英状态）
   sourceText = sourceText.replace(
     'zX={files:["file","files"],folders:["folder","folders"],edits:["file","files"],searches:["search","searches"],terminal:["command","commands"],tasks:["task","tasks"],web:["page","pages"],browser:["browser","browsers"],images:["image","images"],actions:["action","actions"],artifacts:["artifact","artifacts"]}',
