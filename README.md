@@ -1,4 +1,4 @@
-# Antigravity 汉化补丁 (Antigravity Desktop 中文语言包)
+# 🇨🇳 Google Antigravity 桌面端全自动深度中文语言包
 ### Google Antigravity Desktop Chinese Localization Patch
 
 [![Release Version](https://img.shields.io/badge/Release-v2.0.0-blue.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)
@@ -35,7 +35,7 @@
 
 - **中文搜索**：`Antigravity 中文`、`Antigravity 汉化`、`Antigravity 汉化包`、`Google Antigravity 汉化`、`Antigravity 桌面版汉化补丁`、`Antigravity 中文语言包`、`Antigravity 自动汉化`
 - **English Keywords**: `Antigravity Chinese Localization`, `Antigravity Desktop zh-CN`, `Google Antigravity Chinese Patch`, `Antigravity i18n`, `Antigravity Hans`, `Antigravity Desktop Translation`
-- **GitHub Topics**: `antigravity`, `antigravity-desktop`, `antigravity-chinese`, `chinese-localization`, `zh-cn`, `electron-localization`, `i18n`, `desktop-app`, `windows`, `google-antigravity`
+- **GitHub Topics**: `antigravity`, `antigravity-desktop`, `antigravity-chinese`, `chinese-localization`, `zh-cn`, `electron-localization`, `i18n`, `desktop-app`, `windows`, `google-antigravity`, `antigravity-hanhua`, `hanhua`, `antigravity-cn`
 
 ---
 
