@@ -1,18 +1,26 @@
 # Antigravity 汉化补丁 (Antigravity Desktop 中文语言包)
 ### Google Antigravity Desktop Chinese Localization Patch
 
-[![Release Version](https://img.shields.io/badge/Release-v1.6.0-blue.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)
+[![Release Version](https://img.shields.io/badge/Release-v2.0.0-blue.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)
 [![Client Compatibility](https://img.shields.io/badge/Antigravity-2.2.1~2.23.1+-green.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn)
-[![Rules Count](https://img.shields.io/badge/Dictionary-2473%20Exact%20%2B%20380%20Patterns-orange.svg)](config/dom-translations.json)
-[![Automated Tests](https://img.shields.io/badge/Tests-77%20Passed-brightgreen.svg)](tests/)
+[![Rules Count](https://img.shields.io/badge/Dictionary-2763%20Exact%20%2B%201247%20Patterns-orange.svg)](config/dom-translations.json)
+[![Automated Tests](https://img.shields.io/badge/Tests-80%20Passed-brightgreen.svg)](tests/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-lightgrey.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn)
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
 专为 Windows 平台 Google Antigravity Desktop 打造的高性能、安全无损中文本地化增强补丁。
 
-**核心特性**：内置 **2473 条精确词条映射 + 380 条动态正则规则**，覆盖全界面、设置面板、系统托盘、原生右键菜单、智能体权限弹窗及交互提示。支持**客户端自动跟进更新**、**温和退出落盘保护**、**一键生成桌面快捷方式**与**百分百无损还原官方英文**。
+**核心特性**：内置 **2763 条精确词条映射 + 1247 条动态正则规则**，覆盖全界面、设置面板、系统托盘、原生右键菜单、智能体权限弹窗及交互提示。支持**客户端自动跟进更新**、**温和退出落盘保护**、**一键生成桌面快捷方式**与**百分百无损还原官方英文**。
 
-## 📢 v1.6.0 更新内容
+## 📢 v2.0.0 重大更新内容
+
+- **全量汉化图片批注与评论浮层**：深度汉化图片评论输入框（写下评论）、发表按钮（添加评论）、编辑状态（编辑评论 / 保存评论）以及区域选取引导提示（拖动以选择要评论的区域）；
+- **右键上下文菜单数据源级深度汉化**：在源码及数据层全面汉化图片与文件右键菜单（复制图片、保存图片/视频、复制文件路径、复制文件名、添加到对话）；
+- **词典与动态规则库大幅跃升**：精确词条扩充至 2,763 条，动态正则规则增至 1,247 条，自动化单元测试增至 80 项并保持 100% 绿标通过；
+- **消除状态半中半英残留**：深度汉化工作流任务执行与探索进度文案（如 正在运行 X 条命令、正在探索），彻底根除混合语言提示；
+- **继承全部高阶特性**：内置官方自动跟进更新引擎、温和退出与数据落盘保护、桌面快捷方式一键生成及无损还原机制。
+
+### 历史版本记录 (v1.6.0)
 
 - **适配官方最新 2.23.1 版本**：全面收录并实机验证 Antigravity Desktop `2.23.1`，支持自动跟进更新与完整指纹校验；
 - **全量汉化自定义与插件市场面板**：补齐 Google Workspace、Build with Google 等 17 个官方扩展的完整描述、展开更多按钮及各类空状态提示；
