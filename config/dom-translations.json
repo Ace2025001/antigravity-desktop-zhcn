@@ -2775,9 +2775,58 @@
     "in these conversations.": "在这些对话中。",
     "Also includes Global Permissions when working in these conversations.": "同时包含在这些对话中生效的全局权限。",
     "Also includes Global Permissions when working in this project.": "同时包含在当前项目中生效的全局权限。",
-    "Modified in": "修改于"
+    "Modified in": "修改于",
+    "Your current account is not eligible for Gemini Code Assist for individuals because it is not currently available in your location.": "你当前的账号暂无使用 Gemini Code Assist for individuals 的资格，因为该服务目前尚未在你所在的地区提供。",
+    "Your current account is not eligible for Gemini Code Assist for individuals because it is not currently available in your location": "你当前的账号暂无使用 Gemini Code Assist for individuals 的资格，因为该服务目前尚未在你所在的地区提供",
+    "Your current account is not eligible for Gemini Code Assist because it is not currently available in your location.": "你当前的账号暂无使用 Gemini Code Assist 的资格，因为该服务目前尚未在你所在的地区提供。",
+    "Your current account is not eligible for Gemini Code Assist because it is not currently available in your location": "你当前的账号暂无使用 Gemini Code Assist 的资格，因为该服务目前尚未在你所在的地区提供",
+    "Your current account is not eligible for Gemini Code Assist for individuals, because it is not currently available in your location.": "你当前的账号暂无使用 Gemini Code Assist for individuals 的资格，因为该服务目前尚未在你所在的地区提供。",
+    "Your current account is not eligible for Gemini Code Assist for individuals, because it is not currently available in your location": "你当前的账号暂无使用 Gemini Code Assist for individuals 的资格，因为该服务目前尚未在你所在的地区提供",
+    "because it is not currently available in your location.": "因为该服务目前尚未在你所在的地区提供。",
+    "because it is not currently available in your location": "因为该服务目前尚未在你所在的地区提供",
+    "not currently available in your location.": "目前尚未在你所在的地区提供。",
+    "not currently available in your location": "目前尚未在你所在的地区提供",
+    "not currently available in your country.": "目前尚未在你所在的国家/地区提供。",
+    "not currently available in your country": "目前尚未在你所在的国家/地区提供",
+    "not currently available in your region.": "目前尚未在你所在的地区提供。",
+    "not currently available in your region": "目前尚未在你所在的地区提供"
   },
   "patterns": [
+    {
+      "source": "^Your (?:current )?account is not eligible for (.+?)(?:,|，)?\\s+because it is not currently available in your (?:location|country|region|area)\\.?$",
+      "target": "你当前的账号暂无使用 $1 的资格，因为该服务目前尚未在你所在的地区提供。",
+      "flags": "u"
+    },
+    {
+      "source": "^(?:Sorry,\\s*)?[Tt]his account is (?:not eligible for|ineligible to use)\\s*(.+?)(?:,|，)?\\s+because it is not currently available in your (?:location|country|region|area)\\.?$",
+      "target": "抱歉，该账号暂无使用 $1 的权限，因为该服务目前尚未在你所在的地区提供。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)\\s+is not currently available in your (?:location|country|region|area)\\.?$",
+      "target": "$1 目前尚未在你所在的地区提供。",
+      "flags": "u"
+    },
+    {
+      "source": "^(?:,|，)?\\s*because it is not currently available in your (?:location|country|region|area)\\.?$",
+      "target": "，因为该服务目前尚未在你所在的地区提供。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)\\s+is not (?:currently )?supported in your (?:location|country|region|area)\\.?$",
+      "target": "你所在的地区暂不支持 $1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Your (?:current )?account is not eligible for (.+?)\\.?$",
+      "target": "你当前的账号暂无使用 $1 的资格。",
+      "flags": "u"
+    },
+    {
+      "source": "^(?:Sorry,\\s*)?[Tt]his account is ineligible to use\\s*(.+?)\\.?$",
+      "target": "抱歉，该账号暂无使用 $1 的权限。",
+      "flags": "u"
+    },
     {
       "source": "^There was a network issue connecting to the server, please try again\\.?$",
       "target": "连接服务器时出现网络问题，请重试。",
@@ -8981,21 +9030,6 @@
     {
       "source": "^As part of (.+?), we've rolled out a separate weekly-only (.+?) quota on top of your existing (.+?) quota for (.+?)\\.?$",
       "target": "作为 $1 权益的一部分，我们在你现有的 $3（$4）配额之外，额外推出了独立的仅限周额度的 $2 配额。",
-      "flags": "u"
-    },
-    {
-      "source": "^Sorry, this account is ineligible to use\\s*(.+?)\\.?$",
-      "target": "抱歉，该账号暂无使用 $1 的权限。",
-      "flags": "u"
-    },
-    {
-      "source": "^Your (?:current )?account is not eligible for (.+?), because it is not currently available in your (?:location|country|region)\\.?$",
-      "target": "你当前的账号暂无使用 $1 的资格，因为该服务目前尚未在你所在的地区提供。",
-      "flags": "u"
-    },
-    {
-      "source": "^Your (?:current )?account is not eligible for (.+?)\\.?$",
-      "target": "你当前的账号暂无使用 $1 的资格。",
       "flags": "u"
     },
     {

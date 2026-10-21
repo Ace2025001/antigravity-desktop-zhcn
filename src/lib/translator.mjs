@@ -448,6 +448,8 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('e=e?"Continue with different account":"Sign in again"', 'e=e?"使用其他账号继续":"重新登录"');
   sourceText = sourceText.replaceAll('"There was an unexpected issue setting up your account."', '"设置你的账号时发生了意外问题。"');
   sourceText = sourceText.replaceAll('a||"We apologize for the inconvenience. Please try again later."', 'a||"给您带来不便，我们深表歉意。请稍后再试。"');
+  sourceText = sourceText.replaceAll('"Continue with different account"', '"使用其他账号继续"');
+  sourceText = sourceText.replaceAll('"Having trouble signing in?"', '"登录遇到问题？"');
   // 图片查看器、批注与评论框原生汉化
   sourceText = sourceText.replaceAll('"Drag to select a region to comment"', '"拖动以选择要评论的区域"');
   sourceText = sourceText.replaceAll('placeholder:h="Leave a comment"', 'placeholder:h="写下评论"');
