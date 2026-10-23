@@ -471,6 +471,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('ab==="use_global"?`Inherits your Global Permissions when working ${E}.`', 'ab==="use_global"?`在${E==="in these conversations"?"这些对话":"此项目"}中工作时继承你的全局权限。`');
   // 设置项项目修改提示原生汉化
   sourceText = sourceText.replaceAll('"Modified in"," "', '"修改于 "," "');
+  // MCP 描述原生汉化
+  sourceText = sourceText.replaceAll('"Configure external tools via Model Context Protocol."', '"通过模型上下文协议 (MCP) 配置外部工具。"');
+  sourceText = sourceText.replaceAll('"External tools the agent can call via Model Context Protocol."', '"智能体可通过模型上下文协议 (MCP) 调用的外部工具。"');
   // 工作流状态汇总原生汉化（根治 running X commands 与半中半英状态）
   sourceText = sourceText.replace(
     'zX={files:["file","files"],folders:["folder","folders"],edits:["file","files"],searches:["search","searches"],terminal:["command","commands"],tasks:["task","tasks"],web:["page","pages"],browser:["browser","browsers"],images:["image","images"],actions:["action","actions"],artifacts:["artifact","artifacts"]}',

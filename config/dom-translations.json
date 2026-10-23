@@ -540,7 +540,7 @@
     "Configure allowed commands outside the sandbox.": "配置沙箱外允许执行的命令。",
     "Configure allowed terminal commands.": "配置允许的终端命令。",
     "Configure default behaviors, skills, and MCP servers.": "配置默认行为、技能与 MCP 服务器。",
-    "Configure external tools via Model Context Protocol.": "通过 Model Context Protocol 配置外部工具。",
+    "Configure external tools via Model Context Protocol.": "通过模型上下文协议 (MCP) 配置外部工具。",
     "Configure global allowed and denied resource permissions.": "配置全局允许与拒绝的资源权限。",
     "Configure hooks that run on agent lifecycle events.": "配置在智能体生命周期事件中触发的钩子。",
     "Configure settings for Best of N mode.": "配置 Best of N 模式的相关设置。",
@@ -920,7 +920,7 @@
     "Export conversation": "导出对话",
     "Export conversation as Markdown": "将对话导出为 Markdown",
     "Export conversation history and artifacts as Markdown.": "将对话历史和产物导出为 Markdown 文件。",
-    "External tools the agent can call via Model Context Protocol.": "智能体可通过 Model Context Protocol 调用的外部工具。",
+    "External tools the agent can call via Model Context Protocol.": "智能体可通过模型上下文协议 (MCP) 调用的外部工具。",
     "Failed": "失败",
     "Failed to Amend": "修改提交失败",
     "Failed to Commit": "提交失败",
@@ -2789,7 +2789,8 @@
     "not currently available in your country.": "目前尚未在你所在的国家/地区提供。",
     "not currently available in your country": "目前尚未在你所在的国家/地区提供",
     "not currently available in your region.": "目前尚未在你所在的地区提供。",
-    "not currently available in your region": "目前尚未在你所在的地区提供"
+    "not currently available in your region": "目前尚未在你所在的地区提供",
+    "Model Context Protocol": "模型上下文协议 (MCP)"
   },
   "patterns": [
     {
