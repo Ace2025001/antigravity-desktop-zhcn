@@ -2795,9 +2795,50 @@
     "Give feedback": "提供反馈",
     "give feedback": "提供反馈",
     "How to write and run a dynamic workflow script with the 'run_workflow' tool: a Python script that orchestrates many agents with 'agent', 'parallel', 'pipeline', and 'phase'. Use when a task splits in...": "如何使用 'run_workflow' 工具编写并运行动态工作流脚本：一个使用 'agent'、'parallel'、'pipeline' 和 'phase' 编排多个智能体的 Python 脚本。适用于任务可拆分为独立、并行或分阶段执行的多个子任务时，或大型复杂任务。",
-    "How to write and run a dynamic workflow script with the 'run_workflow' tool: a Python script that orchestrates many agents with 'agent', 'parallel', 'pipeline', and 'phase'. Use when a task splits into multiple distinct sub-tasks that can be executed independently, in parallel, or in stages, or when a task is large enough to benefit from an explicit multi-agent pipeline.": "如何使用 'run_workflow' 工具编写并运行动态工作流脚本：一个使用 'agent'、'parallel'、'pipeline' 和 'phase' 编排多个智能体的 Python 脚本。适用于任务可拆分为独立、并行或分阶段执行的多个子任务时，或大型复杂任务。"
+    "How to write and run a dynamic workflow script with the 'run_workflow' tool: a Python script that orchestrates many agents with 'agent', 'parallel', 'pipeline', and 'phase'. Use when a task splits into multiple distinct sub-tasks that can be executed independently, in parallel, or in stages, or when a task is large enough to benefit from an explicit multi-agent pipeline.": "如何使用 'run_workflow' 工具编写并运行动态工作流脚本：一个使用 'agent'、'parallel'、'pipeline' 和 'phase' 编排多个智能体的 Python 脚本。适用于任务可拆分为独立、并行或分阶段执行的多个子任务时，或大型复杂任务。",
+    "Antigravity Starter Quota": "Antigravity 入门版额度",
+    "Antigravity Pro Quota": "Antigravity 专业版额度",
+    "Antigravity Ultra Quota": "Antigravity 旗舰版额度",
+    "Antigravity Free Quota": "Antigravity 免费额度",
+    "Antigravity Basic Quota": "Antigravity 基础额度",
+    "Antigravity Enterprise Quota": "Antigravity 企业版额度",
+    "Starter Quota": "入门版额度",
+    "Pro Quota": "专业版额度",
+    "Ultra Quota": "旗舰版额度",
+    "Free Quota": "免费额度",
+    "Google AI Plus users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.": "Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。",
+    "Google AI Plus users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits": "Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制",
+    "Google AI Pro users receive higher base limits on Antigravity. You can upgrade to Google AI Ultra to receive the highest rate limits.": "Google AI Pro 用户在 Antigravity 上享有更高基础限制。你可以升级到 Google AI Ultra 以获取最高额度限制。",
+    "Google AI Pro users receive higher base limits on Antigravity. You can upgrade to Google AI Ultra to receive the highest rate limits": "Google AI Pro 用户在 Antigravity 上享有更高基础限制。你可以升级到 Google AI Ultra 以获取最高额度限制",
+    "Google AI Ultra users receive the highest base limits on Antigravity.": "Google AI Ultra 用户在 Antigravity 上享有最高基础限制额度。",
+    "Google AI Ultra users receive the highest base limits on Antigravity": "Google AI Ultra 用户在 Antigravity 上享有最高基础限制额度"
   },
   "patterns": [
+    {
+      "source": "^Antigravity (Starter|Pro|Ultra|Free|Basic|Enterprise) Quota$",
+      "target": "Antigravity $1 额度",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)\\s+users receive the highest base limits on Antigravity\\.?$",
+      "target": "$1 用户在 Antigravity 上享有最高基础限制额度。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)\\s+users receive higher base limits on Antigravity\\.\\s*You can upgrade to\\s+(.+?)\\s+(?:to receive|for)\\s+(?:the )?highest rate limits\\.?$",
+      "target": "$1 用户在 Antigravity 上享有更高基础限制。你可以升级到 $2 以获取最高额度限制。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)\\s+users receive the minimum base limits on Antigravity\\.\\s*You can upgrade to\\s+(.+?)\\s+to receive higher rate limits\\.?$",
+      "target": "$1 用户在 Antigravity 上享有最低基础限制。你可以升级到 $2 以获取更高额度限制。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)\\s+users receive the minimum base limits on Antigravity\\.\\s*You can upgrade to\\s+(.+?)\\s+or above to receive higher rate limits\\.?$",
+      "target": "$1 用户在 Antigravity 上享有最低基础限制。你可以升级到 $2 或更高方案以获取更高额度限制。",
+      "flags": "u"
+    },
     {
       "source": "^Your (?:current )?account is not eligible for (.+?)(?:,|，)?\\s+because it is not currently available in your (?:location|country|region|area)\\.?$",
       "target": "你当前的账号暂无使用 $1 的资格，因为该服务目前尚未在你所在的地区提供。",
