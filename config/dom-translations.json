@@ -2790,7 +2790,12 @@
     "not currently available in your country": "目前尚未在你所在的国家/地区提供",
     "not currently available in your region.": "目前尚未在你所在的地区提供。",
     "not currently available in your region": "目前尚未在你所在的地区提供",
-    "Model Context Protocol": "模型上下文协议 (MCP)"
+    "Model Context Protocol": "模型上下文协议 (MCP)",
+    "Give Feedback": "提供反馈",
+    "Give feedback": "提供反馈",
+    "give feedback": "提供反馈",
+    "How to write and run a dynamic workflow script with the 'run_workflow' tool: a Python script that orchestrates many agents with 'agent', 'parallel', 'pipeline', and 'phase'. Use when a task splits in...": "如何使用 'run_workflow' 工具编写并运行动态工作流脚本：一个使用 'agent'、'parallel'、'pipeline' 和 'phase' 编排多个智能体的 Python 脚本。适用于任务可拆分为独立、并行或分阶段执行的多个子任务时，或大型复杂任务。",
+    "How to write and run a dynamic workflow script with the 'run_workflow' tool: a Python script that orchestrates many agents with 'agent', 'parallel', 'pipeline', and 'phase'. Use when a task splits into multiple distinct sub-tasks that can be executed independently, in parallel, or in stages, or when a task is large enough to benefit from an explicit multi-agent pipeline.": "如何使用 'run_workflow' 工具编写并运行动态工作流脚本：一个使用 'agent'、'parallel'、'pipeline' 和 'phase' 编排多个智能体的 Python 脚本。适用于任务可拆分为独立、并行或分阶段执行的多个子任务时，或大型复杂任务。"
   },
   "patterns": [
     {

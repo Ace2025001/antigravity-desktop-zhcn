@@ -474,6 +474,8 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   // MCP 描述原生汉化
   sourceText = sourceText.replaceAll('"Configure external tools via Model Context Protocol."', '"通过模型上下文协议 (MCP) 配置外部工具。"');
   sourceText = sourceText.replaceAll('"External tools the agent can call via Model Context Protocol."', '"智能体可通过模型上下文协议 (MCP) 调用的外部工具。"');
+  // 设置侧边栏反馈按钮原生汉化
+  sourceText = sourceText.replace('["Provide Feedback","Give Feedback"]', '["Provide Feedback","提供反馈"]');
   // 工作流状态汇总原生汉化（根治 running X commands 与半中半英状态）
   sourceText = sourceText.replace(
     'zX={files:["file","files"],folders:["folder","folders"],edits:["file","files"],searches:["search","searches"],terminal:["command","commands"],tasks:["task","tasks"],web:["page","pages"],browser:["browser","browsers"],images:["image","images"],actions:["action","actions"],artifacts:["artifact","artifacts"]}',
