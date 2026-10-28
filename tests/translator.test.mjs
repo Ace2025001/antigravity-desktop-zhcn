@@ -1338,3 +1338,39 @@ test("image comments and context menu strings are covered", async () => {
   }
 });
 
+test("translator localizes context menu, notifications, extensions and model quotas", async () => {
+  const current = await loadDomTranslations();
+
+  const testCases = [
+    { source: "Folder", expected: "文件夹" },
+    { source: "Folders", expected: "文件夹" },
+    { source: "folder", expected: "文件夹" },
+    { source: "Show system notifications when your action is needed or the agent finishes.", expected: "当需要你操作或智能体完成时显示系统通知。" },
+    { source: "Play a sound when your action is needed or the agent finishes.", expected: "当需要你操作或智能体完成时播放提示音。" },
+    { source: "Set the volume of agent sounds.", expected: "设置智能体提示音音量。" },
+    { source: "Controls whether the agent can run custom JavaScript to automate complex browser actions.", expected: "控制智能体是否可以运行自定义 JavaScript 来自动执行复杂的浏览器操作。" },
+    { source: "No extensions available", expected: "暂无可用扩展" },
+    { source: "Extensions", expected: "扩展" },
+    { source: "Replace with New", expected: "替换为新建" },
+    { source: "Search tabs, files, extensions, subagents, artifacts, tasks...", expected: "搜索标签页、文件、扩展、子智能体、工件、任务..." },
+    { source: "Quote", expected: "引用" },
+    { source: "Quote Selection", expected: "引用所选内容" },
+    { source: "Weekly limit", expected: "周限额" },
+    { source: "Daily limit", expected: "日限额" },
+    { source: "5h limit", expected: "5小时限额" },
+    
+    { source: "Unavailable", expected: "不可用" },
+    { source: "98% left", expected: "剩余 98%" },
+    { source: "100% left", expected: "剩余 100%" }
+  ];
+
+  for (const { source, expected } of testCases) {
+    const translated = translateDictionaryValue(source, current);
+    assert.equal(
+      translated,
+      expected,
+      `mismatch for: ${source}`
+    );
+  }
+});
+

@@ -465,10 +465,28 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('label:"Add to Chat",accelerator:h==="Hub"', 'label:"添加到对话",accelerator:h==="Hub"');
   // 对话本地权限与继承全局权限说明原生汉化
   sourceText = sourceText.replace(
-    /A\.createElement\("span",\{onClick:Ea,\s*className:"text-link hover:underline cursor-pointer font-medium"\},"Global Permissions"\)," ","when working ",E,"\."/,
-    'A.createElement("span",{onClick:Ea,className:"text-link hover:underline cursor-pointer font-medium"},"全局权限"),"（在",E==="in these conversations"?"这些对话":"当前项目","中生效）。"'
+    /A\.createElement\("span",\{onClick:([a-zA-Z0-9_$]+),\s*className:"text-link hover:underline cursor-pointer font-medium"\},"Global Permissions"\)," ","when working ",([a-zA-Z0-9_$]+),"\."/,
+    (match, pClick, pVar) => `A.createElement("span",{onClick:${pClick},className:"text-link hover:underline cursor-pointer font-medium"},"全局权限"),"（在",${pVar}==="in these conversations"?"这些对话":"当前项目","中生效）。"`
   );
-  sourceText = sourceText.replaceAll('ab==="use_global"?`Inherits your Global Permissions when working ${E}.`', 'ab==="use_global"?`在${E==="in these conversations"?"这些对话":"此项目"}中工作时继承你的全局权限。`');
+  sourceText = sourceText.replaceAll(
+    /([a-zA-Z0-9_$]+)==="use_global"\?`Inherits your Global Permissions when working \$\{([a-zA-Z0-9_$]+)\}\.`/g,
+    '$1==="use_global"?`在${$2==="in these conversations"?"这些对话":"此项目"}中工作时继承你的全局权限。`'
+  );
+  // 扩展栏、面板拆分与搜索框占位符原生汉化
+  sourceText = sourceText.replaceAll('"No extensions available"', '"暂无可用扩展"');
+  sourceText = sourceText.replaceAll('title:"Extensions"', 'title:"扩展"');
+  sourceText = sourceText.replaceAll('{label:"Replace with New",onClick:', '{label:"替换为新建",onClick:');
+  sourceText = sourceText.replaceAll('placeholder:"Search tabs, files, extensions, subagents, artifacts, tasks..."', 'placeholder:"搜索标签页、文件、扩展、子智能体、工件、任务..."');
+  sourceText = sourceText.replaceAll('A.createElement("span",{className:"text-xs"},"Quote")', 'A.createElement("span",{className:"text-xs"},"引用")');
+  sourceText = sourceText.replaceAll('label:"Quote Selection"', 'label:"引用所选内容"');
+
+  // 模型配额与剩余比例原生汉化
+  sourceText = sourceText.replace(
+    /const sma=\{daily:"Daily limit",weekly:"Weekly limit"\};function Tk\(a\)\{var b=a\.window\.trim\(\)\.toLowerCase\(\);return sma\[b\]\?sma\[b\]:\/\^\\d\+\[smhd\]\$\/.test\(b\)\?`\$\{b\} limit`:a\.displayName\}/,
+    'const sma={daily:"日限额",weekly:"周限额"};function Tk(a){var b=a.window.trim().toLowerCase();return sma[b]?sma[b]:/^\\d+[smhd]$/.test(b)?`${b.replace("h","小时").replace("d","天").replace("m","分钟")}限额`:a.displayName}'
+  );
+  sourceText = sourceText.replaceAll(',"% left")', '," 剩余")');
+
   // 设置项项目修改提示原生汉化
   sourceText = sourceText.replaceAll('"Modified in"," "', '"修改于 "," "');
   // MCP 描述原生汉化
