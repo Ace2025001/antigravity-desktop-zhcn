@@ -2428,7 +2428,7 @@
     "Untracked (Unstaged)": "未跟踪（未暂存）",
     "Update": "更新",
     "Update Anyway": "仍要更新",
-    "Update Available": "发现新版本",
+    "Update Available": "有可用更新",
     "Update Downloaded": "更新已下载",
     "Update Error": "更新失败",
     "Update Failed": "更新失败",
@@ -2470,7 +2470,7 @@
     "Use this form if you cannot connect to Remote Control. If your instance is already connected and you are experiencing issues in the browser, report directly from the Remote Control web page so that relevant logs are included. Some helpful information includes:": "如果你无法连接到远程控制，请使用此表单。如果你的实例已连接但在浏览器中遇到问题，请直接从远程控制网页中报告，以便包含相关日志。一些有帮助的信息包括：",
     "Used MCP tool": "已使用 MCP 工具",
     "Used MCP tool:": "已使用 MCP 工具：",
-    "Used tool": "已调用工具",
+    "Used tool": "已使用工具",
     "Used tool:": "已使用工具：",
     "Useful for tasks that require file access across your full machine. The agent has full read and write access to all local files, but all proposed terminal commands require manual review and approval before running.": "适用于需要跨整台设备访问文件的任务。智能体对所有本地文件拥有完全读写权限，但所有拟执行的终端命令在运行前均需人工评审与批准。",
     "Useful for typical development with an emphasis on security. It prioritizes safety over speed by requiring manual approval for all terminal commands and files outside the project directory.": "适用于注重安全性的常规开发场景。它通过要求对项目目录外的所有终端命令和文件进行手动批准，将安全性置于执行速度之上。",
@@ -2840,9 +2840,188 @@
     "5h limit": "5小时限额",
     "% left": "% 剩余",
     "Unavailable": "不可用",
-    "unavailable": "不可用"
+    "unavailable": "不可用",
+    "Downloading Update": "正在下载更新",
+    "downloading update": "正在下载更新",
+    "Downloading update...": "正在下载更新...",
+    "Install Update": "安装更新",
+    "install update": "安装更新",
+    "Installing Update": "正在安装更新",
+    "installing update": "正在安装更新",
+    "Installing Update...": "正在安装更新...",
+    "installing update...": "正在安装更新...",
+    "update available": "有可用更新",
+    "restart to update": "重启以更新",
+    "Thinking Process": "思考过程",
+    "Thinking process": "思考过程",
+    "Thought process": "思考过程",
+    "Thinking time": "思考耗时",
+    "Thinking Time": "思考耗时",
+    "Error while editing": "编辑时出错",
+    "Error editing file": "编辑文件出错",
+    "Error while viewing": "查看时出错",
+    "Error viewing file": "查看文件出错",
+    "Error while editing notebook": "编辑 Notebook 时出错",
+    "Error editing notebook": "编辑 Notebook 出错",
+    "Error while reading notebook": "读取 Notebook 时出错",
+    "Error reading notebook": "读取 Notebook 出错"
   },
   "patterns": [
+    {
+      "source": "^Thinking for\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m\\s*(\\d+)\\s*s$",
+      "target": "思考耗时 $1 小时 $2 分钟 $3 秒",
+      "flags": "u"
+    },
+    {
+      "source": "^Thought for\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m\\s*(\\d+)\\s*s$",
+      "target": "思考耗时 $1 小时 $2 分钟 $3 秒",
+      "flags": "u"
+    },
+    {
+      "source": "^Thinking for\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m$",
+      "target": "思考耗时 $1 小时 $2 分钟",
+      "flags": "u"
+    },
+    {
+      "source": "^Thought for\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m$",
+      "target": "思考耗时 $1 小时 $2 分钟",
+      "flags": "u"
+    },
+    {
+      "source": "^Thinking for\\s+(\\d+)\\s*m\\s*(\\d+)\\s*s$",
+      "target": "思考耗时 $1 分钟 $2 秒",
+      "flags": "u"
+    },
+    {
+      "source": "^Thought for\\s+(\\d+)\\s*m\\s*(\\d+)\\s*s$",
+      "target": "思考耗时 $1 分钟 $2 秒",
+      "flags": "u"
+    },
+    {
+      "source": "^Thinking for\\s+(\\d+(?:\\.\\d+)?)\\s*s$",
+      "target": "思考耗时 $1 秒",
+      "flags": "u"
+    },
+    {
+      "source": "^Thought for\\s+(\\d+(?:\\.\\d+)?)\\s*s$",
+      "target": "思考耗时 $1 秒",
+      "flags": "u"
+    },
+    {
+      "source": "^Thinking for\\s+(\\d+)\\s*m$",
+      "target": "思考耗时 $1 分钟",
+      "flags": "u"
+    },
+    {
+      "source": "^Thought for\\s+(\\d+)\\s*m$",
+      "target": "思考耗时 $1 分钟",
+      "flags": "u"
+    },
+    {
+      "source": "^Thinking for\\s+(\\d+)\\s*h$",
+      "target": "思考耗时 $1 小时",
+      "flags": "u"
+    },
+    {
+      "source": "^Thought for\\s+(\\d+)\\s*h$",
+      "target": "思考耗时 $1 小时",
+      "flags": "u"
+    },
+    {
+      "source": "^Worked for\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m\\s*(\\d+)\\s*s$",
+      "target": "工作耗时 $1 小时 $2 分钟 $3 秒",
+      "flags": "u"
+    },
+    {
+      "source": "^Worked for\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m$",
+      "target": "工作耗时 $1 小时 $2 分钟",
+      "flags": "u"
+    },
+    {
+      "source": "^Worked for\\s+(\\d+)\\s*m\\s*(\\d+)\\s*s$",
+      "target": "工作耗时 $1 分钟 $2 秒",
+      "flags": "u"
+    },
+    {
+      "source": "^Worked for\\s+(\\d+(?:\\.\\d+)?)\\s*s$",
+      "target": "工作耗时 $1 秒",
+      "flags": "u"
+    },
+    {
+      "source": "^Worked for\\s+(\\d+)\\s*m$",
+      "target": "工作耗时 $1 分钟",
+      "flags": "u"
+    },
+    {
+      "source": "^Worked for\\s+(\\d+)\\s*h$",
+      "target": "工作耗时 $1 小时",
+      "flags": "u"
+    },
+    {
+      "source": "^Worked for\\s+(\\d+)\\s*ms$",
+      "target": "工作耗时 $1 毫秒",
+      "flags": "u"
+    },
+    {
+      "source": "^Stopped after\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m\\s*(\\d+)\\s*s$",
+      "target": "耗时 $1 小时 $2 分钟 $3 秒后停止",
+      "flags": "u"
+    },
+    {
+      "source": "^Stopped after\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m$",
+      "target": "耗时 $1 小时 $2 分钟后停止",
+      "flags": "u"
+    },
+    {
+      "source": "^Stopped after\\s+(\\d+)\\s*m\\s*(\\d+)\\s*s$",
+      "target": "耗时 $1 分钟 $2 秒后停止",
+      "flags": "u"
+    },
+    {
+      "source": "^Stopped after\\s+(\\d+(?:\\.\\d+)?)\\s*s$",
+      "target": "耗时 $1 秒后停止",
+      "flags": "u"
+    },
+    {
+      "source": "^Stopped after\\s+(\\d+)\\s*m$",
+      "target": "耗时 $1 分钟后停止",
+      "flags": "u"
+    },
+    {
+      "source": "^Stopped after\\s+(\\d+)\\s*h$",
+      "target": "耗时 $1 小时后停止",
+      "flags": "u"
+    },
+    {
+      "source": "^Exited with code (-?\\d+)\\.?$",
+      "target": "已退出，代码：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Thinking for\\s+(.+)$",
+      "target": "思考耗时 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Thought for\\s+(.+)$",
+      "target": "思考耗时 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Worked for\\s+(.+)$",
+      "target": "工作耗时 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Working for\\s+(.+)$",
+      "target": "已工作 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Stopped after\\s+(.+)$",
+      "target": "停止前已运行 $1",
+      "flags": "u"
+    },
     {
       "source": "^(\\d+)m limit$",
       "target": "$1分钟限额",
@@ -3061,101 +3240,6 @@
     {
       "source": "^Run command:\\s*(.+)$",
       "target": "已运行命令：$1",
-      "flags": "u"
-    },
-    {
-      "source": "^Thinking for\\s+(.+)$",
-      "target": "思考耗时 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^Thought for\\s+(.+)$",
-      "target": "思考耗时 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^Thought for\\s+(\\d+)\\s*s$",
-      "target": "思考耗时 $1 秒",
-      "flags": "u"
-    },
-    {
-      "source": "^Thought for\\s+(\\d+)\\s*m\\s*(\\d+)\\s*s$",
-      "target": "思考耗时 $1 分钟 $2 秒",
-      "flags": "u"
-    },
-    {
-      "source": "^Working for\\s+(.+)$",
-      "target": "已工作 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^Stopped after\\s+(\\d+)\\s*s$",
-      "target": "耗时 $1 秒后停止",
-      "flags": "u"
-    },
-    {
-      "source": "^Stopped after\\s+(\\d+)\\s*m$",
-      "target": "耗时 $1 分钟后停止",
-      "flags": "u"
-    },
-    {
-      "source": "^Stopped after\\s+(\\d+)\\s*h$",
-      "target": "耗时 $1 小时后停止",
-      "flags": "u"
-    },
-    {
-      "source": "^Stopped after\\s+(\\d+)\\s*m\\s*(\\d+)\\s*s$",
-      "target": "耗时 $1 分钟 $2 秒后停止",
-      "flags": "u"
-    },
-    {
-      "source": "^Stopped after\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m$",
-      "target": "耗时 $1 小时 $2 分钟后停止",
-      "flags": "u"
-    },
-    {
-      "source": "^Stopped after\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m\\s*(\\d+)\\s*s$",
-      "target": "耗时 $1 小时 $2 分钟 $3 秒后停止",
-      "flags": "u"
-    },
-    {
-      "source": "^Worked for\\s+(.+)$",
-      "target": "工作耗时 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^Worked for\\s+(\\d+)\\s*ms$",
-      "target": "工作耗时 $1 毫秒",
-      "flags": "u"
-    },
-    {
-      "source": "^Worked for\\s+(\\d+)\\s*s$",
-      "target": "工作耗时 $1 秒",
-      "flags": "u"
-    },
-    {
-      "source": "^Worked for\\s+(\\d+)\\s*m$",
-      "target": "工作耗时 $1 分钟",
-      "flags": "u"
-    },
-    {
-      "source": "^Worked for\\s+(\\d+)\\s*h$",
-      "target": "工作耗时 $1 小时",
-      "flags": "u"
-    },
-    {
-      "source": "^Worked for\\s+(\\d+)\\s*m\\s*(\\d+)\\s*s$",
-      "target": "工作耗时 $1 分钟 $2 秒",
-      "flags": "u"
-    },
-    {
-      "source": "^Worked for\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m$",
-      "target": "工作耗时 $1 小时 $2 分钟",
-      "flags": "u"
-    },
-    {
-      "source": "^Worked for\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m\\s*(\\d+)\\s*s$",
-      "target": "工作耗时 $1 小时 $2 分钟 $3 秒",
       "flags": "u"
     },
     {
@@ -3401,11 +3485,6 @@
     {
       "source": "^Select project, current: (.+)$",
       "target": "选择项目，当前：$1",
-      "flags": "u"
-    },
-    {
-      "source": "^Worked for ([0-9]+)s$",
-      "target": "工作耗时 $1 秒",
       "flags": "u"
     },
     {
@@ -3764,16 +3843,6 @@
       "flags": "u"
     },
     {
-      "source": "^Thought for\\s+(\\d+(?:\\.\\d+)?)s$",
-      "target": "思考耗时 $1 秒",
-      "flags": "u"
-    },
-    {
-      "source": "^Thinking for\\s+(\\d+(?:\\.\\d+)?)s$",
-      "target": "已思考 $1 秒",
-      "flags": "u"
-    },
-    {
       "source": "^Exploring\\s+(\\d+)\\s+files?,\\s*running\\s+(\\d+)\\s+commands?$",
       "target": "正在探索 $1 个文件，正在运行 $2 条命令",
       "flags": "u"
@@ -3996,11 +4065,6 @@
     {
       "source": "^Executing task:\\s*(.+)$",
       "target": "正在执行任务：$1",
-      "flags": "u"
-    },
-    {
-      "source": "^Stopped after\\s+(.+)$",
-      "target": "停止前已运行 $1",
       "flags": "u"
     },
     {

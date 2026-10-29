@@ -1342,6 +1342,18 @@ test("translator localizes context menu, notifications, extensions and model quo
   const current = await loadDomTranslations();
 
   const testCases = [
+        { source: "Downloading Update", expected: "正在下载更新" },
+    { source: "Install Update", expected: "安装更新" },
+    { source: "Installing Update", expected: "正在安装更新" },
+    { source: "Update Available", expected: "有可用更新" },
+    { source: "Restart to Update", expected: "重启以更新" },
+        { source: "Thinking for 9s", expected: "思考耗时 9 秒" },
+    { source: "Thought for 12s", expected: "思考耗时 12 秒" },
+    
+    { source: "Thinking for 1m 20s", expected: "思考耗时 1 分钟 20 秒" },
+    { source: "Worked for 15s", expected: "工作耗时 15 秒" },
+    { source: "Stopped after 30s", expected: "耗时 30 秒后停止" },
+    { source: "Exited with code 1", expected: "已退出，代码：1" },
     { source: "Folder", expected: "文件夹" },
     { source: "Folders", expected: "文件夹" },
     { source: "folder", expected: "文件夹" },

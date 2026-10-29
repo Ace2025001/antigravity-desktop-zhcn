@@ -472,6 +472,30 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     /([a-zA-Z0-9_$]+)==="use_global"\?`Inherits your Global Permissions when working \$\{([a-zA-Z0-9_$]+)\}\.`/g,
     '$1==="use_global"?`在${$2==="in these conversations"?"这些对话":"此项目"}中工作时继承你的全局权限。`'
   );
+  // 思考耗时底层模板字符串原生汉化
+  sourceText = sourceText.replaceAll('c>=0?`Thinking for ${Math.max(1,c)}s`:"Thinking"', 'c>=0?`思考耗时 ${Math.max(1,c)} 秒`:"思考中"');
+  sourceText = sourceText.replaceAll('b?`Thought for ${Math.max(1,Number(b.seconds))}s`:"Thought Process"', 'b?`思考耗时 ${Math.max(1,Number(b.seconds))} 秒`:"思考过程"');
+  sourceText = sourceText.replaceAll('?`Thought for ${Math.max(1,Number(H.seconds))}s`:"Thought Process"', '?`思考耗时 ${Math.max(1,Number(H.seconds))} 秒`:"思考过程"');
+  sourceText = sourceText.replaceAll('`Exited with code ${L.exitCode}.`', '`已退出，退出码：${L.exitCode}。`');
+
+  // 步骤错误提示原生汉化
+  sourceText = sourceText.replaceAll('"Error while editing"', '"编辑时出错"');
+  sourceText = sourceText.replaceAll('"Error editing file"', '"编辑文件出错"');
+  sourceText = sourceText.replaceAll('"Error while viewing"', '"查看时出错"');
+  sourceText = sourceText.replaceAll('"Error viewing file"', '"查看文件出错"');
+  sourceText = sourceText.replaceAll('"Error while editing notebook"', '"编辑 Notebook 时出错"');
+  sourceText = sourceText.replaceAll('"Error editing notebook"', '"编辑 Notebook 出错"');
+  sourceText = sourceText.replaceAll('"Error while reading notebook"', '"读取 Notebook 时出错"');
+  sourceText = sourceText.replaceAll('"Error reading notebook"', '"读取 Notebook 出错"');
+  sourceText = sourceText.replaceAll('`Used tool: ${a}`', '`已使用工具：${a}`');
+  sourceText = sourceText.replaceAll('"Used tool"', '"已使用工具"');
+
+  // 客户端更新状态指示器原生汉化
+  sourceText = sourceText.replace(
+    'case "available for download":return"Update Available";case "downloading":return"Downloading Update";case "downloaded":return"Install Update";case "updating":return"Installing Update";case "ready":return"Restart to Update"',
+    'case "available for download":return"有可用更新";case "downloading":return"正在下载更新";case "downloaded":return"安装更新";case "updating":return"正在安装更新";case "ready":return"重启以更新"'
+  );
+
   // 扩展栏、面板拆分与搜索框占位符原生汉化
   sourceText = sourceText.replaceAll('"No extensions available"', '"暂无可用扩展"');
   sourceText = sourceText.replaceAll('title:"Extensions"', 'title:"扩展"');
