@@ -1382,7 +1382,18 @@ test("translator localizes context menu, notifications, extensions and model quo
     { source: "menu).", expected: "菜单）。" },
     { source: "Conversation History", expected: "对话历史" },
     { source: "This page is going away soon", expected: "此页面即将下线" },
-    { source: "Conversation Archived", expected: "对话已归档" }
+    { source: "Conversation Archived", expected: "对话已归档" },
+    { source: "Built-in Browser", expected: "内置浏览器" },
+    { source: "External Browser", expected: "外部浏览器" },
+    { source: "Open Links In", expected: "打开链接方式" },
+    { source: "Choose where links open by default when clicked.", expected: "选择点击链接时默认打开的位置。" },
+    { source: "Configure link opening and built-in browser preferences.", expected: "配置链接打开方式与内置浏览器偏好。" },
+    { source: "Browser Subagent", expected: "浏览器子智能体" },
+    { source: "Search shortcuts...", expected: "搜索快捷键..." },
+    { source: "Reopen Closed Tab", expected: "重新打开关闭的标签页" },
+    { source: "Move Conversation Up", expected: "上移对话" },
+    { source: "Move Conversation Down", expected: "下移对话" },
+    { source: "Toggle Maximize Auxiliary Pane", expected: "切换最大化辅助面板" }
   ];
 
   for (const { source, expected } of testCases) {

@@ -502,6 +502,31 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('message:"View archived in the sidebar (![filter](icon://filter_list) menu)."', 'message:"在侧边栏中查看已归档内容 (![filter](icon://filter_list) 菜单)。"');
   sourceText = sourceText.replaceAll('plainTextFallback:"View archived in the sidebar (Display options menu)."', 'plainTextFallback:"在侧边栏中查看已归档内容（显示选项菜单）。"');
 
+  // 内置浏览器与打开链接选项原生汉化
+  sourceText = sourceText.replaceAll('c=b?"Side Panel":"Built-in Browser"', 'c=b?"侧边栏面板":"内置浏览器"');
+  sourceText = sourceText.replaceAll('d=b?"New Tab":"External Browser"', 'd=b?"新标签页":"外部浏览器"');
+  sourceText = sourceText.replaceAll('label:"Open Links In"', 'label:"打开链接方式"');
+  sourceText = sourceText.replaceAll('description:"Choose where links open by default when clicked."', 'description:"选择点击链接时默认打开的位置。"');
+  sourceText = sourceText.replaceAll('"Configure link opening and built-in browser preferences."', '"配置链接打开方式与内置浏览器偏好。"');
+  sourceText = sourceText.replaceAll('"Built-in Browser"', '"内置浏览器"');
+  sourceText = sourceText.replaceAll('"External Browser"', '"外部浏览器"');
+  sourceText = sourceText.replaceAll('"Open in Built-in Browser"', '"在内置浏览器中打开"');
+  sourceText = sourceText.replaceAll('"Open in External Browser"', '"在外部浏览器中打开"');
+  sourceText = sourceText.replaceAll('"Open Link in External Browser"', '"在外部浏览器中打开链接"');
+
+  // 快捷键列表与搜索占位符原生汉化
+  sourceText = sourceText.replaceAll('placeholder:"Search shortcuts..."', 'placeholder:"搜索快捷键..."');
+  sourceText = sourceText.replaceAll('label:"Reopen Closed Tab"', 'label:"重新打开关闭的标签页"');
+  sourceText = sourceText.replaceAll('label:"Move Conversation Up"', 'label:"上移对话"');
+  sourceText = sourceText.replaceAll('label:"Move Conversation Down"', 'label:"下移对话"');
+  sourceText = sourceText.replaceAll('label:"Toggle Maximize Auxiliary Pane"', 'label:"切换最大化辅助面板"');
+  sourceText = sourceText.replaceAll('label:"Toggle Auxiliary Pane"', 'label:"切换辅助面板"');
+  sourceText = sourceText.replaceAll('label:"Toggle Overview Panel"', 'label:"切换总览面板"');
+  sourceText = sourceText.replaceAll('label:"Select Previous Conversation"', 'label:"选择上一个对话"');
+  sourceText = sourceText.replaceAll('label:"Select Next Conversation"', 'label:"选择下一个对话"');
+  sourceText = sourceText.replaceAll('label:"Open Keyboard Shortcuts"', 'label:"打开键盘快捷键"');
+  sourceText = sourceText.replaceAll('label:"Open Commit Graph"', 'label:"打开提交关系图"');
+
   // 客户端更新状态指示器原生汉化
   sourceText = sourceText.replace(
     'case "available for download":return"Update Available";case "downloading":return"Downloading Update";case "downloaded":return"Install Update";case "updating":return"Installing Update";case "ready":return"Restart to Update"',
