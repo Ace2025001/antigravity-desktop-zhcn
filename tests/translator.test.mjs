@@ -1373,7 +1373,16 @@ test("translator localizes context menu, notifications, extensions and model quo
     
     { source: "Unavailable", expected: "不可用" },
     { source: "98% left", expected: "剩余 98%" },
-    { source: "100% left", expected: "剩余 100%" }
+    { source: "100% left", expected: "剩余 100%" },
+    { source: "Search Across Conversations", expected: "跨对话搜索" },
+    { source: "Search conversations with", expected: "在左上方点击" },
+    { source: "in the top left.", expected: "即可搜索对话。" },
+    { source: "View archived in the sidebar (", expected: "在侧边栏中查看已归档内容（" },
+    { source: "View archived in the sidebar", expected: "在侧边栏中查看已归档内容" },
+    { source: "menu).", expected: "菜单）。" },
+    { source: "Conversation History", expected: "对话历史" },
+    { source: "This page is going away soon", expected: "此页面即将下线" },
+    { source: "Conversation Archived", expected: "对话已归档" }
   ];
 
   for (const { source, expected } of testCases) {

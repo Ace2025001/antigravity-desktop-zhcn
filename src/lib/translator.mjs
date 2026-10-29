@@ -490,6 +490,18 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('`Used tool: ${a}`', '`已使用工具：${a}`');
   sourceText = sourceText.replaceAll('"Used tool"', '"已使用工具"');
 
+  // 跨对话搜索与归档引导提示原生汉化
+  sourceText = sourceText.replaceAll('"Search Across Conversations"', '"跨对话搜索"');
+  sourceText = sourceText.replaceAll('"Conversation History"', '"对话历史"');
+  sourceText = sourceText.replaceAll('"This page is going away soon"', '"此页面即将下线"');
+  sourceText = sourceText.replaceAll('"Search conversations with"', '"在左上方点击"');
+  sourceText = sourceText.replaceAll('"in the top left."', '"即可搜索对话。"');
+  sourceText = sourceText.replaceAll('"View archived in the sidebar"', '"在侧边栏中查看已归档内容"');
+  sourceText = sourceText.replaceAll('"menu)"', '"菜单）"');
+  sourceText = sourceText.replaceAll('title:"Conversation Archived"', 'title:"对话已归档"');
+  sourceText = sourceText.replaceAll('message:"View archived in the sidebar (![filter](icon://filter_list) menu)."', 'message:"在侧边栏中查看已归档内容 (![filter](icon://filter_list) 菜单)。"');
+  sourceText = sourceText.replaceAll('plainTextFallback:"View archived in the sidebar (Display options menu)."', 'plainTextFallback:"在侧边栏中查看已归档内容（显示选项菜单）。"');
+
   // 客户端更新状态指示器原生汉化
   sourceText = sourceText.replace(
     'case "available for download":return"Update Available";case "downloading":return"Downloading Update";case "downloaded":return"Install Update";case "updating":return"Installing Update";case "ready":return"Restart to Update"',

@@ -2864,9 +2864,41 @@
     "Error while editing notebook": "编辑 Notebook 时出错",
     "Error editing notebook": "编辑 Notebook 出错",
     "Error while reading notebook": "读取 Notebook 时出错",
-    "Error reading notebook": "读取 Notebook 出错"
+    "Error reading notebook": "读取 Notebook 出错",
+    "Search Across Conversations": "跨对话搜索",
+    "Search conversations with": "在左上方点击",
+    "in the top left.": "即可搜索对话。",
+    "in the top left": "（位于左上角）",
+    "View archived in the sidebar (": "在侧边栏中查看已归档内容（",
+    "View archived in the sidebar": "在侧边栏中查看已归档内容",
+    "menu).": "菜单）。",
+    "menu)": "菜单）",
+    ") menu).": "）菜单）。",
+    "Conversation History": "对话历史",
+    "This page is going away soon": "此页面即将下线",
+    "Conversation Archived": "对话已归档"
   },
   "patterns": [
+    {
+      "source": "^Search conversations with$",
+      "target": "在左上方点击",
+      "flags": "u"
+    },
+    {
+      "source": "^in the top left\\.?$",
+      "target": "即可搜索对话。",
+      "flags": "u"
+    },
+    {
+      "source": "^View archived in the sidebar(?:\\s*\\()?$",
+      "target": "在侧边栏中查看已归档内容（",
+      "flags": "u"
+    },
+    {
+      "source": "^(?:\\)|\\) )?\\s*menu\\)\\.?$",
+      "target": "菜单）。",
+      "flags": "u"
+    },
     {
       "source": "^Thinking for\\s+(\\d+)\\s*h\\s*(\\d+)\\s*m\\s*(\\d+)\\s*s$",
       "target": "思考耗时 $1 小时 $2 分钟 $3 秒",
