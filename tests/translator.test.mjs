@@ -1395,7 +1395,12 @@ test("translator localizes context menu, notifications, extensions and model quo
     { source: "Move Conversation Down", expected: "下移对话" },
     { source: "Toggle Maximize Auxiliary Pane", expected: "切换最大化辅助面板" },
     { source: "检索右键菜单定义代码段 · Exited with code 1", expected: "检索右键菜单定义代码段 · 退出代码 1" },
-    { source: "Exited with code 1", expected: "已退出，代码：1" }
+    { source: "Exited with code 1", expected: "已退出，代码：1" },
+    { source: "Background Commands", expected: "后台命令" },
+    { source: "No background commands", expected: "暂无后台命令" },
+    { source: "6s timer", expected: "6 秒定时器" },
+    { source: "15s timer", expected: "15 秒定时器" },
+    { source: "Timer: 6s, Prompt: 检查视频渲染任务是否结束", expected: "定时器：6 秒，提示：检查视频渲染任务是否结束" }
   ];
 
   for (const { source, expected } of testCases) {

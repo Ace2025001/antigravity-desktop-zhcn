@@ -2899,9 +2899,53 @@
     "Open Keyboard Shortcuts": "打开键盘快捷键",
     "Open Commit Graph": "打开提交关系图",
     "Terminal: Add to Chat": "终端：添加到对话",
-    "Download Diagnostics": "下载诊断信息"
+    "Download Diagnostics": "下载诊断信息",
+    "Background Commands": "后台命令",
+    "No background commands": "暂无后台命令",
+    "Subagents": "子智能体",
+    "Documents": "文档"
   },
   "patterns": [
+    {
+      "source": "^(\\d+)\\s*s\\s*timer$",
+      "target": "$1 秒定时器",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s*m\\s*timer$",
+      "target": "$1 分钟定时器",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s*h\\s*timer$",
+      "target": "$1 小时定时器",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s*d\\s*timer$",
+      "target": "$1 天定时器",
+      "flags": "u"
+    },
+    {
+      "source": "^Timer:\\s*(\\d+)\\s*s,\\s*Prompt:\\s*(.*)$",
+      "target": "定时器：$1 秒，提示：$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Timer:\\s*(\\d+)\\s*m,\\s*Prompt:\\s*(.*)$",
+      "target": "定时器：$1 分钟，提示：$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Timer:\\s*(\\d+)\\s*h,\\s*Prompt:\\s*(.*)$",
+      "target": "定时器：$1 小时，提示：$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Timer:\\s*(.+?),\\s*Prompt:\\s*(.*)$",
+      "target": "定时器：$1，提示：$2",
+      "flags": "u"
+    },
     {
       "source": "^Search conversations with$",
       "target": "在左上方点击",

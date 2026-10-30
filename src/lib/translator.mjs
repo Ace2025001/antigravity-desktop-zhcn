@@ -394,6 +394,18 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('content:"Open Terminal"', 'content:"打开终端"');
   sourceText = sourceText.replaceAll('"aria-label":"Open Terminal"', '"aria-label":"打开终端"');
   sourceText = sourceText.replaceAll('"No subagents"', '"暂无子智能体"');
+  sourceText = sourceText.replaceAll('{id:"subagents",title:"Subagents"', '{id:"subagents",title:"子智能体"');
+  sourceText = sourceText.replaceAll('{id:"backgroundTasks",title:"Background Commands"', '{id:"backgroundTasks",title:"后台命令"');
+  sourceText = sourceText.replaceAll('{id:"documents",title:"Documents"', '{id:"documents",title:"文档"');
+  sourceText = sourceText.replaceAll('title:"Background Commands"', 'title:"后台命令"');
+  sourceText = sourceText.replaceAll('title:"Subagents"', 'title:"子智能体"');
+  sourceText = sourceText.replaceAll('title:"Documents"', 'title:"文档"');
+  sourceText = sourceText.replaceAll('{label:"Background Commands"}', '{label:"后台命令"}');
+  sourceText = sourceText.replaceAll('{label:"Subagents"}', '{label:"子智能体"}');
+  sourceText = sourceText.replaceAll('group:"Background Commands"', 'group:"后台命令"');
+  sourceText = sourceText.replaceAll('"No background commands"', '"暂无后台命令"');
+  sourceText = sourceText.replaceAll('tooltip:"Cancel Task"', 'tooltip:"取消任务"');
+  sourceText = sourceText.replaceAll('ariaLabel:"Cancel Task"', 'ariaLabel:"取消任务"');
   // 撤销与运行状态原生汉化
   sourceText = sourceText.replaceAll('"This undo action will not make any code changes."', '"此撤销操作不会产生任何代码变更。"');
   sourceText = sourceText.replaceAll('"Confirming this undo action will make the following changes:"', '"确认此撤销操作将应用以下更改："');
