@@ -3048,6 +3048,11 @@
       "flags": "u"
     },
     {
+      "source": "^(.*?)\\s*[·•-]\\s*Exited with code (-?\\d+)\\.?$",
+      "target": "$1 · 退出代码 $2",
+      "flags": "u"
+    },
+    {
       "source": "^Exited with code (-?\\d+)\\.?$",
       "target": "已退出，代码：$1",
       "flags": "u"

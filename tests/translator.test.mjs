@@ -1393,7 +1393,9 @@ test("translator localizes context menu, notifications, extensions and model quo
     { source: "Reopen Closed Tab", expected: "重新打开关闭的标签页" },
     { source: "Move Conversation Up", expected: "上移对话" },
     { source: "Move Conversation Down", expected: "下移对话" },
-    { source: "Toggle Maximize Auxiliary Pane", expected: "切换最大化辅助面板" }
+    { source: "Toggle Maximize Auxiliary Pane", expected: "切换最大化辅助面板" },
+    { source: "检索右键菜单定义代码段 · Exited with code 1", expected: "检索右键菜单定义代码段 · 退出代码 1" },
+    { source: "Exited with code 1", expected: "已退出，代码：1" }
   ];
 
   for (const { source, expected } of testCases) {

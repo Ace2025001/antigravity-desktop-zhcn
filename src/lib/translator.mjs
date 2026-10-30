@@ -462,6 +462,12 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('label:"Copy Image"', 'label:"复制图片"');
   sourceText = sourceText.replaceAll('label:a==="video"?"Save Video":"Save Image"', 'label:a==="video"?"保存视频":"保存图片"');
   sourceText = sourceText.replaceAll('id:"copy",label:"Copy"', 'id:"copy",label:"复制"');
+  sourceText = sourceText.replaceAll('label:"Cut"', 'label:"剪切"');
+  sourceText = sourceText.replaceAll('label:"Paste"', 'label:"粘贴"');
+  sourceText = sourceText.replaceAll('label:"Select All"', 'label:"全选"');
+  sourceText = sourceText.replaceAll('id:"cut",label:"Cut"', 'id:"cut",label:"剪切"');
+  sourceText = sourceText.replaceAll('id:"paste",label:"Paste"', 'id:"paste",label:"粘贴"');
+  sourceText = sourceText.replaceAll('id:"select-all",label:"Select All"', 'id:"select-all",label:"全选"');
   sourceText = sourceText.replaceAll('label:"Add to Chat",accelerator:h==="Hub"', 'label:"添加到对话",accelerator:h==="Hub"');
   // 对话本地权限与继承全局权限说明原生汉化
   sourceText = sourceText.replace(
