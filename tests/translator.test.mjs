@@ -1400,7 +1400,15 @@ test("translator localizes context menu, notifications, extensions and model quo
     { source: "No background commands", expected: "暂无后台命令" },
     { source: "6s timer", expected: "6 秒定时器" },
     { source: "15s timer", expected: "15 秒定时器" },
-    { source: "Timer: 6s, Prompt: 检查视频渲染任务是否结束", expected: "定时器：6 秒，提示：检查视频渲染任务是否结束" }
+    { source: "Timer: 6s, Prompt: 检查视频渲染任务是否结束", expected: "定时器：6 秒，提示：检查视频渲染任务是否结束" },
+    { source: "run-workflow", expected: "运行工作流" },
+    {
+      source: "How to write and run a dynamic workflow script with the `run_workflow` tool: a Python script that orchestrates many agents with `agent`, `parallel`, `pipeline`, and `phase`. Use when a task splits into many independent or staged pieces of agent work (fan out over files, modules, bugs, or review angles, then aggregate), or when the user asks for a workflow. Don't use for a single delegated task (use a subagent) or for legacy workflow files (see migrate-workflows).",
+      expected: "如何使用 `run_workflow` 工具编写并运行动态工作流脚本：一个使用 `agent`、`parallel`、`pipeline` 和 `phase` 编排多个智能体的 Python 脚本。适用于任务可拆分为独立或分阶段执行的多个子任务时（例如按文件、模块、缺陷或审查角度分散执行后再聚合），或用户要求使用工作流时。单项委托任务请使用子智能体，旧版工作流文件请参见工作流迁移。"
+    },
+    { source: "Scan the code to open this device in Remote Control, or", expected: "扫描二维码在远程控制中打开此设备，或" },
+    { source: "copy link", expected: "复制链接" },
+    { source: "Show Remote Control QR code", expected: "显示远程控制二维码" }
   ];
 
   for (const { source, expected } of testCases) {

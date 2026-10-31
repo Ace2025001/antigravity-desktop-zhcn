@@ -532,6 +532,13 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('"Open in External Browser"', '"在外部浏览器中打开"');
   sourceText = sourceText.replaceAll('"Open Link in External Browser"', '"在外部浏览器中打开链接"');
 
+  // 远程控制扫码提示与二维码链接原生汉化
+  sourceText = sourceText.replaceAll('"Scan the code to open this device in Remote Control, or"', '"扫描二维码在远程控制中打开此设备，或"');
+  sourceText = sourceText.replaceAll('>"copy link"<', '>"复制链接"<');
+  sourceText = sourceText.replaceAll('"Show Remote Control QR code"', '"显示远程控制二维码"');
+  sourceText = sourceText.replaceAll('ariaLabel:"Remote Control link"', 'ariaLabel:"远程控制链接"');
+  sourceText = sourceText.replaceAll('qrAriaLabel:f="Remote Control link"', 'qrAriaLabel:f="远程控制链接"');
+
   // 快捷键列表与搜索占位符原生汉化
   sourceText = sourceText.replaceAll('placeholder:"Search shortcuts..."', 'placeholder:"搜索快捷键..."');
   sourceText = sourceText.replaceAll('label:"Reopen Closed Tab"', 'label:"重新打开关闭的标签页"');

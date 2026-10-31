@@ -2903,7 +2903,13 @@
     "Background Commands": "后台命令",
     "No background commands": "暂无后台命令",
     "Subagents": "子智能体",
-    "Documents": "文档"
+    "Documents": "文档",
+    "run-workflow": "运行工作流",
+    "How to write and run a dynamic workflow script with the `run_workflow` tool: a Python script that orchestrates many agents with `agent`, `parallel`, `pipeline`, and `phase`. Use when a task splits into many independent or staged pieces of agent work (fan out over files, modules, bugs, or review angles, then aggregate), or when the user asks for a workflow. Don't use for a single delegated task (use a subagent) or for legacy workflow files (see migrate-workflows).": "如何使用 `run_workflow` 工具编写并运行动态工作流脚本：一个使用 `agent`、`parallel`、`pipeline` 和 `phase` 编排多个智能体的 Python 脚本。适用于任务可拆分为独立或分阶段执行的多个子任务时（例如按文件、模块、缺陷或审查角度分散执行后再聚合），或用户要求使用工作流时。单项委托任务请使用子智能体，旧版工作流文件请参见工作流迁移。",
+    "Scan the code to open this device in Remote Control, or": "扫描二维码在远程控制中打开此设备，或",
+    "copy link": "复制链接",
+    "Show Remote Control QR code": "显示远程控制二维码",
+    "Remote Control link": "远程控制链接"
   },
   "patterns": [
     {
