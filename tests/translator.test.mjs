@@ -1443,6 +1443,7 @@ test("createLocalizedBundle handles conversation context menu items and models n
     label:"Split Right"
     label:"Split Down"
     label:"Remove from Split"
+    z6={low:"Low",medium:"Medium",high:"High",xhigh:"Extra",max:"Max"}
     {label:a.label,value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:B.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:a.tagTitle,tagDescription:a.tagDescription,
     var KTb=({option:a})=>{var b=KE();return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",null,a.tagTitle),A.createElement(Z,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(iA,{id:b},A.createElement("div",{className:"max-w-[200px]"},a.tagDescription))):a.tagTitle?A.createElement("div",{className:"bg-secondary rounded-full px-1.5 text-xs"},a.tagTitle):null};
   `);
@@ -1462,6 +1463,8 @@ test("createLocalizedBundle handles conversation context menu items and models n
   assert.ok(out.includes('label:"向下拆分"'));
   assert.ok(out.includes('label:"从拆分中移除"'));
   assert.ok(out.includes('(思考)'));
-  assert.ok(out.includes('tagTitle==="Unavailable"?"不可用"'));
+  assert.ok(out.includes('"Unavailable":"不可用"'));
+  assert.ok(out.includes('"Notice":"提示"'));
+  assert.ok(out.includes('z6={low:"低",medium:"中",high:"高",xhigh:"超高",max:"最大"}'));
   assert.ok(out.includes('"data-model-selector-badge":"true"'));
 });

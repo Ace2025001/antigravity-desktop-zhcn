@@ -2906,7 +2906,16 @@
     "Claude Sonnet 4.6 (Thinking)": "Claude Sonnet 4.6 (思考)",
     "Claude Opus 4.6 (Thinking)": "Claude Opus 4.6 (思考)",
     "Sonnet 4.6 (Thinking)": "Sonnet 4.6 (思考)",
-    "Opus 4.6 (Thinking)": "Opus 4.6 (思考)"
+    "Opus 4.6 (Thinking)": "Opus 4.6 (思考)",
+    "(Medium)": "(中)",
+    "(Low)": "(低)",
+    "(High)": "(高)",
+    "Low": "低",
+    "Medium": "中",
+    "High": "高",
+    "Extra": "超高",
+    "Max": "最大",
+    "GPT-OSS 120B (Medium)": "GPT-OSS 120B (中)"
   },
   "patterns": [
     {
@@ -9317,6 +9326,11 @@
     {
       "source": "^(.*)\\s+\\((?:Thinking|thinking)\\)$",
       "target": "$1 (思考)",
+      "flags": "u"
+    },
+    {
+      "source": "^(.*)\\s+\\((?:Medium|medium)\\)$",
+      "target": "$1 (中)",
       "flags": "u"
     }
   ]
