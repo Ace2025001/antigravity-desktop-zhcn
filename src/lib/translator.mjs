@@ -509,6 +509,32 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     'label:({"Conversation Name":"对话名称","Conversation ID":"对话 ID","Project Name":"项目名称","Worktree Name":"工作树名称","Workspace Name":"工作区名称","Split Right":"向右拆分","Split Down":"向下拆分","Replace With New":"替换为新建","Replace with New":"替换为新建","Remove from Split":"从拆分中移除"}[c.label]||c.label),accelerator:c.shortcut,testId:`conversation-${a}-${c.label.toLowerCase().replace(/\\s+/g,"-")}`,onClick:c.onClick'
   );
 
+  // 通用自定义上下文菜单（右键/选中文本）安全汉化映射（拦截单项 Copy、Cut、Paste 等操作）
+  sourceText = sourceText.replace(
+    'function sQa({items:a}){return A.createElement(A.Fragment,null,a.map((b,c)=>',
+    'function sQa({items:a}){var _cMap={"Copy":"复制","Cut":"剪切","Paste":"粘贴","Select All":"全选","Undo":"撤销","Redo":"重做","Delete":"删除","Copy Link":"复制链接","Copy Selection":"复制所选内容","Open Link":"打开链接","Search":"搜索","Copy Message":"复制消息","Copy Image":"复制图片","Copy Path":"复制路径"};a=a.map(b=>b&&b.label&&_cMap[b.label]?{...b,label:_cMap[b.label]}:b);return A.createElement(A.Fragment,null,a.map((b,c)=>'
+  );
+
+  // 选中文本与剪贴板右键动作源头原生汉化
+  sourceText = sourceText.replaceAll('id:"copy",label:"Copy",enabled:', 'id:"copy",label:"复制",enabled:');
+  sourceText = sourceText.replaceAll('{id:"copy",label:"Copy",onClick:', '{id:"copy",label:"复制",onClick:');
+  sourceText = sourceText.replaceAll('id:"copy-selection",label:"Copy"', 'id:"copy-selection",label:"复制"');
+  sourceText = sourceText.replaceAll('id:"copy-message",label:"Copy"', 'id:"copy-message",label:"复制"');
+  sourceText = sourceText.replaceAll('{id:"copy",label:"Copy",icon:', '{id:"copy",label:"复制",icon:');
+  sourceText = sourceText.replaceAll('id:"copy-link",label:"Copy Link"', 'id:"copy-link",label:"复制链接"');
+  sourceText = sourceText.replaceAll('{metadata:{id:"copy",label:"Copy"}', '{metadata:{id:"copy",label:"复制"}');
+  sourceText = sourceText.replaceAll('{metadata:{id:"cut",label:"Cut"}', '{metadata:{id:"cut",label:"剪切"}');
+  sourceText = sourceText.replaceAll('{metadata:{id:"paste",label:"Paste"}', '{metadata:{id:"paste",label:"粘贴"}');
+  sourceText = sourceText.replaceAll('id:"undo",label:"Undo"', 'id:"undo",label:"撤销"');
+  sourceText = sourceText.replaceAll('A.createElement(XL,{title:"Copy"}', 'A.createElement(XL,{title:"复制"}');
+  sourceText = sourceText.replaceAll('A.createElement("span",null,"Copy")', 'A.createElement("span",null,"复制")');
+  sourceText = sourceText.replaceAll('tooltip:c?"Copy Image":"Copy"', 'tooltip:c?"复制图片":"复制"');
+  sourceText = sourceText.replaceAll('tooltip:"Copy Path"', 'tooltip:"复制路径"');
+  sourceText = sourceText.replaceAll('?"Copied":"Copy"', '?"已复制":"复制"');
+  sourceText = sourceText.replaceAll('A.createElement("span",{className:"text-xs"},"Comment")', 'A.createElement("span",{className:"text-xs"},"评论")');
+  sourceText = sourceText.replaceAll('text:"Open in Code Search"', 'text:"在代码搜索中打开"');
+  sourceText = sourceText.replaceAll('aria-label:"Open in Code Search"', 'aria-label:"在代码搜索中打开"');
+
   // 思考耗时底层模板字符串原生汉化
   sourceText = sourceText.replaceAll('c>=0?`Thinking for ${Math.max(1,c)}s`:"Thinking"', 'c>=0?`思考耗时 ${Math.max(1,c)} 秒`:"思考中"');
   sourceText = sourceText.replaceAll('b?`Thought for ${Math.max(1,Number(b.seconds))}s`:"Thought Process"', 'b?`思考耗时 ${Math.max(1,Number(b.seconds))} 秒`:"思考过程"');
