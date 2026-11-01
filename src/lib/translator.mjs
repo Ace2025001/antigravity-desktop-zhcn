@@ -503,10 +503,10 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('{label:"Replace With New",onClick:', '{label:"替换为新建",onClick:');
   sourceText = sourceText.replaceAll('{label:"Replace With New",shortcut:', '{label:"替换为新建",shortcut:');
 
-  // 子菜单生成函数 UDb 原生映射汉化（确保任何来源的子菜单项文本均自动翻译，且不破坏 testId）
+  // 子菜单生成函数 UDb 安全字典映射汉化（完整保留参数、变量作用域、菜单结构、快捷键、事件和 testId）
   sourceText = sourceText.replace(
-    /UDb=\((a,b)\)=>b\.map\(\((c,e)\)=>\(\{id:`\$\{a\}-\$\{e\}`,label:c\.label,accelerator:c\.shortcut,testId:`conversation-\$\{a\}-\$\{c\.label\.toLowerCase\(\)\.replace\(\/\\s\+\/g,"-"\)\}`,onClick:c\.onClick\}\)\);/,
-    'UDb=($1)=>$2.map(($3,$4)=>({id:`${$1}-${$4}`,label:({"Conversation Name":"对话名称","Conversation ID":"对话 ID","Project Name":"项目名称","Worktree Name":"工作树名称","Workspace Name":"工作区名称","Split Right":"向右拆分","Split Down":"向下拆分","Replace With New":"替换为新建","Replace with New":"替换为新建","Remove from Split":"从拆分中移除"}[$3.label]||$3.label),accelerator:$3.shortcut,testId:`conversation-${$1}-${$3.label.toLowerCase().replace(/\\s+/g,"-")}`,onClick:$3.onClick}));'
+    'label:c.label,accelerator:c.shortcut,testId:`conversation-${a}-${c.label.toLowerCase().replace(/\\s+/g,"-")}`,onClick:c.onClick',
+    'label:({"Conversation Name":"对话名称","Conversation ID":"对话 ID","Project Name":"项目名称","Worktree Name":"工作树名称","Workspace Name":"工作区名称","Split Right":"向右拆分","Split Down":"向下拆分","Replace With New":"替换为新建","Replace with New":"替换为新建","Remove from Split":"从拆分中移除"}[c.label]||c.label),accelerator:c.shortcut,testId:`conversation-${a}-${c.label.toLowerCase().replace(/\\s+/g,"-")}`,onClick:c.onClick'
   );
 
   // 思考耗时底层模板字符串原生汉化

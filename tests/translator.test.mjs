@@ -1,3 +1,4 @@
+import vm from "node:vm";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -1467,4 +1468,63 @@ test("createLocalizedBundle handles conversation context menu items and models n
   assert.ok(out.includes('"Notice":"提示"'));
   assert.ok(out.includes('z6={low:"低",medium:"中",high:"高",xhigh:"超高",max:"最大"}'));
   assert.ok(out.includes('"data-model-selector-badge":"true"'));
+});
+
+test("UDb submenu translation preserves structure, parameters, testId, and maintains valid syntax", () => {
+  const fakeSource = Buffer.from(`
+    const UDb=(a,b)=>b.map((c,e)=>({id:\`\${a}-\${e}\`,label:c.label,accelerator:c.shortcut,testId:\`conversation-\${a}-\${c.label.toLowerCase().replace(/\\s+/g,"-")}\`,onClick:c.onClick}));
+  `);
+  const localized = createLocalizedBundle(fakeSource, dictionary);
+  const out = localized.buffer.toString("utf8");
+
+  // 1. 验证绝不包含破坏性逗号表达式
+  assert.ok(!out.includes("c,e.map"), "必须不能包含错误的逗号表达式 c,e.map");
+
+  // 2. 验证 JavaScript 语法完全合法
+  assert.doesNotThrow(() => {
+    new vm.Script(out);
+  }, "生成的代码必须是合法的 JavaScript 语法");
+
+  // 3. 执行沙箱模拟测试其真实行为
+  const context = {
+    Node: { TEXT_NODE: 3, ELEMENT_NODE: 1 },
+    document: {
+      readyState: "loading",
+      documentElement: { lang: "" },
+      body: {},
+      addEventListener: () => {},
+      createElement: () => ({ style: {} }),
+      head: { appendChild: () => {} },
+    },
+    window: {},
+    MutationObserver: class {
+      observe() {}
+      disconnect() {}
+    },
+    testA: "copy",
+    testItems: [
+      { label: "Conversation Name", shortcut: "Ctrl+C", onClick: () => "name_clicked" },
+      { label: "Conversation ID", shortcut: void 0, onClick: () => "id_clicked" },
+      { label: "Custom Label", shortcut: void 0, onClick: () => "custom_clicked" },
+    ],
+    console,
+  };
+  vm.createContext(context);
+  vm.runInContext(out + "\nvar res = UDb(testA, testItems);", context);
+  const res = context.res;
+
+  assert.equal(res.length, 3);
+  // 对话名称被翻译，且 testId 保留英文，onClick 可执行
+  assert.equal(res[0].label, "对话名称");
+  assert.equal(res[0].testId, "conversation-copy-conversation-name");
+  assert.equal(res[0].accelerator, "Ctrl+C");
+  assert.equal(res[0].onClick(), "name_clicked");
+
+  // 对话 ID 被翻译，且 testId 保留英文
+  assert.equal(res[1].label, "对话 ID");
+  assert.equal(res[1].testId, "conversation-copy-conversation-id");
+
+  // 未匹配的项保持原生 label
+  assert.equal(res[2].label, "Custom Label");
+  assert.equal(res[2].testId, "conversation-copy-custom-label");
 });
