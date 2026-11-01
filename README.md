@@ -1,165 +1,137 @@
-# 🇨🇳 Google Antigravity 桌面端全自动深度中文语言包
-### Google Antigravity Desktop Chinese Localization Patch
+# Antigravity 汉化项目：Windows 桌面版中文语言包
 
-[![Release Version](https://img.shields.io/badge/Release-v2.0.0-blue.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)
-[![Client Compatibility](https://img.shields.io/badge/Antigravity-2.2.1~2.23.1+-green.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn)
-[![Rules Count](https://img.shields.io/badge/Dictionary-2763%20Exact%20%2B%201247%20Patterns-orange.svg)](config/dom-translations.json)
-[![Automated Tests](https://img.shields.io/badge/Tests-80%20Passed-brightgreen.svg)](tests/)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20x64-lightgrey.svg)](https://github.com/Ace2025001/antigravity-desktop-zhcn)
-[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+**给 Windows 上的 Google Antigravity Desktop 独立桌面客户端安装简体中文界面。** 下载便携包、解压后按提示运行，无需自行安装 Node.js 或配置编程环境，提供兼容检查、桌面快捷方式和恢复英文入口。
 
-专为 Windows 平台 Google Antigravity Desktop 打造的高性能、安全无损中文本地化增强补丁。
+本项目由社区维护，与 Google 无隶属关系。适用于 **Windows x64 的独立桌面客户端**；Antigravity IDE 的扩展语言包属于另一类方案。
 
-**核心特性**：内置 **2763 条精确词条映射 + 1247 条动态正则规则**，覆盖全界面、设置面板、系统托盘、原生右键菜单、智能体权限弹窗及交互提示。支持**客户端自动跟进更新**、**温和退出落盘保护**、**一键生成桌面快捷方式**与**百分百无损还原官方英文**。
+[**下载 Windows 便携中文包**](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/antigravity-desktop-zhcn-portable-win-x64.zip) · [发布说明与校验文件](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest) · [问题反馈](https://github.com/Ace2025001/antigravity-desktop-zhcn/issues)
 
-## 📢 v2.0.0 重大更新内容
+## Antigravity 怎么汉化？
 
-- **全量汉化图片批注与评论浮层**：深度汉化图片评论输入框（写下评论）、发表按钮（添加评论）、编辑状态（编辑评论 / 保存评论）以及区域选取引导提示（拖动以选择要评论的区域）；
-- **右键上下文菜单数据源级深度汉化**：在源码及数据层全面汉化图片与文件右键菜单（复制图片、保存图片/视频、复制文件路径、复制文件名、添加到对话）；
-- **词典与动态规则库大幅跃升**：精确词条扩充至 2,763 条，动态正则规则增至 1,247 条，自动化单元测试增至 80 项并保持 100% 绿标通过；
-- **消除状态半中半英残留**：深度汉化工作流任务执行与探索进度文案（如 正在运行 X 条命令、正在探索），彻底根除混合语言提示；
-- **继承全部高阶特性**：内置官方自动跟进更新引擎、温和退出与数据落盘保护、桌面快捷方式一键生成及无损还原机制。
+1. **下载**：选择 `antigravity-desktop-zhcn-portable-win-x64.zip`，并用发布页的同名 `.sha256` 文件核对摘要。普通用户下载便携包即可，`Source code` 是源码包。
+2. **解压**：完整解压到本地文件夹，不要在压缩包里直接运行。
+3. **检查**：双击 **`一键检查兼容性.bat`**，查看客户端版本与检查结果。运行时检查可能需要先打开 Antigravity。
+4. **汉化**：保存正在编辑的内容，双击 **`一键汉化.bat`**，按提示确认并关闭客户端，完成后重新打开检查中文界面。
+5. **日常启动（可选）**：运行 **`生成桌面快捷方式.bat`**，以后通过生成的快捷方式启动。
 
-### 历史版本记录 (v1.6.0)
+**想恢复英文？** 保存工作后运行 **`一键恢复英文.bat`**，按提示完成恢复。请保留原始备份和工具状态。
 
-- **适配官方最新 2.23.1 版本**：全面收录并实机验证 Antigravity Desktop `2.23.1`，支持自动跟进更新与完整指纹校验；
-- **全量汉化自定义与插件市场面板**：补齐 Google Workspace、Build with Google 等 17 个官方扩展的完整描述、展开更多按钮及各类空状态提示；
-- **全量覆盖相对时间动态表达**：穷举并支持秒、分、时、日、周、月、年缩写与完整写法（如 `1m ago`、`1h ago`、`2d ago` 等）；
-- **新增一键生成桌面快捷方式**：提供 `生成桌面快捷方式.bat`，一键在桌面创建带官方图标的“启动 Antigravity（自动汉化）”图标；
-- **新增温和退出落盘机制**：进程管理升级为两阶段退出，保护工程数据避免强杀损坏；
-- **全库消除失效链接与依赖加固**：清理全部历史失效死链，依赖安全高危漏洞 0 检出。
+> 安装会修改客户端资源并写入中文界面文件。当前“一键汉化”入口在安装失败后可能自动尝试自适应流程；遇到不兼容、文件异常或报错，请先保留输出并查看下方说明，不要反复尝试覆盖。
 
----
+## 适合哪些用户？
 
-## 🔍 关键词 / Keywords & Topics
+- 使用 **Windows x64 + Antigravity Desktop 独立桌面客户端**，想把界面改成简体中文。
+- 不想自行安装 Node.js、npm 或其他开发环境，希望下载便携包后运行。
+- 希望有明确的兼容检查、安装步骤与恢复英文方法。
+- 希望让支持电脑操作的 AI 助手协助下载、检查和安装。
 
-- **中文搜索**：`Antigravity 中文`、`Antigravity 汉化`、`Antigravity 汉化包`、`Google Antigravity 汉化`、`Antigravity 桌面版汉化补丁`、`Antigravity 中文语言包`、`Antigravity 自动汉化`
-- **English Keywords**: `Antigravity Chinese Localization`, `Antigravity Desktop zh-CN`, `Google Antigravity Chinese Patch`, `Antigravity i18n`, `Antigravity Hans`, `Antigravity Desktop Translation`
-- **GitHub Topics**: `antigravity`, `antigravity-desktop`, `antigravity-chinese`, `chinese-localization`, `zh-cn`, `electron-localization`, `i18n`, `desktop-app`, `windows`, `google-antigravity`, `antigravity-hanhua`, `hanhua`, `antigravity-cn`
+## 让 AI 帮你安装
 
----
+如果你使用 Antigravity、WorkBuddy 或其他支持电脑操作的 AI 助手，可以复制：
 
-## 🌐 English Quick Start / Bilingual Summary
+> 请帮我安装 https://github.com/Ace2025001/antigravity-desktop-zhcn 的中文汉化补丁。先读 README，确认我使用的是 Windows x64 和 Antigravity Desktop 独立桌面客户端，再下载最新正式便携包、核对 SHA-256、检查兼容性。适用时按安装提示操作，提醒我保存工作，完成后检查中文界面并告诉我如何恢复英文。遵守我的操作授权，保留现有代理、节点和 TUN 设置。
 
-> **Google Antigravity Desktop Chinese Localization Patch** provides a seamless, non-destructive Chinese UI for Antigravity Desktop on Windows.
+### 给协助安装的 AI 助手
 
-- **Non-destructive & Safe**: Automatic SHA-256 fingerprint verification and original binary backup before any injection.
-- **Auto-follow Updates**: Start via `启动 Antigravity（自动汉化）.bat` or desktop shortcut to automatically adapt when Antigravity auto-updates.
-- **Graceful Termination**: Ensures pending editor changes and project state are cleanly flushed to disk before patch execution.
-- **Zero Configuration**: Release portable archive bundles an isolated official Node.js runtime—no system dependencies needed.
+以下是安装参考，操作范围以用户当前请求和设备权限为准：
 
-### Quick Usage:
-1. Download the latest `antigravity-desktop-zhcn-portable-win-x64.zip` from [Releases](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest).
-2. Extract all files into any local directory.
-3. Run **`一键检查兼容性.bat`** to verify compatibility with your installed client.
-4. Run **`一键汉化.bat`** to apply the patch, then restart Antigravity.
-5. (Optional) Run **`生成桌面快捷方式.bat`** to place an auto-updating Chinese launch shortcut directly on your Windows desktop!
-6. To restore pure official English at any time, simply run **`一键恢复英文.bat`**.
+1. **确认产品与路径**：区分 Desktop 与 IDE，确认客户端版本和已有汉化状态。不要仅凭名称或版本数字判断兼容。
+2. **获取便携包**：从本仓库 [最新正式 Release](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest) 下载上述 ZIP 与校验文件，核对摘要后完整解压。便携包已包含 `runtime/node.exe` 和所需依赖。
+3. **先检查再安装**：在解压后的根目录使用内置 Node.js。自动化执行优先直接调用 CLI，以保留原始错误，避免批处理在失败后自动转入其他安装方式。
 
----
+检查命令：
 
-## 📸 效果预览 / Screenshots
+```powershell
+& '.\runtime\node.exe' '.\src\cli.mjs' check
+```
 
-![Antigravity 深度中文汉化效果示意图](docs/images/antigravity-zhcn-preview.png)
+检查适用后，在支持交互输入的终端运行：
 
----
+```powershell
+& '.\runtime\node.exe' '.\src\cli.mjs' install
+```
 
-## 📊 版本兼容矩阵 / Compatibility Matrix
+4. **处理交互**：安装器可能先启动客户端读取界面资源，再要求退出客户端并按回车。提醒用户保存工作，按既有授权处理退出；不要为了绕过等待而强杀客户端。没有电脑操作或交互能力的助手，应给用户明确步骤。
+5. **确认结果**：读取完整输出，不要只看退出码。取消操作也可能返回 0；客户端未运行时，检查通过可能只代表静态检查通过。打开客户端确认代表性界面显示中文后，再报告成功。
+6. **遇到错误**：记录输出与诊断信息。不要自动换用自适应脚本绕过检查，不要关闭防护或更改代理/TUN。需要自适应安装时，先说明适用范围及客户端启动、退出的影响。
+7. **交代恢复方法**：保留备份，提供 `一键恢复英文.bat`，或在交互终端运行：
 
-本项目采用严格的白名单指纹与语法树结构检测机制。目前已收录适配 22 个目标构建版本：
+```powershell
+& '.\runtime\node.exe' '.\src\cli.mjs' restore
+```
 
-| 客户端版本 / Client Version | 内部构建目标 / Build Target | 指纹校验 / SHA-256 Fingerprint | 验证级别 / Verification Status | 自动跟进适配 / Auto Follow |
-| :--- | :--- | :--- | :--- | :--- |
-| **Antigravity 2.23.1** | `2.23.1-full` | 白名单已收录 (`config/compatibility/2.23.1`) | 实机运行验证通过 | ✅ 支持自适应提取与校验 |
-| **Antigravity 2.23.0** | `2.23.0-full` | 白名单已收录 (`config/compatibility/2.23.0`) | 实机运行验证通过 | ✅ 支持自适应提取与校验 |
-| **Antigravity 2.19.1** | `2.19.1-full` | 白名单已收录 (`config/compatibility/2.19.1`) | 实机运行验证通过 | ✅ 支持 |
-| **Antigravity 2.17.0** | `2.17.0-full` | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
-| **Antigravity 2.16.0** | `2.16.0-full` | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
-| **Antigravity 2.15.1** | `2.15.1-full` | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
-| **Antigravity 2.14.0** | `2.14.0-full` | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
-| **Antigravity 2.11.0 ~ 2.13.0** | 早期各构建版本 | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
-| **Antigravity 2.2.1 ~ 2.10.0** | 早期各构建版本 | 白名单已收录 | 实机运行验证通过 | ✅ 支持 |
+## 支持范围与版本兼容
 
-> [!NOTE]
-> **关于 2.23.0 验证说明**：针对 Antigravity Desktop 2.23.0，项目已完成构建语法树分析、词条提取录入与 75 项自动化单元测试验证。为确保严谨性，未在多台真实桌面设备经过完整日常会话验证的新版本均标注为“自动化测试通过”，欢迎社区用户反馈实测体验！
+| 项目 | 说明 |
+| --- | --- |
+| 操作系统 | Windows x64 |
+| 目标产品 | Google Antigravity Desktop 独立桌面客户端 |
+| 补丁版本 | 以 [Releases](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest) 为准，与客户端版本号不同 |
+| 已登记构建 | 见 [兼容清单](config/compatibility/)；登记不代表所有构建都完成了实机验证 |
+| 本机是否适用 | 结合当前发布包清单、客户端文件指纹及运行时检查结果判断 |
+| 新版本 | 自适应流程会进行结构检查；结构匹配不等于已完成实机验证，也不保证未来所有版本可用 |
 
----
+## 功能与效果
 
-## 🏆 竞品对标与功能亮点 / Feature Comparison
+- 中文界面覆盖主界面、设置、菜单、托盘、权限提示等区域，具体效果随客户端版本和词库变化。
+- 支持生成桌面快捷方式，通过自动汉化启动入口检查并尝试跟进客户端更新。
+- 提供原始文件备份、安装状态记录与恢复英文入口。
 
-全面调研 GitHub 社区各类 Antigravity 汉化方案（如 `yuexps/Antigravity-Hans`、`MIMICTE/Antigravity-zh-CN`、`cshitian/antigravity_chinese` 等），本项目在多项关键指标上实现领先：
+![Antigravity Desktop 中文汉化效果预览](docs/images/antigravity-zhcn-preview.png)
 
-| 对比维度 / Feature | 本项目 (Ace2025001) | 竞品 A (静态文件替换类) | 竞品 B (简单注入类) | 优势说明 |
-| :--- | :--- | :--- | :--- | :--- |
-| **汉化覆盖规模** | **2473 词条 + 380 正则** | 约 500 ~ 1200 词条 | 约 800 ~ 1500 词条 | 业内最全词库，全量覆盖欢迎引导、模型配额、设置和原生托盘 |
-| **客户端自动升级跟进** | **原生自适应更新注入** | ❌ 升级即失效需重新下载 | ⚠️ 需手动重新覆盖 | 支持启动自适应跟进，客户端静默升级也能保持中文 |
-| **客户端退出安全性** | **温和退出 + 超时兜底** | ❌ 强制杀进程 (`taskkill /F`) | ❌ 强制杀进程 | 先请求优雅关闭等待数据落盘，避免破坏工作区与未保存文件 |
-| **桌面使用便捷度** | **一键生成桌面快捷方式** | ❌ 需每次进文件夹点击 | ❌ 需手动创建快捷方式 | 双击 `生成桌面快捷方式.bat` 即可生成一键汉化启动图标 |
-| **安全与指纹机制** | **SHA-256 + 语法树结构校验** | ❌ 无指纹校验，容易损坏 | ⚠️ 仅匹配版本号文本 | 白名单防呆拦截，杜绝未知破坏性篡改 |
-| **无损还原英文** | **原子备份与一键原样恢复** | ⚠️ 需手动备份或重装客户端 | ⚠️ 部分遗留残留文件 | 提供 `一键恢复英文.bat`，随时无损回到纯净官方英文 |
-| **测试与质量保障** | **77 项自动化回归测试套件** | ❌ 无自动化测试 | ❌ 无自动化测试 | 覆盖词库冲突、正则防误伤、注入逆向、网络签名与模型隔离 |
+## 常见问题
 
----
+### 装了中文扩展，为什么桌面客户端还是英文？
 
-## 🚀 快速使用指南 / Quick Start Guide
+先确认使用的是 Antigravity Desktop 还是 Antigravity IDE。IDE 的编辑器语言包不等于独立桌面客户端的汉化补丁，本项目面向后者。
 
-### 推荐方式：下载 Release 便携包（普通用户首选）
-便携发布包已内置官方独立的 Node.js 运行时与锁定依赖，**用户电脑无需安装任何开发环境**。
+### 需要安装 Node.js 或 Python 吗？
 
-1. **下载解压**：进入 [Releases 发布页面](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)，下载最新的 `antigravity-desktop-zhcn-portable-win-x64.zip` 并解压到任意文件夹；
-2. **检查兼容性（推荐）**：双击运行 **`一键检查兼容性.bat`**，确认当前安装的 Antigravity 是否在受支持列表内；
-3. **应用汉化**：双击运行 **`一键汉化.bat`**，按屏幕提示完成安装；
-4. **生成桌面快捷方式（强烈推荐）**：双击运行 **`生成桌面快捷方式.bat`**，会在您的 Windows 桌面上创建名为 **`Antigravity (中文自动汉化)`** 的快捷方式；
-5. **日常启动**：以后只需从桌面快捷方式或文件夹中的 **`启动 Antigravity（自动汉化）.bat`** 打开即可！
+便携发布包内置 Node.js 和所需依赖，无需自行安装。源码运行则需要开发环境，见下方说明。
 
----
+### 更新后又变成英文怎么办？
 
-## 🔄 客户端更新与自适应机制
+保存工作后，可以通过 **`启动 Antigravity（自动汉化）.bat`** 或生成的桌面快捷方式尝试跟进更新。这会执行自适应流程，可能启动和退出客户端；若结构检查失败或有其他错误，请停止并提交反馈，不要强行替换文件。未知版本不应视为已验证兼容。
 
-当 Google Antigravity 官方在后台自动升级到新版本后：
-1. **自动更新体验**：只要您通过 `启动 Antigravity（自动汉化）` 启动，补丁工具会自动识别客户端更新，对新版本执行结构安全检查、重新备份并自动注入汉化，随后启动客户端；
-2. **温和落盘保护**：退出旧实例时采用两段式温和退出，确保编辑进度和会话落盘保存；
-3. **防呆兜底**：若 Google 进行了重构导致代码锚点失效，工具会安全停止并保留官方文件，杜绝损坏客户端。若已打开客户端显示为英文，也可直接双击 **`自动跟进更新.bat`** 重新补丁。
+### 没找到安装目录怎么办？
 
----
+工具会尝试识别运行中的客户端、Windows 卸载注册表和默认安装位置。自定义路径或多个安装目录可通过当前终端的 `AGY_INSTALL_PATH` 环境变量明确指定，详见 [路径识别代码](src/lib/paths.mjs)。
 
-## 🔙 恢复官方纯净英文
+### 可以完全自动、无人值守安装吗？
 
-如果您需要排查官方原版问题或卸载汉化：
-1. 双击运行目录下的 **`一键恢复英文.bat`**；
-2. 脚本会自动安全清理汉化注入文件，并从初始备份中完整还原原版 `app.asar`；
-3. 重启 Antigravity Desktop 即可完全恢复官方英文状态。
+当前流程包含确认和关闭客户端等交互，不能保证无人值守完成。AI 助手需要支持电脑操作和交互终端，或将必要步骤交给用户。
 
----
+### 安装失败或恢复失败怎么办？
 
-## 💻 开发者使用指南 / Developer Guide
+保留报错、客户端版本和工具状态，通过 [Issues](https://github.com/Ace2025001/antigravity-desktop-zhcn/issues) 反馈。提交日志前去除账号、令牌等隐私信息；不要删除恢复所需的原始备份。
 
-若您希望参与贡献或从源码运行：
-- **运行环境**：需要本地安装 **Node.js >= 22.12.0** 与 **npm**；
-- **安装依赖**：在项目根目录运行 `npm ci`；
-- **运行验证**：
-  ```powershell
-  # 运行项目结构与文件规则检查
-  node scripts/validate-project.mjs
+## 开发者使用
 
-  # 运行自动化单元测试套件
-  node --test
-  ```
-- **构建便携包**：
-  ```powershell
-  powershell -ExecutionPolicy Bypass -File scripts/build-portable.ps1
-  ```
+源码运行需要 **Node.js >= 22.12.0** 与 npm：
 
-更多开发架构与维护文档请参考：
-- [系统架构设计 (Architecture)](docs/architecture.md)
-- [版本维护与适配指南 (Maintenance)](docs/maintenance.md)
-- [Release 构建与发布流程 (Releasing)](docs/releasing.md)
-- [社区贡献指南 (Contributing)](CONTRIBUTING.md)
+```powershell
+npm ci --ignore-scripts
+node scripts/validate-project.mjs
+node --test
+```
 
----
+构建 Windows 便携包：
 
-## 📜 项目来源与开源致谢
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-portable.ps1
+```
 
-本项目是在社区优秀开源项目 [chenmo00000/antigravity-desktop-zhcn](https://github.com/chenmo00000/antigravity-desktop-zhcn) 的基础上进行长期维护、深度架构重构与持续扩充，采用 [MIT License](LICENSE) 协议开源。由衷感谢原作者及社区早期贡献者的开源付出。
+- [系统架构](docs/architecture.md)
+- [版本维护与适配](docs/maintenance.md)
+- [构建与发布](docs/releasing.md)
+- [贡献指南](CONTRIBUTING.md)
+- [版本更新记录](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases)
 
-欢迎通过 [GitHub Issues](https://github.com/Ace2025001/antigravity-desktop-zhcn/issues) 提交反馈，或发起 [Pull Requests](https://github.com/Ace2025001/antigravity-desktop-zhcn/pulls) 参与维护！
+## English summary
+
+**Antigravity Desktop Chinese Localization Patch for Windows x64.** Download the portable ZIP from [Releases](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest), verify its SHA-256, extract it, check compatibility, and follow the interactive installation steps. The portable package bundles Node.js and dependencies. A restore command is provided. This community project targets the standalone Desktop client; it is not an IDE language-pack extension. Compatibility with every future client version is not guaranteed.
+
+## 项目来源与许可证
+
+本项目基于 [chenmo00000/antigravity-desktop-zhcn](https://github.com/chenmo00000/antigravity-desktop-zhcn) 继续维护和扩展，感谢原作者及社区贡献者。采用 [MIT License](LICENSE) 开源。
+
