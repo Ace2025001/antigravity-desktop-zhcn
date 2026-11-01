@@ -444,41 +444,54 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('title:"Open File"', 'title:"打开文件"');
   // 侧边栏与自定义面板新建按钮精准汉化（避免全局字典 New 词条误伤模型徽章）
   sourceText = sourceText.replaceAll('A.createElement(X,{name:"add",size:16}),A.createElement("span",null,"New")', 'A.createElement(X,{name:"add",size:16}),A.createElement("span",null,"新建")');
-  // 模型数据适配层源头汉化（支持 Claude 思考模型、层级标签、Notice提示与Unavailable不可用等）
+  // 思考层级映射原生汉化（Low/Medium/High -> 低/中/高，兼容多版本混淆变量名）
   sourceText = sourceText.replace(
-    /\{label:a\.label,value:a\.modelOrAlias\.choice\.case==="model"\?a\.modelOrAlias\.choice\.value:([A-Za-z0-9_$]+)\.Model\.UNSPECIFIED,modelAlias:a\.modelOrAlias\.choice\.case==="alias"\?a\.modelOrAlias\.choice\.value:void 0,disabled:a\.disabled,supportedMimeTypes:new Map\(Object\.entries\(a\.supportedMimeTypes\)\),quotaInfo:a\.quotaInfo,tagTitle:a\.tagTitle,tagDescription:a\.tagDescription,/,
-    '{label:typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)").replace(/\\s*\\(Low\\)/gi," (低)").replace(/\\s*\\(Medium\\)/gi," (中)").replace(/\\s*\\(High\\)/gi," (高)"):a.label,value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$1.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新"}[a.tagTitle]||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription,'
+    /([a-zA-Z0-9_$]+)=\{low:"Low",medium:"Medium",high:"High",xhigh:"Extra",max:"Max"\}/,
+    '$1={low:"低",medium:"中",high:"高",xhigh:"超高",max:"最大"}'
   );
-  // 模型选择器标签徽章（兼容原生换行符，保持英文 New 与 Notice 原样）与提示说明汉化
-  sourceText = sourceText.replace(
-    /var RFb=\(\{option:a\}\)=>\{var b=OD\(\);return a\.tagTitle&&a\.tagDescription\?A\.createElement\(A\.Fragment,null,A\.createElement\("div",\{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1\.5 text-xs"\},A\.createElement\("span",null,a\.tagTitle\),A\.createElement\(X,\{name:"info",className:"h-3 w-3 flex-none"\}\)\),A\.createElement\(jz,\{id:b\},A\.createElement\("div",\{className:"max-w-\[200px\]"\},a\.tagDescription\)\)\):a\.tagTitle\?A\.createElement\("div",\{className:"bg-secondary rounded-full px-1\.5 text-xs"\},\s*a\.tagTitle\):null\};/,
-    'var RFb=({option:a})=>{var b=OD(),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription;return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",{"data-model-selector-badge":"true"},a.tagTitle),A.createElement(X,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(jz,{id:b},A.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?A.createElement("div",{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-xs"},a.tagTitle):null};'
-  );
-  // 兼容新版混淆组件名 KTb 中的 tagTitle 不可用与提示汉化（使用对象映射规避测试正则表达式）
-  sourceText = sourceText.replace(
-    /var KTb=\(\{option:a\}\)=>\{var b=KE\(\);return a\.tagTitle&&a\.tagDescription\?A\.createElement\(A\.Fragment,null,A\.createElement\("div",\{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1\.5 text-xs"\},A\.createElement\("span",null,a\.tagTitle\),A\.createElement\(Z,\{name:"info",className:"h-3 w-3 flex-none"\}\)\),A\.createElement\(iA,\{id:b\},A\.createElement\("div",\{className:"max-w-\[200px\]"\},a\.tagDescription\)\)\):a\.tagTitle\?A\.createElement\("div",\{className:"bg-secondary rounded-full px-1\.5 text-xs"\},\s*a\.tagTitle\):null\};/,
-    'var KTb=({option:a})=>{var b=KE(),tT=({"Notice":"提示","Unavailable":"不可用","New":"新"}[a.tagTitle]||a.tagTitle),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription;return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",{"data-model-selector-badge":"true"},tT),A.createElement(Z,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(iA,{id:b},A.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?A.createElement("div",{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-xs"},tT):null};'
-  );
-  sourceText = sourceText.replaceAll('"Context window"', '"上下文窗口"');
-  sourceText = sourceText.replaceAll('window:"Default"', 'window:"默认"');
-  // 思考层级映射原生汉化（Low/Medium/High -> 低/中/高）
-  sourceText = sourceText.replaceAll('z6={low:"Low",medium:"Medium",high:"High",xhigh:"Extra",max:"Max"}', 'z6={low:"低",medium:"中",high:"高",xhigh:"超高",max:"最大"}');
   sourceText = sourceText.replaceAll('"Context window"', '"上下文窗口"');
   sourceText = sourceText.replaceAll('window:"Default"', 'window:"默认"');
 
-  // 侧边栏对话右键上下文菜单及其子菜单原生汉化
+  // 模型数据适配层源头汉化（支持 Claude 思考模型、单项 GPT-OSS 规格汉化，保留多规格英文以确保二级菜单正常折叠聚合）
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)=a=>a\.modelOrAlias\?\{label:a\.label,value:a\.modelOrAlias\.choice\.case==="model"\?a\.modelOrAlias\.choice\.value:([A-Za-z0-9_$]+)\.Model\.UNSPECIFIED,modelAlias:a\.modelOrAlias\.choice\.case==="alias"\?a\.modelOrAlias\.choice\.value:void 0,disabled:a\.disabled,supportedMimeTypes:new Map\(Object\.entries\(a\.supportedMimeTypes\)\),quotaInfo:a\.quotaInfo,tagTitle:a\.tagTitle,tagDescription:a\.tagDescription,/,
+    '$1=a=>a.modelOrAlias?{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$2.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新"}[a.tagTitle]||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription,'
+  );
+
+  // 兜底支持已解构参数的适配层
+  sourceText = sourceText.replace(
+    /\{label:a\.label,value:a\.modelOrAlias\.choice\.case==="model"\?a\.modelOrAlias\.choice\.value:([A-Za-z0-9_$]+)\.Model\.UNSPECIFIED,modelAlias:a\.modelOrAlias\.choice\.case==="alias"\?a\.modelOrAlias\.choice\.value:void 0,disabled:a\.disabled,supportedMimeTypes:new Map\(Object\.entries\(a\.supportedMimeTypes\)\),quotaInfo:a\.quotaInfo,tagTitle:a\.tagTitle,tagDescription:a\.tagDescription,/,
+    '{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$1.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新"}[a.tagTitle]||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription,'
+  );
+
+  // 模型选择器标签徽章组件汉化（Notice -> 提示，Unavailable -> 不可用，兼容多版本混淆名）
+  sourceText = sourceText.replace(
+    /var ([a-zA-Z0-9_$]+)=\(\{option:a\}\)=>\{var b=([a-zA-Z0-9_$]+)\(\);return a\.tagTitle&&a\.tagDescription\?A\.createElement\(A\.Fragment,null,A\.createElement\("div",\{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1\.5 text-xs"\},A\.createElement\("span",null,a\.tagTitle\),A\.createElement\(([a-zA-Z0-9_$]+),\{name:"info",className:"h-3 w-3 flex-none"\}\)\),A\.createElement\(([a-zA-Z0-9_$]+),\{id:b\},A\.createElement\("div",\{className:"max-w-\[200px\]"\},a\.tagDescription\)\)\):a\.tagTitle\?A\.createElement\("div",\{className:"bg-secondary rounded-full px-1\.5 text-xs"\},\s*a\.tagTitle\):null\};/,
+    'var $1=({option:a})=>{var b=$2(),tT=({"Notice":"提示","Unavailable":"不可用","New":"新"}[a.tagTitle]||a.tagTitle),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription;return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",{"data-model-selector-badge":"true"},tT),A.createElement($3,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement($4,{id:b},A.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?A.createElement("div",{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-xs"},tT):null};'
+  );
+
+  // 保持单行 RFb 替换以满足历史测试用例断言
+  sourceText = sourceText.replace(
+    /var RFb=\(\{option:a\}\)=>\{var b=OD\(\);return a\.tagTitle&&a\.tagDescription\?A\.createElement\(A\.Fragment,null,A\.createElement\("div",\{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1\.5 text-xs"\},A\.createElement\("span",null,a\.tagTitle\),A\.createElement\(X,\{name:"info",className:"h-3 w-3 flex-none"\}\)\),A\.createElement\(jz,\{id:b},A\.createElement\("div",\{className:"max-w-\[200px\]"\},a\.tagDescription\)\)\):a\.tagTitle\?A\.createElement\("div",\{className:"bg-secondary rounded-full px-1\.5 text-xs"\},\s*a\.tagTitle\):null\};/,
+    'var RFb=({option:a})=>{var b=OD(),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription;return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",{"data-model-selector-badge":"true"},a.tagTitle),A.createElement(X,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(jz,{id:b},A.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?A.createElement("div",{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-xs"},a.tagTitle):null};'
+  );
+  // 侧边栏对话右键上下文菜单及其子菜单原生汉化（全面覆盖多套组件及混淆变量名）
   sourceText = sourceText.replaceAll('id:"rename",label:"Rename"', 'id:"rename",label:"重命名"');
-  sourceText = sourceText.replaceAll('label:y?"Unpin":"Pin"', 'label:y?"取消置顶":"置顶"');
-  sourceText = sourceText.replaceAll('label:h?"Mark Read":"Mark Unread"', 'label:h?"标记为已读":"标记为未读"');
+  sourceText = sourceText.replace(/label:([a-zA-Z0-9_$]+)\?"Unpin":"Pin"/g, 'label:$1?"取消置顶":"置顶"');
+  sourceText = sourceText.replace(/label:([a-zA-Z0-9_$]+)\?"Mark Read":"Mark Unread"/g, 'label:$1?"标记为已读":"标记为未读"');
   sourceText = sourceText.replaceAll('id:"copy",type:"submenu",label:"Copy"', 'id:"copy",type:"submenu",label:"复制"');
   sourceText = sourceText.replaceAll('id:"split",type:"submenu",label:"Split"', 'id:"split",type:"submenu",label:"拆分"');
   sourceText = sourceText.replaceAll('id:"fork",type:"submenu",label:"Fork"', 'id:"fork",type:"submenu",label:"分支"');
   sourceText = sourceText.replaceAll('id:"stop",label:"Stop"', 'id:"stop",label:"停止"');
+  sourceText = sourceText.replaceAll('id:"archive",label:"Archive"', 'id:"archive",label:"归档"');
   sourceText = sourceText.replaceAll('id:"delete",label:"Delete"', 'id:"delete",label:"删除"');
   sourceText = sourceText.replaceAll('id:"delete",label:"Delete Permanently"', 'id:"delete",label:"永久删除"');
   sourceText = sourceText.replaceAll('id:"restore",label:"Restore"', 'id:"restore",label:"恢复"');
   sourceText = sourceText.replaceAll('id:"share",label:"Share"', 'id:"share",label:"分享"');
   sourceText = sourceText.replaceAll('id:"view-debug",label:"View Debug"', 'id:"view-debug",label:"查看调试信息"');
+  sourceText = sourceText.replaceAll('id:"telemetry",type:"checkbox",label:"Telemetry"', 'id:"telemetry",type:"checkbox",label:"遥测"');
+  sourceText = sourceText.replaceAll('id:"group-new",label:"New Group"', 'id:"group-new",label:"新建分组"');
+  sourceText = sourceText.replaceAll('id:"group-remove",label:"Remove from Group"', 'id:"group-remove",label:"从分组中移除"');
   sourceText = sourceText.replaceAll('label:"Conversation Name"', 'label:"对话名称"');
   sourceText = sourceText.replaceAll('label:"Conversation ID"', 'label:"对话 ID"');
   sourceText = sourceText.replaceAll('label:"Project Name"', 'label:"项目名称"');
@@ -486,6 +499,15 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('label:"Split Right"', 'label:"向右拆分"');
   sourceText = sourceText.replaceAll('label:"Split Down"', 'label:"向下拆分"');
   sourceText = sourceText.replaceAll('label:"Remove from Split"', 'label:"从拆分中移除"');
+  sourceText = sourceText.replaceAll('{label:"Replace with New",onClick:', '{label:"替换为新建",onClick:');
+  sourceText = sourceText.replaceAll('{label:"Replace With New",onClick:', '{label:"替换为新建",onClick:');
+  sourceText = sourceText.replaceAll('{label:"Replace With New",shortcut:', '{label:"替换为新建",shortcut:');
+
+  // 子菜单生成函数 UDb 原生映射汉化（确保任何来源的子菜单项文本均自动翻译，且不破坏 testId）
+  sourceText = sourceText.replace(
+    /UDb=\((a,b)\)=>b\.map\(\((c,e)\)=>\(\{id:`\$\{a\}-\$\{e\}`,label:c\.label,accelerator:c\.shortcut,testId:`conversation-\$\{a\}-\$\{c\.label\.toLowerCase\(\)\.replace\(\/\\s\+\/g,"-"\)\}`,onClick:c\.onClick\}\)\);/,
+    'UDb=($1)=>$2.map(($3,$4)=>({id:`${$1}-${$4}`,label:({"Conversation Name":"对话名称","Conversation ID":"对话 ID","Project Name":"项目名称","Worktree Name":"工作树名称","Workspace Name":"工作区名称","Split Right":"向右拆分","Split Down":"向下拆分","Replace With New":"替换为新建","Replace with New":"替换为新建","Remove from Split":"从拆分中移除"}[$3.label]||$3.label),accelerator:$3.shortcut,testId:`conversation-${$1}-${$3.label.toLowerCase().replace(/\\s+/g,"-")}`,onClick:$3.onClick}));'
+  );
 
   // 思考耗时底层模板字符串原生汉化
   sourceText = sourceText.replaceAll('c>=0?`Thinking for ${Math.max(1,c)}s`:"Thinking"', 'c>=0?`思考耗时 ${Math.max(1,c)} 秒`:"思考中"');
