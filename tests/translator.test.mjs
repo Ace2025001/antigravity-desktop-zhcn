@@ -1421,3 +1421,47 @@ test("translator localizes context menu, notifications, extensions and model quo
   }
 });
 
+
+test("createLocalizedBundle handles conversation context menu items and models natively", () => {
+  const fakeSource = Buffer.from(`
+    id:"rename",label:"Rename"
+    label:y?"Unpin":"Pin"
+    label:h?"Mark Read":"Mark Unread"
+    id:"copy",type:"submenu",label:"Copy"
+    id:"split",type:"submenu",label:"Split"
+    id:"fork",type:"submenu",label:"Fork"
+    id:"stop",label:"Stop"
+    id:"delete",label:"Delete"
+    id:"delete",label:"Delete Permanently"
+    id:"restore",label:"Restore"
+    id:"share",label:"Share"
+    id:"view-debug",label:"View Debug"
+    label:"Conversation Name"
+    label:"Conversation ID"
+    label:"Project Name"
+    label:\`\${c.isGoogleInternal?"Worktree":"Workspace"} Name\`
+    label:"Split Right"
+    label:"Split Down"
+    label:"Remove from Split"
+    {label:a.label,value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:B.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:a.tagTitle,tagDescription:a.tagDescription,
+    var KTb=({option:a})=>{var b=KE();return a.tagTitle&&a.tagDescription?A.createElement(A.Fragment,null,A.createElement("div",{"data-tooltip-id":b,className:"bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-xs"},A.createElement("span",null,a.tagTitle),A.createElement(Z,{name:"info",className:"h-3 w-3 flex-none"})),A.createElement(iA,{id:b},A.createElement("div",{className:"max-w-[200px]"},a.tagDescription))):a.tagTitle?A.createElement("div",{className:"bg-secondary rounded-full px-1.5 text-xs"},a.tagTitle):null};
+  `);
+  const localized = createLocalizedBundle(fakeSource, dictionary);
+  const out = localized.buffer.toString("utf8");
+  assert.ok(out.includes('id:"rename",label:"重命名"'));
+  assert.ok(out.includes('label:y?"取消置顶":"置顶"'));
+  assert.ok(out.includes('label:h?"标记为已读":"标记为未读"'));
+  assert.ok(out.includes('id:"copy",type:"submenu",label:"复制"'));
+  assert.ok(out.includes('id:"split",type:"submenu",label:"拆分"'));
+  assert.ok(out.includes('id:"stop",label:"停止"'));
+  assert.ok(out.includes('id:"delete",label:"删除"'));
+  assert.ok(out.includes('label:"对话名称"'));
+  assert.ok(out.includes('label:"对话 ID"'));
+  assert.ok(out.includes('label:"项目名称"'));
+  assert.ok(out.includes('label:"向右拆分"'));
+  assert.ok(out.includes('label:"向下拆分"'));
+  assert.ok(out.includes('label:"从拆分中移除"'));
+  assert.ok(out.includes('(思考)'));
+  assert.ok(out.includes('tagTitle==="Unavailable"?"不可用"'));
+  assert.ok(out.includes('"data-model-selector-badge":"true"'));
+});
