@@ -2912,7 +2912,11 @@
     "High": "高",
     "Extra": "超高",
     "Max": "最大",
-    "GPT-OSS 120B (Medium)": "GPT-OSS 120B (中)"
+    "GPT-OSS 120B (Medium)": "GPT-OSS 120B (中)",
+    "no authorization code in callback": "回调中未包含授权码",
+    "Legal Help": "法律帮助",
+    "Visit Legal Help to ask for content changes for legal reasons.": "如需基于法律原因申请修改内容，请访问法律帮助。",
+    "to ask for content changes for legal reasons.": "以因法律原因申请更改内容。"
   },
   "patterns": [
     {

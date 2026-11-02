@@ -535,6 +535,18 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('text:"Open in Code Search"', 'text:"在代码搜索中打开"');
   sourceText = sourceText.replaceAll('aria-label:"Open in Code Search"', 'aria-label:"在代码搜索中打开"');
 
+  // 反馈弹窗法律帮助原生汉化
+  sourceText = sourceText.replace(
+    'A.createElement("p",{className:"text-sm opacity-70"},"Visit"," ",A.createElement("a",{href:"https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658",target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline"},"Legal Help")," ","to ask for content changes for legal reasons.")',
+    'A.createElement("p",{className:"text-sm opacity-70"},"如需基于法律原因申请修改内容，请访问 ",A.createElement("a",{href:"https://support.google.com/legal/troubleshooter/1114905?hl=zh-Hans#ts=1115658",target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline"},"法律帮助")," 。")'
+  );
+
+  // 账号设置意外问题与动态回调错误映射原生汉化
+  sourceText = sourceText.replace(
+    /A\.createElement\("div",\{className:"text-lg font-medium mb-1"\},"There was an unexpected issue setting up your account\."\),A\.createElement\("p",\{className:"text-sm my-4 text-muted-foreground"\},\s*a\|\|"We apologize for the inconvenience\. Please try again later\."\),b&&A\.createElement\(([a-zA-Z0-9_$]+),\{size:"md",variant:"secondary",onClick:b,className:"mt-4"\},"Continue with different account"\),c&&A\.createElement\(([a-zA-Z0-9_$]+),\{size:"md",variant:"link",onClick:c,className:"mt-2 text-sm text-muted-foreground hover:text-foreground font-normal"\},"Having trouble signing in\?"\)/,
+    'A.createElement("div",{className:"text-lg font-medium mb-1"},"设置你的账号时发生了意外问题。"),A.createElement("p",{className:"text-sm my-4 text-muted-foreground"},({"no authorization code in callback":"回调中未包含授权码","Authorization code expired":"授权码已过期","Invalid state":"状态验证失败","Authentication failed":"身份验证失败","Failed to exchange token":"令牌交换失败","Failed to fetch user info":"获取用户信息失败"}[a]||a)||"由此带来的不便，我们深表歉意。请稍后重试。"),b&&A.createElement($1,{size:"md",variant:"secondary",onClick:b,className:"mt-4"},"使用其他账号继续"),c&&A.createElement($2,{size:"md",variant:"link",onClick:c,className:"mt-2 text-sm text-muted-foreground hover:text-foreground font-normal"},"登录遇到问题?")'
+  );
+
   // 思考耗时底层模板字符串原生汉化
   sourceText = sourceText.replaceAll('c>=0?`Thinking for ${Math.max(1,c)}s`:"Thinking"', 'c>=0?`思考耗时 ${Math.max(1,c)} 秒`:"思考中"');
   sourceText = sourceText.replaceAll('b?`Thought for ${Math.max(1,Number(b.seconds))}s`:"Thought Process"', 'b?`思考耗时 ${Math.max(1,Number(b.seconds))} 秒`:"思考过程"');
