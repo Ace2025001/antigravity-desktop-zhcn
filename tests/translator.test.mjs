@@ -1528,3 +1528,33 @@ test("UDb submenu translation preserves structure, parameters, testId, and maint
   assert.equal(res[2].label, "Custom Label");
   assert.equal(res[2].testId, "conversation-copy-custom-label");
 });
+
+test("attachment summaries, counts, and card state strings are fully covered", async () => {
+  const dictionary = await loadDomTranslations();
+  const testCases = [
+    { source: "1 image attachment", expected: "1 张图片附件" },
+    { source: "(1 image attachment)", expected: "（1 张图片附件）" },
+    { source: "2 image attachments", expected: "2 张图片附件" },
+    { source: "(5 image attachments)", expected: "（5 张图片附件）" },
+    { source: "1 video attachment", expected: "1 个视频附件" },
+    { source: "(3 video attachments)", expected: "（3 个视频附件）" },
+    { source: "1 audio attachment", expected: "1 个音频附件" },
+    { source: "(4 audio attachments)", expected: "（4 个音频附件）" },
+    { source: "Video attachment", expected: "视频附件" },
+    { source: "Image attachment", expected: "图片附件" },
+    { source: "PDF attachment", expected: "PDF 附件" },
+    { source: "CSV spreadsheet attachment", expected: "CSV 表格附件" },
+    { source: "JSON attachment", expected: "JSON 附件" },
+    { source: "Markdown attachment", expected: "Markdown 附件" },
+    { source: "Maximum number of attachments reached", expected: "已达到附件数量上限" },
+    { source: "Couldn't load message", expected: "无法加载消息" },
+    { source: "No message text", expected: "无消息内容" },
+    { source: "Copy Message", expected: "复制消息" },
+    { source: "Undo to Here", expected: "撤销到此处" },
+  ];
+
+  for (const { source, expected } of testCases) {
+    const actual = translateDictionaryValue(source, dictionary);
+    assert.equal(actual, expected, `翻译失败: "${source}" 应该为 "${expected}"，但实际为 "${actual}"`);
+  }
+});

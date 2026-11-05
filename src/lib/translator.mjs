@@ -721,11 +721,62 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('A.createElement(WS,null,"Recent")', 'A.createElement(WS,null,"最近")');
   sourceText = sourceText.replace(/\bA\.createElement\(WS,null,\s*"Remote Projects"\)/g, 'A.createElement(WS,null,"远程项目")');
 
-  // 附件汇总文案原生汉化
-  sourceText = sourceText.replace(
-    'c.numImages>0&&d.push(c.numImages===1?"1 image attachment":`${c.numImages} image attachments`);c.numVideos>0&&d.push(c.numVideos===1?"1 video attachment":`${c.numVideos} video attachments`);c.numAudio>0&&d.push(c.numAudio===1?"1 audio attachment":`${c.numAudio} audio attachments`);c=d.length===0?"":d.length===1?d[0]:d.length===2?`${d[0]} and ${d[1]}`:`${d[0]}, ${d[1]}, and ${d[2]}`',
-    'c.numImages>0&&d.push(c.numImages===1?"1 张图片附件":`${c.numImages} 张图片附件`);c.numVideos>0&&d.push(c.numVideos===1?"1 个视频附件":`${c.numVideos} 个视频附件`);c.numAudio>0&&d.push(c.numAudio===1?"1 个音频附件":`${c.numAudio} 个音频附件`);c=d.length===0?"":d.length===1?d[0]:d.length===2?`${d[0]} 与 ${d[1]}`:`${d[0]}、${d[1]} 与 ${d[2]}`'
-  );
+  // 附件汇总与单复数文案原生汉化
+  sourceText = sourceText.replaceAll('"1 image attachment"', '"1 张图片附件"');
+  sourceText = sourceText.replaceAll('`${c.numImages} image attachments`', '`${c.numImages} 张图片附件`');
+  sourceText = sourceText.replaceAll('"1 video attachment"', '"1 个视频附件"');
+  sourceText = sourceText.replaceAll('`${c.numVideos} video attachments`', '`${c.numVideos} 个视频附件`');
+  sourceText = sourceText.replaceAll('"1 audio attachment"', '"1 个音频附件"');
+  sourceText = sourceText.replaceAll('`${c.numAudio} audio attachments`', '`${c.numAudio} 个音频附件`');
+  sourceText = sourceText.replaceAll('`${d[0]} and ${d[1]}`', '`${d[0]} 与 ${d[1]}`');
+  sourceText = sourceText.replaceAll('`${d[0]}, ${d[1]}, and ${d[2]}`', '`${d[0]}、${d[1]} 与 ${d[2]}`');
+  sourceText = sourceText.replaceAll('`${b} attachment(s)`', '`${b} 个附件`');
+  sourceText = sourceText.replaceAll('`+${d} attachments`', '`+${d} 个附件`');
+  sourceText = sourceText.replaceAll('"Maximum number of attachments reached"', '"已达到最大附件数量限制"');
+
+  // 各类附件类型原生汉化
+  sourceText = sourceText.replaceAll('video:"Video attachment"', 'video:"视频附件"');
+  sourceText = sourceText.replaceAll('pdf:"PDF attachment"', 'pdf:"PDF 附件"');
+  sourceText = sourceText.replaceAll('text:"Text attachment"', 'text:"文本附件"');
+  sourceText = sourceText.replaceAll('csv:"CSV spreadsheet attachment"', 'csv:"CSV 表格附件"');
+  sourceText = sourceText.replaceAll('json:"JSON attachment"', 'json:"JSON 附件"');
+  sourceText = sourceText.replaceAll('md:"Markdown attachment"', 'md:"Markdown 附件"');
+  sourceText = sourceText.replaceAll('image:"Image attachment"', 'image:"图片附件"');
+  sourceText = sourceText.replaceAll('audio:"Audio attachment"', 'audio:"音频附件"');
+  sourceText = sourceText.replaceAll('document:"Document attachment"', 'document:"文档附件"');
+  sourceText = sourceText.replaceAll('archive:"Zip attachment"', 'archive:"压缩包附件"');
+  sourceText = sourceText.replaceAll('unknown:"File attachment"', 'unknown:"文件附件"');
+  sourceText = sourceText.replaceAll('"Video attachment"', '"视频附件"');
+  sourceText = sourceText.replaceAll('"Image attachment"', '"图片附件"');
+  sourceText = sourceText.replaceAll('`${b} comment${b>1?"s":""} in ${c}`', '`${c} 中的 ${b} 条批注`');
+
+  // 消息卡片加载状态与分支提问来源原生汉化
+  sourceText = sourceText.replaceAll('h?"Couldn\'t load message":"No message text"', 'h?"无法加载消息":"无消息内容"');
+  sourceText = sourceText.replaceAll('c?.isMidTurn?"Started during":"Started from"', 'c?.isMidTurn?"始于":"发起自"');
+  sourceText = sourceText.replaceAll('f=d?`${c} \\u201c${d}\\u201d`:`${c} the main conversation`', 'f=d?`${c} \\u201c${d}\\u201d`:`${c}主会话`');
+  sourceText = sourceText.replaceAll('`${f}. Show in main conversation`', '`${f}。在主会话中显示`');
+
+  // 高频菜单与操作按钮原生汉化
+  sourceText = sourceText.replaceAll('label:"Undo to Here"', 'label:"撤销到此处"');
+  sourceText = sourceText.replaceAll('label:"Copy Message"', 'label:"复制消息"');
+  sourceText = sourceText.replaceAll('label:"Fork in Shared Workspace"', 'label:"在共享工作区中派生"');
+  sourceText = sourceText.replaceAll('label:"Fork in New Workspace"', 'label:"在新建工作区中派生"');
+  sourceText = sourceText.replaceAll('label:"Open Link in New Tab"', 'label:"在新标签页中打开链接"');
+  sourceText = sourceText.replaceAll('label:"Copy Link Address"', 'label:"复制链接地址"');
+  sourceText = sourceText.replaceAll('label:"Open Image in New Tab"', 'label:"在新标签页中打开图片"');
+  sourceText = sourceText.replaceAll('label:"Copy Image Address"', 'label:"复制图片地址"');
+  sourceText = sourceText.replaceAll('label:"Close Other Tabs"', 'label:"关闭其他标签页"');
+  sourceText = sourceText.replaceAll('label:"Close Tabs to the Left"', 'label:"关闭左侧标签页"');
+  sourceText = sourceText.replaceAll('label:"Close Tabs to the Right"', 'label:"关闭右侧标签页"');
+  sourceText = sourceText.replaceAll('tooltip:"Stop Editing"', 'tooltip:"停止编辑"');
+  sourceText = sourceText.replaceAll('tooltip:"Edit Shortcut"', 'tooltip:"编辑快捷键"');
+  sourceText = sourceText.replaceAll('tooltip:"Remove Shortcut"', 'tooltip:"移除快捷键"');
+  sourceText = sourceText.replaceAll('tooltip:"Add Shortcut"', 'tooltip:"添加快捷键"');
+  sourceText = sourceText.replaceAll('tooltip:"Reset All to Defaults"', 'tooltip:"全部重置为默认值"');
+  sourceText = sourceText.replaceAll('tooltip:"Open in side pane"', 'tooltip:"在侧边栏中打开"');
+  sourceText = sourceText.replaceAll('tooltip:"Open in Notebook View"', 'tooltip:"在笔记本视图中打开"');
+  sourceText = sourceText.replaceAll('tooltip:"Download File"', 'tooltip:"下载文件"');
+  sourceText = sourceText.replaceAll('tooltip:"Kill Terminal"', 'tooltip:"终止终端"');
 
   // 对话时间轴轮次与步骤卡片原生汉化
   sourceText = sourceText.replaceAll('g=[`${g} turn${g===1?"":"s"}`];', 'g=[`${g} 轮对话`];');
