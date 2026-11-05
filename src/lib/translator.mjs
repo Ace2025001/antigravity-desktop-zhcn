@@ -715,6 +715,29 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('A.createElement(WS,null,"Recent")', 'A.createElement(WS,null,"最近")');
   sourceText = sourceText.replace(/\bA\.createElement\(WS,null,\s*"Remote Projects"\)/g, 'A.createElement(WS,null,"远程项目")');
 
+  // 附件汇总文案原生汉化
+  sourceText = sourceText.replace(
+    'c.numImages>0&&d.push(c.numImages===1?"1 image attachment":`${c.numImages} image attachments`);c.numVideos>0&&d.push(c.numVideos===1?"1 video attachment":`${c.numVideos} video attachments`);c.numAudio>0&&d.push(c.numAudio===1?"1 audio attachment":`${c.numAudio} audio attachments`);c=d.length===0?"":d.length===1?d[0]:d.length===2?`${d[0]} and ${d[1]}`:`${d[0]}, ${d[1]}, and ${d[2]}`',
+    'c.numImages>0&&d.push(c.numImages===1?"1 张图片附件":`${c.numImages} 张图片附件`);c.numVideos>0&&d.push(c.numVideos===1?"1 个视频附件":`${c.numVideos} 个视频附件`);c.numAudio>0&&d.push(c.numAudio===1?"1 个音频附件":`${c.numAudio} 个音频附件`);c=d.length===0?"":d.length===1?d[0]:d.length===2?`${d[0]} 与 ${d[1]}`:`${d[0]}、${d[1]} 与 ${d[2]}`'
+  );
+
+  // 对话时间轴轮次与步骤卡片原生汉化
+  sourceText = sourceText.replaceAll('g=[`${g} turn${g===1?"":"s"}`];', 'g=[`${g} 轮对话`];');
+  sourceText = sourceText.replaceAll('a===b?`Turn ${a}`:`Turns ${a}\\u2013${b}`', 'a===b?`第 ${a} 轮`:`第 ${a}–${b} 轮`');
+  sourceText = sourceText.replaceAll('d||`Turn ${a.turnIndex+1}`', 'd||`第 ${a.turnIndex+1} 轮`');
+  sourceText = sourceText.replaceAll('"aria-label":`Go to turn ${a} of ${c}`', '"aria-label":`前往第 ${a} 步（共 ${c} 步）`');
+  sourceText = sourceText.replaceAll('"aria-label":`Turn ${a+1} of ${b}`', '"aria-label":`第 ${a+1} 步（共 ${b} 步）`');
+  sourceText = sourceText.replaceAll('A.createElement("span",null,a," of ",c)', 'A.createElement("span",null,a," / ",c)');
+  sourceText = sourceText.replaceAll('A.createElement(hn,null,"Card "),m+1," of ",l', 'A.createElement(hn,null,"卡片 "),m+1," / ",l');
+  sourceText = sourceText.replaceAll('"aria-label":a==="up"?"Scroll turns up":"Scroll turns down"', '"aria-label":a==="up"?"向上滚动轮次":"向下滚动轮次"');
+  sourceText = sourceText.replaceAll('"aria-label":"Conversation turns"', '"aria-label":"对话轮次"');
+
+  // 章节小结标题智能翻译增强
+  sourceText = sourceText.replace(
+    'A.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"text-sm font-medium leading-snug text-foreground"},d??SCc(a,b))',
+    'A.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"text-sm font-medium leading-snug text-foreground"},(d?((t)=>{const m={"Fixing the desktop app localization":"修复桌面应用本地化","Updating and uploading localization files":"更新与上传本地化文件","Publishing and updating the localization project":"发布与更新本地化项目","Comparing translation pack projects":"对比汉化包项目"};if(m[t])return m[t];let s=t.replace(/^Fixing\\s+/i,"修复 ").replace(/^Updating\\s+and\\s+uploading\\s+/i,"更新与上传 ").replace(/^Publishing\\s+and\\s+updating\\s+/i,"发布与更新 ").replace(/^Comparing\\s+/i,"对比 ").replace(/^Updating\\s+/i,"更新 ").replace(/^Publishing\\s+/i,"发布 ").replace(/^Building\\s+/i,"构建 ").replace(/^Testing\\s+/i,"测试 ").replace(/^Creating\\s+/i,"创建 ").replace(/^Configuring\\s+/i,"配置 ").replace(/^Deploying\\s+/i,"部署 ");return s.replace(/the\\s+desktop\\s+app\\s+localization/gi,"桌面应用本地化").replace(/localization\\s+files/gi,"本地化文件").replace(/the\\s+localization\\s+project/gi,"本地化项目").replace(/localization\\s+project/gi,"本地化项目").replace(/translation\\s+pack\\s+projects/gi,"汉化包项目").replace(/translation\\s+pack/gi,"汉化包").replace(/localization/gi,"本地化");})(d):d)??SCc(a,b))'
+  );
+
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
   return {

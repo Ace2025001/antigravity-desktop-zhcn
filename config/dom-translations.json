@@ -2944,7 +2944,17 @@
     "GitHub Repositories": "GitHub 仓库",
     "Loading Repositories…": "正在加载仓库…",
     "No matching repositories": "未找到匹配的仓库",
-    "No repositories found": "未找到仓库"
+    "No repositories found": "未找到仓库",
+    "1 image attachment": "1 张图片附件",
+    "1 video attachment": "1 个视频附件",
+    "1 audio attachment": "1 个音频附件",
+    "Fixing the desktop app localization": "修复桌面应用本地化",
+    "Updating and uploading localization files": "更新与上传本地化文件",
+    "Publishing and updating the localization project": "发布与更新本地化项目",
+    "Comparing translation pack projects": "对比汉化包项目",
+    "Conversation turns": "对话轮次",
+    "Scroll turns up": "向上滚动轮次",
+    "Scroll turns down": "向下滚动轮次"
   },
   "patterns": [
     {
@@ -9355,6 +9365,36 @@
     {
       "source": "^(.*)\\s+\\((?:Thinking|thinking)\\)$",
       "target": "$1 (思考)",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s+image\\s+attachments?$",
+      "target": "$1 张图片附件",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s+video\\s+attachments?$",
+      "target": "$1 个视频附件",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s+audio\\s+attachments?$",
+      "target": "$1 个音频附件",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\s+turns?$",
+      "target": "$1 轮对话",
+      "flags": "u"
+    },
+    {
+      "source": "^Turn\\s+(\\d+)$",
+      "target": "第 $1 轮",
+      "flags": "u"
+    },
+    {
+      "source": "^Turns\\s+(\\d+)[–-](\\d+)$",
+      "target": "第 $1–$2 轮",
       "flags": "u"
     }
   ]
