@@ -677,6 +677,44 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     'if(WLa.test(a))return"便签本";var [,b,c]=a.match(/^(.+?)_(\\d{13})$/)||[null,a,null];a=b.replace(/[_-]/g," ").replace(/([a-z])([A-Z])/g,"$1 $2").split(/\\s+/).filter(e=>e.length>0).map(e=>e.charAt(0).toUpperCase()+e.slice(1).toLowerCase()).join(" ");a=(a==="Media"?"媒体":a==="Screenshot"?"屏幕截图":a==="Scratchpad"?"便签本":a);return c?`${a} (${$La(c)})`:a'
   );
 
+  // 2.29.0 通用设置：内置浏览器下载与历史清理、语音模式与麦克风设备
+  sourceText = sourceText.replaceAll('label:"Download Location"', 'label:"下载位置"');
+  sourceText = sourceText.replaceAll('"Folder where files downloaded in the built-in browser are saved."', '"内置浏览器下载文件的保存目录。"');
+  sourceText = sourceText.replaceAll('label:"Browsing History"', 'label:"浏览历史"');
+  sourceText = sourceText.replaceAll('"Clear visited URLs and autocomplete suggestions from the built-in browser."', '"清除内置浏览器访问过的网址及自动补全建议。"');
+  sourceText = sourceText.replaceAll('"Clear visited URLs and autocomplete suggestions from side panel preview."', '"清除侧边栏预览中访问过的网址及自动补全建议。"');
+  sourceText = sourceText.replaceAll('title:b?"Voice":"Voice mode"', 'title:b?"语音":"语音模式"');
+  sourceText = sourceText.replaceAll('label:"Voice",description:b?"The voice Jetski speaks with.":"The voice used in Voice mode. Powered by Gemini Live."', 'label:"语音",description:b?"Jetski 朗读所用的语音。":"语音模式使用的语音。由 Gemini Live 提供支持。"');
+  sourceText = sourceText.replaceAll('label:"Microphone",description:"Input device for voice mode and dictation."', 'label:"麦克风",description:"用于语音模式与听写的输入设备。"');
+  sourceText = sourceText.replaceAll('const vxb={id:"",label:"System default"};', 'const vxb={id:"",label:"系统默认"};');
+
+  // 2.29.0 外观设置：辅助功能屏幕阅读器与字体选择器、浅深色主题
+  sourceText = sourceText.replaceAll('{title:"Accessibility",settings:["customContextMenusEnabled","screenReaderMode"]}', '{title:"辅助功能",settings:["customContextMenusEnabled","screenReaderMode"]}');
+  sourceText = sourceText.replaceAll('label:"Screen Reader Mode",description:"Optimize the interface and terminal output for screen readers.",settingType:"switch"', 'label:"屏幕阅读器模式",description:"针对屏幕阅读器优化界面和终端输出。",settingType:"switch"');
+  sourceText = sourceText.replaceAll('label:"Font",value:JOb(m),options:IOb,displayResolver:JOb,onSelect:hPb,nativeOnMobile:!0', 'label:"字体",value:JOb(m),options:IOb,displayResolver:JOb,onSelect:hPb,nativeOnMobile:!0');
+  sourceText = sourceText.replaceAll('function JOb(a){switch(a){case "system":return"System UI";case "inter":return"Inter";case "google-sans":return"Google Sans"}}', 'function JOb(a){switch(a){case "system":return"系统默认";case "inter":return"Inter";case "google-sans":return"Google Sans"}}');
+  sourceText = sourceText.replaceAll('title:"Light Theme"', 'title:"浅色主题"');
+  sourceText = sourceText.replaceAll('title:"Dark Theme"', 'title:"深色主题"');
+
+  // 2.29.0 项目与工作区选择器原生汉化
+  sourceText = sourceText.replaceAll('C=B?.renameProjectsToWorkspaces??!1,E=C?"workspaces":"projects"', 'C=B?.renameProjectsToWorkspaces??!1,E=C?"工作区":"项目"');
+  sourceText = sourceText.replaceAll('F=B?.projectSearchPlaceholder??(C?"Search Recent Workspaces":"Search Projects")', 'F=B?.projectSearchPlaceholder??(C?"搜索最近工作区":"搜索项目")');
+  sourceText = sourceText.replaceAll('gb=C?"Select Workspace":"Select Project"', 'gb=C?"选择工作区":"选择项目"');
+  sourceText = sourceText.replaceAll('case "magicWorkspace":return"New Workspace"', 'case "magicWorkspace":return"新建工作区"');
+  sourceText = sourceText.replaceAll('case "standalone":return"No Project"', 'case "standalone":return"无项目"');
+  sourceText = sourceText.replaceAll('"No ",E," found"', '"未找到",E');
+  sourceText = sourceText.replaceAll('"No matching ",E', '"未找到匹配的",E');
+  sourceText = sourceText.replaceAll('Sa.trim()?`No matching ${E}`:`No remote ${E}`', 'Sa.trim()?`未找到匹配的${E}`:`暂无远程${E}`');
+  sourceText = sourceText.replaceAll('title:"This Computer"', 'title:"本地电脑"');
+  sourceText = sourceText.replaceAll('searchPlaceholder:C?"Search Workspaces\\u2026":"Search Projects\\u2026"', 'searchPlaceholder:C?"搜索工作区\\u2026":"搜索项目\\u2026"');
+  sourceText = sourceText.replaceAll('title:"Remote"', 'title:"远程"');
+  sourceText = sourceText.replaceAll('searchPlaceholder:"Search Remote\\u2026"', 'searchPlaceholder:"搜索远程\\u2026"');
+  sourceText = sourceText.replaceAll('A.createElement(WS,null,"GitHub Repositories")', 'A.createElement(WS,null,"GitHub 仓库")');
+  sourceText = sourceText.replaceAll('"Loading Repositories\\u2026"', '"正在加载仓库\\u2026"');
+  sourceText = sourceText.replaceAll('g.trim()?"No matching repositories":"No repositories found"', 'g.trim()?"未找到匹配的仓库":"未找到仓库"');
+  sourceText = sourceText.replaceAll('A.createElement(WS,null,"Recent")', 'A.createElement(WS,null,"最近")');
+  sourceText = sourceText.replace(/\bA\.createElement\(WS,null,\s*"Remote Projects"\)/g, 'A.createElement(WS,null,"远程项目")');
+
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
   return {
