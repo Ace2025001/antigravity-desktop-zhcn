@@ -43,6 +43,42 @@ function compilePatternTranslations(dictionary) {
   }));
 }
 
+export function formatPlanTermsToChinese(str) {
+  if (typeof str !== "string") return str;
+  return str
+    .replace(/\bUltra and paid Pro\b/gi, "Ultra 及付费 Pro")
+    .replace(/\bpaid Pro and Ultra\b/gi, "付费 Pro 及 Ultra")
+    .replace(/\bPro and Ultra\b/gi, "Pro 及 Ultra")
+    .replace(/\bUltra and Pro\b/gi, "Ultra 及 Pro")
+    .replace(/\bpaid Pro\b/gi, "付费 Pro")
+    .replace(/\bpaid Ultra\b/gi, "付费 Ultra");
+}
+
+export function formatEnglishDateToChinese(str) {
+  if (typeof str !== "string") return str;
+  const monthMap = {
+    January: "1", February: "2", March: "3", April: "4",
+    May: "5", June: "6", July: "7", August: "8",
+    September: "9", October: "10", November: "11", December: "12",
+    Jan: "1", Feb: "2", Mar: "3", Apr: "4",
+    Jun: "6", Jul: "7", Aug: "8", Sep: "9", Sept: "9", Oct: "10", Nov: "11", Dec: "12"
+  };
+  let result = str.replace(
+    /\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})\b/gi,
+    function(_, month, day, year) {
+      const m = monthMap[month.charAt(0).toUpperCase() + month.slice(1).toLowerCase()] || month;
+      return year + " 年 " + m + " 月 " + day + " 日";
+    }
+  ).replace(
+    /\b(\d{1,2})(?:st|nd|rd|th)?\s+(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec),?\s*(\d{4})\b/gi,
+    function(_, day, month, year) {
+      const m = monthMap[month.charAt(0).toUpperCase() + month.slice(1).toLowerCase()] || month;
+      return year + " 年 " + m + " 月 " + day + " 日";
+    }
+  ).replace(/(\d+ 日)\s+(起|从|前|后)/g, "$1$2");
+  return formatPlanTermsToChinese(result);
+}
+
 export function translateDictionaryValue(value, dictionary) {
   if (typeof value !== "string" || value.length === 0) return null;
   const leading = value.match(/^\s*/u)?.[0] ?? "";
@@ -62,11 +98,11 @@ export function translateDictionaryValue(value, dictionary) {
     regex.lastIndex = 0;
     if (regex.test(core)) {
       regex.lastIndex = 0;
-      return leading + core.replace(regex, target) + trailing;
+      return leading + formatEnglishDateToChinese(core.replace(regex, target)) + trailing;
     }
     if (normalizedCore !== core && regex.test(normalizedCore)) {
       regex.lastIndex = 0;
-      return leading + normalizedCore.replace(regex, target) + trailing;
+      return leading + formatEnglishDateToChinese(normalizedCore.replace(regex, target)) + trailing;
     }
   }
   return null;
@@ -147,6 +183,36 @@ export function createRuntimeOverlay(dictionary) {
     ".monaco-editor"
   ].join(",");
 
+  const __monthMap = {
+    January: "1", February: "2", March: "3", April: "4",
+    May: "5", June: "6", July: "7", August: "8",
+    September: "9", October: "10", November: "11", December: "12",
+    Jan: "1", Feb: "2", Mar: "3", Apr: "4",
+    Jun: "6", Jul: "7", Aug: "8", Sep: "9", Sept: "9", Oct: "10", Nov: "11", Dec: "12"
+  };
+  function __fmtEnDate(str) {
+    if (typeof str !== "string") return str;
+    var res = str.replace(
+      /\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})\b/gi,
+      function(_, month, day, year) {
+        var m = __monthMap[month.charAt(0).toUpperCase() + month.slice(1).toLowerCase()] || month;
+        return year + " 年 " + m + " 月 " + day + " 日";
+      }
+    ).replace(
+      /\b(\d{1,2})(?:st|nd|rd|th)?\s+(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec),?\s*(\d{4})\b/gi,
+      function(_, day, month, year) {
+        var m = __monthMap[month.charAt(0).toUpperCase() + month.slice(1).toLowerCase()] || month;
+        return year + " 年 " + m + " 月 " + day + " 日";
+      }
+    ).replace(/(\d+ 日)\s+(起|从|前|后)/g, "$1$2");
+    return res
+      .replace(/\bUltra and paid Pro\b/gi, "Ultra 及付费 Pro")
+      .replace(/\bpaid Pro and Ultra\b/gi, "付费 Pro 及 Ultra")
+      .replace(/\bPro and Ultra\b/gi, "Pro 及 Ultra")
+      .replace(/\bUltra and Pro\b/gi, "Ultra 及 Pro")
+      .replace(/\bpaid Pro\b/gi, "付费 Pro")
+      .replace(/\bpaid Ultra\b/gi, "付费 Ultra");
+  }
   const collectorRecords = [];
   const collector = {
     enabled: Boolean(globalThis.__AGY_ZHCN_COLLECTOR__?.enabled),
@@ -189,11 +255,11 @@ export function createRuntimeOverlay(dictionary) {
       regex.lastIndex = 0;
       if (regex.test(core)) {
         regex.lastIndex = 0;
-        return leading + core.replace(regex, target) + trailing;
+        return leading + __fmtEnDate(core.replace(regex, target)) + trailing;
       }
       if (normalizedCore !== core && regex.test(normalizedCore)) {
         regex.lastIndex = 0;
-        return leading + normalizedCore.replace(regex, target) + trailing;
+        return leading + __fmtEnDate(normalizedCore.replace(regex, target)) + trailing;
       }
     }
     return null;
@@ -685,13 +751,23 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('d=b?"Side Panel":"Built-in Browser",f=b?"New Tab":"External Browser"', 'd=b?"侧边栏":"内置浏览器",f=b?"新标签页":"外部浏览器"');
   sourceText = sourceText.replaceAll('label:"Download Location"', 'label:"下载位置"');
   sourceText = sourceText.replaceAll('"Folder where files downloaded in the built-in browser are saved."', '"内置浏览器下载文件的保存目录。"');
-  sourceText = sourceText.replaceAll('label:"Browsing History"', 'label:"浏览历史"');
-  sourceText = sourceText.replaceAll('"Clear visited URLs and autocomplete suggestions from the built-in browser."', '"清除内置浏览器访问过的网址及自动补全建议。"');
-  sourceText = sourceText.replaceAll('"Clear visited URLs and autocomplete suggestions from side panel preview."', '"清除侧边栏预览中访问过的网址及自动补全建议。"');
+  sourceText = sourceText.replaceAll('"CitC workspace paths are world-readable and permanently snapshotted. Choose a local folder outside CitC."', '"CitC 工作区路径对所有人可见且永久保留快照，请选择 CitC 之外的本地文件夹。"');
+  sourceText = sourceText.replaceAll('},"Change\\u2026"))})),m&&A.createElement(XP,{label:"Browsing History"', '},"更改…"))})),m&&A.createElement(XP,{label:"浏览记录"');
+  sourceText = sourceText.replaceAll('label:"Browsing History"', 'label:"浏览记录"');
+  sourceText = sourceText.replaceAll('"Clear visited URLs and autocomplete suggestions from the built-in browser."', '"清除内置浏览器的访问网址与自动填充建议。"');
+  sourceText = sourceText.replaceAll('"Clear visited URLs and autocomplete suggestions from side panel preview."', '"清除侧边栏预览中的访问网址与自动填充建议。"');
+  sourceText = sourceText.replaceAll('"builtin-browser-download-dir-reset",onClick:()=>{v(null);T.setPrefValue("builtinBrowserDownloadDir","")}},"Reset")', '"builtin-browser-download-dir-reset",onClick:()=>{v(null);T.setPrefValue("builtinBrowserDownloadDir","")}},"重置")');
   sourceText = sourceText.replaceAll('title:b?"Voice":"Voice mode"', 'title:b?"语音":"语音模式"');
   sourceText = sourceText.replaceAll('label:"Voice",description:b?"The voice Jetski speaks with.":"The voice used in Voice mode. Powered by Gemini Live."', 'label:"语音",description:b?"Jetski 朗读所用的语音。":"语音模式使用的语音。由 Gemini Live 提供支持。"');
   sourceText = sourceText.replaceAll('label:"Microphone",description:"Input device for voice mode and dictation."', 'label:"麦克风",description:"用于语音模式与听写的输入设备。"');
   sourceText = sourceText.replaceAll('vxb={id:"",label:"System default"}', 'vxb={id:"",label:"系统默认"}');
+  sourceText = sourceText.replaceAll('label:"Volume"', 'label:"音量"');
+  sourceText = sourceText.replaceAll('description:b?"How loud Jetski\'s voice is.":"How loud Antigravity\'s voice is."', 'description:b?"Jetski 的发音音量。":"Antigravity 的发音音量。"');
+  sourceText = sourceText.replaceAll('"aria-label":"Voice volume"', '"aria-label":"语音音量"');
+  sourceText = sourceText.replaceAll('label:"Recordings"', 'label:"录音记录"');
+  sourceText = sourceText.replaceAll('a===0?"No recordings":', 'a===0?"无录音记录":');
+  sourceText = sourceText.replaceAll('title:"Delete all recordings?"', 'title:"删除所有录音记录？"');
+  sourceText = sourceText.replaceAll('disabled:b.bytes===0,"data-testid":"voice-settings-delete-recordings",onClick:()=>{f(!0)}},"Delete all"', 'disabled:b.bytes===0,"data-testid":"voice-settings-delete-recordings",onClick:()=>{f(!0)}},"全部删除"');
   sourceText = sourceText.replaceAll('label:"System default"', 'label:"系统默认"');
 
   // 2.29.0 外观设置：辅助功能屏幕阅读器与字体选择器、浅深色主题
@@ -748,6 +824,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('unknown:"File attachment"', 'unknown:"文件附件"');
   sourceText = sourceText.replaceAll('"Video attachment"', '"视频附件"');
   sourceText = sourceText.replaceAll('"Image attachment"', '"图片附件"');
+  sourceText = sourceText.replaceAll('"Click to load"', '"点击加载"');
   sourceText = sourceText.replaceAll('`${b} comment${b>1?"s":""} in ${c}`', '`${c} 中的 ${b} 条批注`');
 
   // 消息卡片加载状态与分支提问来源原生汉化
@@ -795,10 +872,10 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('"The conversation was compacted to fit within the context window."', '"对话已压缩，以适应上下文窗口。"');
   sourceText = sourceText.replaceAll('"The conversation was compacted while generating this response."', '"在生成此回复时，对话已自动压缩。"');
 
-  // 章节小结标题智能翻译增强
+  // 章节小结标题智能翻译增强（全量内置 23 个真实标题 + 完整动宾复合解析器）
   sourceText = sourceText.replace(
     'A.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"text-sm font-medium leading-snug text-foreground"},d??SCc(a,b))',
-    'A.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"text-sm font-medium leading-snug text-foreground"},(d?((t)=>{const m={"Analyzing software localization and promotion strategies":"分析软件本地化与推广策略","Auditing and localizing desktop app":"审查并本地化桌面应用","Comparing translation pack projects":"对比汉化包项目","Continuing translation and reviewing improvements":"继续汉化并审查改进","Fixing and releasing software localization":"修复并发布软件本地化","Fixing the desktop app localization":"修复桌面应用本地化","Fixing translation and UI bug":"修复汉化与界面问题","Iterating software localization and UI translations":"迭代软件本地化与界面汉化","Locating missing desktop shortcut":"查找丢失的桌面快捷方式","Optimizing app localization and rules":"优化应用本地化与规则","Publishing and updating the localization project":"发布与更新本地化项目","Publishing new antigravity localization release":"发布 Antigravity 汉化新版本","Refining UI localization and error messages":"优化界面汉化与错误提示","Releasing v1.0.0 and finalizing localization":"发布 v1.0.0 并定稿本地化","Setting up and fixing Antigravity GitHub repository":"配置并修复 Antigravity GitHub 仓库","Translating context menu and tooltips":"汉化右键菜单与提示气泡","Translating missing UI elements and tooltips":"汉化遗漏的界面元素与提示","Translating remaining untranslated error messages":"汉化剩余未翻译的错误提示","Translating the user interface":"汉化用户界面","Understanding the antigravity hot reload update":"解析 Antigravity 热重载更新机制","Updating and uploading localization files":"更新与上传本地化文件"};if(m[t])return m[t];let s=t.replace(/^Fixing and releasing software localization/i,"修复并发布软件本地化").replace(/^Fixing and releasing/i,"修复并发布").replace(/^Updating and uploading/i,"更新并上传").replace(/^Publishing and updating/i,"发布并更新").replace(/^Auditing and localizing/i,"审查并本地化").replace(/^Continuing translation and reviewing/i,"继续汉化并审查").replace(/^Fixing\\s+/i,"修复 ").replace(/^Updating\\s+/i,"更新 ").replace(/^Publishing\\s+/i,"发布 ").replace(/^Comparing\\s+/i,"对比 ").replace(/^Building\\s+/i,"构建 ").replace(/^Testing\\s+/i,"测试 ").replace(/^Creating\\s+/i,"创建 ").replace(/^Configuring\\s+/i,"配置 ").replace(/^Deploying\\s+/i,"部署 ").replace(/^Analyzing\\s+/i,"分析 ").replace(/^Refining\\s+/i,"优化 ").replace(/^Iterating\\s+/i,"迭代 ").replace(/^Locating\\s+/i,"查找 ").replace(/^Translating\\s+/i,"汉化 ");return s.replace(/the\\s+desktop\\s+app\\s+localization/gi,"桌面应用本地化").replace(/desktop\\s+app\\s+localization/gi,"桌面应用本地化").replace(/software\\s+localization/gi,"软件本地化").replace(/localization\\s+files/gi,"本地化文件").replace(/the\\s+localization\\s+project/gi,"本地化项目").replace(/localization\\s+project/gi,"本地化项目").replace(/translation\\s+pack\\s+projects/gi,"汉化包项目").replace(/translation\\s+pack/gi,"汉化包").replace(/localization/gi,"本地化");})(d):d)??SCc(a,b))'
+    'A.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"text-sm font-medium leading-snug text-foreground"},(d?((t)=>{const m={"Analyzing software localization and promotion strategies":"分析软件本地化与推广策略","Auditing and localizing desktop app":"审查并本地化桌面应用","Comparing translation pack projects":"对比汉化包项目","Completing localization and debugging of Antigravity":"完成 Antigravity 本地化与问题调试","Completing UI localization and rules adjustment":"完成界面本地化与规则调整","Continuing translation and reviewing improvements":"继续汉化并审查改进","Fixing and releasing software localization":"修复并发布软件本地化","Fixing the desktop app localization":"修复桌面应用本地化","Fixing translation and UI bug":"修复汉化与界面问题","Iterating software localization and UI translations":"迭代软件本地化与界面汉化","Locating missing desktop shortcut":"查找丢失的桌面快捷方式","Optimizing app localization and rules":"优化应用本地化与规则","Publishing and updating the localization project":"发布与更新本地化项目","Publishing new antigravity localization release":"发布 Antigravity 汉化新版本","Refining UI localization and error messages":"优化界面汉化与错误提示","Releasing v1.0.0 and finalizing localization":"发布 v1.0.0 并定稿本地化","Setting up and fixing Antigravity GitHub repository":"配置并修复 Antigravity GitHub 仓库","Translating context menu and tooltips":"汉化右键菜单与提示气泡","Translating missing UI elements and tooltips":"汉化遗漏的界面元素与提示","Translating remaining untranslated error messages":"汉化剩余未翻译的错误提示","Translating the user interface":"汉化用户界面","Understanding the antigravity hot reload update":"解析 Antigravity 热重载更新机制","Updating and uploading localization files":"更新与上传本地化文件"};if(m[t])return m[t];let s=t.trim();s=s.replace(/^Completing UI localization and rules adjustment/i,"完成界面本地化与规则调整").replace(/^Completing localization and debugging of Antigravity/i,"完成 Antigravity 本地化与问题调试").replace(/^Fixing and releasing software localization/i,"修复并发布软件本地化").replace(/^Publishing and updating the localization project/i,"发布与更新本地化项目").replace(/^Setting up and fixing Antigravity GitHub repository/i,"配置并修复 Antigravity GitHub 仓库").replace(/^Releasing v1.0.0 and finalizing localization/i,"发布 v1.0.0 并定稿本地化").replace(/^Translating missing UI elements and tooltips/i,"汉化遗漏的界面元素与提示").replace(/^Translating context menu and tooltips/i,"汉化右键菜单与提示气泡").replace(/^Translating remaining untranslated error messages/i,"汉化剩余未翻译的错误提示").replace(/^Comparing translation pack projects/i,"对比汉化包项目").replace(/^Understanding the antigravity hot reload update/i,"解析 Antigravity 热重载更新机制").replace(/^Locating missing desktop shortcut/i,"查找丢失的桌面快捷方式").replace(/^Fixing translation and UI bug/i,"修复汉化与界面问题").replace(/^Continuing translation and reviewing improvements/i,"继续汉化并审查改进").replace(/^Iterating software localization and UI translations/i,"迭代软件本地化与界面汉化").replace(/^Fixing the desktop app localization/i,"修复桌面应用本地化").replace(/^Updating and uploading localization files/i,"更新与上传本地化文件").replace(/^Auditing and localizing desktop app/i,"审查并本地化桌面应用").replace(/^Analyzing software localization and promotion strategies/i,"分析软件本地化与推广策略").replace(/^Translating the user interface/i,"汉化用户界面").replace(/^Optimizing app localization and rules/i,"优化应用本地化与规则");if(s!==t)return s;const vm=[[/^Completing\\s+/i,"完成 "],[/^Fixing and releasing\\s+/i,"修复并发布 "],[/^Updating and uploading\\s+/i,"更新并上传 "],[/^Publishing and updating\\s+/i,"发布并更新 "],[/^Auditing and localizing\\s+/i,"审查并本地化 "],[/^Continuing translation and reviewing\\s+/i,"继续汉化并审查 "],[/^Setting up and fixing\\s+/i,"配置并修复 "],[/^Fixing\\s+/i,"修复 "],[/^Updating\\s+/i,"更新 "],[/^Publishing\\s+/i,"发布 "],[/^Comparing\\s+/i,"对比 "],[/^Building\\s+/i,"构建 "],[/^Testing\\s+/i,"测试 "],[/^Creating\\s+/i,"创建 "],[/^Configuring\\s+/i,"配置 "],[/^Deploying\\s+/i,"部署 "],[/^Analyzing\\s+/i,"分析 "],[/^Refining\\s+/i,"优化 "],[/^Optimizing\\s+/i,"优化 "],[/^Iterating\\s+/i,"迭代 "],[/^Locating\\s+/i,"查找 "],[/^Translating\\s+/i,"汉化 "],[/^Debugging\\s+/i,"调试 "]];let mv="";for(const [vr,vz] of vm){if(vr.test(s)){mv=vz;s=s.replace(vr,"");break;}}const nm=[[/the desktop app localization/gi,"桌面应用本地化"],[/desktop app localization/gi,"桌面应用本地化"],[/desktop app/gi,"桌面应用"],[/software localization/gi,"软件本地化"],[/localization files/gi,"本地化文件"],[/the localization project/gi,"本地化项目"],[/localization project/gi,"本地化项目"],[/translation pack projects/gi,"汉化包项目"],[/translation pack/gi,"汉化包"],[/UI localization/gi,"界面本地化"],[/UI translations/gi,"界面汉化"],[/user interface/gi,"用户界面"],[/the user interface/gi,"用户界面"],[/rules adjustment/gi,"规则调整"],[/app localization and rules/gi,"应用本地化与规则"],[/localization and debugging of Antigravity/gi,"Antigravity 本地化与调试"],[/debugging of Antigravity/gi,"Antigravity 调试"],[/error messages/gi,"错误提示"],[/context menu and tooltips/gi,"右键菜单与提示气泡"],[/missing UI elements and tooltips/gi,"遗漏的界面元素与提示气泡"],[/antigravity GitHub repository/gi,"Antigravity GitHub 仓库"]];for(const [nr,nz] of nm){s=s.replace(nr,nz);}s=s.replace(/\\s+and\\s+/gi," 与 ");return mv?(mv.trim()+" "+s.trim()).trim():s;})(d):d)??SCc(a,b))'
   );
 
   // 复制与剪贴板提示原生汉化

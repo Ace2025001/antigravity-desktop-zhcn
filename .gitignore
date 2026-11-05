@@ -25,3 +25,5 @@ reports/
 untranslated-*.json
 untranslated-*.md
 
+
+.codex_backup/

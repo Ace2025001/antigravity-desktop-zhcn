@@ -573,7 +573,11 @@ test("third-party model access notice and notifications are covered by exact and
     },
     {
       source: "GPT-OSS 120B is now available on paid Pro and Ultra plans. Third-party model access will no longer be available on your current plan starting on December 1, 2026.",
-      expected: "GPT-OSS 120B 现已在付费 Pro 与 Ultra 方案中可用。自 December 1, 2026 起，你当前的方案将不再支持访问第三方模型。"
+      expected: "GPT-OSS 120B 现已在付费 Pro 与 Ultra 方案中可用。自 2026 年 12 月 1 日起，你当前的方案将不再支持访问第三方模型。"
+    },
+    {
+      source: "Sonnet 5.5 is now available on paid Pro and Ultra plans. Third-party model access will no longer be available on your current plan starting on November 18, 2026.",
+      expected: "Sonnet 5.5 现已在付费 Pro 与 Ultra 方案中可用。自 2026 年 11 月 18 日起，你当前的方案将不再支持访问第三方模型。"
     },
     {
       source: "Third-party model access will no longer be available on your current plan starting on November 2, 2026.",
@@ -1556,5 +1560,101 @@ test("attachment summaries, counts, and card state strings are fully covered", a
   for (const { source, expected } of testCases) {
     const actual = translateDictionaryValue(source, dictionary);
     assert.equal(actual, expected, `翻译失败: "${source}" 应该为 "${expected}"，但实际为 "${actual}"`);
+  }
+});
+
+test("user reported issues and expanded UI elements are fully covered", async () => {
+  const current = await loadDomTranslations();
+
+  // 1. 设置面板新字段
+  const settingsCases = [
+    { source: "Download Location", expected: "下载位置" },
+    { source: "Folder where files downloaded in the built-in browser are saved.", expected: "内置浏览器下载文件的保存目录。" },
+    { source: "Change…", expected: "更改…" },
+    { source: "Browsing History", expected: "浏览记录" },
+    { source: "Clear visited URLs and autocomplete suggestions from the built-in browser.", expected: "清除内置浏览器的访问网址与自动填充建议。" },
+    { source: "Voice mode", expected: "语音模式" },
+    { source: "Microphone", expected: "麦克风" },
+    { source: "Input device for voice mode and dictation.", expected: "用于语音模式与听写的输入设备。" },
+    { source: "System default", expected: "系统默认" },
+    { source: "Voice volume", expected: "语音音量" },
+    { source: "Recordings", expected: "录音记录" },
+    { source: "Delete all recordings?", expected: "删除所有录音记录？" },
+    { source: "Delete all", expected: "全部删除" }
+  ];
+
+  for (const { source, expected } of settingsCases) {
+    const res = translateDictionaryValue(source, current);
+    assert.equal(res, expected, `Settings term failed: ${source}`);
+  }
+
+  // 2. 模型可用性与方案过滤（杜绝 Ultra and paid Pro）
+  const modelCases = [
+    {
+      source: "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.",
+      expected: "Gemini 4 Argon 当前仅向 Ultra 及付费 Pro 方案订阅者开放。"
+    },
+    {
+      source: "Gemini 4 Argon is currently available to Ultra and paid Pro subscribers.",
+      expected: "Gemini 4 Argon 当前仅向 Ultra 及付费 Pro 订阅者开放。"
+    },
+    {
+      source: "Sonnet 5.5 is currently available to Pro and Ultra plan subscribers.",
+      expected: "Sonnet 5.5 当前仅向 Pro 及 Ultra 方案订阅者开放。"
+    }
+  ];
+
+  for (const { source, expected } of modelCases) {
+    const res = translateDictionaryValue(source, current);
+    assert.equal(res, expected, `Model subscriber term failed: ${source}`);
+  }
+
+  // 3. 历史章节小结 23 个真实标题全量断言（杜绝中英夹杂）
+  const chapterTitles = [
+    "Completing localization and debugging of Antigravity",
+    "Completing UI localization and rules adjustment",
+    "Optimizing app localization and rules",
+    "Setting up and fixing Antigravity GitHub repository",
+    "Releasing v1.0.0 and finalizing localization",
+    "Translating missing UI elements and tooltips",
+    "Continuing translation and reviewing improvements",
+    "Iterating software localization and UI translations",
+    "Publishing new antigravity localization release",
+    "Fixing and releasing software localization",
+    "Fixing the desktop app localization",
+    "Updating and uploading localization files",
+    "Auditing and localizing desktop app",
+    "Analyzing software localization and promotion strategies",
+    "Translating the user interface",
+    "Refining UI localization and error messages",
+    "Translating context menu and tooltips",
+    "Publishing and updating the localization project",
+    "Comparing translation pack projects",
+    "Translating remaining untranslated error messages",
+    "Locating missing desktop shortcut",
+    "Understanding the antigravity hot reload update",
+    "Fixing translation and UI bug"
+  ];
+
+  for (const title of chapterTitles) {
+    const res = translateDictionaryValue(title, current);
+    assert.ok(res, `Chapter title must be translated: ${title}`);
+    const cleaned = res.replace(/\b(Antigravity|GitHub|UI)\b/g, "");
+    assert.doesNotMatch(cleaned, /[a-zA-Z]{3,}/, `Chapter title must not have English residual words: ${res}`);
+  }
+
+  // 4. 附件文案全量断言
+  const attachmentCases = [
+    { source: "1 image attachment", expected: "1 张图片附件" },
+    { source: "2 image attachments", expected: "2 张图片附件" },
+    { source: "(1 image attachment)", expected: "（1 张图片附件）" },
+    { source: "(2 image attachments)", expected: "（2 张图片附件）" },
+    { source: "1 video attachment", expected: "1 个视频附件" },
+    { source: "(1 video attachment)", expected: "（1 个视频附件）" }
+  ];
+
+  for (const { source, expected } of attachmentCases) {
+    const res = translateDictionaryValue(source, current);
+    assert.equal(res, expected, `Attachment term failed: ${source}`);
   }
 });
