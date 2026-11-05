@@ -678,6 +678,11 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   );
 
   // 2.29.0 通用设置：内置浏览器下载与历史清理、语音模式与麦克风设备
+  sourceText = sourceText.replaceAll('"Side Panel Preview"', '"侧边栏预览"');
+  sourceText = sourceText.replaceAll('title:p?"Side Panel Preview":"Built-in Browser"', 'title:p?"侧边栏预览":"内置浏览器"');
+  sourceText = sourceText.replaceAll('title:p?"Side Panel Preview":"内置浏览器"', 'title:p?"侧边栏预览":"内置浏览器"');
+  sourceText = sourceText.replaceAll('subtitle:p?void 0:"Configure link opening and built-in browser preferences."', 'subtitle:p?void 0:"配置链接打开方式与内置浏览器偏好。"');
+  sourceText = sourceText.replaceAll('d=b?"Side Panel":"Built-in Browser",f=b?"New Tab":"External Browser"', 'd=b?"侧边栏":"内置浏览器",f=b?"新标签页":"外部浏览器"');
   sourceText = sourceText.replaceAll('label:"Download Location"', 'label:"下载位置"');
   sourceText = sourceText.replaceAll('"Folder where files downloaded in the built-in browser are saved."', '"内置浏览器下载文件的保存目录。"');
   sourceText = sourceText.replaceAll('label:"Browsing History"', 'label:"浏览历史"');
@@ -686,7 +691,8 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('title:b?"Voice":"Voice mode"', 'title:b?"语音":"语音模式"');
   sourceText = sourceText.replaceAll('label:"Voice",description:b?"The voice Jetski speaks with.":"The voice used in Voice mode. Powered by Gemini Live."', 'label:"语音",description:b?"Jetski 朗读所用的语音。":"语音模式使用的语音。由 Gemini Live 提供支持。"');
   sourceText = sourceText.replaceAll('label:"Microphone",description:"Input device for voice mode and dictation."', 'label:"麦克风",description:"用于语音模式与听写的输入设备。"');
-  sourceText = sourceText.replaceAll('const vxb={id:"",label:"System default"};', 'const vxb={id:"",label:"系统默认"};');
+  sourceText = sourceText.replaceAll('vxb={id:"",label:"System default"}', 'vxb={id:"",label:"系统默认"}');
+  sourceText = sourceText.replaceAll('label:"System default"', 'label:"系统默认"');
 
   // 2.29.0 外观设置：辅助功能屏幕阅读器与字体选择器、浅深色主题
   sourceText = sourceText.replaceAll('{title:"Accessibility",settings:["customContextMenusEnabled","screenReaderMode"]}', '{title:"辅助功能",settings:["customContextMenusEnabled","screenReaderMode"]}');
@@ -732,11 +738,41 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('"aria-label":a==="up"?"Scroll turns up":"Scroll turns down"', '"aria-label":a==="up"?"向上滚动轮次":"向下滚动轮次"');
   sourceText = sourceText.replaceAll('"aria-label":"Conversation turns"', '"aria-label":"对话轮次"');
 
+  // 历史更早消息加载与上下文压缩提示原生汉化
+  sourceText = sourceText.replaceAll('a?"Load older messages":"No more older messages"', 'a?"加载更早的消息":"没有更早的消息了"');
+  sourceText = sourceText.replaceAll('a?`Load older messages, showing ${b} of ${c}`:`No more older messages, showing ${b} of ${c}`', 'a?`加载更早的消息（已显示 ${b} / ${c}）`:`没有更早的消息了（已显示 ${b} / ${c}）`');
+  sourceText = sourceText.replaceAll('"The conversation was compacted to fit within the context window."', '"对话已压缩，以适应上下文窗口。"');
+  sourceText = sourceText.replaceAll('"The conversation was compacted while generating this response."', '"在生成此回复时，对话已自动压缩。"');
+
   // 章节小结标题智能翻译增强
   sourceText = sourceText.replace(
     'A.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"text-sm font-medium leading-snug text-foreground"},d??SCc(a,b))',
-    'A.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"text-sm font-medium leading-snug text-foreground"},(d?((t)=>{const m={"Fixing the desktop app localization":"修复桌面应用本地化","Updating and uploading localization files":"更新与上传本地化文件","Publishing and updating the localization project":"发布与更新本地化项目","Comparing translation pack projects":"对比汉化包项目"};if(m[t])return m[t];let s=t.replace(/^Fixing\\s+/i,"修复 ").replace(/^Updating\\s+and\\s+uploading\\s+/i,"更新与上传 ").replace(/^Publishing\\s+and\\s+updating\\s+/i,"发布与更新 ").replace(/^Comparing\\s+/i,"对比 ").replace(/^Updating\\s+/i,"更新 ").replace(/^Publishing\\s+/i,"发布 ").replace(/^Building\\s+/i,"构建 ").replace(/^Testing\\s+/i,"测试 ").replace(/^Creating\\s+/i,"创建 ").replace(/^Configuring\\s+/i,"配置 ").replace(/^Deploying\\s+/i,"部署 ");return s.replace(/the\\s+desktop\\s+app\\s+localization/gi,"桌面应用本地化").replace(/localization\\s+files/gi,"本地化文件").replace(/the\\s+localization\\s+project/gi,"本地化项目").replace(/localization\\s+project/gi,"本地化项目").replace(/translation\\s+pack\\s+projects/gi,"汉化包项目").replace(/translation\\s+pack/gi,"汉化包").replace(/localization/gi,"本地化");})(d):d)??SCc(a,b))'
+    'A.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"text-sm font-medium leading-snug text-foreground"},(d?((t)=>{const m={"Analyzing software localization and promotion strategies":"分析软件本地化与推广策略","Auditing and localizing desktop app":"审查并本地化桌面应用","Comparing translation pack projects":"对比汉化包项目","Continuing translation and reviewing improvements":"继续汉化并审查改进","Fixing and releasing software localization":"修复并发布软件本地化","Fixing the desktop app localization":"修复桌面应用本地化","Fixing translation and UI bug":"修复汉化与界面问题","Iterating software localization and UI translations":"迭代软件本地化与界面汉化","Locating missing desktop shortcut":"查找丢失的桌面快捷方式","Optimizing app localization and rules":"优化应用本地化与规则","Publishing and updating the localization project":"发布与更新本地化项目","Publishing new antigravity localization release":"发布 Antigravity 汉化新版本","Refining UI localization and error messages":"优化界面汉化与错误提示","Releasing v1.0.0 and finalizing localization":"发布 v1.0.0 并定稿本地化","Setting up and fixing Antigravity GitHub repository":"配置并修复 Antigravity GitHub 仓库","Translating context menu and tooltips":"汉化右键菜单与提示气泡","Translating missing UI elements and tooltips":"汉化遗漏的界面元素与提示","Translating remaining untranslated error messages":"汉化剩余未翻译的错误提示","Translating the user interface":"汉化用户界面","Understanding the antigravity hot reload update":"解析 Antigravity 热重载更新机制","Updating and uploading localization files":"更新与上传本地化文件"};if(m[t])return m[t];let s=t.replace(/^Fixing and releasing software localization/i,"修复并发布软件本地化").replace(/^Fixing and releasing/i,"修复并发布").replace(/^Updating and uploading/i,"更新并上传").replace(/^Publishing and updating/i,"发布并更新").replace(/^Auditing and localizing/i,"审查并本地化").replace(/^Continuing translation and reviewing/i,"继续汉化并审查").replace(/^Fixing\\s+/i,"修复 ").replace(/^Updating\\s+/i,"更新 ").replace(/^Publishing\\s+/i,"发布 ").replace(/^Comparing\\s+/i,"对比 ").replace(/^Building\\s+/i,"构建 ").replace(/^Testing\\s+/i,"测试 ").replace(/^Creating\\s+/i,"创建 ").replace(/^Configuring\\s+/i,"配置 ").replace(/^Deploying\\s+/i,"部署 ").replace(/^Analyzing\\s+/i,"分析 ").replace(/^Refining\\s+/i,"优化 ").replace(/^Iterating\\s+/i,"迭代 ").replace(/^Locating\\s+/i,"查找 ").replace(/^Translating\\s+/i,"汉化 ");return s.replace(/the\\s+desktop\\s+app\\s+localization/gi,"桌面应用本地化").replace(/desktop\\s+app\\s+localization/gi,"桌面应用本地化").replace(/software\\s+localization/gi,"软件本地化").replace(/localization\\s+files/gi,"本地化文件").replace(/the\\s+localization\\s+project/gi,"本地化项目").replace(/localization\\s+project/gi,"本地化项目").replace(/translation\\s+pack\\s+projects/gi,"汉化包项目").replace(/translation\\s+pack/gi,"汉化包").replace(/localization/gi,"本地化");})(d):d)??SCc(a,b))'
   );
+
+  // 复制与剪贴板提示原生汉化
+  sourceText = sourceText.replaceAll('"aria-label":b?"Copied":"Copy"', '"aria-label":b?"已复制":"复制"');
+  sourceText = sourceText.replaceAll('A.createElement(ZA,{id:f,place:"top-end"},b?"Copied":"Copy"))', 'A.createElement(ZA,{id:f,place:"top-end"},b?"已复制":"复制"))');
+  sourceText = sourceText.replaceAll('"aria-label":G?"Copied":"Copy"', '"aria-label":G?"已复制":"复制"');
+  sourceText = sourceText.replaceAll('A.createElement(ZA,{id:f,place:"top-end"},G?"Copied":"Copy")', 'A.createElement(ZA,{id:f,place:"top-end"},G?"已复制":"复制")');
+  sourceText = sourceText.replaceAll('"aria-label":p?"Copied":"Copy",tooltip:p?"Copied":"Copy"', '"aria-label":p?"已复制":"复制",tooltip:p?"已复制":"复制"');
+  sourceText = sourceText.replaceAll('tooltip:P?"Copy Image":"Copy"', 'tooltip:P?"复制图片":"复制"');
+  sourceText = sourceText.replaceAll('tooltip:"Copy Path"', 'tooltip:"复制路径"');
+  sourceText = sourceText.replaceAll('tooltip:"Copy Content"', 'tooltip:"复制内容"');
+  sourceText = sourceText.replaceAll('{metadata:{id:"copy",label:"Copy"}', '{metadata:{id:"copy",label:"复制"}');
+  sourceText = sourceText.replaceAll('{metadata:{id:"cut",label:"Cut"}', '{metadata:{id:"cut",label:"剪切"}');
+  sourceText = sourceText.replaceAll('{metadata:{id:"paste",label:"Paste"}', '{metadata:{id:"paste",label:"粘贴"}');
+  sourceText = sourceText.replaceAll('{id:"copy",label:"Copy"', '{id:"copy",label:"复制"');
+  sourceText = sourceText.replaceAll('{id:"paste",label:"Paste"', '{id:"paste",label:"粘贴"');
+  sourceText = sourceText.replaceAll('{id:"copy-selection",label:"Copy"', '{id:"copy-selection",label:"复制"');
+  sourceText = sourceText.replaceAll('A.createElement(XS,{title:"Copy"},A.createElement(YS,null,A.createElement(lt,{name:"content_copy",size:16,className:"text-secondary-foreground shrink-0"}),A.createElement("span",null,"Copy"))', 'A.createElement(XS,{title:"复制"},A.createElement(YS,null,A.createElement(lt,{name:"content_copy",size:16,className:"text-secondary-foreground shrink-0"}),A.createElement("span",null,"复制"))');
+  sourceText = sourceText.replaceAll('"Copied to clipboard"', '"已复制到剪贴板"');
+  sourceText = sourceText.replaceAll('placeholder:"Enter authorization code..."', 'placeholder:"输入授权码..."');
+  sourceText = sourceText.replaceAll('"aria-label":h?"Copied":"Copy code"', '"aria-label":h?"已复制":"复制代码"');
+  sourceText = sourceText.replaceAll('A.createElement(ZA,{id:n,place:"top"},h?"Copied":"Copy code")', 'A.createElement(ZA,{id:n,place:"top"},h?"已复制":"复制代码")');
+  sourceText = sourceText.replaceAll('b?"Copied":"Copy transcript"', 'b?"已复制":"复制对话记录"');
+  sourceText = sourceText.replaceAll('A.createElement(ZA,{id:l,place:"top"},"Insert in Terminal")', 'A.createElement(ZA,{id:l,place:"top"},"在终端中插入")');
+  sourceText = sourceText.replaceAll('A.createElement(ZA,{id:m,place:"top"},"At Mention Code Block")', 'A.createElement(ZA,{id:m,place:"top"},"@ 提及代码块")');
 
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
