@@ -1,5 +1,6 @@
 import https from "node:https";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { sha256Buffer, sha256File } from "./hash.mjs";
 import { getAntigravityUserDataRoot, getStateRoot } from "./paths.mjs";
@@ -7,16 +8,26 @@ import { getAntigravityUserDataRoot, getStateRoot } from "./paths.mjs";
 const MAX_BUNDLE_BYTES = 50 * 1024 * 1024;
 
 export async function findLatestUiPort() {
-  const logPath = path.join(getAntigravityUserDataRoot(), "logs", "main.log");
-  let log;
-  try {
-    log = await readFile(logPath, "utf8");
-  } catch {
-    return null;
+  const candidateLogPaths = [
+    path.join(os.homedir(), "Library", "Logs", "Antigravity", "main.log"),
+    path.join(getAntigravityUserDataRoot(), "logs", "main.log"),
+  ];
+
+  let latestPort = null;
+  for (const logPath of candidateLogPaths) {
+    try {
+      const log = await readFile(logPath, "utf8");
+      const matches = [...log.matchAll(/Local:\s+https:\/\/127\.0\.0\.1:(\d+)\//g)];
+      const port = matches.at(-1)?.[1] ?? null;
+      if (port) {
+        latestPort = port;
+      }
+    } catch {
+      // 继续尝试其他候选路径
+    }
   }
 
-  const matches = [...log.matchAll(/Local:\s+https:\/\/127\.0\.0\.1:(\d+)\//g)];
-  return matches.at(-1)?.[1] ?? null;
+  return latestPort;
 }
 
 export async function fetchUiBundle(port) {
