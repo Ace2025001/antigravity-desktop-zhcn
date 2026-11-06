@@ -448,6 +448,26 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('"Good Response"', '"回答很好"');
   sourceText = sourceText.replaceAll('"Bad Response"', '"回答不佳"');
 
+  // 首页动态问候语原生汉化
+  sourceText = sourceText.replace(
+    '?`Hi ${a}, what can we get done today?`:"What can we get done today?"',
+    '?`你好 ${a}，今天想做点什么？`:"今天想做点什么？"'
+  );
+
+  // 自动化模块空状态与新建按钮原生汉化
+  sourceText = sourceText.replace(
+    'A.createElement("p",{className:"m-0 text-base text-foreground"},"No ",u.emptyMessagePlural,\n" yet")',
+    'A.createElement("p",{className:"m-0 text-base text-foreground"},"暂无",u.emptyMessagePlural==="automations"?"自动化":u.emptyMessagePlural)'
+  );
+  sourceText = sourceText.replace(
+    '"Run a prompt on a schedule, like a morning summary of yesterday\'s changes. Runs show up here."',
+    '"按计划定时运行提示词，例如每天早晨汇总昨天的代码变更。运行记录将显示在此处。"'
+  );
+  sourceText = sourceText.replace(
+    'data-testid":"sidecar-new-button",icon:A.createElement(lt,{name:"add",size:16})},"New")',
+    'data-testid":"sidecar-new-button",icon:A.createElement(lt,{name:"add",size:16})},"新建")'
+  );
+
   // 右侧栏栏目与空状态原生汉化
   sourceText = sourceText.replaceAll('{id:"artifacts",title:"Artifacts"', '{id:"artifacts",title:"工件"');
   sourceText = sourceText.replaceAll('{id:"uploads",title:"Uploads"', '{id:"uploads",title:"已上传附件"');

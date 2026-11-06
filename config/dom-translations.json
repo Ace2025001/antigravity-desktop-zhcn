@@ -3290,7 +3290,56 @@
     "Use Lora": "使用 Lora",
     "Use Neno": "使用 Neno",
     "Use Olin": "使用 Olin",
-    "Use Tari": "使用 Tari"
+    "Use Tari": "使用 Tari",
+    "No automations yet": "暂无自动化",
+    "Run a prompt on a schedule, like a morning summary of yesterday's changes. Runs show up here.": "按计划定时运行提示词，例如每天早晨汇总昨天的代码变更。运行记录将显示在此处。",
+    "Creates a local automation that runs on this computer": "创建在此计算机上运行的本地自动化",
+    "Refresh all credentials": "刷新全部凭证",
+    "What should the agent do on each run? For example: summarize new bugs assigned to me and anything that changed overnight.": "智能体在每次运行时应做什么？例如：汇总分配给我的新缺陷以及昨晚发生的所有变更。",
+    "Where should it run?": "它应该在哪里运行？",
+    "For example: every morning, summarize new bugs assigned to me and anything that changed overnight.": "例如：每天早晨汇总分配给我的新缺陷以及昨晚发生的所有变更。",
+    "For example: Morning bug summary": "例如：早晨缺陷汇总",
+    "Add schedule": "添加定时计划",
+    "Add trigger": "添加触发器",
+    "Remove trigger": "移除触发器",
+    "Search triggers...": "搜索触发器...",
+    "Never run": "从未运行",
+    "Running now": "正在运行",
+    "Untrusted sidecar": "未受信任的 Sidecar",
+    "Sidecar error": "Sidecar 运行异常",
+    "This sidecar failed to start.": "此 Sidecar 启动失败。",
+    "Curated sets of plugins for common workflows and roles.": "针对常见工作流程和角色的精选插件集。",
+    "No plugins match your search.": "没有与您的搜索匹配的插件。",
+    "Featured": "精选",
+    "Design, Creative & Media": "设计、创意与媒体",
+    "Design, creative, and media tools.": "设计、创意与媒体工具。",
+    "Productivity & Project Management": "生产力与项目管理",
+    "Plan work, track issues, sign documents, and manage your notes and files.": "规划工作、跟踪议题、签署文档，并管理您的笔记与文件。",
+    "Cloud Hosting & Deployment": "云托管与部署",
+    "Deploy and host your apps, sites, and their backends.": "部署和托管您的应用、站点及其后端。",
+    "Business": "商业与业务",
+    "Payments, CRM, accounting, data, identity, customer support, marketing, and workflow automation.": "支付、客户关系管理、会计、数据、身份认证、客户支持、营销与工作流自动化。",
+    "More Plugins": "更多插件",
+    "Create, edit, review, resize, and brand-check Canva designs with the Canva MCP server.": "使用 Canva MCP 服务器创建、编辑、审查、调整尺寸并进行品牌规范检查。",
+    "Turn Figma designs into production code, map components with Code Connect, and create or edit Figma files in Antigravity.": "将 Figma 设计转化为生产代码，使用 Code Connect 映射组件，并在 Antigravity 中创建或编辑 Figma 文件。",
+    "Give your AI agent 600,000+ real app screens, and the skills to use them.": "为您的 AI 智能体提供 600,000+ 真实应用屏幕及使用这些界面的技能。",
+    "Teamwork Graph CLI is Atlassian's agent-first interface to your entire work context: Jira issues, Confluence pages, Bitbucket PRs, along with your conversation history.": "Teamwork Graph CLI 是 Atlassian 面向智能体的工作上下文接口：涵盖 Jira 事务、Confluence 页面、Bitbucket PR 以及您的对话历史。",
+    "Connect Antigravity to Dropbox to search, inspect, summarize, share, collect uploads, organize folders, and clean up files with confirmation for write operations.": "将 Antigravity 连接至 Dropbox，以搜索、检查、汇总、共享、收集上传、整理文件夹，并在写入操作时提供确认。",
+    "The product development system for teams and agents.": "专为团队和智能体打造的产品研发协同系统。",
+    "Plan and track work in monday.com from Antigravity: create, update, and find boards, items, subitems, and docs.": "在 Antigravity 中规划和跟踪 monday.com 工作：创建、更新和查找看板、条目、子条目及文档。",
+    "Connect Antigravity to your Notion workspace to search, read, and manage pages, databases, and blocks.": "将 Antigravity 连接至您的 Notion 工作区，以搜索、阅读和管理页面、数据库与内容块。",
+    "Create and send proposals, quotes, and contracts; track status; and download completed documents.": "创建并发送提案、报价与合同；跟踪状态；并下载已签署完成的文档。",
+    "Build and deploy on Netlify: functions, edge functions, blobs, database, identity, forms, image CDN, caching, and AI Gateway, plus the Netlify MCP server.": "在 Netlify 上构建和部署：函数、边缘函数、Blob 存储、数据库、身份认证、表单、图像 CDN、缓存和 AI 网关，附带 Netlify MCP 服务器。",
+    "Deploy, configure, monitor, and troubleshoot apps, databases, and infrastructure on Railway from Antigravity with Railway's agent skill and hosted MCP server.": "通过 Railway 智能体技能与托管 MCP 服务器，在 Antigravity 中部署、配置、监控及排查应用、数据库与基础设施。",
+    "Manage your Bigin CRM from Antigravity: review pipelines, find contacts and deals, log calls, plan follow-ups, and email customers.": "在 Antigravity 中管理您的 Bigin CRM：查看销售漏斗、查找联系人与商机、记录通话、规划跟进并给客户发送邮件。",
+    "Databricks skills for the CLI, Apps, Lakebase, Model Serving, Lakeflow Jobs, Spark Declarative Pipelines, Declarative Automation Bundles (DABs), and continuous learning documentation.": "适用于 CLI、应用、Lakebase、模型服务、Lakeflow 任务、Spark 声明式流水线、DAB 以及持续学习文档的 Databricks 技能。",
+    "Search Intercom conversations, contacts, and help articles; take actions via the Intercom REST API; and resolve customer queries.": "搜索 Intercom 对话、联系人与帮助文章；通过 Intercom REST API 执行操作；并解决客户疑问。",
+    "SEO workflows on live Semrush data: keyword research, site audit, backlink analysis, domain overview, competitive intelligence, and on-page optimization with Semrush MCP tools.": "基于 Semrush 实时数据的 SEO 工作流：关键词调研、网站审计、反向链接分析、域名概览、竞品情报及页面优化。",
+    "Accept payments and grow your business. Stripe is a financial infrastructure platform for the internet.": "接收付款并拓展您的业务。Stripe 是面向互联网的金融基础设施平台。",
+    "Search and read your Wispr Flow meeting notes, transcripts, and action items from Antigravity.": "在 Antigravity 中搜索和查阅您的 Wispr Flow 会议笔记、逐字稿与待办事项。",
+    "Connect to your managed Looker MCP server to explore data, run saved Looks, build dashboards, and validate LookML.": "连接到您的托管 Looker MCP 服务器以探索数据、运行已保存的 Looks、构建仪表板并验证 LookML。",
+    "Agent skills for Neo4j graph database — write Cypher queries, design graph models, use drivers, run imports, build GraphRAG pipelines, run GDS algorithms, and troubleshoot with expert guidance.": "Neo4j 图数据库智能体技能——编写 Cypher 查询、设计图模型、使用驱动、执行导入、构建 GraphRAG 流水线并运行图数据科学算法。",
+    "Google does not control the availability or functionality of third party developer tools. Your data from third party developer tools connected to your Antigravity instance may be shared with Google. Google will protect any such data in accordance with the Google Privacy Policy, found here:": "Google 不控制第三方开发者工具的可用性或功能。连接至您的 Antigravity 实例的第三方开发者工具数据可能会与 Google 共享。Google 将根据 Google 隐私权政策保护任何此类数据，详见："
   },
   "patterns": [
     {
@@ -9817,6 +9866,36 @@
       "source": "^\\((\\d+)\\s+audio\\s+attachments?\\)$",
       "target": "（$1 个音频附件）",
       "flags": "u"
+    },
+    {
+      "flags": "u",
+      "source": "^Hi ([^,]+?), what can we get done today\\?$",
+      "target": "你好 $1，今天想做点什么？"
+    },
+    {
+      "flags": "u",
+      "source": "^What can we get done today\\?$",
+      "target": "今天想做点什么？"
+    },
+    {
+      "flags": "u",
+      "source": "^No automations match “(.+)”\\.$",
+      "target": "未找到匹配“$1”的自动化。"
+    },
+    {
+      "flags": "u",
+      "source": "^No automations configured\\.$",
+      "target": "未配置自动化。"
+    },
+    {
+      "flags": "u",
+      "source": "^No automations matching your search$",
+      "target": "未找到与您的搜索匹配的自动化"
+    },
+    {
+      "flags": "u",
+      "source": "^Google does not control the availability or functionality of third party developer tools\\. Your data from third party developer tools connected to your Antigravity instance may be shared with Google\\. Google will protect any such data in accordance with the Google Privacy Policy, found here: *$",
+      "target": "Google 不控制第三方开发者工具的可用性或功能。连接至您的 Antigravity 实例的第三方开发者工具数据可能会与 Google 共享。Google 将根据 Google 隐私权政策保护任何此类数据，详见："
     }
   ]
 }

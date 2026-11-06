@@ -1669,3 +1669,56 @@ test("user reported issues and expanded UI elements are fully covered", async ()
     assert.equal(res, expected, `Attachment term failed: ${source}`);
   }
 });
+
+
+test("automations, home greetings, and marketplace shelves and cards are covered", async () => {
+  const current = await loadDomTranslations();
+
+  // 1. 首页动态问候语
+  assert.equal(
+    translateDictionaryValue("Hi Ann, what can we get done today?", current),
+    "你好 Ann，今天想做点什么？"
+  );
+  assert.equal(
+    translateDictionaryValue("What can we get done today?", current),
+    "今天想做点什么？"
+  );
+
+  // 2. 自动化模块
+  assert.equal(
+    translateDictionaryValue("No automations yet", current),
+    "暂无自动化"
+  );
+  assert.equal(
+    translateDictionaryValue(
+      "Run a prompt on a schedule, like a morning summary of yesterday's changes. Runs show up here.",
+      current
+    ),
+    "按计划定时运行提示词，例如每天早晨汇总昨天的代码变更。运行记录将显示在此处。"
+  );
+  assert.equal(
+    translateDictionaryValue("No automations match “test”.", current),
+    "未找到匹配“test”的自动化。"
+  );
+
+  // 3. 插件市场分类与卡片
+  assert.equal(translateDictionaryValue("Featured", current), "精选");
+  assert.equal(translateDictionaryValue("Design, Creative & Media", current), "设计、创意与媒体");
+  assert.equal(translateDictionaryValue("Productivity & Project Management", current), "生产力与项目管理");
+  assert.equal(translateDictionaryValue("Cloud Hosting & Deployment", current), "云托管与部署");
+  assert.equal(translateDictionaryValue("Business", current), "商业与业务");
+  assert.equal(translateDictionaryValue("More Plugins", current), "更多插件");
+
+  // 4. 插件市场卡片描述
+  assert.ok(translateDictionaryValue("Turn Figma designs into production code, map components with Code Connect, and create or edit Figma files in Antigravity.", current));
+  assert.ok(translateDictionaryValue("The product development system for teams and agents.", current));
+  assert.ok(translateDictionaryValue("Accept payments and grow your business. Stripe is a financial infrastructure platform for the internet.", current));
+
+  // 5. 免责声明
+  assert.ok(
+    translateDictionaryValue(
+      "Google does not control the availability or functionality of third party developer tools. Your data from third party developer tools connected to your Antigravity instance may be shared with Google. Google will protect any such data in accordance with the Google Privacy Policy, found here:",
+      current
+    )
+  );
+});
