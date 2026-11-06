@@ -1,3 +1,4 @@
+import { closeClientForChanges } from "../src/lib/close-client.mjs";
 import { access, copyFile, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,6 +24,7 @@ async function readState() {
 }
 
 async function inspectOriginal() {
+  console.log("正在检查 Mac 客户端版本、签名与资源，请稍候…");
   const original = await findMacOriginal();
   const asar = path.join(macResources(original), "app.asar");
   const pkg = await readJsonFromAsar(asar, "package.json");
@@ -138,7 +140,7 @@ try {
     if (!needsSetup) {
       await verify(state);
       const apps = await runningMacApps();
-      if (apps.some(app => app.executable !== path.join(macAppPath, "Contents", "MacOS", "Antigravity"))) await requireMacAppsClosed();
+      if (apps.some(app => app.executable !== path.join(macAppPath, "Contents", "MacOS", "Antigravity"))) await closeClientForChanges();
       await exec("/usr/bin/open", [macAppPath]);
       console.log("中文已就绪，已打开应用。");
     }
@@ -146,14 +148,11 @@ try {
   if (needsSetup) {
     if (!process.stdin.isTTY) throw new Error("请双击“启动中文.command”，在窗口中按提示操作。");
     const terminal = createInterface({ input: process.stdin, output: process.stdout });
+    terminal.on("SIGINT", () => { console.log("已取消操作。"); process.exit(130); });
     try {
       await runMacSetup({
         inspect: inspectOriginal,
-        waitUntilClosed: async () => {
-          while ((await runningMacApps()).length) {
-            await terminal.question("请保存工作，并在 Antigravity 中按 ⌘Q 退出，然后回到这里按回车：");
-          }
-        },
+        waitUntilClosed: closeClientForChanges,
         openOriginal: openMacApp,
         ready: () => terminal.question("看到 Antigravity 首页后，请回到这里按回车继续："),
         capture,
@@ -168,7 +167,7 @@ try {
     await verify(await readState());
     if (command === "launch") { await requireMacAppsClosed(); await openMacApp(macAppPath); }
   } else if (command === "restore") {
-    await requireMacAppsClosed();
+    await closeClientForChanges();
     const original = await findMacOriginal();
     await openMacApp(original);
     console.log("已启动未修改的官方英文版；中文副本及恢复状态继续保留。");

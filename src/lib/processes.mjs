@@ -1,3 +1,4 @@
+import { closeClientForChanges } from "./close-client.mjs";
 import { execFile, spawn } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -54,29 +55,6 @@ export async function waitForAntigravityExit({
   }
 }
 
-export async function gracefulCloseAntigravity({ maxWaitMs = 5_000 } = {}) {
-  if (process.platform !== "win32") return;
-  if (!(await isAntigravityRunning())) return;
-
-  // 1. 优先尝试温和请求关闭（不带 /F 强制终止），给 Electron 机会落盘与持久化状态
-  await execFileAsync("taskkill.exe", ["/T", "/IM", "Antigravity.exe"], {
-    windowsHide: true,
-  }).catch(() => {});
-
-  const start = Date.now();
-  while (Date.now() - start < maxWaitMs) {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    if (!(await isAntigravityRunning())) return;
-  }
-
-  // 2. 超时未响应时才兜底强制终止
-  await execFileAsync(
-    "taskkill.exe",
-    ["/F", "/T", "/IM", "Antigravity.exe"],
-    { windowsHide: true },
-  ).catch((error) => {
-    if (error?.code !== 128) throw error;
-  });
-  await new Promise((resolve) => setTimeout(resolve, 1_000));
+export async function gracefulCloseAntigravity() {
+  await closeClientForChanges();
 }
-

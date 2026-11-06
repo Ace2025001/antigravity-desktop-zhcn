@@ -8,9 +8,8 @@ export function languageFile(name) {
 }
 
 export async function localizationFingerprint(platform = process.platform) {
-  const files = ["src/lib/translator.mjs", "src/lib/patcher.mjs", "src/lib/language-pack.mjs"];
-  if (platform === "darwin") files.push("src/lib/macos.mjs", "scripts/macos.mjs");
-  else files.push("scripts/auto-follow-update.mjs");
+  // UI/progress/launcher changes must not invalidate an installed translation.
+  const files = ["src/lib/translator.mjs", "src/lib/patcher.mjs"];
   const buffers = await Promise.all(files.map(file => readFile(path.join(projectRoot, file))));
   buffers.push(await readFile(languageFile("dom-translations.json")));
   if (platform === "darwin") buffers.push(await readFile(languageFile("macos-translations.json")));

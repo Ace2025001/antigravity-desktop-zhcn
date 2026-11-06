@@ -9,8 +9,8 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version: 22.22.2
           cache: npm
@@ -19,7 +19,7 @@ jobs:
       - run: npm run validate
       - run: ./scripts/build-portable.ps1
         shell: pwsh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.2
         with:
           name: windows-runtime-package
           path: .runtime/release/*.zip
@@ -28,8 +28,8 @@ jobs:
     needs: build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version: 22.22.2
           cache: npm
@@ -37,7 +37,7 @@ jobs:
       - run: npm test
       - run: npm run validate
       - run: npm run build:mac
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8.0.2
         with:
           name: windows-runtime-package
           path: .runtime/windows
@@ -51,10 +51,13 @@ jobs:
           mkdir -p .runtime/publish
           ditto -c -k --keepParent .runtime/unified/antigravity汉化包 .runtime/publish/antigravity-zhcn-universal.zip
           ditto -c -k --keepParent .runtime/unified/antigravity汉化包/语言包 .runtime/publish/antigravity-zhcn-language.zip
+          mkdir -p .runtime/mac-extract
+          ditto -x -k .runtime/publish/antigravity-zhcn-universal.zip .runtime/mac-extract
+          node scripts/verify-universal.mjs .runtime/mac-extract/antigravity汉化包
           cd .runtime/publish
           shasum -a 256 antigravity-zhcn-universal.zip > antigravity-zhcn-universal.zip.sha256
           shasum -a 256 antigravity-zhcn-language.zip > antigravity-zhcn-language.zip.sha256
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.2
         with:
           name: universal-release
           path: .runtime/publish/*
@@ -63,11 +66,11 @@ jobs:
     needs: build-macos
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version: 22.22.2
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8.0.2
         with:
           name: universal-release
           path: .runtime/publish
@@ -92,6 +95,8 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             gh release upload $env:GITHUB_REF_NAME @artifacts --clobber
           } else {
-            gh release create $env:GITHUB_REF_NAME @artifacts --notes-file $notesFile --title "$env:GITHUB_REF_NAME 双端统一汉化包" --latest
+            gh release create $env:GITHUB_REF_NAME @artifacts --notes-file $notesFile --title "$env:GITHUB_REF_NAME 双端统一汉化包" --draft
           }
-          if ($LASTEXITCODE -ne 0) { throw "发布失败" }
+          if ($LASTEXITCODE -ne 0) { throw "上传发布附件失败" }
+          gh release edit $env:GITHUB_REF_NAME --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw "公开发布失败" }

@@ -1,3 +1,4 @@
+import { showClient } from "../src/lib/show-client.mjs";
 import { copyFile, mkdtemp, mkdir, rename, rm, writeFile } from "node:fs/promises";
 import { execFile, spawn, spawnSync } from "node:child_process";
 import { localizationFingerprint } from "../src/lib/language-pack.mjs";
@@ -24,6 +25,7 @@ const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, mil
 async function waitForRuntimeUi(executablePath) {
   let started = false;
   for (let attempt = 0; attempt < 120; attempt += 1) {
+    if (attempt > 0 && attempt % 10 === 0) console.log("仍在等待客户端界面就绪…");
     const port = await findLatestUiPort();
     if (port) {
       try {
@@ -86,7 +88,7 @@ async function replaceBundle(bundlePath, buffer, expectedExistingHash) {
   return { sha256: expectedNewHash, replacement };
 }
 
-console.log("Antigravity 汉化自动跟进器");
+console.log("正在读取客户端版本、校验汉化资源和语言包，请稍候…");
 const previousState = await readInstallState();
 const inspection = await inspectInstallation({ allowRemoteCompatibility: false });
 const toolFingerprint = await localizationFingerprint("win32");
@@ -110,8 +112,7 @@ if (
     process.exit(updated.status ?? 1);
   }
   console.log("当前版本已完成汉化，无需重复注入，直接启动 Antigravity。");
-  const directLaunch = spawn(inspection.executablePath, [], { cwd: inspection.installRoot, detached: true, stdio: "ignore", windowsHide: true });
-  directLaunch.unref();
+  await showClient(inspection.executablePath);
   process.exit(0);
 }
 const originalScheme = await readFileFromAsar(inspection.appAsarPath, CUSTOM_SCHEME_PATH);
@@ -119,8 +120,10 @@ const originalScheme = await readFileFromAsar(inspection.appAsarPath, CUSTOM_SCH
 // This is the compatibility gate for newly updated builds. It only accepts the
 // exact structural anchors used by the patcher; an arbitrary new layout fails closed.
 patchCustomSchemeSource(originalScheme.toString("utf8"));
+console.log(`已检测到 ${inspection.packageVersion}，正在读取本地界面；首次准备可能需要一两分钟…`);
 const runtime = await waitForRuntimeUi(inspection.executablePath);
 const dictionary = await loadDomTranslations();
+console.log("正在生成中文界面，可能需要几十秒，请勿关闭窗口…");
 const localized = createLocalizedBundle(runtime.buffer, dictionary);
 
 const stateRoot = getStateRoot();
@@ -193,5 +196,4 @@ try {
 }
 
 console.log("汉化已自动跟进当前更新，正在重新启动 Antigravity。");
-const restart = spawn(recheck.executablePath, [], { cwd: recheck.installRoot, detached: true, stdio: "ignore", windowsHide: true });
-restart.unref();
+await showClient(recheck.executablePath);

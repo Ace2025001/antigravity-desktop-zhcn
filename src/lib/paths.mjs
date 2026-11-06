@@ -65,7 +65,7 @@ Get-ItemProperty -Path $uninstallPaths -ErrorAction SilentlyContinue |
 ConvertTo-Json -InputObject @($items) -Compress
 `;
 
-function normalizeInstallRootCandidate(value) {
+export function normalizeInstallRootCandidate(value) {
   if (typeof value !== "string" || !value.trim()) {
     return null;
   }
@@ -106,7 +106,7 @@ async function isDesktopInstallRoot(installRoot) {
   }
 }
 
-async function queryWindowsInstallCandidates() {
+export async function queryWindowsInstallCandidates() {
   const { stdout } = await execFileAsync(
     "powershell.exe",
     [

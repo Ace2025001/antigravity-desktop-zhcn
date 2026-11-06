@@ -1,3 +1,4 @@
+import { closeClientForChanges } from "./lib/close-client.mjs";
 import {
   copyFile,
   mkdir,
@@ -243,17 +244,8 @@ async function prepareRuntimeUi(inspection) {
   return waitForCompatibleUiBundle(inspection.target);
 }
 
-async function askUserToCloseAntigravity(message) {
-  if (!(await isAntigravityRunning())) {
-    return;
-  }
-  const readline = createInterface({ input, output });
-  try {
-    await readline.question(message);
-  } finally {
-    readline.close();
-  }
-  await waitForAntigravityExit();
+async function askUserToCloseAntigravity() {
+  await closeClientForChanges();
 }
 
 async function ensureVerifiedBackup({ sourcePath, backupPath, expectedHash }) {
