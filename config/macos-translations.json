@@ -1,0 +1,9 @@
+{
+  "exact": {
+    "Configure what the agent can do in local and remote conversations.": "配置智能体在本地和远程对话中可以执行的操作。"
+  },
+  "patterns": [
+    { "source": "^Hi (.+), what can we get done today\\?$", "target": "你好，$1，今天我们来完成什么？", "flags": "u" },
+    { "source": "^Where the agent runs, current: (.+)$", "target": "智能体运行位置，当前：$1", "flags": "u" }
+  ]
+}

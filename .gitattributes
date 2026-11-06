@@ -1,3 +1,6 @@
 *.bat text eol=crlf
 config/remote/compatibility-manifest.json text eol=lf
 config/remote/compatibility-manifest.json.sig text eol=lf
+
+*.command text eol=lf
+*.sh text eol=lf

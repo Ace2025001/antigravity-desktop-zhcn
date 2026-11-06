@@ -1,12 +1,33 @@
-# macOS 平台入口目录（预留给 macOS PR）
+# macOS 使用说明
 
-本目录用于存放 **macOS（Apple Silicon `darwin-arm64` / Intel `darwin-x64`）** 平台的专属快捷启动脚本（如 `.command` 或 `.sh`）及平台辅助说明。
+支持 Apple 芯片 Mac 的 Antigravity Desktop 独立桌面客户端。朋友提供的补充包记录了 macOS 27.0.1、arm64、客户端 2.29.0 的实机验证；合并后的版本仍需 Mac 实机复验。Intel Mac 暂不作为已验证支持平台。
 
-## 跨平台共享架构约定
+## 安装
 
-为了避免双份维护词典与核心逻辑，macOS 版本与 Windows 版本共用根目录下的核心资产：
+普通用户完整解压 Mac 便携包后，双击根目录 **安装中文.command**，按中文提示操作。工具会自动检查、打开官方应用、准备界面、安装并启动中文副本。只需在看到首页及正常退出应用后按提示回车，无需分别运行检查和采集脚本。
 
-1. **共享汉化词典**：[`config/dom-translations.json`](../config/dom-translations.json)（精确词条与动态正则规则全平台通用）
-2. **共享汉化引擎**：[`src/lib/translator.mjs`](../src/lib/translator.mjs)、[`src/lib/patcher.mjs`](../src/lib/patcher.mjs)
-3. **兼容性指纹分片**：在 `config/compatibility/<版本号>/` 下按 `<platform>-<arch>.json`（例如 `darwin-arm64.json`）存放
-4. **macOS 专属入口**：请将 macOS 用户双击运行的 `.command` / `.sh` 脚本放置于本 `macOS/` 目录下，并通过相对路径调用根目录的 `src/cli.mjs` 或 `scripts/`。
+日常双击根目录 **启动中文.command**；恢复时双击 **恢复英文.command**。官方更新后重新运行“安装中文”。
+
+源码运行需 Node.js >= 22.12.0，并在根目录运行 npm ci --ignore-scripts。高级检查、采集与验证入口仍在本目录保留。
+
+源码下载可能不保留执行权限，可在仓库根目录运行 `chmod +x macOS/*.command scripts/*.sh`，也可用 `bash macOS/一键检查兼容性.command` 执行入口。遇到 macOS 安全提示时按系统提示处理，不要关闭 Gatekeeper 或 SIP。
+
+## 更新与恢复
+
+官方更新后，重新运行根目录“安装中文.command”。缓存必须匹配当前官方资源指纹，结构或签名检查失败时停止操作。
+
+`macOS/验证中文安装.command` 检查中文副本、界面文件、ASAR 内嵌完整性与本地签名。恢复英文前保存工作并退出中文版，再运行 `macOS/恢复英文.command`；此入口启动官方原版，不删除中文副本或用户资料。
+
+## 工作方式
+
+- 保留官方原版，在个人应用目录生成独立中文副本；副本采用本地临时签名，保留原权限声明与运行时标志。
+- 原版和中文版共用用户资料，请勿同时运行。工具不会强制结束客户端。
+- 状态及原始 UI 缓存：`~/Library/Application Support/AntigravityZhcnMac`。
+- 中文 UI：`~/Library/Application Support/Antigravity/agy_zhcn_ui_main.js`。
+- 构建失败会尝试回退，更新时保留上一版副本。不要删除恢复所需状态。
+- Mac 菜单的更新动作保留英文，以维持原有操作。
+- 不修改系统代理、节点、TUN 或模型配置。
+
+## 构建
+
+在 Apple 芯片 Mac 上执行 `npm run build:mac`。需 Node.js >= 22.12.0 和 npm；脚本校验官方 Node.js 下载的 SHA-256，打包运行环境与锁定依赖，输出 ZIP 及摘要到 `.runtime/release`。

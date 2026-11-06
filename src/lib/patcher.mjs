@@ -73,6 +73,24 @@ const HANDLER_REPLACEMENT = `    });
         const translateNativeMenuText = (text) => {
             if (typeof text !== 'string') return text;
             const trimmed = text.trim();
+            if (process.platform === 'darwin') {
+                // The official updater dispatches actions by the visible label.
+                // Preserve these action keys; translating them would break updates.
+                if (/^(Check for Updates|Checking for Updates\\.\\.\\.|Downloading Update\\.\\.\\.|Restart to Update)$/.test(trimmed)) return text;
+                const macLabels = {
+                    'File': '文件', 'Edit': '编辑', 'View': '视图', 'Window': '窗口', 'Help': '帮助',
+                    'About Antigravity': '关于 Antigravity', 'Services': '服务',
+                    'Hide Antigravity': '隐藏 Antigravity', 'Hide Others': '隐藏其他', 'Show All': '显示全部',
+                    'Quit Antigravity': '退出 Antigravity', 'Close Window': '关闭窗口', 'Close': '关闭',
+                    'Undo': '撤销', 'Redo': '重做', 'Cut': '剪切', 'Copy': '复制', 'Paste': '粘贴',
+                    'Paste and Match Style': '粘贴并匹配样式', 'Delete': '删除', 'Select All': '全选',
+                    'Reload': '重新加载', 'Force Reload': '强制重新加载', 'Toggle Developer Tools': '切换开发者工具',
+                    'Actual Size': '实际大小', 'Zoom In': '放大', 'Zoom Out': '缩小',
+                    'Toggle Full Screen': '切换全屏', 'Minimize': '最小化', 'Zoom': '缩放',
+                    'Bring All to Front': '全部前置', 'Front': '前置'
+                };
+                if (macLabels[trimmed]) return macLabels[trimmed];
+            }
             if (trimmed === 'No agents running') return '无正在运行的智能体';
             if (trimmed === 'Quit') return '退出';
             if (trimmed === 'New Window') return '新建窗口';
@@ -110,6 +128,19 @@ const HANDLER_REPLACEMENT = `    });
 
         if (electron_1.Menu && !electron_1.Menu.__zhcnPatched) {
             electron_1.Menu.__zhcnPatched = true;
+            if (process.platform === 'darwin') {
+                const origSetApplicationMenu = electron_1.Menu.setApplicationMenu;
+                electron_1.Menu.setApplicationMenu = function (menu) {
+                    const walk = (items) => {
+                        for (const item of items || []) {
+                            if (typeof item.label === 'string') item.label = translateNativeMenuText(item.label);
+                            if (item.submenu) walk(item.submenu.items);
+                        }
+                    };
+                    if (menu) walk(menu.items);
+                    return origSetApplicationMenu.call(this, menu);
+                };
+            }
             const origBuildFromTemplate = electron_1.Menu.buildFromTemplate;
             if (typeof origBuildFromTemplate === 'function') {
                 electron_1.Menu.buildFromTemplate = function (template) {

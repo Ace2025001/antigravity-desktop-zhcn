@@ -1721,4 +1721,25 @@ test("automations, home greetings, and marketplace shelves and cards are covered
       current
     )
   );
+
+  // 6. 远程智能体推广卡片与远程项目
+  assert.equal(
+    translateDictionaryValue("Introducing Remote Agents", current),
+    "隆重推出远程智能体"
+  );
+  assert.equal(
+    translateDictionaryValue(
+      "Your agents can now run in the cloud and keep working after you close the app. Check on them from any browser at antigravity.google.com. Create a Remote Project to get started.",
+      current
+    ),
+    "您的智能体现在可以在云端运行，并在您关闭应用后继续工作。可通过任意浏览器在 antigravity.google.com 上查看它们。创建一个远程项目即可开始。"
+  );
+  assert.equal(translateDictionaryValue("Remote Agents", current), "远程智能体");
+  assert.equal(translateDictionaryValue("Remote Project", current), "远程项目");
+  assert.equal(translateDictionaryValue("Create a Remote Project", current), "创建远程项目");
+  assert.equal(translateDictionaryValue("New Remote Project", current), "新建远程项目");
+  assert.equal(
+    translateDictionaryValue("Create a project whose conversations run remotely.", current),
+    "创建一个对话在远程运行的项目。"
+  );
 });

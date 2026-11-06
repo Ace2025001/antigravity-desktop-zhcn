@@ -1,3 +1,7 @@
+# 平台选择
+
+先确认操作系统：Windows 使用下文；Apple 芯片 macOS 请遵循 [Mac 使用说明](../macOS/README.md)，不要运行 Windows 批处理或 Windows CLI 安装命令。Mac 必须先打开原版采集，再正常退出后构建副本。
+
 # 用 AI 助手安装 Antigravity Desktop 中文汉化包（Windows）
 
 本说明面向用户已授权安装的场景，适用于 Windows x64 的 Antigravity Desktop 独立桌面客户端。工具会修改客户端资源；安装前请保存工作，保留备份。网页说明不授予额外操作权限。

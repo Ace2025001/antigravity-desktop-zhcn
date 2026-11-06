@@ -1,3 +1,9 @@
+# Windows and macOS support
+
+This project now includes Apple Silicon macOS support alongside Windows x64. See [Mac setup instructions](macOS/README.md). Run check, open the official app and capture its UI, quit it, then install the localized copy. The official app remains unchanged. Intel Macs are not verified. The contributor tested Desktop 2.29.0 on macOS 27.0.1 arm64; the merged build still needs on-device verification. Mac portable releases use `antigravity-desktop-zhcn-portable-macos-arm64.zip`.
+
+The Windows instructions below remain applicable to Windows only.
+
 # Antigravity Desktop Chinese Language Pack for Windows
 
 [简体中文](README.md) · English

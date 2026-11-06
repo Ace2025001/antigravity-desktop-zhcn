@@ -3339,7 +3339,20 @@
     "Search and read your Wispr Flow meeting notes, transcripts, and action items from Antigravity.": "在 Antigravity 中搜索和查阅您的 Wispr Flow 会议笔记、逐字稿与待办事项。",
     "Connect to your managed Looker MCP server to explore data, run saved Looks, build dashboards, and validate LookML.": "连接到您的托管 Looker MCP 服务器以探索数据、运行已保存的 Looks、构建仪表板并验证 LookML。",
     "Agent skills for Neo4j graph database — write Cypher queries, design graph models, use drivers, run imports, build GraphRAG pipelines, run GDS algorithms, and troubleshoot with expert guidance.": "Neo4j 图数据库智能体技能——编写 Cypher 查询、设计图模型、使用驱动、执行导入、构建 GraphRAG 流水线并运行图数据科学算法。",
-    "Google does not control the availability or functionality of third party developer tools. Your data from third party developer tools connected to your Antigravity instance may be shared with Google. Google will protect any such data in accordance with the Google Privacy Policy, found here:": "Google 不控制第三方开发者工具的可用性或功能。连接至您的 Antigravity 实例的第三方开发者工具数据可能会与 Google 共享。Google 将根据 Google 隐私权政策保护任何此类数据，详见："
+    "Google does not control the availability or functionality of third party developer tools. Your data from third party developer tools connected to your Antigravity instance may be shared with Google. Google will protect any such data in accordance with the Google Privacy Policy, found here:": "Google 不控制第三方开发者工具的可用性或功能。连接至您的 Antigravity 实例的第三方开发者工具数据可能会与 Google 共享。Google 将根据 Google 隐私权政策保护任何此类数据，详见：",
+    "Introducing Remote Agents": "隆重推出远程智能体",
+    "Your agents can now run in the cloud and keep working after you close the app. Check on them from any browser at antigravity.google.com. Create a Remote Project to get started.": "您的智能体现在可以在云端运行，并在您关闭应用后继续工作。可通过任意浏览器在 antigravity.google.com 上查看它们。创建一个远程项目即可开始。",
+    "Remote Agents": "远程智能体",
+    "Remote Agent": "远程智能体",
+    "Remote Projects": "远程项目",
+    "Remote Project": "远程项目",
+    "Create a Remote Project": "创建远程项目",
+    "Create Remote Project": "创建远程项目",
+    "Create a project whose conversations run remotely.": "创建一个对话在远程运行的项目。",
+    "Create a new project from one or more folders.": "从一个或多个文件夹创建新项目。",
+    "Permanently delete your remote conversations, projects, scheduled tasks, connected plugins and settings. Data in the desktop app and your Google account are not affected.": "永久删除您的远程对话、项目、定时任务、已连接插件与设置。桌面客户端和您的 Google 账号中的数据不受影响。",
+    "This permanently deletes all of your Remote Agents conversations, projects, scheduled tasks, connected plugins and settings, and stops any running remote agents. It can't be undone. Data in the desktop app and your Google account are not affected, and you can keep using Remote Agents afterwards.": "此操作将永久删除您的所有远程智能体对话、项目、定时任务、已连接插件与设置，并停止任何正在运行的远程智能体。该操作无法撤销。桌面客户端和您的 Google 账号中的数据不受影响，此后您仍可继续使用远程智能体。",
+    "Couldn't delete your data. Try again.": "无法删除您的数据。请重试。"
   },
   "patterns": [
     {
@@ -9896,6 +9909,16 @@
       "flags": "u",
       "source": "^Google does not control the availability or functionality of third party developer tools\\. Your data from third party developer tools connected to your Antigravity instance may be shared with Google\\. Google will protect any such data in accordance with the Google Privacy Policy, found here: *$",
       "target": "Google 不控制第三方开发者工具的可用性或功能。连接至您的 Antigravity 实例的第三方开发者工具数据可能会与 Google 共享。Google 将根据 Google 隐私权政策保护任何此类数据，详见："
+    },
+    {
+      "flags": "u",
+      "source": "^Introducing (.+)$",
+      "target": "隆重推出 $1"
+    },
+    {
+      "flags": "u",
+      "source": "^Your agents can now run in the cloud and keep working after you close the app\\..*$",
+      "target": "您的智能体现在可以在云端运行，并在您关闭应用后继续工作。可通过任意浏览器在 antigravity.google.com 上查看它们。创建一个远程项目即可开始。"
     }
   ]
 }

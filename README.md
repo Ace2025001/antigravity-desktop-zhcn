@@ -1,24 +1,26 @@
-# Antigravity 汉化项目：Windows 桌面版中文语言包
+# Antigravity 汉化项目：Windows / macOS 双端中文语言包
 
 简体中文 · [English](README.en.md)
 
-**给 Windows 上的 Google Antigravity Desktop 独立桌面客户端安装简体中文界面。** **支持最新版，随客户端更新动态适配，无需按客户端版本更换安装包。** 下载便携包、解压后按提示运行，无需自行安装 Node.js 或配置编程环境，提供兼容检查、桌面快捷方式和恢复英文入口。
+**为 Windows x64 与 Apple 芯片 macOS 的 Google Antigravity Desktop 独立桌面客户端提供简体中文界面。** Windows 支持动态适配；macOS 升级后重新运行“安装中文”，已知实测范围见下表。 下载便携包、解压后按提示运行，无需自行安装 Node.js 或配置编程环境，提供兼容检查、桌面快捷方式和恢复英文入口。
 
-本项目由社区维护，与 Google 无隶属关系。适用于 **Windows x64 的独立桌面客户端**；Antigravity IDE 的扩展语言包属于另一类方案。
+本项目由社区维护，与 Google 无隶属关系。适用于 **Windows x64 和 Apple 芯片 macOS 的独立桌面客户端**；Antigravity IDE 的扩展语言包属于另一类方案。
 
 [**下载 Windows 便携中文包**](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/antigravity-desktop-zhcn-portable-win-x64.zip) · [发布说明与校验文件](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest) · [问题反馈](https://github.com/Ace2025001/antigravity-desktop-zhcn/issues)
 
-## Antigravity 怎么汉化？
+## 普通用户：三步开始
 
-1. **下载**：选择 `antigravity-desktop-zhcn-portable-win-x64.zip`，并用发布页的同名 `.sha256` 文件核对摘要。普通用户下载便携包即可，`Source code` 是源码包。
-2. **解压**：完整解压到本地文件夹，不要在压缩包里直接运行。
-3. **检查（可选）**：双击 **`Windows/一键检查兼容性.bat`**，查看客户端版本与指纹。该入口检查已登记构建，未登记不等于自适应安装不支持。
-4. **汉化**：保存正在编辑的内容，双击 **`Windows/一键汉化.bat`**，按提示操作。也可直接运行 **`Windows/启动 Antigravity（自动汉化）.bat`** 使用动态自适应入口，完成后检查中文界面。
-5. **日常启动（可选）**：运行 **`Windows/生成桌面快捷方式.bat`**，以后通过生成的快捷方式启动。
+1. **下载并完整解压**与你电脑对应的便携包：Windows x64 或 Mac Apple 芯片。不要下载 Source code。
+2. **双击“安装中文”**，按窗口中的中文提示操作，无需输入命令或安装开发环境。
+3. **以后双击“启动中文”**；想恢复英文时，双击“恢复英文”。
 
-**想恢复英文？** 保存工作后运行 **`Windows/一键恢复英文.bat`**，按提示完成恢复。请保留原始备份和工具状态。
+Windows 文件后缀为 .bat，Mac 为 .command；对应平台的便携包只提供本平台的三个顶层入口。客户端更新后重新运行“安装中文”。
 
-> 动态适配通过读取当前客户端界面、检查代码结构、备份后生成汉化实现，不局限于已登记白名单。安装会修改客户端资源；如果官方结构变更导致检查失败，请更新补丁或反馈，不要关闭校验强行安装。
+Mac 安装过程中会打开官方应用。看到首页后回到安装窗口按回车；随后按提示保存工作、按 ⌘Q 退出应用，再按回车。检查、界面准备、安装和启动由工具完成，无需分别运行采集脚本。
+
+Mac 便携包名称为 antigravity-desktop-zhcn-portable-macos-arm64.zip，请在包含该附件的 [发布页](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases) 下载。尚无附件时，普通用户请等待正式包；开发者可按 [Mac 详细说明](macOS/README.md) 从源码运行。
+
+高级检查与维护入口保留在 Windows/、macOS/ 中，日常使用不需要打开这些目录。安装遇到错误时保留窗口信息并反馈。
 
 ## 适合哪些用户？
 
@@ -28,6 +30,8 @@
 - 希望让支持电脑操作的 AI 助手协助下载、检查和安装。
 
 ## 让 AI 帮你安装
+
+以下提示词适用于 Windows；Mac 请让助手先阅读 [Mac 使用说明](macOS/README.md)，使用根目录“安装中文”引导入口。
 
 如果你使用 Antigravity、WorkBuddy 或其他支持电脑操作的 AI 助手，可以复制：
 
@@ -39,10 +43,11 @@
 
 | 项目 | 说明 |
 | --- | --- |
-| 操作系统 | Windows x64 |
+| 操作系统 | Windows x64；macOS Apple 芯片 arm64 |
+| Mac 实测范围 | 补充包作者记录：macOS 27.0.1 / Desktop 2.29.0 / arm64；合并版本待实机复验，Intel 未验证 |
 | 目标产品 | Google Antigravity Desktop 独立桌面客户端 |
 | 补丁版本 | 以 [Releases](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest) 为准，与客户端版本号不同 |
-| 适配方式 | 动态读取当前客户端并执行结构检查，无需逐版下载不同补丁 |
+| 适配方式 | Windows 动态适配；Mac 采集当前原版 UI 后构建独立副本，升级后重新校验 |
 | 本机是否适用 | 结合当前发布包清单、客户端文件指纹及运行时检查结果判断 |
 | 最新版与历史版本 | 提供跨版本动态适配；白名单用于已知构建检查，不是支持上限。详见 [动态适配说明](docs/compatibility.md) |
 
@@ -86,15 +91,15 @@
 
 ## 仓库目录结构
 
-`	ext
+```text
 ├── Windows/                 # Windows 平台专属一键批处理入口（.bat）
-├── macOS/                   # macOS 平台专属脚本入口目录（预留支持）
+├── macOS/                   # macOS 检查、采集、安装、启动与恢复入口（.command）
 ├── config/                  # 跨平台共享汉化词典（dom-translations.json）与版本兼容性清单
-├── src/                     # 跨平台核心汉化引擎、ASAR 读写与补丁注入逻辑
+├── src/                     # 共享汉化引擎、ASAR 读写与平台辅助逻辑
 ├── scripts/                 # 构建、校验与自动跟进更新脚本
 ├── tests/                   # 自动化单元测试套件
 └── docs/                    # 架构、维护与 AI 辅助安装文档
-`
+```
 
 ## 开发者使用
 
@@ -120,7 +125,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-portable.ps1
 
 ## English summary
 
-**Antigravity Desktop Chinese Localization Patch for Windows x64.** Download the portable ZIP from [Releases](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest), verify its SHA-256, extract it, check compatibility, and follow the interactive installation steps. The portable package bundles Node.js and dependencies. A restore command is provided. This community project targets the standalone Desktop client; it is not an IDE language-pack extension. Supports the latest client through dynamic adaptation. Known fingerprint records are not the support ceiling; structural checks must still pass.
+**Antigravity Desktop Chinese Localization Patch for Windows x64 and Apple Silicon macOS.** macOS uses a separately signed localized copy; see [Mac instructions](macOS/README.md). Download the portable ZIP from [Releases](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest), verify its SHA-256, extract it, check compatibility, and follow the interactive installation steps. The portable package bundles Node.js and dependencies. A restore command is provided. This community project targets the standalone Desktop client; it is not an IDE language-pack extension. Supports the latest client through dynamic adaptation. Known fingerprint records are not the support ceiling; structural checks must still pass.
 
 ## 项目来源与许可证
 

@@ -24,6 +24,13 @@ jobs:
       - name: Build portable ZIP
         shell: pwsh
         run: ./scripts/build-portable.ps1
+      - name: 验证解压后的 Windows 包
+        shell: pwsh
+        run: |
+          $verifyRoot = Join-Path $env:RUNNER_TEMP "verify-win"
+          Expand-Archive .runtime/release/antigravity-desktop-zhcn-portable-win-x64.zip $verifyRoot
+          node scripts/verify-portable.mjs "$verifyRoot/antigravity-desktop-zhcn-portable-win-x64"
+          if ($LASTEXITCODE -ne 0) { throw "Windows 便携包验收失败" }
       - uses: actions/upload-artifact@v4
         with:
           name: antigravity-desktop-zhcn-portable-win-x64
@@ -41,6 +48,8 @@ jobs:
           if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($releaseNotes)) {
             throw "Release 兼容版本说明生成失败。"
           }
+          $notesFile = Join-Path $env:RUNNER_TEMP "release-notes.md"
+          [IO.File]::WriteAllText($notesFile, $releaseNotes)
           $artifacts = Get-ChildItem -LiteralPath .runtime/release -File |
             Where-Object { $_.Extension -eq '.zip' -or $_.Name.EndsWith('.sha256') } |
             Select-Object -ExpandProperty FullName
@@ -48,8 +57,41 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             gh release upload $env:GITHUB_REF_NAME @artifacts --clobber
           } else {
-            gh release create $env:GITHUB_REF_NAME @artifacts --generate-notes --notes $releaseNotes --title $env:GITHUB_REF_NAME
+            gh release create $env:GITHUB_REF_NAME @artifacts --draft --notes-file $notesFile --title "$env:GITHUB_REF_NAME Windows / macOS 双端汉化包"
           }
           if ($LASTEXITCODE -ne 0) {
             throw "GitHub Release 发布失败。"
           }
+
+  build-macos:
+    needs: build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - run: npm run validate
+      - run: npm run build:mac
+      - name: 验证解压后的 Mac 包
+        run: |
+          VERIFY_ROOT="$(mktemp -d)"
+          ditto -x -k .runtime/release/antigravity-desktop-zhcn-portable-macos-arm64.zip "$VERIFY_ROOT"
+          node scripts/verify-portable.mjs "$VERIFY_ROOT/antigravity-desktop-zhcn-portable-macos-arm64"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: antigravity-desktop-zhcn-portable-macos-arm64
+          path: |
+            .runtime/release/*.zip
+            .runtime/release/*.sha256
+          if-no-files-found: error
+      - name: 上传 Mac 发布附件
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$GITHUB_REF_NAME" .runtime/release/*.zip .runtime/release/*.sha256 --clobber
+          gh release edit "$GITHUB_REF_NAME" --draft=false --latest

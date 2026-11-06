@@ -241,7 +241,7 @@ const releaseWorkflow = await readFile(
 );
 assert(
   releaseWorkflow.includes("generate-release-notes.mjs") &&
-    releaseWorkflow.includes("--notes $releaseNotes"),
+    releaseWorkflow.includes("--notes-file $notesFile"),
   "Release 工作流没有自动附加兼容版本说明。",
 );
 
@@ -258,6 +258,25 @@ assert(
 const moduleFiles = (await collectFiles(projectRoot)).filter((filePath) =>
   filePath.endsWith(".mjs"),
 );
+for (const [name, command] of Object.entries({
+  "一键检查兼容性": "check", "采集新版界面": "capture",
+  "一键安装并启动中文": "setup", "启动中文": "launch",
+  "恢复英文": "restore", "验证中文安装": "verify",
+})) {
+  const launcher = await readFile(path.join(projectRoot, "macOS", `${name}.command`), "utf8");
+  assert(launcher.startsWith("#!/bin/bash\n") && !launcher.includes("\r"), `${name}.command 必须使用 LF 换行。`);
+  assert(launcher.includes(`scripts/run-macos.sh ${command}`), `${name}.command 指令错误。`);
+}
+for (const script of ["run-macos.sh", "build-macos.sh"]) {
+  const content = await readFile(path.join(projectRoot, "scripts", script), "utf8");
+  assert(content.startsWith("#!/bin/bash\n") && !content.includes("\r"), `${script} 必须使用 LF 换行。`);
+}
+const macDictionary = JSON.parse(await readFile(path.join(projectRoot, "config", "macos-translations.json"), "utf8"));
+assert(Object.keys(macDictionary.exact).length > 0 && Array.isArray(macDictionary.patterns), "Mac 补充词库格式无效。");
+for (const rule of macDictionary.patterns) {
+  assert(rule.source.startsWith("^") && rule.source.endsWith("$") && rule.flags === "u", "Mac 动态词条范围无效。");
+  assert(!new RegExp(rule.source, rule.flags).test(rule.target), "Mac 动态词条重复匹配译文。");
+}
 for (const moduleFile of moduleFiles) {
   const result = spawnSync(process.execPath, ["--check", moduleFile], {
     encoding: "utf8",
