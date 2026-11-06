@@ -1,10 +1,10 @@
-# Antigravity 汉化项目：Windows 桌面版中文语言包
+# Antigravity 汉化项目：桌面版中文语言包（Windows & macOS）
 
 简体中文 · [English](README.en.md)
 
-**给 Windows 上的 Google Antigravity Desktop 独立桌面客户端安装简体中文界面。** **支持最新版，随客户端更新动态适配，无需按客户端版本更换安装包。** 下载便携包、解压后按提示运行，无需自行安装 Node.js 或配置编程环境，提供兼容检查、桌面快捷方式和恢复英文入口。
+**给 Windows 和 macOS 上的 Google Antigravity Desktop 独立桌面客户端安装简体中文界面。** **支持最新版，随客户端更新动态适配，无需按客户端版本更换安装包。** 解压后按提示运行，提供兼容检查、桌面快捷方式和恢复英文入口。
 
-本项目由社区维护，与 Google 无隶属关系。适用于 **Windows x64 的独立桌面客户端**；Antigravity IDE 的扩展语言包属于另一类方案。
+本项目由社区维护，与 Google 无隶属关系。适用于 **Windows x64 与 macOS（Apple Silicon `arm64` / Intel `x64`）的独立桌面客户端**；Antigravity IDE 的扩展语言包属于另一类方案。
 
 [**下载 Windows 便携中文包**](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/antigravity-desktop-zhcn-portable-win-x64.zip) · [发布说明与校验文件](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest) · [问题反馈](https://github.com/Ace2025001/antigravity-desktop-zhcn/issues)
 
@@ -12,18 +12,18 @@
 
 1. **下载**：选择 `antigravity-desktop-zhcn-portable-win-x64.zip`，并用发布页的同名 `.sha256` 文件核对摘要。普通用户下载便携包即可，`Source code` 是源码包。
 2. **解压**：完整解压到本地文件夹，不要在压缩包里直接运行。
-3. **检查（可选）**：双击 **`Windows/一键检查兼容性.bat`**，查看客户端版本与指纹。该入口检查已登记构建，未登记不等于自适应安装不支持。
-4. **汉化**：保存正在编辑的内容，双击 **`Windows/一键汉化.bat`**，按提示操作。也可直接运行 **`Windows/启动 Antigravity（自动汉化）.bat`** 使用动态自适应入口，完成后检查中文界面。
-5. **日常启动（可选）**：运行 **`Windows/生成桌面快捷方式.bat`**，以后通过生成的快捷方式启动。
+3. **检查（可选）**：Windows 双击 **`Windows/一键检查兼容性.bat`**，macOS 双击 **`macOS/一键检查兼容性.command`**，查看客户端版本与指纹。该入口检查已登记构建，未登记不等于自适应安装不支持。
+4. **汉化**：保存正在编辑的内容，Windows 双击 **`Windows/一键汉化.bat`**（macOS 双击 **`macOS/一键汉化.command`**），按提示操作。也可直接运行 **`启动 Antigravity（自动汉化）`** 入口使用动态自适应入口，完成后检查中文界面。
+5. **日常启动（可选）**：运行 **`生成桌面快捷方式`**（Windows 为 `.bat`，macOS 为 `.command`），以后通过生成的快捷方式启动。
 
-**想恢复英文？** 保存工作后运行 **`Windows/一键恢复英文.bat`**，按提示完成恢复。请保留原始备份和工具状态。
+**想恢复英文？** 保存工作后运行 **`一键恢复英文`**（Windows 为 `.bat`，macOS 为 `.command`），按提示完成恢复。请保留原始备份和工具状态。
 
 > 动态适配通过读取当前客户端界面、检查代码结构、备份后生成汉化实现，不局限于已登记白名单。安装会修改客户端资源；如果官方结构变更导致检查失败，请更新补丁或反馈，不要关闭校验强行安装。
 
 ## 适合哪些用户？
 
-- 使用 **Windows x64 + Antigravity Desktop 独立桌面客户端**，想把界面改成简体中文。
-- 不想自行安装 Node.js、npm 或其他开发环境，希望下载便携包后运行。
+- 使用 **Windows x64 或 macOS + Antigravity Desktop 独立桌面客户端**，想把界面改成简体中文。
+- 不想自行配置复杂编程环境，希望下载后双击运行。
 - 希望有明确的兼容检查、安装步骤与恢复英文方法。
 - 希望让支持电脑操作的 AI 助手协助下载、检查和安装。
 
@@ -31,7 +31,7 @@
 
 如果你使用 Antigravity、WorkBuddy 或其他支持电脑操作的 AI 助手，可以复制：
 
-> 请帮我安装 https://github.com/Ace2025001/antigravity-desktop-zhcn 的中文汉化补丁。先读 README，确认我使用的是 Windows x64 和 Antigravity Desktop 独立桌面客户端，再下载最新正式便携包、核对 SHA-256。按文档选择已登记构建安装或动态自适应入口，按提示操作，提醒我保存工作，完成后检查中文界面并告诉我如何恢复英文。遵守我的操作授权，保留现有代理、节点和 TUN 设置。
+> 请帮我安装 https://github.com/Ace2025001/antigravity-desktop-zhcn 的中文汉化补丁。先读 README，确认我的系统平台（Windows x64 或 macOS）和 Antigravity Desktop 独立桌面客户端，再下载最新正式包、核对 SHA-256。按文档选择对应平台的入口脚本或动态自适应入口，按提示操作，提醒我保存工作，完成后检查中文界面并告诉我如何恢复英文。遵守我的操作授权，保留现有代理、节点和 TUN 设置。
 
 详细步骤、命令与结果判断见 [AI 助手安装指南](docs/ai-install.md)。
 
@@ -39,7 +39,7 @@
 
 | 项目 | 说明 |
 | --- | --- |
-| 操作系统 | Windows x64 |
+| 操作系统 | Windows x64、macOS（Apple Silicon `arm64` / Intel `x64`） |
 | 目标产品 | Google Antigravity Desktop 独立桌面客户端 |
 | 补丁版本 | 以 [Releases](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest) 为准，与客户端版本号不同 |
 | 适配方式 | 动态读取当前客户端并执行结构检查，无需逐版下载不同补丁 |
@@ -88,7 +88,7 @@
 
 `	ext
 ├── Windows/                 # Windows 平台专属一键批处理入口（.bat）
-├── macOS/                   # macOS 平台专属脚本入口目录（预留支持）
+├── macOS/                   # macOS 平台专属一键脚本入口（.command）
 ├── config/                  # 跨平台共享汉化词典（dom-translations.json）与版本兼容性清单
 ├── src/                     # 跨平台核心汉化引擎、ASAR 读写与补丁注入逻辑
 ├── scripts/                 # 构建、校验与自动跟进更新脚本

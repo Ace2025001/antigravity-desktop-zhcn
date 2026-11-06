@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { stat } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
@@ -11,8 +12,9 @@ export const projectRoot = path.resolve(currentDirectory, "..", "..");
 
 export function areSamePaths(left, right, platform = process.platform) {
   if (typeof left !== "string" || typeof right !== "string") return false;
-  const normalizedLeft = path.normalize(path.resolve(left));
-  const normalizedRight = path.normalize(path.resolve(right));
+  const pathApi = platform === "win32" ? path.win32 : path.posix;
+  const normalizedLeft = pathApi.normalize(pathApi.resolve(left));
+  const normalizedRight = pathApi.normalize(pathApi.resolve(right));
   return platform === "win32"
     ? normalizedLeft.toLowerCase() === normalizedRight.toLowerCase()
     : normalizedLeft === normalizedRight;
@@ -24,6 +26,31 @@ export const installRootSourceLabels = Object.freeze({
   registry: "Windows 卸载注册表",
   default: "默认安装目录",
 });
+
+export function getExecutablePath(installRoot, platform = process.platform) {
+  if (platform === "darwin" || installRoot.endsWith(".app")) {
+    return path.join(installRoot, "Contents", "MacOS", "Antigravity");
+  }
+  return path.join(installRoot, "Antigravity.exe");
+}
+
+export function getAppAsarPath(installRoot, platform = process.platform) {
+  if (platform === "darwin" || installRoot.endsWith(".app")) {
+    return path.join(installRoot, "Contents", "Resources", "app.asar");
+  }
+  return path.join(installRoot, "resources", "app.asar");
+}
+
+export function getResourcesPath(installRoot, platform = process.platform) {
+  if (platform === "darwin" || installRoot.endsWith(".app")) {
+    return path.join(installRoot, "Contents", "Resources");
+  }
+  return path.join(installRoot, "resources");
+}
+
+export function getInfoPlistPatchPath(installRoot) {
+  return path.join(installRoot, "Contents", "Info.plist");
+}
 
 const windowsDiscoveryScript = `
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -70,6 +97,11 @@ function normalizeInstallRootCandidate(value) {
   }
 
   let candidate = value.trim();
+  const appIndex = candidate.indexOf(".app");
+  if (appIndex >= 0) {
+    return path.resolve(candidate.slice(0, appIndex + 4));
+  }
+
   const quotedExecutable = candidate.match(/^"([^"]+\.exe)"/i);
   if (quotedExecutable) {
     candidate = quotedExecutable[1];
@@ -95,14 +127,45 @@ function normalizeInstallRootCandidate(value) {
 
 async function isDesktopInstallRoot(installRoot) {
   try {
-    const [executable, appAsar] = await Promise.all([
-      stat(path.join(installRoot, "Antigravity.exe")),
-      stat(path.join(installRoot, "resources", "app.asar")),
+    const winExe = path.join(installRoot, "Antigravity.exe");
+    const winAsar = path.join(installRoot, "resources", "app.asar");
+    const [we, wa] = await Promise.all([
+      stat(winExe).catch(() => null),
+      stat(winAsar).catch(() => null),
     ]);
-    return executable.isFile() && appAsar.isFile();
+    if (we?.isFile() && wa?.isFile()) return true;
+
+    const macExe = path.join(installRoot, "Contents", "MacOS", "Antigravity");
+    const macAsar = path.join(installRoot, "Contents", "Resources", "app.asar");
+    const [me, ma] = await Promise.all([
+      stat(macExe).catch(() => null),
+      stat(macAsar).catch(() => null),
+    ]);
+    if (me?.isFile() && ma?.isFile()) return true;
+
+    return false;
   } catch {
     return false;
   }
+}
+
+async function queryDarwinInstallCandidates() {
+  const items = [];
+  try {
+    const { stdout } = await execFileAsync("ps", ["-axo", "comm"], {
+      encoding: "utf8",
+      timeout: 5_000,
+    });
+    for (const line of stdout.split("\n")) {
+      const trimmed = line.trim();
+      if (trimmed.includes(".app/Contents/MacOS/Antigravity")) {
+        items.push({ source: "process", value: trimmed });
+      }
+    }
+  } catch {
+    // 进程查询失败不影响默认路径检查
+  }
+  return items;
 }
 
 async function queryWindowsInstallCandidates() {
@@ -184,6 +247,7 @@ export async function resolveInstallRoot({
   env = process.env,
   platform = process.platform,
   findWindowsCandidates = queryWindowsInstallCandidates,
+  findDarwinCandidates = queryDarwinInstallCandidates,
   validateInstallRoot = isDesktopInstallRoot,
 } = {}) {
   if (env.AGY_INSTALL_PATH?.trim()) {
@@ -200,23 +264,45 @@ export async function resolveInstallRoot({
     );
   }
 
-  let windowsCandidates = [];
+  let candidates = [];
   if (platform === "win32") {
     try {
-      windowsCandidates = await findWindowsCandidates();
+      candidates = await findWindowsCandidates();
     } catch {
       // 进程或注册表查询失败时仍可继续检查默认安装目录。
+    }
+  } else if (platform === "darwin") {
+    try {
+      candidates = await findDarwinCandidates();
+    } catch {
+      // 进程查询失败时仍可继续检查默认安装目录。
     }
   }
 
   for (const source of ["process", "registry"]) {
     const resolved = await resolveCandidateTier({
-      candidates: windowsCandidates,
+      candidates,
       source,
       validateInstallRoot,
     });
     if (resolved) {
       return resolved;
+    }
+  }
+
+  if (platform === "darwin") {
+    const defaultDarwinPaths = [
+      "/Applications/Antigravity.app",
+      path.join(os.homedir(), "Applications", "Antigravity.app"),
+    ];
+    for (const installRoot of defaultDarwinPaths) {
+      if (await validateInstallRoot(installRoot)) {
+        return {
+          installRoot,
+          source: "default",
+          sourceLabel: installRootSourceLabels.default,
+        };
+      }
     }
   }
 
@@ -236,7 +322,9 @@ export async function resolveInstallRoot({
   }
 
   throw new Error(
-    "未找到有效的 Antigravity Desktop 安装目录。已检查运行进程、Windows 卸载注册表和默认目录；也可以设置 AGY_INSTALL_PATH 后重试。",
+    platform === "darwin"
+      ? "未找到有效的 Antigravity Desktop 安装目录。已检查运行进程与默认安装目录；也可以设置 AGY_INSTALL_PATH 后重试。"
+      : "未找到有效的 Antigravity Desktop 安装目录。已检查运行进程、Windows 卸载注册表和默认目录；也可以设置 AGY_INSTALL_PATH 后重试。",
   );
 }
 
@@ -248,20 +336,39 @@ export function getStateRoot() {
   if (process.env.AGY_ZHCN_STATE_DIR) {
     return path.resolve(process.env.AGY_ZHCN_STATE_DIR);
   }
-  if (!process.env.LOCALAPPDATA) {
-    throw new Error("环境变量 LOCALAPPDATA 不存在。");
+  if (process.platform === "darwin") {
+    return path.join(
+      os.homedir(),
+      "Library",
+      "Application Support",
+      "AntigravityZhcn",
+    );
   }
-  return path.join(process.env.LOCALAPPDATA, "AntigravityZhcn");
+  if (process.env.LOCALAPPDATA) {
+    return path.join(process.env.LOCALAPPDATA, "AntigravityZhcn");
+  }
+  throw new Error("环境变量 LOCALAPPDATA 不存在。");
 }
 
 export function getAntigravityUserDataRoot() {
   if (process.env.AGY_USER_DATA_PATH) {
     return path.resolve(process.env.AGY_USER_DATA_PATH);
   }
-  if (!process.env.APPDATA) {
-    throw new Error("环境变量 APPDATA 不存在。");
+  if (process.platform === "darwin") {
+    return path.join(
+      os.homedir(),
+      "Library",
+      "Application Support",
+      "Antigravity",
+    );
   }
-  return path.join(process.env.APPDATA, "Antigravity");
+  if (process.env.APPDATA) {
+    return path.join(process.env.APPDATA, "Antigravity");
+  }
+  if (process.env.LOCALAPPDATA) {
+    return path.join(process.env.LOCALAPPDATA, "Antigravity");
+  }
+  throw new Error("环境变量 APPDATA 或 LOCALAPPDATA 不存在。");
 }
 
 export function getRuntimePreviewRoot() {

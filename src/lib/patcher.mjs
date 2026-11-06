@@ -683,7 +683,22 @@ export async function atomicReplaceFile({
     throw new Error("待替换文件的当前哈希不一致，拒绝替换。");
   }
 
-  await copyFile(replacementPath, stagedPath);
+  let lastError;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      await copyFile(replacementPath, stagedPath);
+      lastError = null;
+      break;
+    } catch (error) {
+      lastError = error;
+      if (error?.code === "EPERM" && attempt < 4) {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        continue;
+      }
+      throw error;
+    }
+  }
+  if (lastError) throw lastError;
   const stagedHash = await sha256File(stagedPath);
   if (stagedHash !== replacementExpectedHash) {
     await rm(stagedPath, { force: true });
@@ -736,4 +751,99 @@ export async function atomicReplaceFile({
       }
     },
   };
+}
+
+export async function computeAsarHeaderSha256(asarPath) {
+  const { open } = await import("node:fs/promises");
+  const crypto = await import("node:crypto");
+  const fileHandle = await open(asarPath, "r");
+  try {
+    const sizeBuffer = Buffer.alloc(16);
+    await fileHandle.read(sizeBuffer, 0, 16, 0);
+    const headerJsonSize = sizeBuffer.readUInt32LE(12);
+    const headerBuffer = Buffer.alloc(headerJsonSize);
+    await fileHandle.read(headerBuffer, 0, headerJsonSize, 16);
+    return crypto.createHash("sha256").update(headerBuffer).digest("hex");
+  } finally {
+    await fileHandle.close();
+  }
+}
+
+export async function resignMacAppBundle(installRoot) {
+  if (process.platform !== "darwin") return;
+  const { execFile } = await import("node:child_process");
+  const { promisify } = await import("node:util");
+  const execFileAsync = promisify(execFile);
+
+  try {
+    await execFileAsync("codesign", [
+      "--force",
+      "--deep",
+      "--sign",
+      "-",
+      installRoot,
+    ]);
+    await execFileAsync("xattr", ["-cr", installRoot]).catch(() => {});
+  } catch (error) {
+    console.warn(`警告：本机 ad-hoc 重签名失败：${error.message}`);
+  }
+}
+
+export async function syncMacElectronIntegrity({ installRoot, asarPath }) {
+  if (process.platform !== "darwin") return null;
+  const infoPlistPath = path.join(installRoot, "Contents", "Info.plist");
+  const { execFile } = await import("node:child_process");
+  const { promisify } = await import("node:util");
+  const execFileAsync = promisify(execFile);
+
+  let originalHash = null;
+  try {
+    const { stdout } = await execFileAsync("plutil", [
+      "-extract",
+      "ElectronAsarIntegrity.Resources/app.asar.hash",
+      "raw",
+      infoPlistPath,
+    ]);
+    originalHash = stdout.trim();
+  } catch {
+    return null;
+  }
+
+  const newHeaderHash = await computeAsarHeaderSha256(asarPath);
+  if (!newHeaderHash) return null;
+
+  await execFileAsync("plutil", [
+    "-replace",
+    "ElectronAsarIntegrity.Resources/app.asar.hash",
+    "-string",
+    newHeaderHash,
+    infoPlistPath,
+  ]);
+
+  await resignMacAppBundle(installRoot);
+  return { originalHash, newHeaderHash };
+}
+
+export async function restoreMacElectronIntegrity({
+  installRoot,
+  originalHeaderHash,
+}) {
+  if (process.platform !== "darwin" || !originalHeaderHash) return;
+  const infoPlistPath = path.join(installRoot, "Contents", "Info.plist");
+  const { execFile } = await import("node:child_process");
+  const { promisify } = await import("node:util");
+  const execFileAsync = promisify(execFile);
+
+  try {
+    await execFileAsync("plutil", [
+      "-replace",
+      "ElectronAsarIntegrity.Resources/app.asar.hash",
+      "-string",
+      originalHeaderHash,
+      infoPlistPath,
+    ]);
+    await resignMacAppBundle(installRoot);
+  } catch (error) {
+    console.warn(`警告：恢复 macOS Info.plist 完整性哈希失败：${error.message}`);
+  }
 }

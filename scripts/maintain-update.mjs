@@ -55,7 +55,7 @@ console.log(`- 成功拉取 main.js (${uiBundleBuffer.length} bytes)`);
 let candidatePath = null;
 if (!inspection.target) {
   console.log("\n[3/4] 正在生成版本兼容性候选数据 (Candidate)...");
-  const appAsarPath = path.join(inspection.installRoot, "resources", "app.asar");
+  const appAsarPath = inspection.appAsarPath;
   const targetCandidate = await collectCompatibilityCandidate({
     appAsarPath,
     uiBundle: uiBundleBuffer,

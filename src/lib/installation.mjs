@@ -3,7 +3,12 @@ import path from "node:path";
 import { constants } from "node:fs";
 import { readFileFromAsar, readJsonFromAsar } from "./asar-reader.mjs";
 import { sha256Buffer, sha256File } from "./hash.mjs";
-import { projectRoot, resolveInstallRoot } from "./paths.mjs";
+import {
+  getAppAsarPath,
+  getExecutablePath,
+  projectRoot,
+  resolveInstallRoot,
+} from "./paths.mjs";
 
 export async function loadCompatibilityManifest({
   rootDirectory = path.join(projectRoot, "config", "compatibility"),
@@ -108,8 +113,8 @@ export async function inspectInstallation({ allowRemoteCompatibility = true } = 
     source: installRootSource,
     sourceLabel: installRootSourceLabel,
   } = await resolveInstallRoot();
-  const executablePath = path.join(installRoot, "Antigravity.exe");
-  const appAsarPath = path.join(installRoot, "resources", "app.asar");
+  const executablePath = getExecutablePath(installRoot);
+  const appAsarPath = getAppAsarPath(installRoot);
 
   await access(executablePath, constants.R_OK);
   await access(appAsarPath, constants.R_OK);

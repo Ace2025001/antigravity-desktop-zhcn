@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import {
   collectCompatibilityCandidate,
 } from "../src/lib/compatibility-candidate.mjs";
-import { resolveInstallRoot } from "../src/lib/paths.mjs";
+import { getAppAsarPath, resolveInstallRoot } from "../src/lib/paths.mjs";
 import {
   fetchUiBundle,
   findLatestUiPort,
@@ -41,7 +41,7 @@ if (explicitAsarPath) {
   const resolved = await resolveInstallRoot();
   installRoot = resolved.installRoot;
   installSource = resolved.sourceLabel;
-  appAsarPath = path.join(installRoot, "resources", "app.asar");
+  appAsarPath = getAppAsarPath(installRoot);
 }
 
 let uiBundle;

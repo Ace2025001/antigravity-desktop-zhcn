@@ -32,6 +32,8 @@ import {
 import {
   atomicReplaceFile,
   buildPatchedAsar,
+  restoreMacElectronIntegrity,
+  syncMacElectronIntegrity,
 } from "./lib/patcher.mjs";
 import {
   areSamePaths,
@@ -642,6 +644,11 @@ async function install({ assumeYes = false } = {}) {
       throw new Error("安装后复检失败，正在自动回滚。");
     }
 
+    const macIntegrity = await syncMacElectronIntegrity({
+      installRoot: inspection.installRoot,
+      asarPath: inspection.appAsarPath,
+    });
+
     await writeInstallState({
       schemaVersion: 1,
       status: "installed",
@@ -656,6 +663,7 @@ async function install({ assumeYes = false } = {}) {
       localizedBundleSha256: localized.sha256,
       backupPath,
       installedBundlePath,
+      macOriginalIntegrityHash: macIntegrity?.originalHash ?? null,
     });
     await bundleResult.finalize?.().catch((error) => {
       console.warn(`警告：旧中文文件临时副本未能清理：${error.message}`);
@@ -807,6 +815,13 @@ async function restore() {
   await replacement.finalize().catch((error) => {
     console.warn(`警告：旧文件临时副本未能清理：${error.message}`);
   });
+
+  if (state.macOriginalIntegrityHash) {
+    await restoreMacElectronIntegrity({
+      installRoot: inspection.installRoot,
+      originalHeaderHash: state.macOriginalIntegrityHash,
+    });
+  }
 
   await removeVerifiedLocalizedBundle(state);
 

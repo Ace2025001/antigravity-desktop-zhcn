@@ -6,12 +6,12 @@ import { promisify } from "node:util";
 import { inspectInstallation } from "../src/lib/installation.mjs";
 import { readFileFromAsar } from "../src/lib/asar-reader.mjs";
 import { sha256Buffer, sha256File } from "../src/lib/hash.mjs";
-import { atomicReplaceFile, buildPatchedAsar, patchCustomSchemeSource } from "../src/lib/patcher.mjs";
+import { atomicReplaceFile, buildPatchedAsar, patchCustomSchemeSource, syncMacElectronIntegrity } from "../src/lib/patcher.mjs";
 import { getAntigravityUserDataRoot, getStateRoot } from "../src/lib/paths.mjs";
 import { findLatestUiPort, fetchUiBundle } from "../src/lib/runtime-bundle.mjs";
 import { createLocalizedBundle, loadDomTranslations, writeLocalizedBundle } from "../src/lib/translator.mjs";
 import { readInstallState, writeInstallState } from "../src/lib/state.mjs";
-import { gracefulCloseAntigravity } from "../src/lib/processes.mjs";
+import { gracefulCloseAntigravity, launchAntigravity } from "../src/lib/processes.mjs";
 
 const execFileAsync = promisify(execFile);
 const CUSTOM_SCHEME_PATH = "dist/customScheme.js";
@@ -32,8 +32,7 @@ async function waitForRuntimeUi(executablePath) {
       }
     }
     if (!started) {
-      const child = spawn(executablePath, [], { cwd: path.dirname(executablePath), detached: true, stdio: "ignore", windowsHide: true });
-      child.unref();
+      await launchAntigravity(executablePath);
       started = true;
       console.log("已启动更新后的 Antigravity，正在读取其运行时界面…");
     }
@@ -94,8 +93,7 @@ if (
   previousState.patchedAsarSha256 === inspection.appAsarSha256
 ) {
   console.log("当前版本已完成汉化，无需重复注入，直接启动 Antigravity。");
-  const directLaunch = spawn(inspection.executablePath, [], { cwd: inspection.installRoot, detached: true, stdio: "ignore", windowsHide: true });
-  directLaunch.unref();
+  await launchAntigravity(inspection.executablePath);
   process.exit(0);
 }
 const originalScheme = await readFileFromAsar(inspection.appAsarPath, CUSTOM_SCHEME_PATH);
@@ -167,6 +165,10 @@ try {
   });
   await bundleResult.replacement?.finalize();
   await asarReplacement.finalize();
+  await syncMacElectronIntegrity({
+    installRoot: recheck.installRoot,
+    asarPath: recheck.appAsarPath,
+  });
 } catch (error) {
   await bundleResult?.replacement?.rollback().catch(() => {});
   await asarReplacement?.rollback().catch(() => {});
@@ -176,5 +178,4 @@ try {
 }
 
 console.log("汉化已自动跟进当前更新，正在重新启动 Antigravity。");
-const restart = spawn(recheck.executablePath, [], { cwd: recheck.installRoot, detached: true, stdio: "ignore", windowsHide: true });
-restart.unref();
+await launchAntigravity(recheck.executablePath);

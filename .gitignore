@@ -27,3 +27,5 @@ untranslated-*.md
 
 
 .codex_backup/
+.DS_Store
+*.DS_Store
