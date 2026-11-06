@@ -2928,7 +2928,7 @@
     "Clear visited URLs and autocomplete suggestions from side panel preview.": "清除侧边栏预览中的访问网址与自动填充建议。",
     "Voice mode": "语音模式",
     "The voice used in Voice mode. Powered by Gemini Live.": "语音模式使用的声音，由 Gemini Live 提供技术支持。",
-    "The voice Jetski speaks with.": "Jetski 发音使用的语音。",
+    "The voice Jetski speaks with.": "Jetski 发音使用的声音。",
     "Microphone": "麦克风",
     "Input device for voice mode and dictation.": "用于语音模式与听写的输入设备。",
     "System default": "系统默认",
@@ -3269,9 +3269,40 @@
     "Gemini 4 Argon is currently available to Ultra and paid Pro subscribers.": "Gemini 4 Argon 当前仅向 Ultra 及付费 Pro 订阅者开放。",
     "Gemini 4 Argon is currently available to Ultra and paid Pro subscribers": "Gemini 4 Argon 当前仅向 Ultra 及付费 Pro 订阅者开放。",
     "Gemini 4 Argon is now available to paid Pro and Ultra subscribers.": "Gemini 4 Argon 现已面向付费 Pro 及 Ultra 订阅者开放。",
-    "Gemini 4 Argon is now available to paid Pro and Ultra subscribers": "Gemini 4 Argon 现已面向付费 Pro 及 Ultra 订阅者开放。"
+    "Gemini 4 Argon is now available to paid Pro and Ultra subscribers": "Gemini 4 Argon 现已面向付费 Pro 及 Ultra 订阅者开放。",
+    "Not set": "未设置",
+    "Clear and friendly": "清晰友好",
+    "Confident and clear": "自信清晰",
+    "Warm and engaging": "温暖生动",
+    "Warm and approachable": "温暖亲切",
+    "Deep and velvety": "深沉醇厚",
+    "Light and precise": "轻盈精准",
+    "Choose Antigravity's Voice": "选择 Antigravity 的语音",
+    "Choose Jetski's Voice": "选择 Jetski 的语音",
+    "The voice used in Voice mode.": "语音模式使用的声音。",
+    "Powered by Gemini Live": "由 Gemini Live 提供技术支持",
+    "You can change this in": "你稍后可在",
+    "Use Fola": "使用 Fola",
+    "Use Arlo": "使用 Arlo",
+    "Use Cleo": "使用 Cleo",
+    "Use Finn": "使用 Finn",
+    "Use Gero": "使用 Gero",
+    "Use Lora": "使用 Lora",
+    "Use Neno": "使用 Neno",
+    "Use Olin": "使用 Olin",
+    "Use Tari": "使用 Tari"
   },
   "patterns": [
+    {
+      "source": "^Use\\s+([A-Za-z0-9_-]+)$",
+      "target": "使用 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Choose\\s+(.+?)'s Voice$",
+      "target": "选择 $1 的语音",
+      "flags": "u"
+    },
     {
       "source": "^(.+?) (?:is|are) currently available to (?:Ultra and paid Pro|paid Pro and Ultra) plan subscribers\\.?$",
       "target": "$1 当前仅向 Ultra 及付费 Pro 方案订阅者开放。",

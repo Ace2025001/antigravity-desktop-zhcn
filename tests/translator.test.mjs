@@ -1580,7 +1580,18 @@ test("user reported issues and expanded UI elements are fully covered", async ()
     { source: "Voice volume", expected: "语音音量" },
     { source: "Recordings", expected: "录音记录" },
     { source: "Delete all recordings?", expected: "删除所有录音记录？" },
-    { source: "Delete all", expected: "全部删除" }
+    { source: "Delete all", expected: "全部删除" },
+    { source: "Not set", expected: "未设置" },
+    { source: "Clear and friendly", expected: "清晰友好" },
+    { source: "Confident and clear", expected: "自信清晰" },
+    { source: "Warm and engaging", expected: "温暖生动" },
+    { source: "Warm and approachable", expected: "温暖亲切" },
+    { source: "Deep and velvety", expected: "深沉醇厚" },
+    { source: "Light and precise", expected: "轻盈精准" },
+    { source: "Choose Antigravity's Voice", expected: "选择 Antigravity 的语音" },
+    { source: "Choose Jetski's Voice", expected: "选择 Jetski 的语音" },
+    { source: "Use Fola", expected: "使用 Fola" },
+    { source: "Use Arlo", expected: "使用 Arlo" }
   ];
 
   for (const { source, expected } of settingsCases) {
