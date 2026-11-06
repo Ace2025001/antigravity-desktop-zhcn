@@ -12,15 +12,15 @@ This project is not affiliated with Google. It targets the standalone Desktop cl
 
 1. Download `antigravity-desktop-zhcn-portable-win-x64.zip` and its `.sha256` file from the latest release. Verify the ZIP hash. GitHub's Source code archives do not include the bundled runtime.
 2. Extract the entire ZIP to a local folder.
-3. Run `一键检查兼容性.bat` and read the version, fingerprint and runtime-check results.
-4. Save your work. Run `一键汉化.bat` and follow its prompts, or use `启动 Antigravity（自动汉化）.bat` for dynamic adaptation. The batch installer may fall back to adaptation after an error; agents should distinguish an unregistered build from other errors.
+3. Run `Windows/一键检查兼容性.bat` and read the version, fingerprint and runtime-check results.
+4. Save your work. Run `Windows/一键汉化.bat` and follow its prompts, or use `Windows/启动 Antigravity（自动汉化）.bat` for dynamic adaptation. The batch installer may fall back to adaptation after an error; agents should distinguish an unregistered build from other errors.
 5. Reopen Antigravity Desktop and verify the Chinese interface.
 
-Optional: run `生成桌面快捷方式.bat` to create a desktop launch shortcut.
+Optional: run `Windows/生成桌面快捷方式.bat` to create a desktop launch shortcut.
 
 ## Restore English
 
-Save your work, run `一键恢复英文.bat`, follow its prompts, then reopen the client. Keep the original backups and installation state until restoration has been verified.
+Save your work, run `Windows/一键恢复英文.bat`, follow its prompts, then reopen the client. Keep the original backups and installation state until restoration has been verified.
 
 ## AI-assisted installation
 

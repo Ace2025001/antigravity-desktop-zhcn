@@ -12,7 +12,7 @@ Write-Host " 操作: 生成桌面快捷方式" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
-$targetBat = Join-Path $ProjectRoot "启动 Antigravity（自动汉化）.bat"
+$targetBat = Join-Path $ProjectRoot "Windows\启动 Antigravity（自动汉化）.bat"
 if (-not (Test-Path -LiteralPath $targetBat)) {
     Write-Host "错误: 未找到启动脚本: $targetBat" -ForegroundColor Red
     exit 1

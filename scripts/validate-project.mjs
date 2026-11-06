@@ -167,7 +167,7 @@ const requiredLaunchers = [
   "完全卸载.bat",
 ];
 for (const launcher of requiredLaunchers) {
-  const buffer = await readFile(path.join(projectRoot, launcher));
+  const buffer = await readFile(path.join(projectRoot, "Windows", launcher));
   const content = buffer.toString("utf8");
   assert(content.includes("scripts\\run.ps1"), `${launcher} 入口无效。`);
   for (let index = 0; index < buffer.length; index += 1) {

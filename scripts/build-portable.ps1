@@ -91,6 +91,8 @@ try {
     New-Item -ItemType Directory -Force -Path (Join-Path $StagingRoot "runtime") | Out-Null
 
     foreach ($directory in @(
+        "Windows",
+        "macOS",
         "src",
         "config",
         "docs",
@@ -101,16 +103,8 @@ try {
         Copy-Item -LiteralPath (Join-Path $ProjectRoot $directory) -Destination $StagingRoot -Recurse
     }
     foreach ($file in @(
-        "一键汉化.bat",
-        "自动跟进更新.bat",
-        "启动 Antigravity（自动汉化）.bat",
-        "一键检查兼容性.bat",
-        "生成汉化预览.bat",
-        "一键恢复英文.bat",
-        "清理缓存.bat",
-        "完全卸载.bat",
-        "生成桌面快捷方式.bat",
         "README.md",
+        "README.en.md",
         "LICENSE",
         "package.json",
         "package-lock.json"
