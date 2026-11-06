@@ -1,5 +1,7 @@
 import { copyFile, mkdtemp, mkdir, rename, rm, writeFile } from "node:fs/promises";
-import { execFile, spawn } from "node:child_process";
+import { execFile, spawn, spawnSync } from "node:child_process";
+import { localizationFingerprint } from "../src/lib/language-pack.mjs";
+import { projectRoot } from "../src/lib/paths.mjs";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -87,12 +89,26 @@ async function replaceBundle(bundlePath, buffer, expectedExistingHash) {
 console.log("Antigravity 汉化自动跟进器");
 const previousState = await readInstallState();
 const inspection = await inspectInstallation({ allowRemoteCompatibility: false });
+const toolFingerprint = await localizationFingerprint("win32");
+// Reject malformed language updates before restoring or modifying an installation.
+await loadDomTranslations();
 if (
   previousState?.status === "installed" &&
   previousState.installRoot?.toLowerCase() === inspection.installRoot.toLowerCase() &&
   previousState.appVersion === inspection.packageVersion &&
   previousState.patchedAsarSha256 === inspection.appAsarSha256
 ) {
+  const currentBundleHash = await sha256File(path.join(getAntigravityUserDataRoot(), BUNDLE_NAME)).catch(error => {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  });
+  if (previousState.toolFingerprint !== toolFingerprint || currentBundleHash !== previousState.localizedBundleSha256) {
+    console.log("检测到语言包或汉化状态变化，恢复原始资源后重新应用中文。请先保存工作。");
+    const restored = spawnSync(process.execPath, [path.join(projectRoot, "src/cli.mjs"), "restore"], { stdio: "inherit", windowsHide: true });
+    if (restored.status !== 0) throw new Error("未完成恢复，已停止更新。");
+    const updated = spawnSync(process.execPath, [path.join(projectRoot, "scripts/auto-follow-update.mjs")], { stdio: "inherit", windowsHide: true });
+    process.exit(updated.status ?? 1);
+  }
   console.log("当前版本已完成汉化，无需重复注入，直接启动 Antigravity。");
   const directLaunch = spawn(inspection.executablePath, [], { cwd: inspection.installRoot, detached: true, stdio: "ignore", windowsHide: true });
   directLaunch.unref();
@@ -152,6 +168,7 @@ try {
   await writeInstallState({
     schemaVersion: 1,
     status: "installed",
+    toolFingerprint,
     appVersion: recheck.packageVersion,
     installedAt: new Date().toISOString(),
     installRoot: recheck.installRoot,

@@ -2,9 +2,10 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { projectRoot } from "./paths.mjs";
 import { sha256Buffer } from "./hash.mjs";
+import { languageFile } from "./language-pack.mjs";
 
 export async function loadDomTranslations() {
-  const filePath = path.join(projectRoot, "config", "dom-translations.json");
+  const filePath = languageFile("dom-translations.json");
   const data = JSON.parse(await readFile(filePath, "utf8"));
   if (
     data.schemaVersion !== 2 ||

@@ -1,14 +1,10 @@
 name: Portable release
-
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
-
+    tags: ["v*"]
 permissions:
   contents: write
-
 jobs:
   build:
     runs-on: windows-latest
@@ -16,53 +12,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.12.0
+          node-version: 22.22.2
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm test
       - run: npm run validate
-      - name: Build portable ZIP
+      - run: ./scripts/build-portable.ps1
         shell: pwsh
-        run: ./scripts/build-portable.ps1
-      - name: 验证解压后的 Windows 包
-        shell: pwsh
-        run: |
-          $verifyRoot = Join-Path $env:RUNNER_TEMP "verify-win"
-          Expand-Archive .runtime/release/antigravity-desktop-zhcn-portable-win-x64.zip $verifyRoot
-          node scripts/verify-portable.mjs "$verifyRoot/antigravity-desktop-zhcn-portable-win-x64"
-          if ($LASTEXITCODE -ne 0) { throw "Windows 便携包验收失败" }
       - uses: actions/upload-artifact@v4
         with:
-          name: antigravity-desktop-zhcn-portable-win-x64
-          path: |
-            .runtime/release/*.zip
-            .runtime/release/*.sha256
+          name: windows-runtime-package
+          path: .runtime/release/*.zip
           if-no-files-found: error
-      - name: Publish tagged release
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $releaseNotes = (& node scripts/generate-release-notes.mjs) -join "`n"
-          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($releaseNotes)) {
-            throw "Release 兼容版本说明生成失败。"
-          }
-          $notesFile = Join-Path $env:RUNNER_TEMP "release-notes.md"
-          [IO.File]::WriteAllText($notesFile, $releaseNotes)
-          $artifacts = Get-ChildItem -LiteralPath .runtime/release -File |
-            Where-Object { $_.Extension -eq '.zip' -or $_.Name.EndsWith('.sha256') } |
-            Select-Object -ExpandProperty FullName
-          gh release view $env:GITHUB_REF_NAME *> $null
-          if ($LASTEXITCODE -eq 0) {
-            gh release upload $env:GITHUB_REF_NAME @artifacts --clobber
-          } else {
-            gh release create $env:GITHUB_REF_NAME @artifacts --draft --notes-file $notesFile --title "$env:GITHUB_REF_NAME Windows / macOS 双端汉化包"
-          }
-          if ($LASTEXITCODE -ne 0) {
-            throw "GitHub Release 发布失败。"
-          }
-
   build-macos:
     needs: build
     runs-on: macos-latest
@@ -76,22 +37,61 @@ jobs:
       - run: npm test
       - run: npm run validate
       - run: npm run build:mac
-      - name: 验证解压后的 Mac 包
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-runtime-package
+          path: .runtime/windows
+      - name: 整理双端目录并验证 Mac 入口
         run: |
-          VERIFY_ROOT="$(mktemp -d)"
-          ditto -x -k .runtime/release/antigravity-desktop-zhcn-portable-macos-arm64.zip "$VERIFY_ROOT"
-          node scripts/verify-portable.mjs "$VERIFY_ROOT/antigravity-desktop-zhcn-portable-macos-arm64"
+          mkdir -p .runtime/input-win .runtime/input-mac .runtime/unified
+          ditto -x -k .runtime/windows/antigravity-desktop-zhcn-portable-win-x64.zip .runtime/input-win
+          ditto -x -k .runtime/release/antigravity-desktop-zhcn-portable-macos-arm64.zip .runtime/input-mac
+          node scripts/assemble-universal.mjs .runtime/input-win/antigravity-desktop-zhcn-portable-win-x64 .runtime/input-mac/antigravity-desktop-zhcn-portable-macos-arm64 .runtime/unified/antigravity汉化包
+          node scripts/verify-universal.mjs .runtime/unified/antigravity汉化包
+          mkdir -p .runtime/publish
+          ditto -c -k --keepParent .runtime/unified/antigravity汉化包 .runtime/publish/antigravity-zhcn-universal.zip
+          ditto -c -k --keepParent .runtime/unified/antigravity汉化包/语言包 .runtime/publish/antigravity-zhcn-language.zip
+          cd .runtime/publish
+          shasum -a 256 antigravity-zhcn-universal.zip > antigravity-zhcn-universal.zip.sha256
+          shasum -a 256 antigravity-zhcn-language.zip > antigravity-zhcn-language.zip.sha256
       - uses: actions/upload-artifact@v4
         with:
-          name: antigravity-desktop-zhcn-portable-macos-arm64
-          path: |
-            .runtime/release/*.zip
-            .runtime/release/*.sha256
+          name: universal-release
+          path: .runtime/publish/*
           if-no-files-found: error
-      - name: 上传 Mac 发布附件
+  publish:
+    needs: build-macos
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+      - uses: actions/download-artifact@v4
+        with:
+          name: universal-release
+          path: .runtime/publish
+      - name: 解压验证双端包的 Windows 入口
+        shell: pwsh
+        run: |
+          Expand-Archive .runtime/publish/antigravity-zhcn-universal.zip .runtime/verify
+          node scripts/verify-universal.mjs .runtime/verify/antigravity汉化包
+          if ($LASTEXITCODE -ne 0) { throw "双端包 Windows 验证失败" }
+      - name: 发布统一汉化包与独立语言包
         if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "$GITHUB_REF_NAME" .runtime/release/*.zip .runtime/release/*.sha256 --clobber
-          gh release edit "$GITHUB_REF_NAME" --draft=false --latest
+          $releaseNotes = (& node scripts/generate-release-notes.mjs) -join "`n"
+          if ($LASTEXITCODE -ne 0) { throw "发布说明生成失败" }
+          $notesFile = Join-Path $env:RUNNER_TEMP "release-notes.md"
+          [IO.File]::WriteAllText($notesFile, $releaseNotes)
+          $artifacts = Get-ChildItem .runtime/publish -File | Select-Object -ExpandProperty FullName
+          gh release view $env:GITHUB_REF_NAME *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:GITHUB_REF_NAME @artifacts --clobber
+          } else {
+            gh release create $env:GITHUB_REF_NAME @artifacts --notes-file $notesFile --title "$env:GITHUB_REF_NAME 双端统一汉化包" --latest
+          }
+          if ($LASTEXITCODE -ne 0) { throw "发布失败" }

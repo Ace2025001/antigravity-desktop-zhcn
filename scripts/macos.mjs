@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline/promises";
 import { runMacSetup } from "../src/lib/mac-setup.mjs";
+import { languageFile, localizationFingerprint } from "../src/lib/language-pack.mjs";
 import { buildPatchedAsar, patchCustomSchemeSource } from "../src/lib/patcher.mjs";
 import { readFileFromAsar, readJsonFromAsar } from "../src/lib/asar-reader.mjs";
 import { sha256Buffer, sha256File } from "../src/lib/hash.mjs";
@@ -60,9 +61,7 @@ async function verify(state) {
 
 async function install(info) {
   await requireMacAppsClosed();
-  const toolFingerprint = sha256Buffer(Buffer.concat(await Promise.all([
-    "src/lib/patcher.mjs", "src/lib/translator.mjs", "src/lib/macos.mjs", "scripts/macos.mjs", "config/dom-translations.json", "config/macos-translations.json",
-  ].map((file) => readFile(path.join(root, file))))));
+  const toolFingerprint = await localizationFingerprint("darwin");
   const previous = await readState();
   let exists = false;
   try { await access(macAppPath); exists = true; } catch (error) { if (error.code !== "ENOENT") throw error; }
@@ -78,7 +77,7 @@ async function install(info) {
   if (meta.originalHash !== info.originalHash || meta.uiHash !== sha256Buffer(runtime)) throw new Error("运行时缓存不属于当前原版构建；请重新采集。");
   console.log("正在生成并检查当前版本的中文界面…");
   const dictionary = await loadDomTranslations();
-  const macDictionary = JSON.parse(await readFile(path.join(root, "config/macos-translations.json"), "utf8"));
+  const macDictionary = JSON.parse(await readFile(languageFile("macos-translations.json"), "utf8"));
   Object.assign(dictionary.exact, macDictionary.exact);
   dictionary.patterns.push(...macDictionary.patterns);
   const localized = createLocalizedBundle(runtime, dictionary);
@@ -131,8 +130,21 @@ async function install(info) {
 
 try {
   if (process.platform !== "darwin") throw new Error("此入口只支持 macOS。");
-  if (command === "setup") {
-    if (!process.stdin.isTTY) throw new Error("请双击“安装中文.command”，在窗口中按提示操作。");
+  let needsSetup = command === "setup";
+  if (command === "start") {
+    const info = await inspectOriginal();
+    const state = await readState();
+    needsSetup = !state || state.originalAsarSha256 !== info.originalHash || state.toolFingerprint !== await localizationFingerprint("darwin");
+    if (!needsSetup) {
+      await verify(state);
+      const apps = await runningMacApps();
+      if (apps.some(app => app.executable !== path.join(macAppPath, "Contents", "MacOS", "Antigravity"))) await requireMacAppsClosed();
+      await exec("/usr/bin/open", [macAppPath]);
+      console.log("中文已就绪，已打开应用。");
+    }
+  }
+  if (needsSetup) {
+    if (!process.stdin.isTTY) throw new Error("请双击“启动中文.command”，在窗口中按提示操作。");
     const terminal = createInterface({ input: process.stdin, output: process.stdout });
     try {
       await runMacSetup({
@@ -150,6 +162,8 @@ try {
         log: console.log,
       });
     } finally { terminal.close(); }
+  } else if (command === "start") {
+    // Already opened the verified current installation above.
   } else if (command === "verify" || command === "launch") {
     await verify(await readState());
     if (command === "launch") { await requireMacAppsClosed(); await openMacApp(macAppPath); }
