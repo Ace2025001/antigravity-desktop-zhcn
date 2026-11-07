@@ -20,6 +20,31 @@ test("Windows install path comparison ignores case and redundant segments", () =
   );
 });
 
+test("POSIX install path comparison uses POSIX rules on any host", () => {
+  assert.equal(
+    areSamePaths(
+      "/Applications/Antigravity.app",
+      "/Applications/./Antigravity.app/",
+      "darwin",
+    ),
+    true,
+  );
+  assert.equal(
+    areSamePaths(
+      "/Applications/Antigravity.app",
+      "/applications/antigravity.app",
+      "darwin",
+    ),
+    false,
+  );
+  // A backslash is an ordinary filename character on POSIX, even when the
+  // comparison runs on a Windows host (CI, tests, cross-platform tooling).
+  assert.equal(
+    areSamePaths("/Users/me/a\\b.app", "/Users/me/a/b.app", "darwin"),
+    false,
+  );
+});
+
 async function createDesktopInstall(installRoot) {
   await mkdir(path.join(installRoot, "resources"), { recursive: true });
   await Promise.all([
