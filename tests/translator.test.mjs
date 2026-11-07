@@ -1769,7 +1769,7 @@ test("2.29.0 6-screenshot audit: native image context menu, permissions, appeara
   assert.equal(translateDictionaryValue("Fill", current), "铺满");
   assert.equal(translateDictionaryValue("Legacy Light", current), "经典浅色");
   assert.equal(translateDictionaryValue("Legacy Dark", current), "经典深色");
-  assert.equal(translateDictionaryValue("Gruvbox Material", current), "复古暖调");
+  assert.equal(translateDictionaryValue("Gruvbox Material", current), null); // 国际经典代码主题保留原名
 
   // 图 5: 模型与用量动态配额变量
   assert.equal(
@@ -1883,6 +1883,7 @@ test("level-3 modals, sub-entries, quota reset banner, and natural plugin naming
   assert.equal(translateDictionaryValue("Copy Path", current), "复制路径");
   assert.equal(translateDictionaryValue("Event:", current), "触发事件：");
   assert.equal(translateDictionaryValue("Target Tools:", current), "目标工具：");
+  assert.equal(translateDictionaryValue("Settings for conversations outside of projects.", current), "项目外独立对话的设置选项。");
 
   // 3. 最新截图中的基线配额上限横幅（动态日期时间正则）
   const bannerText = "Your plan's baseline quota will refresh on 2026/11/14 17:02:51. You can upgrade to a Google AI Ultra plan to receive higher rate limits. See plans.";
