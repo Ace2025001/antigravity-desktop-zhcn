@@ -380,6 +380,95 @@ export function createRuntimeOverlay(dictionary) {
   }
 
   globalThis.__AGY_ZHCN_TRANSLATE__ = translateValue;
+  function translateMarkdownText(md) {
+    if (typeof md !== "string" || !md.trim()) return md;
+    const FENCE = String.fromCharCode(96).repeat(3);
+    const NL = String.fromCharCode(10);
+    const direct = exactTranslations.get(md.trim());
+    if (direct !== undefined) return direct;
+    const singleLine = md.trim().replace(/\\s+/g, " ");
+    if (!md.includes(NL + "#") && !md.includes(FENCE) && !md.startsWith("---")) {
+      const sl = exactTranslations.get(singleLine);
+      if (sl !== undefined) return sl;
+    }
+    let frontmatter = "";
+    let body = md;
+    const fmMatch = md.match(/^---\\r?\\n([\\s\\S]*?)\\r?\\n---(\\r?\\n|$)/);
+    if (fmMatch) {
+      frontmatter = fmMatch[0];
+      body = md.slice(frontmatter.length);
+      const bodyDirect = exactTranslations.get(body.trim());
+      if (bodyDirect !== undefined) return frontmatter + bodyDirect;
+    }
+    const fenceRegex = new RegExp("(" + FENCE + "[\\\\s\\\\S]*?" + FENCE + ")", "g");
+    const parts = body.split(fenceRegex);
+    const translatedParts = parts.map((part) => {
+      if (part.startsWith(FENCE)) return part;
+      const blocks = part.split(/(\\r?\\n\\s*\\r?\\n)/);
+      return blocks.map((block) => {
+        if (/^\\s*$/.test(block)) return block;
+        const trimmedBlock = block.trim();
+        const exactBlock = exactTranslations.get(trimmedBlock) ?? exactTranslations.get(trimmedBlock.replace(/\\s+/g, " "));
+        if (exactBlock !== undefined) return exactBlock;
+        const lines = block.split(/\\r?\\n/);
+        let allLinesTranslated = true;
+        const outLines = lines.map((line) => {
+          const tLine = line.trim();
+          if (!tLine) return line;
+          const directLine = exactTranslations.get(tLine);
+          if (directLine !== undefined) {
+            const indent = line.match(/^\\s*/)?.[0] ?? "";
+            return indent + directLine;
+          }
+          const hm = line.match(/^(\\s*#{1,6}\\s+)(.+)$/);
+          if (hm) {
+            const th = translateValue(hm[2].trim());
+            if (th !== null) return hm[1] + th;
+          }
+          const lm = line.match(/^(\\s*(?:[-*+]|\\d+\\.)\\s+)(.+)$/);
+          if (lm) {
+            const tl = exactTranslations.get(lm[2].trim()) ?? translateValue(lm[2].trim());
+            if (tl !== null && tl !== undefined) return lm[1] + tl;
+          }
+          const qm = line.match(/^(\\s*>+\\s*)(.+)$/);
+          if (qm) {
+            const tq = exactTranslations.get(qm[2].trim()) ?? translateValue(qm[2].trim());
+            if (tq !== null && tq !== undefined) return qm[1] + tq;
+          }
+          if (tLine.startsWith("|") && tLine.endsWith("|") && !/^\\|[\\s:|-]+\\|$/.test(tLine)) {
+            const cells = line.split("|");
+            let cellChanged = false;
+            const newCells = cells.map((cell) => {
+              const tc = cell.trim();
+              if (!tc) return cell;
+              const tr = exactTranslations.get(tc) ?? translateValue(tc);
+              if (tr !== null && tr !== undefined) {
+                cellChanged = true;
+                return " " + tr + " ";
+              }
+              return cell;
+            });
+            if (cellChanged) return newCells.join("|");
+          }
+          allLinesTranslated = false;
+          return line;
+        });
+        if (!allLinesTranslated && !trimmedBlock.startsWith("#") && !trimmedBlock.startsWith("-") && !trimmedBlock.startsWith("*") && !trimmedBlock.startsWith("|")) {
+          if (trimmedBlock.startsWith(">")) {
+            const qClean = trimmedBlock.replace(/^>\\s?/gm, "").replace(/\\s+/g, " ").trim();
+            const qTr = exactTranslations.get(qClean) ?? translateValue(qClean);
+            if (qTr) return "> " + qTr;
+          } else {
+            const pTr = translateValue(trimmedBlock.replace(/\\s+/g, " "));
+            if (pTr !== null) return pTr;
+          }
+        }
+        return outLines.join(NL);
+      }).join("");
+    });
+    return frontmatter + translatedParts.join("");
+  }
+  globalThis.__AGY_ZHCN_TRANSLATE_MD__ = translateMarkdownText;
   function translateMenuItems(items) {
     if (!Array.isArray(items)) return items;
     return items.map((item) => {
@@ -1010,6 +1099,31 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   );
   sourceText = sourceText.replaceAll('"Select Resource(s)"', '"选择资源"');
   sourceText = sourceText.replaceAll('"+ Add Resource"', '"+ 添加资源"');
+
+  // 2.29.0 自定义模块（插件市场/已安装/插件与技能详情页/Markdown概览与文档渲染器 Q3）深度汉化
+  sourceText = sourceText.replace(
+    'function Q3({markdown:a,className:b,baseDirUri:c}){return A.createElement(oB,{value:void 0},A.createElement(h3,{cascadeId:void 0,markdown:a,',
+    'function Q3({markdown:a,className:b,baseDirUri:c}){a=globalThis.__AGY_ZHCN_TRANSLATE_MD__?globalThis.__AGY_ZHCN_TRANSLATE_MD__(a):a;return A.createElement(oB,{value:void 0},A.createElement(h3,{cascadeId:void 0,markdown:a,'
+  );
+  sourceText = sourceText.replace(
+    'const ckc=[{id:"overview",label:"Overview"},{id:"accounts",label:"Accounts"},{id:"skills",label:"Skills"},{id:"mcp",label:"MCP"},{id:"agents",label:"Agents"},{id:"hooks",label:"Hooks"},{id:"rules",label:"Rules"},{id:"uiExtensions",label:"UI Extensions"},{id:"sidecars",label:"Automations"},{id:"context-providers",label:"Context Providers"}];',
+    'const ckc=[{id:"overview",label:"概览"},{id:"accounts",label:"账号"},{id:"skills",label:"技能"},{id:"mcp",label:"MCP"},{id:"agents",label:"智能体"},{id:"hooks",label:"钩子"},{id:"rules",label:"规则"},{id:"uiExtensions",label:"界面扩展"},{id:"sidecars",label:"自动化"},{id:"context-providers",label:"上下文提供方"}];'
+  );
+  sourceText = sourceText.replaceAll('{title:"Commands",count:k.length}', '{title:"命令",count:k.length}');
+  sourceText = sourceText.replaceAll('{title:"Skills",count:l.length}', '{title:"技能",count:l.length}');
+  sourceText = sourceText.replaceAll('{title:"Agents",count:a.agents.length}', '{title:"智能体",count:a.agents.length}');
+  sourceText = sourceText.replaceAll('{title:"MCP servers",count:a.mcpServers.length}', '{title:"MCP 服务器",count:a.mcpServers.length}');
+  sourceText = sourceText.replaceAll('{title:"Rules",count:a.rules.length}', '{title:"规则",count:a.rules.length}');
+  sourceText = sourceText.replaceAll('{title:"Hooks",count:m}', '{title:"钩子",count:m}');
+  sourceText = sourceText.replaceAll('{title:"UI extensions",count:b.length}', '{title:"界面扩展",count:b.length}');
+  sourceText = sourceText.replaceAll('{title:"Automations",count:c.length}', '{title:"自动化",count:c.length}');
+  sourceText = sourceText.replaceAll('{title:"Context Providers",count:d.length}', '{title:"上下文提供方",count:d.length}');
+  sourceText = sourceText.replaceAll('{title:"Themes",count:a.themes.length}', '{title:"主题",count:a.themes.length}');
+  sourceText = sourceText.replaceAll('"Developer"),A.createElement("dd"', '"开发者"),A.createElement("dd"');
+  sourceText = sourceText.replaceAll('"Version"),A.createElement("dd"', '"版本"),A.createElement("dd"');
+  sourceText = sourceText.replaceAll('"Links"),A.createElement("dd"', '"链接"),A.createElement("dd"');
+  sourceText = sourceText.replaceAll('label:"Website",testId:"plugin-detail-footer-homepage"', 'label:"网站",testId:"plugin-detail-footer-homepage"');
+  sourceText = sourceText.replaceAll('label:"Repository",testId:"plugin-detail-footer-repository"', 'label:"代码仓库",testId:"plugin-detail-footer-repository"');
 
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");

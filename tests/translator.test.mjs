@@ -1820,3 +1820,50 @@ test("2.29.0 6-screenshot audit: native image context menu, permissions, appeara
   assert.ok(localized.includes('{value:"fill",label:"铺满"}'));
   assert.ok(localized.includes("hookNativeContextMenu"));
 });
+
+test("all 71 marketplace plugins, suggestedPrompts, skill descriptions, and Q3 Markdown detail pages are fully covered without half-Chinese-half-English", async () => {
+  const current = await loadDomTranslations();
+
+  // 1. 图 1: Developer Tools 分类及滚动后插件卡片
+  assert.equal(translateDictionaryValue("Developer Tools", current), "开发者工具");
+  assert.equal(
+    translateDictionaryValue("APIs, services, and tools to build, test, secure, and run your apps.", current),
+    "用于构建、测试、保护和运行应用的 API、服务与工具。"
+  );
+  const scrolledCards = [
+    "Build, publish, and manage WordPress.com an...",
+    "Give your agent a real browser: navigate, click...",
+    "AI-powered code review and review comment...",
+    "Up-to-date documentation lookup. Pull versio...",
+    "Use the official CrowdStrike hosted MCP serv..."
+  ];
+  for (const card of scrolledCards) {
+    const tr = translateDictionaryValue(card, current);
+    assert.ok(tr && /[\u4e00-\u9fff]/.test(tr), `Scrolled card should be translated: ${card}`);
+  }
+
+  // 2. 图 2: Google Docs 等自定义项详情页（推荐提示词、概览 README、/gdocs 命令截断描述）
+  assert.ok(translateDictionaryValue("Summarize this design doc and list the open questions", current));
+  assert.ok(translateDictionaryValue("Draft a launch announcement in a new doc from my notes", current));
+  assert.ok(translateDictionaryValue("Reply to the open comments on my doc and resolve them", current));
+
+  const gdocsReadme = "Read and write your Google Docs. Summarize any doc from its link, draft\nproposals and announcements in a new doc, and reply to and resolve open\ncomments.";
+  const trGdocsReadme = translateDictionaryValue(gdocsReadme, current);
+  assert.ok(trGdocsReadme && !trGdocsReadme.includes("and write"), `gdocs README must be fully translated, got: ${trGdocsReadme}`);
+
+  const gdocsCmdTruncated = "Read, create, edit, and manage Google Docs. Use when the user shares a docs.google.com URL, asks to sum...";
+  const trGdocsCmd = translateDictionaryValue(gdocsCmdTruncated, current);
+  assert.ok(trGdocsCmd && /[\u4e00-\u9fff]/.test(trGdocsCmd) && !trGdocsCmd.includes("create, edit"), `gdocs command description must be translated: ${trGdocsCmd}`);
+
+  // 3. 验证未知的以 Read 开头的英文长句不会被拆成 "已读取 + 英文"
+  const unknownReadSentence = "Read through the entire architecture document before making changes.";
+  assert.equal(translateDictionaryValue(unknownReadSentence, current), null);
+
+  // 4. 验证 Q3 Markdown 渲染器注入
+  const mockQ3 = Buffer.from(
+    'function Q3({markdown:a,className:b,baseDirUri:c}){return A.createElement(oB,{value:void 0},A.createElement(h3,{cascadeId:void 0,markdown:a,context:"artifact"}))}',
+    "utf8"
+  );
+  const localized = createLocalizedBundle(mockQ3, current).buffer.toString("utf8");
+  assert.ok(localized.includes("globalThis.__AGY_ZHCN_TRANSLATE_MD__"));
+});
