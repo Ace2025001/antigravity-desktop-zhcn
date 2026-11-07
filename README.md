@@ -1,8 +1,8 @@
 # Antigravity Desktop 汉化包｜Windows / Mac 简体中文语言包
 
-为 Google Antigravity Desktop 独立桌面客户端提供简体中文汉化。Windows x64 与 Apple 芯片 Mac 共用一份语言包，完整包可离线运行，支持自动识别安装位置、自动汉化快捷方式和恢复英文。不适用于 Antigravity IDE 扩展。
+为 Google Antigravity Desktop 独立桌面客户端提供简体中文汉化。Windows x64 与 Apple 芯片 Mac 共用一份语言包，完整包可离线运行，支持自动识别安装位置、自动汉化快捷方式和恢复英文。
 
-[下载与安装教程](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [Windows 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/windows/) · [Mac 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/macos/) · [English](README.en.md)
+[下载与安装教程](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [Windows 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/windows/) · [Mac 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/macos/)
 
 ## 下载与使用
 
@@ -52,7 +52,6 @@ antigravity汉化包/
 
 ## 支持范围
 
-- 适用于 Antigravity Desktop 独立桌面客户端，不是 Antigravity IDE 扩展语言包。
 - Windows x64：原有备份、恢复与动态适配流程。
 - macOS Apple 芯片：保留官方原版，创建独立中文应用副本，使用本地签名。
 - Mac 补充包实测 macOS 27.0.1 / Desktop 2.29.0 / arm64。合并后的完整流程仍待真实客户端实机复验；Intel Mac 未验证。
