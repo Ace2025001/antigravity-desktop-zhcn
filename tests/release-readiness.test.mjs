@@ -40,7 +40,7 @@ test('Windows 快捷方式存在时不重写，移动后更新，尊重同名文
   const creation=await run(launcher);const link=path.join(desktop,'Antigravity自动汉化.lnk');const before=await readFile(link).catch(error=>{throw new Error(error.message+'\n快捷方式创建输出：'+creation.stdout+creation.stderr)});const date=new Date('2020-01-01');await utimes(link,date,date);
   await run(launcher);assert.deepEqual(await readFile(link),before);assert.equal((await stat(link)).mtimeMs,date.getTime());
   const entry2=path.join(dir,'新 位置');await mkdir(entry2);const launcher2=path.join(entry2,'启动中文.bat');await writeFile(launcher2,'@echo off\r\n');await run(launcher2);assert.notDeepEqual(await readFile(link),before);
-  const changed=await exec('powershell.exe',['-NoProfile','-Command','$s=New-Object -ComObject WScript.Shell;$l=$s.CreateShortcut($env:TEST_LINK);[Console]::OutputEncoding=[Text.Encoding]::UTF8;[Console]::Write($l.TargetPath);$l.Description="user-owned";$l.Save()'],{env:{...process.env,TEST_LINK:link},windowsHide:true,encoding:'utf8'});
+  const changed=await exec('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-Command','. $env:TEST_SCRIPT -Launcher $env:TEST_LAUNCHER -ClientExe $env:TEST_EXE -DesktopDirectory $env:TEST_DESKTOP | Out-Null;$l=[AgShortcut]::new($env:TEST_LINK);try {[Console]::Write($l.TargetPath);$l.Description="user-owned";$l.Save()} finally {$l.Dispose()}'],{env:{...process.env,TEST_LINK:link,TEST_SCRIPT:script,TEST_LAUNCHER:launcher2,TEST_EXE:exe,TEST_DESKTOP:desktop},windowsHide:true,encoding:'utf8'});
   assert.equal(changed.stdout,await realpath(launcher2));const userData=await readFile(link);await run(launcher);assert.deepEqual(await readFile(link),userData);
  }finally{await rm(dir,{recursive:true,force:true})}
 });
