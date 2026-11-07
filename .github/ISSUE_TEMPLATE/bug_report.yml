@@ -19,7 +19,7 @@ body:
     attributes:
       label: 使用的汉化包类型
       options:
-        - 便携免安装版 (Portable Release ZIP)
+        - 完整汉化包 (Antigravity-完整汉化包-Windows+Mac.zip)
         - 源码仓库版 (Git Clone / Source ZIP)
     validations:
       required: true
@@ -29,7 +29,7 @@ body:
       label: 异常现象与复现步骤
       description: 描述具体发生了什么，以及如何触发该问题
       placeholder: |
-        1. 双击运行“一键安装汉化.bat”
+        1. 打开 win启动（Mac 为 mac启动），双击“启动中文”
         2. 启动 Antigravity 客户端
         3. 出现白屏 / 报出错误代码...
     validations:
@@ -38,7 +38,7 @@ body:
     id: console_log
     attributes:
       label: 控制台输出日志（如有）
-      description: 运行 bat / 命令行时终端打印的文本
+      description: 运行“启动中文”或“恢复英文”时窗口中打印的完整文本
       render: shell
   - type: textarea
     id: screenshot
