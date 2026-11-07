@@ -1,6 +1,8 @@
-# Antigravity 汉化包：Windows / macOS
+# Antigravity Desktop 汉化包｜Windows / Mac 简体中文语言包
 
-Windows x64 与 Apple 芯片 Mac 共用一份中文语言包。
+为 Google Antigravity Desktop 独立桌面客户端提供社区维护的简体中文汉化。Windows x64 与 Apple 芯片 Mac 共用一份语言包，完整包可离线运行，支持自动识别安装位置、自动汉化快捷方式和恢复英文。非官方项目，不适用于 Antigravity IDE 扩展。
+
+[下载与安装教程](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [Windows 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/windows/) · [Mac 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/macos/) · [English](README.en.md)
 
 ## 下载与使用
 
@@ -60,7 +62,29 @@ antigravity汉化包/
 - Mac 补充包作者记录实测 macOS 27.0.1 / Desktop 2.29.0 / arm64。合并后的完整流程仍待真实客户端实机复验；Intel Mac 未验证。
 - 两端均须通过结构和资源检查；不承诺兼容所有新旧版本。不修改代理、节点或 TUN。
 
-![汉化预览](docs/images/antigravity-zhcn-preview.png)
+![Antigravity Desktop 简体中文界面汉化效果预览](docs/images/antigravity-zhcn-preview.png)
+
+## 常见问题
+
+### Antigravity 中文版与这个汉化包是什么关系？
+
+这是给已安装的 Antigravity Desktop 添加简体中文界面的第三方工具，不是官方中文版，也不包含客户端安装程序。请先确认英文原版能正常使用。
+
+### 下载完整包、语言更新包还是 Source code？
+
+首次使用只下载完整包。语言更新包只适用于已有新版完整包的用户；Source code 和绿色 Code 按钮提供开发源码，不是直接使用的离线包。
+
+### 为什么压缩包显示空文件夹？
+
+v2.3.0 的 ZIP 中文文件名编码存在 Windows 资源管理器兼容问题，已在 v2.3.1 修复。请下载最新完整包并“全部解压缩”。
+
+### 客户端更新后会自动汉化吗？
+
+通过“Antigravity自动汉化”或“启动中文”打开时，会检查汉化是否有效，必要时尝试重新应用。这个快捷方式不会自动下载新语言包，也不保证未来每个客户端版本均兼容。
+
+### 能恢复英文吗？
+
+可以。保存工作后运行对应系统目录中的“恢复英文”，确认成功后再清理汉化工具和备份。详细步骤见上方 Windows 与 Mac 教程。
 
 ## 开发与高级说明
 
