@@ -6,9 +6,9 @@
 
 ---
 
-## 📜 项目来源与开源协议
+## 📜 开源协议
 
-本项目是在社区开源项目 [chenmo00000/antigravity-desktop-zhcn](https://github.com/chenmo00000/antigravity-desktop-zhcn) 的基础上继续迭代、修复和扩展，遵循 [MIT License](LICENSE) 协议开源。由衷感谢原项目与所有早期贡献者的基础工作。
+本项目遵循 [MIT License](LICENSE) 协议开源。欢迎社区参与维护、修复和扩展。
 
 ---
 

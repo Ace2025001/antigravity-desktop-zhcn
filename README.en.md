@@ -1,6 +1,6 @@
 # Antigravity Desktop Chinese Localization
 
-An unofficial, MIT-licensed Simplified Chinese language pack for Google Antigravity Desktop on Windows x64 and Apple Silicon macOS. Includes offline runtimes, installation discovery, localization checks and English restoration. This project targets the standalone Desktop client, not an IDE extension.
+An MIT-licensed Simplified Chinese language pack for Google Antigravity Desktop on Windows x64 and Apple Silicon macOS. Includes offline runtimes, installation discovery, localization checks and English restoration. This project targets the standalone Desktop client, not an IDE extension.
 
 [Download and setup guides (Chinese)](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [中文说明](README.md)
 
@@ -11,4 +11,4 @@ Both platforms share the `语言包` directory. For translation-only updates, do
 
 Mac retains the official app and creates a locally signed Chinese copy. The contributor tested Desktop 2.29.0 on macOS 27.0.1 arm64. The merged flow still needs real-client verification; Intel Macs are not verified. Structural checks apply to every client version. No proxy, node or TUN settings are changed.
 
-See the [Chinese README](README.md) for details. MIT licensed, based on chenmo00000/antigravity-desktop-zhcn.
+See the [Chinese README](README.md) for details. MIT licensed.

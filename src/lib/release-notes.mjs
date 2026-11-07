@@ -109,9 +109,9 @@ export function buildReleaseCompatibilityNotes(manifest) {
     "> [!NOTE]",
     "> Windows 未登记构建可尝试动态适配；结构或资源检查失败时停止。已登记列表不是所有版本兼容的承诺。",
     "",
-    "### 📜 项目来源与致谢",
+    "### 📜 开源协议",
     "",
-    "本项目基于社区开源项目 [chenmo00000/antigravity-desktop-zhcn](https://github.com/chenmo00000/antigravity-desktop-zhcn) 继续迭代、修复与扩展，遵循 MIT License 开源。感谢原作者与社区贡献者！",
+    "本项目遵循 MIT License 开源。",
   );
   return lines.join("\n");
 }
