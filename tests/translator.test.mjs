@@ -1732,7 +1732,7 @@ test("automations, home greetings, and marketplace shelves and cards are covered
       "Your agents can now run in the cloud and keep working after you close the app. Check on them from any browser at antigravity.google.com. Create a Remote Project to get started.",
       current
     ),
-    "您的智能体现在可以在云端运行，并在您关闭应用后继续工作。可通过任意浏览器在 antigravity.google.com 上查看它们。创建一个远程项目即可开始。"
+    "你的智能体现在可以在云端运行，即使关闭应用也会继续工作。随时可通过任意浏览器访问 antigravity.google.com 查看进度。创建一个远程项目即可开始使用。"
   );
   assert.equal(translateDictionaryValue("Remote Agents", current), "远程智能体");
   assert.equal(translateDictionaryValue("Remote Project", current), "远程项目");
@@ -1742,4 +1742,81 @@ test("automations, home greetings, and marketplace shelves and cards are covered
     translateDictionaryValue("Create a project whose conversations run remotely.", current),
     "创建一个对话在远程运行的项目。"
   );
+});
+
+test("2.29.0 6-screenshot audit: native image context menu, permissions, appearance presets, dynamic model limits, and marketplace cards", async () => {
+  const current = await loadDomTranslations();
+
+  // 图 1: 图片/视频右键菜单
+  assert.equal(translateDictionaryValue("Copy Image", current), "复制图片");
+  assert.equal(translateDictionaryValue("Save Image", current), "保存图片");
+  assert.equal(translateDictionaryValue("Save Video", current), "保存视频");
+  assert.equal(translateDictionaryValue("Open in Tab", current), "在标签页中打开");
+  assert.equal(translateDictionaryValue("Open in New Tab", current), "在新标签页中打开");
+
+  // 图 2: 设置 -> 通用 -> 权限配置 & 计划评审策略润色
+  assert.equal(
+    translateDictionaryValue("Configure what the agent can do in local and remote conversations.", current),
+    "配置智能体在本地和远程对话中的操作权限。"
+  );
+  assert.equal(
+    translateDictionaryValue("Whether the agent asks you to review its documents.", current),
+    "控制智能体在生成计划或文档后是否请求你评审。"
+  );
+
+  // 图 3 & 图 4: 设置 -> 外观 -> Verbose / Fill / 主题预设
+  assert.equal(translateDictionaryValue("Verbose", current), "详细");
+  assert.equal(translateDictionaryValue("Fill", current), "铺满");
+  assert.equal(translateDictionaryValue("Legacy Light", current), "经典浅色");
+  assert.equal(translateDictionaryValue("Legacy Dark", current), "经典深色");
+  assert.equal(translateDictionaryValue("Gruvbox Material", current), "复古暖调");
+
+  // 图 5: 模型与用量动态配额变量
+  assert.equal(
+    translateDictionaryValue("Gemini 4 Argon Weekly Limit", current),
+    "Gemini 4 Argon 每周剩余额度"
+  );
+  assert.equal(
+    translateDictionaryValue("Claude Opus 4.6 Daily Limit", current),
+    "Claude Opus 4.6 每日剩余额度"
+  );
+  assert.equal(
+    translateDictionaryValue("Gemini 3.1 Pro 5-Hour Limit", current),
+    "Gemini 3.1 Pro 5 小时剩余额度"
+  );
+
+  // 图 6: 插件市场全部卡片（含截断状态与完整状态）
+  const marketplaceSamples = [
+    "Databricks skills for the CLI, Apps, Lakebase, ...",
+    "Search Intercom conversations, contacts, and ...",
+    "SEO workflows on live Semrush data: keyword...",
+    "Accept payments and grow your business. Stri...",
+    "Search and read your Wispr Flow meeting not...",
+    "Connect your agent to invideo's AI-native vide...",
+    "Agent skills for Neo4j graph database — write...",
+    "Access and clone GitHub repositories in remot..."
+  ];
+  for (const sample of marketplaceSamples) {
+    const res = translateDictionaryValue(sample, current);
+    assert.ok(res && /[一-鿿]/.test(res), `Marketplace card should be translated: ${sample}`);
+  }
+
+  // 源码级替换验证 (createLocalizedBundle)
+  const mockBundle = Buffer.from(
+    [
+      'label:a==="video"?"Save Video":"Save Image"',
+      'id:"copy-image",label:"Copy Image"',
+      'const gna={daily:"Daily limit",weekly:"Weekly limit"};function cm(a){var b=a.window.trim().toLowerCase();return gna[b]?gna[b]:/^\\d+[smhd]$/.test(b)?`${b} limit`:a.displayName}',
+      '{label:"Verbose",value:"verbose"}',
+      '{value:"fill",label:"Fill"}'
+    ].join(";"),
+    "utf8"
+  );
+  const localized = createLocalizedBundle(mockBundle, current).buffer.toString("utf8");
+  assert.ok(localized.includes('label:a==="video"?"保存视频":"保存图片"'));
+  assert.ok(localized.includes('id:"copy-image",label:"复制图片"'));
+  assert.ok(localized.includes('const gna={daily:"日限额",weekly:"周限额"}'));
+  assert.ok(localized.includes('{label:"详细",value:"verbose"}'));
+  assert.ok(localized.includes('{value:"fill",label:"铺满"}'));
+  assert.ok(localized.includes("hookNativeContextMenu"));
 });

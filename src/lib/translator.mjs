@@ -379,8 +379,39 @@ export function createRuntimeOverlay(dictionary) {
     queueMicrotask(flush);
   }
 
+  globalThis.__AGY_ZHCN_TRANSLATE__ = translateValue;
+  function translateMenuItems(items) {
+    if (!Array.isArray(items)) return items;
+    return items.map((item) => {
+      if (!item || typeof item !== "object") return item;
+      const next = { ...item };
+      if (typeof next.label === "string") {
+        const t = translateValue(next.label);
+        if (t !== null) next.label = t;
+      }
+      if (Array.isArray(next.submenu)) {
+        next.submenu = translateMenuItems(next.submenu);
+      }
+      return next;
+    });
+  }
+  function hookNativeContextMenu() {
+    try {
+      const en = globalThis.window?.electronNative || globalThis.electronNative;
+      if (en && typeof en.showContextMenu === "function" && !en.showContextMenu.__agyZhcnWrapped) {
+        const origShow = en.showContextMenu.bind(en);
+        const wrappedShow = function(items, ...rest) {
+          return origShow(translateMenuItems(items), ...rest);
+        };
+        wrappedShow.__agyZhcnWrapped = true;
+        en.showContextMenu = wrappedShow;
+      }
+    } catch (_) {}
+  }
+
   function start() {
     document.documentElement.lang = "zh-CN";
+    hookNativeContextMenu();
     translateTree(document.documentElement);
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
@@ -710,10 +741,10 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('A.createElement("span",{className:"text-xs"},"Quote")', 'A.createElement("span",{className:"text-xs"},"引用")');
   sourceText = sourceText.replaceAll('label:"Quote Selection"', 'label:"引用所选内容"');
 
-  // 模型配额与剩余比例原生汉化
+  // 模型配额与剩余比例原生汉化（兼容多版本混淆变量名 sma/gna, Tk/cm）
   sourceText = sourceText.replace(
-    /const sma=\{daily:"Daily limit",weekly:"Weekly limit"\};function Tk\(a\)\{var b=a\.window\.trim\(\)\.toLowerCase\(\);return sma\[b\]\?sma\[b\]:\/\^\\d\+\[smhd\]\$\/.test\(b\)\?`\$\{b\} limit`:a\.displayName\}/,
-    'const sma={daily:"日限额",weekly:"周限额"};function Tk(a){var b=a.window.trim().toLowerCase();return sma[b]?sma[b]:/^\\d+[smhd]$/.test(b)?`${b.replace("h","小时").replace("d","天").replace("m","分钟")}限额`:a.displayName}'
+    /const ([a-zA-Z0-9_$]+)=\{daily:"Daily limit",weekly:"Weekly limit"\};function ([a-zA-Z0-9_$]+)\(a\)\{var b=a\.window\.trim\(\)\.toLowerCase\(\);return \1\[b\]\?\1\[b\]:\/\^\\d\+\[smhd\]\$\/\.test\(b\)\?`\$\{b\} limit`:a\.displayName\}/,
+    'const $1={daily:"日限额",weekly:"周限额"};function $2(a){var b=a.window.trim().toLowerCase();return $1[b]?$1[b]:/^\\d+[smhd]$/.test(b)?`${b.replace("h","小时").replace("d","天").replace("m","分钟")}限额`:a.displayName}'
   );
   sourceText = sourceText.replaceAll(',"% left")', '," 剩余")');
 
@@ -936,6 +967,49 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('b?"Copied":"Copy transcript"', 'b?"已复制":"复制对话记录"');
   sourceText = sourceText.replaceAll('A.createElement(ZA,{id:l,place:"top"},"Insert in Terminal")', 'A.createElement(ZA,{id:l,place:"top"},"在终端中插入")');
   sourceText = sourceText.replaceAll('A.createElement(ZA,{id:m,place:"top"},"At Mention Code Block")', 'A.createElement(ZA,{id:m,place:"top"},"@ 提及代码块")');
+
+  // 2.29.0 图片/视频右键菜单与 Electron 原生上下文菜单深度汉化
+  sourceText = sourceText.replaceAll('label:a==="video"?"Save Video":"Save Image"', 'label:a==="video"?"保存视频":"保存图片"');
+  sourceText = sourceText.replaceAll('id:"copy-image",label:"Copy Image"', 'id:"copy-image",label:"复制图片"');
+  sourceText = sourceText.replaceAll('id:"save-media",label:"Save Image"', 'id:"save-media",label:"保存图片"');
+  sourceText = sourceText.replaceAll('id:"save-media",label:"Save Video"', 'id:"save-media",label:"保存视频"');
+  sourceText = sourceText.replaceAll('id:"open-in-tab",label:"Open in Tab"', 'id:"open-in-tab",label:"在标签页中打开"');
+  sourceText = sourceText.replaceAll('id:"open-in-new-tab",label:"Open in New Tab"', 'id:"open-in-new-tab",label:"在新标签页中打开"');
+  sourceText = sourceText.replace(
+    'function $Ra({items:a}){return A.createElement(A.Fragment,null,a.map((b,c)=>',
+    'function $Ra({items:a}){var _cMap={"Copy":"复制","Cut":"剪切","Paste":"粘贴","Select All":"全选","Undo":"撤销","Redo":"重做","Delete":"删除","Copy Link":"复制链接","Copy Selection":"复制所选内容","Open Link":"打开链接","Search":"搜索","Copy Message":"复制消息","Copy Image":"复制图片","Save Image":"保存图片","Save Video":"保存视频","Copy Path":"复制路径","Open in Tab":"在标签页中打开","Open in New Tab":"在新标签页中打开"};a=a.map(b=>b&&b.label&&(_cMap[b.label]||globalThis.__AGY_ZHCN_TRANSLATE__?.(b.label))?{...b,label:_cMap[b.label]||globalThis.__AGY_ZHCN_TRANSLATE__(b.label)}:b);return A.createElement(A.Fragment,null,a.map((b,c)=>'
+  );
+  sourceText = sourceText.replace(
+    'label:d.label,type:d.type&&d.type!=="item"?d.type:void 0',
+    'label:(({"Copy Image":"复制图片","Save Image":"保存图片","Save Video":"保存视频","Open in Tab":"在标签页中打开","Open in New Tab":"在新标签页中打开","Copy":"复制","Cut":"剪切","Paste":"粘贴","Select All":"全选","Undo":"撤销","Redo":"重做","Delete":"删除","Copy Link":"复制链接","Copy Path":"复制路径","Copy Message":"复制消息","Rename":"重命名","Archive":"归档","Share":"分享","Stop":"停止","Restore":"恢复","Delete Permanently":"永久删除"}[d.label])||globalThis.__AGY_ZHCN_TRANSLATE__?.(d.label)||d.label),type:d.type&&d.type!=="item"?d.type:void 0'
+  );
+
+  // 2.29.0 权限配置、计划评审策略润色、外观主题预设与宽度、远程智能体推广卡片原生汉化
+  sourceText = sourceText.replaceAll(
+    '"Configure what the agent can do in local and remote conversations. "',
+    '"配置智能体在本地和远程对话中的操作权限。 "'
+  );
+  sourceText = sourceText.replaceAll(
+    '"Configure what the agent can do in local and remote conversations."',
+    '"配置智能体在本地和远程对话中的操作权限。"'
+  );
+  sourceText = sourceText.replaceAll(
+    'description:"Whether the agent asks you to review its documents."',
+    'description:"控制智能体在生成计划或文档后是否请求你评审。"'
+  );
+  sourceText = sourceText.replaceAll('{label:"Verbose",value:"verbose"}', '{label:"详细",value:"verbose"}');
+  sourceText = sourceText.replaceAll('{value:"fill",label:"Fill"}', '{value:"fill",label:"铺满"}');
+  sourceText = sourceText.replaceAll('title:"Introducing Remote Agents"', 'title:"重磅推出：远程智能体"');
+  sourceText = sourceText.replaceAll(
+    'description:"Your agents can now run in the cloud and keep working after you close the app. Check on them from any browser at antigravity.google.com. Create a Remote Project to get started."',
+    'description:"智能体支持在云端持续运行，即使关闭客户端也不会中断。你可以随时通过浏览器访问 antigravity.google.com 查看进度，创建远程项目即可开始使用。"'
+  );
+  sourceText = sourceText.replaceAll(
+    '"Uploaded files and connected resources are mounted in your cloud environment."',
+    '"上传的文件与已连接的资源会自动挂载到你的云端环境中。"'
+  );
+  sourceText = sourceText.replaceAll('"Select Resource(s)"', '"选择资源"');
+  sourceText = sourceText.replaceAll('"+ Add Resource"', '"+ 添加资源"');
 
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
