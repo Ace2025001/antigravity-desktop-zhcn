@@ -1,14 +1,19 @@
-# Antigravity Desktop 汉化包｜Windows / Mac 简体中文语言包
+# Antigravity Desktop 汉化包（反重力中文）｜Windows / Mac 简体中文语言包
 
-为 Google Antigravity Desktop 独立桌面客户端提供简体中文汉化。Windows x64 与 Apple 芯片 Mac 共用一份语言包，完整包可离线运行，支持自动识别安装位置、自动汉化快捷方式和恢复英文。不适用于 Antigravity IDE 扩展。
+[![最新版本](https://img.shields.io/github/v/release/Ace2025001/antigravity-desktop-zhcn?label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)
+[![下载量](https://img.shields.io/github/downloads/Ace2025001/antigravity-desktop-zhcn/total?label=%E4%B8%8B%E8%BD%BD%E9%87%8F)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases)
+[![平台](https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%20x64%20%7C%20macOS%20Apple%20%E8%8A%AF%E7%89%87-blue)](#支持范围)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-[下载与安装教程](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [Windows 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/windows/) · [Mac 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/macos/)
+为 Google Antigravity（反重力）Desktop 独立桌面客户端提供简体中文汉化。Windows x64 与 Apple 芯片 Mac 共用一份语言包，完整包可离线运行，支持自动识别安装位置、自动汉化快捷方式和恢复英文。已在 Antigravity Desktop 2.29.0 上实测。不适用于 Antigravity IDE 扩展。
+
+[下载与安装教程](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [Windows 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/windows/) · [Mac 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/macos/) · [AI 助手安装指南](docs/ai-install.md) · [English](README.en.md)
 
 ## 下载与使用
 
 ### [⬇ 下载完整汉化包（Windows + Mac）](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip)
 
-**普通用户只下载 `Antigravity-完整汉化包-Windows+Mac.zip`。** 不用下载绿色 Code 或 Source code。
+**普通用户只下载 `Antigravity-完整汉化包-Windows+Mac.zip`。** 下载后文件名会显示为 `Antigravity-Windows+Mac.zip`，两者是同一个完整包。不用下载绿色 Code 或 Source code。
 
 下载后右键“全部解压缩”，再打开对应系统的文件夹，双击“启动中文”。不要直接在压缩包里面运行。解压后目录如下：
 
@@ -87,13 +92,26 @@ antigravity汉化包/
 - **插件生态与第三方集成**：覆盖所有插件与技能的详情弹窗、子配置项、Markdown 渲染以及安全授权提示；
 - **规范保留专有名词**：遵循主流开发工具习惯，规范保留经典代码主题（Catppuccin、Dracula、One Dark Pro、Tokyo Night 等）的通用品牌名，杜绝怪异机翻。
 
+### 能让 AI 助手帮我安装吗？
+
+可以。把本仓库地址发给 Claude Code、Codex、Cursor 等 AI 助手，让它按 [AI 助手安装指南](docs/ai-install.md) 操作即可。指南写明了下载地址、SHA-256 校验、各平台命令、结果判断和恢复方法。AI 助手也会读取仓库根目录的 [AGENTS.md](AGENTS.md)。
+
 ## 开发与高级说明
 
 此仓库是源码目录，日常使用请下载正式包。源码需要 Node.js >= 22.12.0，执行 `npm ci --ignore-scripts`、`npm test` 和 `npm run validate`。
 
+- [AI 助手安装指南](docs/ai-install.md) · [AGENTS.md](AGENTS.md)
 - [Mac 高级说明](macOS/README.md)
 - [构建与发布](docs/releasing.md)
 - [系统架构](docs/architecture.md)
 - [问题反馈](https://github.com/Ace2025001/antigravity-desktop-zhcn/issues)
+
+## 致谢
+
+感谢以下朋友对本项目的贡献：
+
+- [@javaht](https://github.com/javaht)：macOS 平台适配与实机测试，跨平台路径修复（[#7](https://github.com/Ace2025001/antigravity-desktop-zhcn/pull/7)）。
+
+欢迎通过 [Issue](https://github.com/Ace2025001/antigravity-desktop-zhcn/issues) 反馈漏翻词条，或提交合并请求参与改进，详见 [贡献指南](CONTRIBUTING.md)。
 
 采用 [MIT License](LICENSE) 开源。
