@@ -4,7 +4,11 @@ Windows x64 与 Apple 芯片 Mac 共用一份中文语言包。
 
 ## 下载与使用
 
-在 [最新发布页](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest) 下载 **antigravity-zhcn-universal.zip**，完整解压：
+### [⬇ 下载完整汉化包（Windows + Mac）](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-%E5%AE%8C%E6%95%B4%E6%B1%89%E5%8C%96%E5%8C%85-Windows-Mac.zip)
+
+**普通用户只下载 `Antigravity-完整汉化包-Windows-Mac.zip`。** 不用下载绿色 Code 或 Source code。
+
+下载后右键“全部解压缩”，再打开对应系统的文件夹，双击“启动中文”。不要直接在压缩包里面运行。解压后目录如下：
 
 ```text
 antigravity汉化包/
@@ -44,7 +48,7 @@ antigravity汉化包/
 
 ## 以后如何更新翻译？
 
-下载 **antigravity-zhcn-language.zip**，将其中的“语言包”替换到原目录，然后再次运行“启动中文”。Windows 与 Mac 读取同一份词库，不必分别更新。
+已有完整包时，下载 **Antigravity-仅语言更新-不能单独使用.zip**，将其中的“语言包”替换到原目录，然后再次运行“启动中文”。首次使用请下载上面的完整包。Windows 与 Mac 读取同一份词库，不必分别更新。
 
 只有客户端底层结构、签名要求或执行器逻辑发生变化时，才需要下载完整包。更新词库不等于兼容所有新旧客户端版本。
 
