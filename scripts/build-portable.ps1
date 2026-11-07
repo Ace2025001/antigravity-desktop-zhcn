@@ -1,7 +1,7 @@
 ﻿[CmdletBinding()]
 param(
     [ValidatePattern("^\d+\.\d+\.\d+$")]
-    [string]$NodeVersion = "22.12.0",
+    [string]$NodeVersion = "22.22.2",
     [string]$OutputDirectory
 )
 

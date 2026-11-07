@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {mkdtemp,mkdir,writeFile,readFile,stat,rm,utimes,cp} from "node:fs/promises";
+import {mkdtemp,mkdir,writeFile,readFile,stat,rm,utimes,cp,realpath} from "node:fs/promises";
 import {execFile} from "node:child_process";
 import {promisify} from "node:util";
 import os from "node:os";
@@ -41,7 +41,7 @@ test('Windows 快捷方式存在时不重写，移动后更新，尊重同名文
   await run(launcher);assert.deepEqual(await readFile(link),before);assert.equal((await stat(link)).mtimeMs,date.getTime());
   const entry2=path.join(dir,'新 位置');await mkdir(entry2);const launcher2=path.join(entry2,'启动中文.bat');await writeFile(launcher2,'@echo off\r\n');await run(launcher2);assert.notDeepEqual(await readFile(link),before);
   const changed=await exec('powershell.exe',['-NoProfile','-Command','$s=New-Object -ComObject WScript.Shell;$l=$s.CreateShortcut($env:TEST_LINK);[Console]::OutputEncoding=[Text.Encoding]::UTF8;[Console]::Write($l.TargetPath);$l.Description="user-owned";$l.Save()'],{env:{...process.env,TEST_LINK:link},windowsHide:true,encoding:'utf8'});
-  assert.equal(changed.stdout,launcher2);const userData=await readFile(link);await run(launcher);assert.deepEqual(await readFile(link),userData);
+  assert.equal(changed.stdout,await realpath(launcher2));const userData=await readFile(link);await run(launcher);assert.deepEqual(await readFile(link),userData);
  }finally{await rm(dir,{recursive:true,force:true})}
 });
 

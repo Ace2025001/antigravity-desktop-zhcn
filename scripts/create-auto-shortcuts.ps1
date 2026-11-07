@@ -32,6 +32,14 @@ interface AgShellLinkW {
     void SetPath([MarshalAs(UnmanagedType.LPWStr)] string path);
 }
 public class AgShortcut : IDisposable {
+    [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+    private static extern uint GetLongPathName(string path, StringBuilder result, uint size);
+    public static string NormalizePath(string path) {
+        var full = System.IO.Path.GetFullPath(path);
+        var b = new StringBuilder(32768);
+        uint n = GetLongPathName(full,b,(uint)b.Capacity);
+        return n > 0 && n < b.Capacity ? b.ToString() : full;
+    }
     private AgShellLinkW link;
     private string file;
     public AgShortcut(string path) {
@@ -49,6 +57,8 @@ public class AgShortcut : IDisposable {
     public void Dispose() { if(link != null) { Marshal.FinalReleaseComObject(link); link = null; } }
 }
 '@
+$Launcher = [AgShortcut]::NormalizePath($Launcher)
+$ClientExe = [AgShortcut]::NormalizePath($ClientExe)
 $desktop = if ($DesktopDirectory) { $DesktopDirectory } else { [Environment]::GetFolderPath('DesktopDirectory') }
 $entry = Split-Path -Parent $Launcher
 foreach ($directory in @($entry, $desktop) | Select-Object -Unique) {
