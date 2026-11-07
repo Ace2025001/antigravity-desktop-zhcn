@@ -1125,6 +1125,60 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('label:"Website",testId:"plugin-detail-footer-homepage"', 'label:"网站",testId:"plugin-detail-footer-homepage"');
   sourceText = sourceText.replaceAll('label:"Repository",testId:"plugin-detail-footer-repository"', 'label:"代码仓库",testId:"plugin-detail-footer-repository"');
 
+  // 三级弹窗与二级浮窗（钩子、运行状态、任务日志、MCP 服务、复制路径等）原生深度汉化
+  sourceText = sourceText.replaceAll('label:b="Copy Path"', 'label:b="复制路径"');
+  sourceText = sourceText.replaceAll('tooltip:b,"aria-label":b', 'tooltip:b,"aria-label":b');
+  sourceText = sourceText.replaceAll('ariaLabel:p?"Open skill page":"Open plugin page"', 'ariaLabel:p?"打开技能页面":"打开插件页面"');
+  sourceText = sourceText.replaceAll('A.createElement("span",{className:"text-xs text-muted-foreground font-medium"},"Event:")', 'A.createElement("span",{className:"text-xs text-muted-foreground font-medium"},"触发事件：")');
+  sourceText = sourceText.replaceAll('A.createElement("span",{className:"text-xs text-muted-foreground font-medium"},"Target Tools:")', 'A.createElement("span",{className:"text-xs text-muted-foreground font-medium"},"目标工具：")');
+  sourceText = sourceText.replaceAll('A.createElement("span",{className:"text-xs text-muted-foreground font-medium"},"Command:")', 'A.createElement("span",{className:"text-xs text-muted-foreground font-medium"},"执行命令：")');
+  sourceText = sourceText.replaceAll('A.createElement("div",{className:"text-xs text-muted-foreground"},"Timeout:"," "', 'A.createElement("div",{className:"text-xs text-muted-foreground"},"超时时间："," "');
+  sourceText = sourceText.replaceAll('A.createElement("span",{className:"text-xs text-muted-foreground font-medium"},"Definition:")', 'A.createElement("span",{className:"text-xs text-muted-foreground font-medium"},"配置定义：")');
+  sourceText = sourceText.replaceAll('"Unnamed MCP Server"', '"未命名 MCP 服务器"');
+  sourceText = sourceText.replaceAll('A.createElement("h2",{className:"text-sm font-medium text-foreground"},"Context usage"', 'A.createElement("h2",{className:"text-sm font-medium text-foreground"},"上下文用量"');
+  sourceText = sourceText.replaceAll('"Loading logs..."', '"正在加载日志..."');
+  sourceText = sourceText.replaceAll('"No logs available."', '"暂无可用日志。"');
+  sourceText = sourceText.replaceAll('A.createElement("h2",{className:"text-lg font-semibold text-foreground"},"Task Logs")', 'A.createElement("h2",{className:"text-lg font-semibold text-foreground"},"任务日志")');
+  sourceText = sourceText.replaceAll('"Close Logs Modal"', '"关闭日志弹窗"');
+  sourceText = sourceText.replaceAll('"Copy command"', '"复制命令"');
+  sourceText = sourceText.replaceAll('A.createElement("span",{className:"text-muted-foreground shrink-0"},"Host Endpoint")', 'A.createElement("span",{className:"text-muted-foreground shrink-0"},"主机端点")');
+  sourceText = sourceText.replaceAll('A.createElement("span",{className:"text-xs font-semibold text-foreground"},"Recent Events")', 'A.createElement("span",{className:"text-xs font-semibold text-foreground"},"近期事件")');
+  sourceText = sourceText.replaceAll('"Full Logs"', '"完整日志"');
+  sourceText = sourceText.replaceAll('"Loading events..."', '"正在加载事件..."');
+  sourceText = sourceText.replaceAll('"No events recorded"', '"暂无记录事件"');
+  sourceText = sourceText.replaceAll('"Events and stdout streams will appear here as they occur."', '"事件及标准输出流将在产生时实时显示于此处。"');
+  sourceText = sourceText.replaceAll('"This automation is currently stopped. Events and stdout streams will appear here once started."', '"此自动化当前已停止运行。启动后将在此处实时显示事件与标准输出流。"');
+  sourceText = sourceText.replaceAll('"This extension is currently stopped. Events and stdout streams will appear here once started."', '"此扩展当前已停止运行。启动后将在此处实时显示事件与标准输出流。"');
+  sourceText = sourceText.replaceAll('f==="sidecar"?"Start Automation":"Start Extension"', 'f==="sidecar"?"启动自动化":"启动扩展"');
+  sourceText = sourceText.replaceAll('A.createElement("span",{className:"text-muted-foreground"},"Managed by plugin"', 'A.createElement("span",{className:"text-muted-foreground"},"由插件托管"');
+  sourceText = sourceText.replaceAll('"Working Directory: "', '"工作目录："');
+
+  // 基线配额刷新横幅与升级提示原生汉化
+  sourceText = sourceText.replace(
+    'g+=` Your plan\'s baseline quota will refresh on ${h}.`',
+    'g+=` 你的方案基线配额将于 ${h} 刷新。`'
+  );
+  sourceText = sourceText.replaceAll(
+    'Switch to another available model to continue.',
+    '请切换到其他可用模型以继续。'
+  );
+  sourceText = sourceText.replaceAll(
+    'To continue using this model now, enable AI Credit overages.',
+    '若要立即继续使用此模型，请启用 AI 点数超额使用。'
+  );
+  sourceText = sourceText.replaceAll(
+    'To continue using this model now, purchase more AI Credits.',
+    '若要立即继续使用此模型，请购买更多 AI 点数。'
+  );
+  sourceText = sourceText.replace(
+    'd||"See plans"',
+    'd||"查看方案"'
+  );
+  sourceText = sourceText.replace(
+    'b=`${f} ${b}`',
+    'b=`${f} ${b?b.replace(/You can upgrade to a Google AI Ultra plan to receive higher rate limits\\.?/i,"你可以升级至 Google AI Ultra 方案以获取更高的速率限制。"):""}`'
+  );
+
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
   return {

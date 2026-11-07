@@ -1000,7 +1000,7 @@ test("customizations marketplace plugins, empty notes, and see more expansion bu
   const testCases = [
     {
       source: "Search customizations...",
-      expected: "搜索自定义项...",
+      expected: "搜索插件...",
     },
     {
       source: "Find skills, agents, and more in the Marketplace.",
@@ -1107,8 +1107,8 @@ test("entity empty states, dropdowns, and common action phrases are fully covere
     { source: "No matching plugins found.", expected: "未找到匹配的插件。" },
     { source: "No skills found", expected: "未找到技能" },
     { source: "No recommended skills found in workspace", expected: "工作区中未找到推荐技能" },
-    { source: "No customizations found", expected: "未找到自定义项" },
-    { source: "No matching customizations found.", expected: "未找到匹配的自定义项。" },
+    { source: "No customizations found", expected: "未找到插件" },
+    { source: "No matching customizations found.", expected: "未找到匹配的插件。" },
     { source: "No files or folders found", expected: "未找到文件或文件夹" },
     { source: "No environments found", expected: "未找到环境" },
     { source: "No repositories found.", expected: "未找到代码仓库。" },
@@ -1866,4 +1866,37 @@ test("all 71 marketplace plugins, suggestedPrompts, skill descriptions, and Q3 M
   );
   const localized = createLocalizedBundle(mockQ3, current).buffer.toString("utf8");
   assert.ok(localized.includes("globalThis.__AGY_ZHCN_TRANSLATE_MD__"));
+});
+
+
+test("level-3 modals, sub-entries, quota reset banner, and natural plugin naming are fully covered", async () => {
+  const current = await loadDomTranslations();
+
+  // 1. 自然产品命名（插件 vs 自定义）
+  assert.equal(translateDictionaryValue("Customizations", current), "插件");
+  assert.equal(translateDictionaryValue("Search customizations...", current), "搜索插件...");
+  assert.equal(translateDictionaryValue("No customizations found", current), "未找到插件");
+
+  // 2. 三级子弹窗/浮窗/模态框词条
+  assert.equal(translateDictionaryValue("Task Logs", current), "任务日志");
+  assert.equal(translateDictionaryValue("Recent Events", current), "近期事件");
+  assert.equal(translateDictionaryValue("Copy Path", current), "复制路径");
+  assert.equal(translateDictionaryValue("Event:", current), "触发事件：");
+  assert.equal(translateDictionaryValue("Target Tools:", current), "目标工具：");
+
+  // 3. 最新截图中的基线配额上限横幅（动态日期时间正则）
+  const bannerText = "Your plan's baseline quota will refresh on 2026/11/14 17:02:51. You can upgrade to a Google AI Ultra plan to receive higher rate limits. See plans.";
+  const bannerTr = translateDictionaryValue(bannerText, current);
+  assert.ok(bannerTr, "Quota banner should be translated");
+  assert.match(bannerTr, /你的方案基线配额将于 2026\/11\/14 17:02:51 刷新。你可以升级至 Google AI Ultra 方案以获取更高的速率限制。查看方案。/);
+
+  // 4. 三级 SKILL.md 文档段落（/twg-setup 及 /gdocs）
+  const twgHeading = "TWG Setup";
+  assert.equal(translateDictionaryValue(twgHeading, current), "TWG 环境配置");
+
+  const twgHost = "Recognized installer hosts: `antigravity`, `claude-code`, `codex`, `copilot`, `cursor`, `devin`, `gemini`, `hermes`, `intellij`, `opencode`, `pi`, `qoder`, `vscode`.";
+  assert.ok(translateDictionaryValue(twgHost, current), "TWG host list should be translated");
+
+  const gdocsText = "Work with a Google Doc the user names or links to. Everything here assumes you already have the **document ID** — the segment between `/d/` and `/edit` in a `https://docs.google.com/document/d/<DOCUMENT_ID>/edit` URL.";
+  assert.ok(translateDictionaryValue(gdocsText, current), "Google Docs level-3 description should be translated");
 });
