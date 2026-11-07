@@ -49,10 +49,10 @@ jobs:
           node scripts/assemble-universal.mjs .runtime/input-win/antigravity-desktop-zhcn-portable-win-x64 .runtime/input-mac/antigravity-desktop-zhcn-portable-macos-arm64 .runtime/unified/antigravity汉化包
           node scripts/verify-universal.mjs .runtime/unified/antigravity汉化包
           mkdir -p .runtime/publish
-          python3 scripts/package-release.py .runtime/unified/antigravity汉化包 .runtime/publish/Antigravity-完整汉化包-Windows+Mac.zip
-          python3 scripts/package-release.py .runtime/unified/antigravity汉化包/语言包 .runtime/publish/仅更新语言包-不能单独使用.zip
+          python3 scripts/package-release.py .runtime/unified/antigravity汉化包 .runtime/publish/Antigravity-Windows+Mac.zip
+          python3 scripts/package-release.py .runtime/unified/antigravity汉化包/语言包 .runtime/publish/Language-Update-Only.zip
           mkdir -p .runtime/mac-extract
-          ditto -x -k .runtime/publish/Antigravity-完整汉化包-Windows+Mac.zip .runtime/mac-extract
+          ditto -x -k .runtime/publish/Antigravity-Windows+Mac.zip .runtime/mac-extract
           node scripts/verify-universal.mjs .runtime/mac-extract/antigravity汉化包
       - uses: actions/upload-artifact@v7.0.2
         with:
@@ -74,7 +74,7 @@ jobs:
       - name: 解压验证双端包的 Windows 入口
         shell: pwsh
         run: |
-          $archive = (Resolve-Path .runtime/publish/Antigravity-完整汉化包-Windows+Mac.zip).Path
+          $archive = (Resolve-Path .runtime/publish/Antigravity-Windows+Mac.zip).Path
           $shell = New-Object -ComObject Shell.Application
           $folder = $shell.NameSpace($archive)
           if (!$folder -or $folder.Items().Count -ne 1) { throw "Windows 资源管理器无法正常显示压缩包" }
@@ -96,7 +96,7 @@ jobs:
           $hashes = ($files | ForEach-Object { "$($_.Name): $((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash)" }) -join "`n"
           $releaseNotes += "`n`n<details><summary>文件完整性校验（一般不用看）</summary>`n`n$hashes`n`n</details>`n"
           [IO.File]::WriteAllText($notesFile, $releaseNotes)
-          $artifacts = $files | Select-Object -ExpandProperty FullName
+          $artifacts = $files | ForEach-Object { if ($_.Name -eq 'Antigravity-Windows+Mac.zip') { "$($_.FullName)#Antigravity-完整汉化包-Windows+Mac.zip" } else { "$($_.FullName)#仅更新语言包-不能单独使用.zip" } }
           gh release view $env:GITHUB_REF_NAME *> $null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $env:GITHUB_REF_NAME @artifacts --clobber

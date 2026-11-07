@@ -4,7 +4,7 @@ Windows x64 与 Apple 芯片 Mac 共用一份中文语言包。
 
 ## 下载与使用
 
-### [⬇ 下载完整汉化包（Windows + Mac）](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-%E5%AE%8C%E6%95%B4%E6%B1%89%E5%8C%96%E5%8C%85-Windows%2BMac.zip)
+### [⬇ 下载完整汉化包（Windows + Mac）](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip)
 
 **普通用户只下载 `Antigravity-完整汉化包-Windows+Mac.zip`。** 不用下载绿色 Code 或 Source code。
 

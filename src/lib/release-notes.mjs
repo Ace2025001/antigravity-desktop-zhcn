@@ -58,7 +58,7 @@ export function buildReleaseCompatibilityNotes(manifest) {
     "",
     "### 普通用户只下载这个",
     "",
-    `## [⬇ 下载完整汉化包（Windows + Mac）](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/download/v${version}/${encodeURIComponent('Antigravity-完整汉化包-Windows+Mac.zip')})`,
+    `## [⬇ 下载完整汉化包（Windows + Mac）](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/download/v${version}/${encodeURIComponent('Antigravity-Windows+Mac.zip')})`,
     "",
     "下载 **Antigravity-完整汉化包-Windows+Mac.zip** → 右键“全部解压缩” → 打开 win启动 或 mac启动 → 双击“启动中文”。",
     "",
