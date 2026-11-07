@@ -37,7 +37,7 @@ test('Windows 快捷方式存在时不重写，移动后更新，尊重同名文
   const launcher=path.join(entry,'启动中文.bat'),exe=path.join(dir,'app.exe');await writeFile(launcher,'@echo off\r\n');await writeFile(exe,'fixture');
   const script=path.join(root,'scripts/create-auto-shortcuts.ps1');
   const run=async l=>exec('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-File',script,'-Launcher',l,'-ClientExe',exe,'-DesktopDirectory',desktop],{windowsHide:true});
-  await run(launcher);const link=path.join(desktop,'Antigravity自动汉化.lnk');const before=await readFile(link);const date=new Date('2020-01-01');await utimes(link,date,date);
+  const creation=await run(launcher);const link=path.join(desktop,'Antigravity自动汉化.lnk');const before=await readFile(link).catch(error=>{throw new Error(error.message+'\n快捷方式创建输出：'+creation.stdout+creation.stderr)});const date=new Date('2020-01-01');await utimes(link,date,date);
   await run(launcher);assert.deepEqual(await readFile(link),before);assert.equal((await stat(link)).mtimeMs,date.getTime());
   const entry2=path.join(dir,'新 位置');await mkdir(entry2);const launcher2=path.join(entry2,'启动中文.bat');await writeFile(launcher2,'@echo off\r\n');await run(launcher2);assert.notDeepEqual(await readFile(link),before);
   const changed=await exec('powershell.exe',['-NoProfile','-Command','$s=New-Object -ComObject WScript.Shell;$l=$s.CreateShortcut($env:TEST_LINK);[Console]::OutputEncoding=[Text.Encoding]::UTF8;[Console]::Write($l.TargetPath);$l.Description="user-owned";$l.Save()'],{env:{...process.env,TEST_LINK:link},windowsHide:true,encoding:'utf8'});
