@@ -90,7 +90,7 @@ export function buildReleaseCompatibilityNotes(manifest) {
     "",
     "### 兼容性边界",
     "",
-    "Mac 补充包作者记录的实机环境为 macOS 27.0.1 / Antigravity Desktop 2.29.0 / arm64。合并后的安装流程尚未完成真实 Mac 客户端实机复验；Intel Mac 未验证。CI 上的测试与打包不等于客户端实机验收。",
+    "Mac 补充包实测 macOS 27.0.1 / Desktop 2.29.0 / arm64。合并后的安装流程尚未完成真实 Mac 客户端实机复验；Intel Mac 未验证。CI 上的测试与打包不等于客户端实机验收。",
     "",
     "客户端更新后可重新运行启动中文。新旧版本均须通过结构与资源检查，不承诺所有版本兼容。Mac 需要重新采集当前官方界面，不能沿用其他构建缓存。",
     "",
