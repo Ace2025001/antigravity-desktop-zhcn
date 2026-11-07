@@ -10,6 +10,10 @@ destination.parent.mkdir(parents=True, exist_ok=True)
 with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED,
                      compresslevel=6, allowZip64=False) as archive:
     for file in [source, *sorted(source.rglob("*"))]:
+        # npm's developer command shims are not used by the bundled launchers.
+        relative = file.relative_to(source)
+        if ("node_modules", ".bin") in zip(relative.parts, relative.parts[1:]):
+            continue
         if file.is_symlink():
             raise ValueError(f"Refusing symlink: {file}")
         name = file.relative_to(source.parent).as_posix()
