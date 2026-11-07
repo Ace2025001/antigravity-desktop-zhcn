@@ -1,5 +1,11 @@
 blank_issues_enabled: false
 contact_links:
+  - name: ❓ 常见问题
+    url: https://ace2025001.github.io/antigravity-desktop-zhcn/faq/
+    about: 设置中文、下载哪个文件、汉化失效、恢复英文、Mac 安全提示等，大多数问题这里有答案
+  - name: 💬 使用交流与提问
+    url: https://github.com/Ace2025001/antigravity-desktop-zhcn/discussions
+    about: 使用心得、一般性提问和功能建议，欢迎到讨论区交流
   - name: 📖 查看使用文档与快速开始
     url: https://github.com/Ace2025001/antigravity-desktop-zhcn#readme
     about: 安装步骤、恢复官方英文方式与常见疑问解答
