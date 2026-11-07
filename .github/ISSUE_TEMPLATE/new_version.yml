@@ -23,14 +23,16 @@ body:
         - Windows 11 (x64)
         - Windows 10 (x64)
         - Windows (arm64)
+        - macOS (Apple 芯片)
+        - macOS (Intel)
         - 其他
     validations:
       required: true
   - type: textarea
     id: check_output
     attributes:
-      label: 一键检查兼容性 输出信息
-      description: 请复制运行“一键检查兼容性.bat”时控制台输出的完整日志
+      label: 兼容性检查输出
+      description: 请复制运行“启动中文”时窗口中的完整输出。只想检查不安装时，可按 docs/ai-install.md 中的只读检查命令运行后复制结果。
       render: shell
     validations:
       required: true
