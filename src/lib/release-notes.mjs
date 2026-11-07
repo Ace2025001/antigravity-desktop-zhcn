@@ -64,6 +64,8 @@ export function buildReleaseCompatibilityNotes(manifest) {
     "",
     "内置所需文件，可离线运行。不需要下载 Code 或 Source code，它们是给开发者使用的源码。",
     "",
+    "[安装教程与常见问题](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [Windows 教程](https://ace2025001.github.io/antigravity-desktop-zhcn/windows/) · [Mac 教程](https://ace2025001.github.io/antigravity-desktop-zhcn/macos/)",
+    "",
     "<details><summary>已经有完整包，只想更新语言？点这里</summary>",
     "",
     "下载 仅更新语言包-不能单独使用.zip，解压后替换原有“语言包”文件夹。首次使用、文件已删除或从 v2.2.0 及更早版本升级，请下载上面的完整包。",
