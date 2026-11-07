@@ -12155,7 +12155,15 @@
     "Couldn't load harnesses.": "无法加载评测框架。",
     "Harnesses are unavailable from this language server.": "当前语言服务暂不支持评测框架。",
     "Default harness": "默认评测框架",
-    "Pick order sets the harness for each response; the rest run control.": "选择顺序决定各响应使用的评测框架，其余作为对照组运行。"
+    "Pick order sets the harness for each response; the rest run control.": "选择顺序决定各响应使用的评测框架，其余作为对照组运行。",
+    "later.": "中更改。",
+    "later": "中更改",
+    "Powered by Gemini Live ·": "由 Gemini Live 提供技术支持 ·",
+    "icon in the URL bar.": "图标（位于地址栏）。",
+    "on this computer.": "（在此计算机上）。",
+    "to set up ABFS.": "以设置 ABFS。",
+    "to set up Cog.": "以设置 Cog。",
+    "within it.": "之中的所有内容。"
   },
   "patterns": [
     {
