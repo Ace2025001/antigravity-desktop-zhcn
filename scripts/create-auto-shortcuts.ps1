@@ -31,6 +31,6 @@ foreach ($directory in @($entry, $desktop) | Select-Object -Unique) {
         if ($saved.TargetPath -ne $Launcher) { throw '快捷方式目标校验失败' }
         Write-Host "自更新快捷方式已就绪：$shortcutPath"
     } catch {
-        Write-Host "无法在此处创建快捷方式：$directory；$($_.Exception.Message)。仍可使用启动中文。"
+        Write-Host "无法在此处创建快捷方式：$directory；$($_.Exception.Message)（第 $($_.InvocationInfo.ScriptLineNumber) 行）。仍可使用启动中文。"
     }
 }
