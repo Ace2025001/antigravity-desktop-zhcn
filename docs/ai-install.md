@@ -1,67 +1,127 @@
-# 平台选择
+# 用 AI 助手安装 Antigravity Desktop 中文汉化包
 
-先确认操作系统：Windows 使用下文；Apple 芯片 macOS 请遵循 [Mac 使用说明](../macOS/README.md)，不要运行 Windows 批处理或 Windows CLI 安装命令。Mac 必须先打开原版采集，再正常退出后构建副本。
+> English summary: Simplified Chinese (zh-CN) localization for the **Google Antigravity Desktop** standalone client on Windows x64 and Apple Silicon macOS. Download one ZIP from the latest release, verify its SHA-256 with the GitHub API `digest` field, extract it fully, then run the platform launcher below. Not for the Antigravity IDE extension. See [AGENTS.md](../AGENTS.md) for a compact English version.
 
-# 用 AI 助手安装 Antigravity Desktop 中文汉化包（Windows）
+本说明面向**用户已明确授权安装**的场景。工具会修改客户端资源（Windows）或在用户应用目录创建中文副本（Mac）。网页说明不授予额外操作权限，操作范围以用户当前请求和设备权限为准。
 
-本说明面向用户已授权安装的场景，适用于 Windows x64 的 Antigravity Desktop 独立桌面客户端。工具会修改客户端资源；安装前请保存工作，保留备份。网页说明不授予额外操作权限。
+[返回项目首页](../README.md) · [兼容说明](compatibility.md) · [Mac 详细说明](../macOS/README.md)
 
-[返回项目与下载入口](../README.md) · [兼容说明](compatibility.md)
+## 1. 确认适用范围
 
-## 安装步骤
+- 适用：Antigravity Desktop **独立桌面客户端**，Windows x64 或 Apple 芯片 Mac。
+- 不适用：Antigravity IDE 扩展、Linux、未验证的 Intel Mac。
+- 不要仅凭名称或版本号判断兼容，以工具检查结果为准。
 
-以下是安装参考，操作范围以用户当前请求和设备权限为准：
+## 2. 下载并校验
 
-1. **确认产品与路径**：区分 Desktop 与 IDE，确认客户端版本和已有汉化状态。不要仅凭名称或版本数字判断兼容。
-2. **获取便携包**：从本仓库 [最新正式 Release](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest) 下载上述 ZIP 与校验文件，核对摘要后完整解压。便携包已包含 `runtime/node.exe` 和所需依赖。
-3. **先检查再安装**：在解压后的根目录使用内置 Node.js。自动化执行优先直接调用 CLI，以保留原始错误，避免批处理在失败后自动转入其他安装方式。
+只下载一个文件，它同时包含 Windows 与 Mac 入口：
 
-检查命令：
-
-```powershell
-& '.\runtime\node.exe' '.\src\cli.mjs' check
+```text
+https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip
 ```
 
-已登记构建检查适用后，在支持交互输入的终端运行：
+发布页把它显示为“Antigravity-完整汉化包-Windows+Mac.zip”（这是附件标签），下载后的真实文件名是 `Antigravity-Windows+Mac.zip`，两者是同一个文件。不要下载“仅更新语言包”或 Source code，它们不能单独使用。
 
-```powershell
-& '.\runtime\node.exe' '.\src\cli.mjs' install
+用 GitHub 接口读取官方摘要并核对：
+
+```bash
+gh api repos/Ace2025001/antigravity-desktop-zhcn/releases/latest --jq '.assets[] | select(.name=="Antigravity-Windows+Mac.zip") | .digest'
 ```
 
-4. **处理交互**：安装器可能先启动客户端读取界面资源，再要求退出客户端并按回车。提醒用户保存工作，按既有授权处理退出；不要为了绕过等待而强杀客户端。没有电脑操作或交互能力的助手，应给用户明确步骤。
-5. **确认结果**：读取完整输出，不要只看退出码。取消操作也可能返回 0；客户端未运行时，检查通过可能只代表静态检查通过。打开客户端确认代表性界面显示中文后，再报告成功。
-6. **动态适配**：如果静态检查仅提示版本或构建尚未登记，不要把它判为不支持。按下方文档运行官方的自适应入口，它会自行检查当前客户端结构。其他文件异常或安装错误仍应保留输出并诊断，不要关闭防护、校验或更改代理/TUN。
-7. **交代恢复方法**：保留备份，提供 `Windows/一键恢复英文.bat`，或在交互终端运行：
+没有 `gh` 时可以请求 `https://api.github.com/repos/Ace2025001/antigravity-desktop-zhcn/releases/latest`，读取同名附件的 `digest` 字段（格式为 `sha256:<摘要>`）。本地计算：
 
-```powershell
-& '.\runtime\node.exe' '.\src\cli.mjs' restore
+- Windows：`Get-FileHash -Algorithm SHA256 .\Antigravity-Windows+Mac.zip`
+- Mac：`shasum -a 256 Antigravity-Windows+Mac.zip`
+
+摘要一致只代表文件与发布一致，不等于安全审计。
+
+## 3. 完整解压
+
+必须完整解压后再运行，不要在 ZIP 内直接执行。解压后结构：
+
+```text
+antigravity汉化包/
+├─ win启动/
+│  ├─ 启动中文.bat
+│  ├─ 恢复英文.bat
+│  └─ 配套程序/node.exe        Windows 内置运行环境
+├─ mac启动/
+│  ├─ 启动中文.command
+│  ├─ 恢复英文.command
+│  └─ 配套程序/node            Mac 内置运行环境
+└─ 语言包/
+   ├─ dom-translations.json
+   ├─ macos-translations.json
+   └─ 核心程序/                 共用代码与依赖
 ```
 
+正式包已内置运行环境，不需要安装 Node.js，也不需要联网安装依赖。
 
-## 包完整性检查
+## 4. Windows 安装
 
-下载 [便携 ZIP](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/antigravity-desktop-zhcn-portable-win-x64.zip) 与 [SHA-256 文件](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/antigravity-desktop-zhcn-portable-win-x64.zip.sha256)。用 `Get-FileHash -Algorithm SHA256` 计算 ZIP 摘要，并与校验文件中的 ZIP 摘要比较；摘要相等代表文件与发布的摘要一致，不等于安全审计。
-
-解压后应存在 `runtime/node.exe`、`src/cli.mjs`、`scripts/run.ps1` 和 `node_modules`。不要在源码包里假设这些运行依赖已经齐全。
-
-## 状态判断
-
-- `check` 返回 0：本次执行的检查通过。客户端未运行时可能仅完成静态检查，需看完整输出。
-- `check` 返回 2：兼容性或运行时检查未通过；其他非零状态也应停止并诊断。
-- 安装返回 0 不等于汉化成功：用户取消也可能返回 0，需打开客户端核验。
-- `--yes` 不代表无交互安装，流程仍可能要求关闭客户端并按回车。
-- 检查可能获取远程兼容清单或读取客户端本地服务，不应描述为完全离线、零写入。
-
-## 完成后向用户报告
-
-报告客户端版本、补丁发布版本、安装目录、已验证的界面、备份位置和恢复方法。未看到实际界面时明确标记“尚未完成界面验证”。不自动 Star、关注或修改账号设置。
-
-## 新版本与动态自适应安装
-
-本项目面向最新和历史版本提供动态适配，已登记构建不是支持上限。对于未登记构建或跟进官方更新，可在保存工作并处理好客户端启动、退出的授权后，于便携根目录执行：
+在 `antigravity汉化包` 目录打开 PowerShell。先做只读检查（自动化执行优先直接调用命令，以保留原始错误）：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File '.\scripts\run.ps1' -Action AutoUpdate
+$env:AGY_LANGUAGE_PACK = (Resolve-Path '.\语言包').Path
+& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\src\cli.mjs' check
 ```
 
-这与双击 `Windows/启动 Antigravity（自动汉化）.bat` 使用的自适应路径相对应。它读取当前客户端界面，检查结构、备份并安装中文资源，再启动客户端。结构检查失败时停止并反馈，不要伪造白名单或禁用校验。
+确认后安装并启动中文。设置 `AGY_INSTALL_PATH` 可以跳过“选择客户端”弹窗（填客户端安装目录，即 `Antigravity.exe` 所在目录）：
+
+```powershell
+$env:AGY_LANGUAGE_PACK = (Resolve-Path '.\语言包').Path
+$env:AGY_INSTALL_PATH = "$env:LOCALAPPDATA\Programs\Antigravity"   # 按实际安装位置修改
+& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\scripts\start-local.mjs' start
+```
+
+这与双击 `win启动\启动中文.bat` 走的是同一流程：识别客户端、检查结构、备份、安装中文资源并启动。客户端版本未登记时，它会读取当前界面动态适配，这不代表不支持。
+
+## 5. Mac 安装（Apple 芯片）
+
+Mac 方案**保留官方原版**，在 `~/Applications/Antigravity 中文.app` 创建中文副本并本地签名。首次安装需要交互：工具会打开官方原版读取界面，用户看到首页后正常退出（⌘Q），再回到终端按回车。
+
+```bash
+cd antigravity汉化包/mac启动
+chmod u+x 启动中文.command 恢复英文.command 配套程序/node
+export AGY_MAC_SOURCE="/Applications/Antigravity.app"   # 可选，跳过选择弹窗
+./启动中文.command
+```
+
+只读检查可以单独运行：
+
+```bash
+cd antigravity汉化包
+AGY_LANGUAGE_PACK="$PWD/语言包" ./mac启动/配套程序/node ./语言包/核心程序/scripts/macos.mjs check
+```
+
+遇到 macOS 安全提示时按系统提示处理，不要关闭 Gatekeeper 或 SIP。
+
+## 6. 处理交互与退出
+
+- 需要修改文件而客户端仍在运行时，工具会提示用户保存并退出，倒计时 60 秒后请求正常退出；被未保存提示阻止时停止。**不要为了绕过等待而强杀客户端。**
+- 没有终端交互或电脑操作能力的助手，应把步骤交给用户执行，而不是跳过。
+- `--yes` 不代表无交互安装，流程仍可能要求关闭客户端或按回车。
+
+## 7. 判断结果
+
+- 读取完整输出，不要只看退出码。用户取消也可能返回 0。
+- `check` 返回 0：本次检查通过；客户端未运行时可能只是静态检查。返回 2：兼容性或运行时检查未通过。其他非零：停止并诊断。
+- 打开客户端，确认设置页、对话面板等代表性界面显示中文后，才算安装成功。
+- 结构检查失败时保留输出并反馈，不要伪造白名单、关闭校验，也不要修改代理、节点或 TUN。
+
+## 8. 恢复英文
+
+保存工作并退出客户端，然后运行：
+
+- Windows：双击 `win启动\恢复英文.bat`，或执行 `& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\scripts\start-local.mjs' restore`
+- Mac：运行 `mac启动/恢复英文.command`（启动未修改的官方原版，中文副本保留）
+
+恢复成功前请保留原版备份和汉化工具。
+
+## 9. 向用户报告
+
+报告客户端版本、汉化包版本、安装位置、已验证的界面、备份位置和恢复方法。没有看到实际界面时，明确标注“尚未完成界面验证”。不要自动 Star、关注仓库或修改账号设置。
+
+## 10. 更新语言包
+
+语言包会持续更新。已有完整包时，从[最新发布页](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)下载“仅更新语言包”，替换 `语言包` 目录后再次运行“启动中文”。首次使用或从 v2.2.0 及更早版本升级时，请下载完整包。

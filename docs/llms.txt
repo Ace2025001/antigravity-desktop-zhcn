@@ -1,0 +1,22 @@
+# Antigravity Desktop 汉化包 / Chinese Localization
+
+> Simplified Chinese (zh-CN) language pack for the Google Antigravity (反重力) Desktop standalone client on Windows x64 and Apple Silicon macOS. One ZIP for both platforms, bundled runtime, offline, automatic install discovery, re-applies after client updates, one-click restore to English. Not for the Antigravity IDE extension.
+
+Download: https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip
+Verify: compare the file's SHA-256 with the `digest` field of the asset `Antigravity-Windows+Mac.zip` from https://api.github.com/repos/Ace2025001/antigravity-desktop-zhcn/releases/latest
+Run: extract fully, then `win启动/启动中文.bat` (Windows) or `mac启动/启动中文.command` (macOS). Restore: `恢复英文`.
+
+## Docs
+
+- [AI agent install guide](https://github.com/Ace2025001/antigravity-desktop-zhcn/blob/main/docs/ai-install.md): download, checksum, per-platform commands, exit codes, success checks, restore
+- [AGENTS.md](https://github.com/Ace2025001/antigravity-desktop-zhcn/blob/main/AGENTS.md): compact English guide for agents and contributors
+- [README (中文)](https://github.com/Ace2025001/antigravity-desktop-zhcn/blob/main/README.md)
+- [README (English)](https://github.com/Ace2025001/antigravity-desktop-zhcn/blob/main/README.en.md)
+- [Windows 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/windows/)
+- [Mac 汉化教程](https://ace2025001.github.io/antigravity-desktop-zhcn/macos/)
+
+## Optional
+
+- [Compatibility notes](https://github.com/Ace2025001/antigravity-desktop-zhcn/blob/main/docs/compatibility.md)
+- [Architecture](https://github.com/Ace2025001/antigravity-desktop-zhcn/blob/main/docs/architecture.md)
+- [Releases](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases)

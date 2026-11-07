@@ -11,7 +11,7 @@ export const projectRoot = path.resolve(currentDirectory, "..", "..");
 
 export function areSamePaths(left, right, platform = process.platform) {
   if (typeof left !== "string" || typeof right !== "string") return false;
-  const pathApi = platform === "win32" ? path.win32 : path;
+  const pathApi = platform === "win32" ? path.win32 : path.posix;
   const normalizedLeft = pathApi.normalize(pathApi.resolve(left));
   const normalizedRight = pathApi.normalize(pathApi.resolve(right));
   return platform === "win32"

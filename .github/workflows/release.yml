@@ -94,12 +94,20 @@ jobs:
           $notesFile = Join-Path $env:RUNNER_TEMP "release-notes.md"
           $files = Get-ChildItem .runtime/publish -File -Filter '*.zip'
           $hashes = ($files | ForEach-Object { "$($_.Name): $((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash)" }) -join "`n"
-          $releaseNotes += "`n`n<details><summary>文件完整性校验（一般不用看）</summary>`n`n$hashes`n`n</details>`n"
+          $hashSection = "`n`n<details><summary>文件完整性校验（一般不用看）</summary>`n`n$hashes`n`n</details>`n"
+          $releaseNotes += $hashSection
           [IO.File]::WriteAllText($notesFile, $releaseNotes)
           $artifacts = $files | ForEach-Object { if ($_.Name -eq 'Antigravity-Windows+Mac.zip') { "$($_.FullName)#Antigravity-完整汉化包-Windows+Mac.zip" } else { "$($_.FullName)#仅更新语言包-不能单独使用.zip" } }
           gh release view $env:GITHUB_REF_NAME *> $null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $env:GITHUB_REF_NAME @artifacts --clobber
+            if ($LASTEXITCODE -ne 0) { throw "上传发布附件失败" }
+            # 发布已手动创建时保留原说明，只补上本次附件的校验值。
+            $existingNotes = (gh release view $env:GITHUB_REF_NAME --json body --jq .body) -join "`n"
+            if ($LASTEXITCODE -ne 0) { throw "读取发布说明失败" }
+            $existingNotes = $existingNotes -replace '(?s)\s*<details><summary>文件完整性校验（一般不用看）</summary>.*?</details>\s*', ''
+            [IO.File]::WriteAllText($notesFile, $existingNotes.TrimEnd() + $hashSection)
+            gh release edit $env:GITHUB_REF_NAME --notes-file $notesFile
           } else {
             gh release create $env:GITHUB_REF_NAME @artifacts --notes-file $notesFile --title "$env:GITHUB_REF_NAME 双端统一汉化包" --draft
           }
