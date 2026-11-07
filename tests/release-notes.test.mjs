@@ -30,6 +30,6 @@ test("release notes list versions once and report multiple verified builds", () 
   assert.equal(notes.match(/`2\.4\.3`/g)?.length, 1);
   assert.ok(notes.indexOf("- `2.4.3`") < notes.indexOf("- `2.3.1`"));
   assert.match(notes, /普通用户只下载这个/);
-  assert.match(notes, /01-Antigravity-完整汉化包-Windows-Mac\.zip/);
+  assert.match(notes, /Antigravity-完整汉化包-Windows\+Mac\.zip/);
   assert.match(notes, /右键“全部解压缩”/);
 });
