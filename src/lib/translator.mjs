@@ -52,7 +52,14 @@ export function formatPlanTermsToChinese(str) {
     .replace(/\bPro and Ultra\b/gi, "Pro 及 Ultra")
     .replace(/\bUltra and Pro\b/gi, "Ultra 及 Pro")
     .replace(/\bpaid Pro\b/gi, "付费 Pro")
-    .replace(/\bpaid Ultra\b/gi, "付费 Ultra");
+    .replace(/\bpaid Ultra\b/gi, "付费 Ultra")
+    .replace(/\bFree users and Google AI Plus\b/gi, "免费用户与 Google AI Plus")
+    .replace(/\bFree and Google AI Plus\b/gi, "免费与 Google AI Plus")
+    .replace(/\bGoogle AI Plus and Free\b/gi, "Google AI Plus 与免费")
+    .replace(/\bFree users\b/gi, "免费用户")
+    .replace(/\bFree user\b/gi, "免费用户")
+    .replace(/\bor above\b/gi, "或更高方案")
+    .replace(/\bor higher\b/gi, "或更高方案");
 }
 
 export function formatEnglishDateToChinese(str) {
@@ -212,7 +219,14 @@ export function createRuntimeOverlay(dictionary) {
       .replace(/\bPro and Ultra\b/gi, "Pro 及 Ultra")
       .replace(/\bUltra and Pro\b/gi, "Ultra 及 Pro")
       .replace(/\bpaid Pro\b/gi, "付费 Pro")
-      .replace(/\bpaid Ultra\b/gi, "付费 Ultra");
+      .replace(/\bpaid Ultra\b/gi, "付费 Ultra")
+      .replace(/\bFree users and Google AI Plus\b/gi, "免费用户与 Google AI Plus")
+      .replace(/\bFree and Google AI Plus\b/gi, "免费与 Google AI Plus")
+      .replace(/\bGoogle AI Plus and Free\b/gi, "Google AI Plus 与免费")
+      .replace(/\bFree users\b/gi, "免费用户")
+      .replace(/\bFree user\b/gi, "免费用户")
+      .replace(/\bor above\b/gi, "或更高方案")
+      .replace(/\bor higher\b/gi, "或更高方案");
   }
   const collectorRecords = [];
   const collector = {

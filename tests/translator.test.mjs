@@ -1901,3 +1901,35 @@ test("level-3 modals, sub-entries, quota reset banner, and natural plugin naming
   const gdocsText = "Work with a Google Doc the user names or links to. Everything here assumes you already have the **document ID** — the segment between `/d/` and `/edit` in a `https://docs.google.com/document/d/<DOCUMENT_ID>/edit` URL.";
   assert.ok(translateDictionaryValue(gdocsText, current), "Google Docs level-3 description should be translated");
 });
+
+test("free user quota upgrade and search across conversations NUX tooltip are fully covered", async () => {
+  const dict = await loadDomTranslations();
+  const quotaCases = [
+    ["Free users and Google AI Plus users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.", "免费用户与 Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。"],
+    ["Free users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.", "免费用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。"],
+    ["Free users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro to receive higher rate limits.", "免费用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 以获取更高额度限制。"],
+    ["Google AI Plus users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.", "Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。"],
+    ["Free users receive the minimum base limits on Antigravity.", "免费用户在 Antigravity 上享有最低基础限制额度。"]
+  ];
+  for (const [src, expected] of quotaCases) {
+    const res = translateDictionaryValue(src, dict);
+    assert.equal(res, expected, "Quota case mismatch: " + src);
+    assert.ok(!res.includes("or above") && !res.includes("Free") && !res.includes("receive"), "Quota translation should have no leftover English: " + res);
+  }
+
+  const nuxCases = [
+    ["Search Across Conversations", "跨对话搜索"],
+    ["Search conversations with", "在左上方点击"],
+    ["in the top left.", "即可搜索对话。"],
+    ["View archived in the sidebar (", "在侧边栏中查看已归档内容（"],
+    ["View archived in the sidebar", "在侧边栏中查看已归档内容"],
+    ["menu).", "菜单）。"],
+    ["Dismiss", "忽略"],
+    ["Search conversations with 🔍 in the top left.", "在左上方点击 🔍 即可搜索对话。"],
+    ["View archived in the sidebar (🝕 menu).", "在侧边栏中查看已归档内容（🝕 菜单）。"]
+  ];
+  for (const [src, expected] of nuxCases) {
+    const res = translateDictionaryValue(src, dict);
+    assert.equal(res, expected, "NUX case mismatch: " + src);
+  }
+});
