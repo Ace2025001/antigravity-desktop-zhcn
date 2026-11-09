@@ -96,8 +96,8 @@ antigravity汉化包/
 
 ### 能让 AI 助手帮我安装吗？
 
-可以。把本仓库地址发给 Claude Code、Codex、Cursor 等 AI 助手，让它按 [AI 助手安装指南](docs/ai-install.md) 操作即可。指南写明了下载地址、SHA-256 校验、各平台命令、结果判断和恢复方法。AI 助手也会读取仓库根目录的 [AGENTS.md](AGENTS.md)。
-
+可以。把本仓库地址发给 豆包、deepseek、反重力（antigravity）、Codex 、Claude Code 等 AI 助手，让它按 [AI 助手安装指南](docs/ai-install.md) 操作即可。指南写明了下载地址、SHA-256 校验、各平台命令、结果判断和恢复方法。AI 助手也会读取仓库根目录的 [AGENTS.md](AGENTS.md)。
+一键粘贴指令：帮我把https://github.com/Ace2025001/antigravity-desktop-zhcn安装在电脑内，按 [AI 助手安装指南](docs/ai-install.md) 操作
 ## 开发与高级说明
 
 此仓库是源码目录，日常使用请下载正式包。源码需要 Node.js >= 22.12.0，执行 `npm ci --ignore-scripts`、`npm test` 和 `npm run validate`。
