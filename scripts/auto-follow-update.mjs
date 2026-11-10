@@ -11,7 +11,7 @@ import { readFileFromAsar } from "../src/lib/asar-reader.mjs";
 import { sha256Buffer, sha256File } from "../src/lib/hash.mjs";
 import { atomicReplaceFile, buildPatchedAsar, patchCustomSchemeSource } from "../src/lib/patcher.mjs";
 import { getAntigravityUserDataRoot, getStateRoot } from "../src/lib/paths.mjs";
-import { findLatestUiPort, fetchUiBundle } from "../src/lib/runtime-bundle.mjs";
+import { findLatestUiPort, fetchUiBundle, readEmbeddedWindowsUi } from "../src/lib/runtime-bundle.mjs";
 import { createLocalizedBundle, loadDomTranslations, writeLocalizedBundle } from "../src/lib/translator.mjs";
 import { readInstallState, writeInstallState } from "../src/lib/state.mjs";
 import { gracefulCloseAntigravity, launchAntigravity } from "../src/lib/processes.mjs";
@@ -114,8 +114,9 @@ const originalScheme = await readFileFromAsar(inspection.appAsarPath, CUSTOM_SCH
 // This is the compatibility gate for newly updated builds. It only accepts the
 // exact structural anchors used by the patcher; an arbitrary new layout fails closed.
 patchCustomSchemeSource(originalScheme.toString("utf8"));
-console.log(`已检测到 ${inspection.packageVersion}，正在读取本地界面；首次准备可能需要一两分钟…`);
-const runtime = await waitForRuntimeUi(inspection.executablePath);
+console.log(`已检测到 ${inspection.packageVersion}，正在读取本地界面资源…`);
+const runtime = await readEmbeddedWindowsUi(inspection) ?? await waitForRuntimeUi(inspection.executablePath);
+if (runtime.source === "embedded") console.log("已校验并读取安装目录中的原版界面资源。");
 const dictionary = await loadDomTranslations();
 console.log("正在生成中文界面，可能需要几十秒，请勿关闭窗口…");
 const localized = createLocalizedBundle(runtime.buffer, dictionary);
@@ -135,7 +136,6 @@ if (existingBundleHash && existingBundleHash !== previousBundleHash) {
   console.log("已备份检测到的本地迭代中文 UI，再继续自动更新。");
 }
 
-console.log(`已读取 ${inspection.packageVersion} 的界面。客户端完全退出后将应用汉化并重新打开。`);
 await gracefulCloseAntigravity();
 const recheck = await inspectInstallation({ allowRemoteCompatibility: false });
 if (recheck.appAsarSha256 !== inspection.appAsarSha256 || recheck.packageVersion !== inspection.packageVersion) {

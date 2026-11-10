@@ -1,10 +1,50 @@
 import https from "node:https";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, open, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { inflateRawSync } from "node:zlib";
 import { sha256Buffer, sha256File } from "./hash.mjs";
 import { getAntigravityUserDataRoot, getStateRoot } from "./paths.mjs";
 
 const MAX_BUNDLE_BYTES = 50 * 1024 * 1024;
+
+// This Windows x64 build ships main.js in a ZIP inside language_server.exe.
+const WINDOWS_230_EMBEDDED_UI = {
+  asarSha256: "00153A89EA4D870D192B7BEACAE2C26057FA6D698AB8EE777017105C582E60EE",
+  entryOffset: 168_770_270,
+  compressedSize: 3_478_740,
+  size: 11_711_794,
+  sha256: "35E0DA21894A7F6560075EAE2501C88FEDE5204EB6067FAC2653E2C7A63DC403",
+};
+
+export async function readEmbeddedWindowsUi(inspection) {
+  const target = WINDOWS_230_EMBEDDED_UI;
+  if (inspection.packageVersion !== "2.30.0" || inspection.appAsarSha256 !== target.asarSha256) return null;
+
+  const executable = path.join(path.dirname(inspection.appAsarPath), "bin", "language_server.exe");
+  const file = await open(executable, "r");
+  try {
+    const entry = Buffer.alloc(37 + target.compressedSize);
+    const { bytesRead } = await file.read(entry, 0, entry.length, target.entryOffset);
+    if (bytesRead !== entry.length ||
+        entry.readUInt32LE(0) !== 0x04034b50 ||
+        entry.readUInt16LE(6) !== 0 ||
+        entry.readUInt16LE(8) !== 8 ||
+        entry.readUInt32LE(18) !== target.compressedSize ||
+        entry.readUInt32LE(22) !== target.size ||
+        entry.readUInt16LE(26) !== 7 ||
+        entry.readUInt16LE(28) !== 0 ||
+        entry.toString("ascii", 30, 37) !== "main.js") {
+      throw new Error("本机内置界面资源结构与已验证构建不一致。");
+    }
+    const buffer = inflateRawSync(entry.subarray(37), { maxOutputLength: target.size });
+    if (buffer.length !== target.size || sha256Buffer(buffer) !== target.sha256) {
+      throw new Error("本机内置界面资源校验失败。");
+    }
+    return { buffer, source: "embedded" };
+  } finally {
+    await file.close();
+  }
+}
 
 export async function findLatestUiPort() {
   const logPath = path.join(getAntigravityUserDataRoot(), "logs", "main.log");
