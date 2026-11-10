@@ -12,7 +12,8 @@ import { sha256Buffer, sha256File } from "../src/lib/hash.mjs";
 import { atomicReplaceFile, buildPatchedAsar, patchCustomSchemeSource } from "../src/lib/patcher.mjs";
 import { getAntigravityUserDataRoot, getStateRoot } from "../src/lib/paths.mjs";
 import { findLatestUiPort, fetchUiBundle, readEmbeddedWindowsUi } from "../src/lib/runtime-bundle.mjs";
-import { createLocalizedBundle, loadDomTranslations, writeLocalizedBundle } from "../src/lib/translator.mjs";
+import { loadDomTranslations, writeLocalizedBundle } from "../src/lib/translator.mjs";
+import { createLocalizedBundleWithProgress } from "../src/lib/localize-progress.mjs";
 import { readInstallState, writeInstallState } from "../src/lib/state.mjs";
 import { gracefulCloseAntigravity, launchAntigravity } from "../src/lib/processes.mjs";
 import { clientProcesses } from "../src/lib/close-client.mjs";
@@ -23,10 +24,15 @@ const BUNDLE_NAME = "agy_zhcn_ui_main.js";
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
+// True only when this script started the client itself to read the UI. Such an
+// instance holds no user work, so it is closed without the 60-second wait.
+let launchedByTool = false;
+
 async function waitForRuntimeUi(executablePath) {
   if (!(await clientProcesses()).length) {
-    console.log("需要临时打开原版 Antigravity 读取界面。请等终端提示后再退出客户端。");
+    console.log("需要临时打开原版 Antigravity 读取界面，读取完成后会自动关闭它，无需手动操作。");
     await launchAntigravity(executablePath);
+    launchedByTool = true;
   }
   for (let attempt = 0; attempt < 120; attempt += 1) {
     if (attempt > 0 && attempt % 10 === 0) console.log("仍在等待客户端界面就绪…");
@@ -118,8 +124,7 @@ console.log(`已检测到 ${inspection.packageVersion}，正在读取本地界�
 const runtime = await readEmbeddedWindowsUi(inspection) ?? await waitForRuntimeUi(inspection.executablePath);
 if (runtime.source === "embedded") console.log("已校验并读取安装目录中的原版界面资源。");
 const dictionary = await loadDomTranslations();
-console.log("正在生成中文界面，可能需要几十秒，请勿关闭窗口…");
-const localized = createLocalizedBundle(runtime.buffer, dictionary);
+const localized = await createLocalizedBundleWithProgress(runtime.buffer, dictionary);
 
 const stateRoot = getStateRoot();
 const preparedBundlePath = path.join(stateRoot, "prepared", "auto-follow-ui-main.js");
@@ -136,7 +141,7 @@ if (existingBundleHash && existingBundleHash !== previousBundleHash) {
   console.log("已备份检测到的本地迭代中文 UI，再继续自动更新。");
 }
 
-await gracefulCloseAntigravity();
+await gracefulCloseAntigravity({ owned: launchedByTool });
 const recheck = await inspectInstallation({ allowRemoteCompatibility: false });
 if (recheck.appAsarSha256 !== inspection.appAsarSha256 || recheck.packageVersion !== inspection.packageVersion) {
   throw new Error("关闭客户端期间安装文件再次变化，拒绝修改。");

@@ -55,6 +55,6 @@ export async function waitForAntigravityExit({
   }
 }
 
-export async function gracefulCloseAntigravity() {
-  await closeClientForChanges();
+export async function gracefulCloseAntigravity({ owned = false } = {}) {
+  await closeClientForChanges({ owned });
 }

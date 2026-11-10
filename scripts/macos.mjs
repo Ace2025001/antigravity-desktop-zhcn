@@ -9,7 +9,8 @@ import { buildPatchedAsar, patchCustomSchemeSource } from "../src/lib/patcher.mj
 import { readFileFromAsar, readJsonFromAsar } from "../src/lib/asar-reader.mjs";
 import { sha256Buffer, sha256File } from "../src/lib/hash.mjs";
 import { fetchUiBundle } from "../src/lib/runtime-bundle.mjs";
-import { createLocalizedBundle, loadDomTranslations } from "../src/lib/translator.mjs";
+import { loadDomTranslations } from "../src/lib/translator.mjs";
+import { createLocalizedBundleWithProgress } from "../src/lib/localize-progress.mjs";
 import { asarHeaderHash, exec, findMacOriginal, findMacUiPort, macAppPath, macResources, macStateRoot, macUserData, openMacApp, requireMacAppsClosed, runningMacApps } from "../src/lib/macos.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -82,7 +83,7 @@ async function install(info) {
   const macDictionary = JSON.parse(await readFile(languageFile("macos-translations.json"), "utf8"));
   Object.assign(dictionary.exact, macDictionary.exact);
   dictionary.patterns.push(...macDictionary.patterns);
-  const localized = createLocalizedBundle(runtime, dictionary);
+  const localized = await createLocalizedBundleWithProgress(runtime, dictionary, { label: "正在生成中文界面…" });
   await mkdir(macStateRoot, { recursive: true });
   const stagedRoot = await mkdtemp(path.join(macStateRoot, "build-"));
   const stagedApp = path.join(stagedRoot, "Antigravity 中文.app");

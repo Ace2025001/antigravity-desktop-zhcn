@@ -26,10 +26,10 @@ import {
   waitForCompatibleUiBundle,
 } from "./lib/runtime-bundle.mjs";
 import {
-  createLocalizedBundle,
   loadDomTranslations,
   writeLocalizedBundle,
 } from "./lib/translator.mjs";
+import { createLocalizedBundleWithProgress } from "./lib/localize-progress.mjs";
 import {
   atomicReplaceFile,
   buildPatchedAsar,
@@ -165,7 +165,7 @@ async function generateLocalizedPreview(
   const resolved =
     resolvedUi ?? (await loadCompatibleUiBundle(inspection.target));
   const dictionary = await loadDomTranslations();
-  const localized = createLocalizedBundle(resolved.buffer, dictionary);
+  const localized = await createLocalizedBundleWithProgress(resolved.buffer, dictionary, { label: "正在生成中文界面…" });
   await writeLocalizedBundle(outputPath, localized.buffer);
   assertSyntax(outputPath);
 
