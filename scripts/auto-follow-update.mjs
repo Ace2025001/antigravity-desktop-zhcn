@@ -12,7 +12,8 @@ import { sha256Buffer, sha256File } from "../src/lib/hash.mjs";
 import { atomicReplaceFile, buildPatchedAsar, patchCustomSchemeSource } from "../src/lib/patcher.mjs";
 import { getAntigravityUserDataRoot, getStateRoot } from "../src/lib/paths.mjs";
 import { findLatestUiPort, fetchUiBundle, readEmbeddedWindowsUi } from "../src/lib/runtime-bundle.mjs";
-import { createLocalizedBundle, loadDomTranslations, writeLocalizedBundle } from "../src/lib/translator.mjs";
+import { loadDomTranslations, writeLocalizedBundle } from "../src/lib/translator.mjs";
+import { createLocalizedBundleWithProgress } from "../src/lib/localize-progress.mjs";
 import { readInstallState, writeInstallState } from "../src/lib/state.mjs";
 import { gracefulCloseAntigravity, launchAntigravity } from "../src/lib/processes.mjs";
 import { clientProcesses } from "../src/lib/close-client.mjs";
@@ -123,8 +124,7 @@ console.log(`已检测到 ${inspection.packageVersion}，正在读取本地界�
 const runtime = await readEmbeddedWindowsUi(inspection) ?? await waitForRuntimeUi(inspection.executablePath);
 if (runtime.source === "embedded") console.log("已校验并读取安装目录中的原版界面资源。");
 const dictionary = await loadDomTranslations();
-console.log("正在生成中文界面，可能需要几十秒，请勿关闭窗口…");
-const localized = createLocalizedBundle(runtime.buffer, dictionary);
+const localized = await createLocalizedBundleWithProgress(runtime.buffer, dictionary);
 
 const stateRoot = getStateRoot();
 const preparedBundlePath = path.join(stateRoot, "prepared", "auto-follow-ui-main.js");
