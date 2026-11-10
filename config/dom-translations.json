@@ -1556,7 +1556,7 @@
     "No projects yet.": "暂无项目。",
     "No quota information available": "暂无可用配额信息",
     "No quota information available for this model.": "此模型暂无可用配额信息。",
-    "No quota information available.": "暂无配额信息。",
+    "No quota information available.": "暂无可用配额信息。",
     "No recent workspaces found": "未找到最近的工作区",
     "No recent workspaces found.": "未找到最近的工作区。",
     "No recommended skills found": "未找到推荐技能",
@@ -10734,7 +10734,7 @@
     "Thanks for your feedback!": "感谢你的反馈！",
     "The agent has a question for you:": "智能体有一个问题需要向你确认：",
     "The agent has questions for you:": "智能体有几个问题需要向你确认：",
-    "The full developer experience.": "完整的开发者体验。",
+    "The full developer experience.": "完整的专业开发体验。",
     "There are currently no Build with": "当前没有可用的构建项：",
     "This": "此",
     "This automation is currently stopped. Events and stdout streams will appear here once started.": "此自动化当前已停止运行。启动后将在此处实时显示事件与标准输出流。",
@@ -12178,9 +12178,205 @@
     "Search conversations with in the top left.": "在左上方点击即可搜索对话。",
     "View archived in the sidebar (🝕 menu).": "在侧边栏中查看已归档内容（🝕 菜单）。",
     "View archived in the sidebar (menu).": "在侧边栏中查看已归档内容（菜单）。",
-    "View archived in the sidebar (Display options menu).": "在侧边栏中查看已归档内容（显示选项菜单）。"
+    "View archived in the sidebar (Display options menu).": "在侧边栏中查看已归档内容（显示选项菜单）。",
+    "Interface Layout": "界面布局",
+    "Knowledge Work": "知识工作",
+    "Simplified interface for research, writing, and everyday tasks.": "专为研究、写作与日常任务打造的精简界面。",
+    "Software Engineering": "软件工程",
+    "Full interface for coding, developer tools, and managing agents.": "包含代码编写、开发工具及智能体管理的完整开发界面。",
+    "Project 4K": "Project 4K 模式",
+    "Configure built-in browser, link opening, and browser subagent preferences.": "配置内置浏览器、链接打开方式以及浏览器子智能体偏好设置。",
+    "Configure allowed and denied URLs for the browser subagent. It runs in the built-in browser, so no separate browser install is needed.": "配置浏览器子智能体允许和拒绝访问的网址。该智能体运行于内置浏览器中，无需单独安装浏览器。",
+    "Configure allowed and denied URLs for the browser subagent (invoked with /browser). Requires": "配置浏览器子智能体（通过 /browser 调用）允许和拒绝访问的网址。需要安装并运行 ",
+    "Configure allowed and denied URLs for the browser subagent (invoked with /browser). Requires Google Chrome.": "配置浏览器子智能体（通过 /browser 调用）允许和拒绝访问的网址。需要安装并运行 Google Chrome。",
+    "Browser downloads": "浏览器下载",
+    "Download files": "下载文件",
+    "Allow/deny agent browser file downloads from specific sites.": "允许或拒绝智能体浏览器从指定网站下载文件。",
+    "Using browser": "正在使用浏览器",
+    "Link Settings": "关联设置",
+    "Cookies and site data": "Cookie 及网站数据",
+    "resets in <1m": "1 分钟内重置",
+    "Resets in <1m": "将在 1 分钟内重置",
+    "Weekly limit, resets in <1m": "周限额，将在 1 分钟内重置",
+    "Daily limit, resets in <1m": "日限额，将在 1 分钟内重置",
+    "Hi there.": "你好。",
+    "Good to see you.": "很高兴见到你。",
+    "Already Migrated": "已完成迁移",
+    "Args": "参数",
+    "Custom cron schedule": "自定义 Cron 调度",
+    "Custom schedule": "自定义调度",
+    "Script": "脚本",
+    "Cwd": "工作目录",
+    "Step": "步骤",
+    "Unauthorized": "未授权",
+    "Combobox": "下拉组合框",
+    "Side Questions": "分支提问",
+    "New Side Question": "新建分支提问",
+    "Set at least one scope filter": "请设置至少一个作用域筛选器",
+    "Helpers": "帮助程序",
+    "Rich Content": "富文本内容",
+    "Document": "文档",
+    "Declaration": "声明",
+    "Location": "位置",
+    "Annotation": "注解",
+    "Semantic": "语义",
+    "Edition": "版本",
+    "Chat Layout": "聊天布局",
+    "Google One Referral": "Google One 邀请推荐",
+    "Share your referral link with friends": "与好友分享你的专属邀请链接",
+    "Developer-only tools. These settings do not affect other users.": "仅限开发者使用的工具。这些设置不会影响其他用户。",
+    "Optimized for you": "专属定制优化",
+    "Built to help, not hurt": "秉持安全设计，赋能开发",
+    "You are in control": "一切由你掌控",
+    "Stay up to date.": "始终保持最新版本。",
+    "Filter rows...": "筛选行...",
+    "Find References": "查找引用",
+    "Filter files...": "筛选文件...",
+    "Untracked": "未跟踪",
+    "Open Blame in Code Search": "在代码搜索中查看 Git 追溯",
+    "Open in full conversation": "在完整对话中打开",
+    "Send reply": "发送回复",
+    "PDF not loaded": "PDF 未加载",
+    "Image exceeds the 20 MB maximum size": "图片超过 20 MB 最大限制",
+    "Sidecar View": "自动化视图",
+    "Terminal sandbox is not supported in this environment": "当前环境不支持终端沙箱",
+    "Blocked by organization policy": "已被组织策略阻止",
+    "Disabled by organization policy": "已被组织策略禁用",
+    "Untitled Conversation": "未命名对话",
+    "File Viewer": "文件查看器",
+    "Virtual File Viewer": "虚拟文件查看器",
+    "Artifact Viewer": "工件查看器",
+    "Your connection to this site is not secure": "您与此网站的连接不安全",
+    "Not secure": "不安全",
+    "Could not determine MCP config file path": "无法确定 MCP 配置文件路径",
+    "Failed to resolve folder": "解析文件夹失败",
+    "Failed to load plugins. Please try again.": "加载插件失败，请重试。",
+    "Authentication required": "需要身份验证",
+    "Unknown Project": "未知项目",
+    "Show in File Explorer": "在文件资源管理器中显示",
+    "Failed to load video": "加载视频失败",
+    "Failed to load media": "加载媒体失败",
+    "Folder has more than 1000 files": "文件夹内包含超过 1000 个文件",
+    "Folder is larger than 20MB": "文件夹大小超过 20MB",
+    "Folder is empty": "文件夹为空",
+    "Selected element preview": "所选元素预览",
+    "Certificate is valid": "证书有效",
+    "Open in tab": "在标签页中打开",
+    "Developer: Reset Onboarding": "开发者：重置新手引导",
+    "Developer: Reset NUX": "开发者：重置全新用户体验 (NUX)",
+    "Sets the `workspaceUri` URL parameter and reloads, repointing the active workspace. Pick a folder from an existing project or enter a custom URI (e.g. file:///path/to/workspace).": "设置 `workspaceUri` URL 参数并重新加载以重新指向活动工作区。请从现有项目中选择文件夹或输入自定义 URI（例如 file:///path/to/workspace）。"
   },
   "patterns": [
+    {
+      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(\\d+)d\\s*(\\d+)h$",
+      "target": "$1，将在 $2 天 $3 小时后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(\\d+)h\\s*(\\d+)m$",
+      "target": "$1，将在 $2 小时 $3 分钟后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(\\d+)m\\s*(\\d+)s$",
+      "target": "$1，将在 $2 分钟 $3 秒后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(\\d+)d$",
+      "target": "$1，将在 $2 天后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(\\d+)h$",
+      "target": "$1，将在 $2 小时后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(\\d+)m$",
+      "target": "$1，将在 $2 分钟后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(\\d+)s$",
+      "target": "$1，将在 $2 秒后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*<1m$",
+      "target": "$1，将在 1 分钟内重置",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(.+)$",
+      "target": "$1，将在 $2 后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^[Rr]esets in\\s*(\\d+)d\\s*(\\d+)h$",
+      "target": "将在 $1 天 $2 小时后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^[Rr]esets in\\s*(\\d+)h\\s*(\\d+)m$",
+      "target": "将在 $1 小时 $2 分钟后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^[Rr]esets in\\s*(\\d+)m\\s*(\\d+)s$",
+      "target": "将在 $1 分钟 $2 秒后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^[Rr]esets in\\s*(\\d+)d$",
+      "target": "将在 $1 天后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^[Rr]esets in\\s*(\\d+)h$",
+      "target": "将在 $1 小时后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^[Rr]esets in\\s*(\\d+)m$",
+      "target": "将在 $1 分钟后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^[Rr]esets in\\s*(\\d+)s$",
+      "target": "将在 $1 秒后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^[Rr]esets in\\s*<1m$",
+      "target": "将在 1 分钟内重置",
+      "flags": "u"
+    },
+    {
+      "source": "^[Rr]esets in\\s*(.+)$",
+      "target": "将在 $1 后重置",
+      "flags": "u"
+    },
+    {
+      "source": "^Hi\\s+([^,?.!]+)[.!]?$",
+      "target": "你好 $1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Hello,\\s+([^,?.!]+)[.!]?$",
+      "target": "你好，$1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Welcome back,\\s+([^,?.!]+)[.!]?$",
+      "target": "欢迎回来，$1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Good to see you,\\s+([^,?.!]+)[.!]?$",
+      "target": "很高兴见到你，$1。",
+      "flags": "u"
+    },
     {
       "source": "^(?:Free users and Google AI Plus|Google AI Plus and Free users|Free and Google AI Plus) users receive the minimum base limits on Antigravity\\.\\s*You can upgrade to\\s+(.+?)(?:\\s+or above)?\\s+to receive higher rate limits\\.?$",
       "target": "免费用户与 Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 $1 或更高方案以获取更高额度限制。",
@@ -14673,12 +14869,12 @@
     },
     {
       "source": "^Resets in (\\d+)d(?:\\s*(\\d+)h)?$",
-      "target": "将在 $1 天$2 小时后重置",
+      "target": "将在 $1 天 $2 小时后重置",
       "flags": "u"
     },
     {
       "source": "^Resets in (\\d+)h(?:\\s*(\\d+)m)?$",
-      "target": "将在 $1 小时$2 分钟后重置",
+      "target": "将在 $1 小时 $2 分钟后重置",
       "flags": "u"
     },
     {
@@ -27567,7 +27763,7 @@
       "flags": "u"
     },
     {
-      "source": "^Configure\\s+(.+)$",
+      "source": "^Configure\\s+([A-Za-z0-9_-]+(?:\\s+[A-Za-z0-9_-]+){0,2})$",
       "target": "配置 $1",
       "flags": "u"
     },

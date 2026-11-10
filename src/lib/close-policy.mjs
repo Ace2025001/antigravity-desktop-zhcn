@@ -43,7 +43,7 @@ export async function closeWithPolicy({
   sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   now = Date.now,
   responseMs = 60_000,
-  gracefulMs = 10_000,
+  gracefulMs = 15_000,
   forceMs = 15_000,
   exitHint = "",
   owned = false,
@@ -53,7 +53,11 @@ export async function closeWithPolicy({
 
   const forceAndConfirm = async (message) => {
     log(message);
-    await forceClose();
+    if (typeof forceClose === "function") {
+      await forceClose();
+    } else {
+      throw new Error("客户端未退出，可能有未保存提示或任务阻止退出。已停止本次操作，请处理客户端提示后重试。");
+    }
     if (!(await waitUntilExited({ running, sleep, now, timeoutMs: forceMs }))) {
       throw new Error("强制关闭后客户端仍在运行，已停止本次操作。请在任务管理器中结束 Antigravity 后重试。");
     }

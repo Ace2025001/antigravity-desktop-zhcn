@@ -1193,6 +1193,58 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     'b=`${f} ${b?b.replace(/You can upgrade to a Google AI Ultra plan to receive higher rate limits\\.?/i,"你可以升级至 Google AI Ultra 方案以获取更高的速率限制。"):""}`'
   );
 
+  // -------------------------------------------------------------------------
+  // 维护增强：动态问候语、配额重置倒计时、界面布局模式卡片与浏览器规则深度汉化
+  // -------------------------------------------------------------------------
+
+  // 1. 主界面问候语动态原生汉化（无论用户名称为何种变量，均优雅自然呈现）
+  sourceText = sourceText.replace(
+    /const ([a-zA-Z0-9_$]+)=\[\{named:([a-zA-Z0-9_$]+)=>`Hi \$\{\2\}\.`,\s*unnamed:"Hi there\."\},\{named:([a-zA-Z0-9_$]+)=>`Hello, \$\{\3\}\.`,\s*unnamed:"Hello\."\},\{named:([a-zA-Z0-9_$]+)=>`Welcome back, \$\{\4\}\.`,\s*unnamed:"Welcome back\."\},\{named:([a-zA-Z0-9_$]+)=>`Good to see you, \$\{\5\}\.`,\s*unnamed:"Good to see you\."\}\];/,
+    'const $1=[{named:$2=>`你好 ${$2}。`,unnamed:"你好。"},{named:$3=>`你好，${$3}。`,unnamed:"你好。"},{named:$4=>`欢迎回来，${$4}。`,unnamed:"欢迎回来。"},{named:$5=>`很高兴见到你，${$5}。`,unnamed:"很高兴见到你。"}];'
+  );
+
+  // 2. 配额重置时间与配额项原生汉化（杜绝周限额, resets in 3d 18h 等中英混杂）
+  sourceText = sourceText.replace(
+    /c=h<=0\?"Resets in <1m":`Resets in \$\{d>0\?f>0\?`\$\{d\}d \$\{f\}h`:`\$\{d\}d`:f>0\?g>0\?`\$\{f\}h \$\{g\}m`:`\$\{f\}h`:g>0\?`\$\{g\}m`:"<1m"\}`/g,
+    'c=h<=0?"将在 1 分钟内重置":`将在 ${d>0?f>0?`${d} 天 ${f} 小时`:`${d} 天`:f>0?g>0?`${f} 小时 ${g} 分钟`:`${f} 小时`:g>0?`${g} 分钟`:"1 分钟内"}后重置`'
+  );
+  sourceText = sourceText.replace(
+    /\bc=c&&a\.subtext\?`\$\{c\}, \$\{a\.subtext\[0\]\.toLowerCase\(\)\}\$\{a\.subtext\.slice\(1\)\}`:c\|\|a\.subtext\b/g,
+    'c=c&&a.subtext?`${c}，${a.subtext}`:c||a.subtext'
+  );
+  sourceText = sourceText.replaceAll('"No quota information available."', '"暂无可用配额信息。"');
+
+  // 3. 通用设置 -> 界面布局双卡片与模式描述原生汉化
+  sourceText = sourceText.replaceAll('{title:"Interface Layout"}', '{title:"界面布局"}');
+  sourceText = sourceText.replaceAll('"Interface Layout"', '"界面布局"');
+  sourceText = sourceText.replaceAll(
+    'var dj={project4k:{title:"Project 4K",description:"Project 4K interface without developer tooling."},default:{title:"Default",description:"The full developer experience."}};',
+    'var dj={project4k:{title:"知识工作",description:"专为研究、写作与日常任务打造的精简界面。"},default:{title:"软件工程",description:"包含代码编写、开发工具及智能体管理的完整开发界面。"}}; '
+  );
+  sourceText = sourceText.replace(
+    'label:c.project4k.title,description:c.project4k.description',
+    'label:(({"Knowledge Work":"知识工作","Project 4K":"知识工作"}[c.project4k.title])||c.project4k.title),description:(({"Simplified interface for research, writing, and everyday tasks.":"专为研究、写作与日常任务打造的精简界面。","Project 4K interface without developer tooling.":"专为研究、写作与日常任务打造的精简界面。"}[c.project4k.description])||c.project4k.description)'
+  );
+  sourceText = sourceText.replace(
+    'label:c.default.title,description:c.default.description',
+    'label:(({"Software Engineering":"软件工程","Default":"软件工程"}[c.default.title])||c.default.title),description:(({"Full interface for coding, developer tools, and managing agents.":"包含代码编写、开发工具及智能体管理的完整开发界面。","The full developer experience.":"包含代码编写、开发工具及智能体管理的完整开发界面。"}[c.default.description])||c.default.description)'
+  );
+
+  // 4. 设置 -> 浏览器偏好设置与子智能体执行规则断句深度原生汉化
+  sourceText = sourceText.replaceAll(
+    '"Configure built-in browser, link opening, and browser subagent preferences."',
+    '"配置内置浏览器、链接打开方式以及浏览器子智能体偏好设置。"'
+  );
+  sourceText = sourceText.replaceAll(
+    '"Configure allowed and denied URLs for the browser subagent. It runs in the built-in browser, so no separate browser install is needed."',
+    '"配置浏览器子智能体允许和拒绝访问的网址。该智能体运行于内置浏览器中，无需单独安装浏览器。"'
+  );
+  sourceText = sourceText.replaceAll(
+    '"Configure allowed and denied URLs for the browser subagent (invoked with /browser). Requires"',
+    '"配置浏览器子智能体（通过 /browser 调用）允许和拒绝访问的网址。需要安装并运行 "'
+  );
+  sourceText = sourceText.replaceAll('label:"Browser Actuation Rules"', 'label:"浏览器执行规则"');
+
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
   return {
