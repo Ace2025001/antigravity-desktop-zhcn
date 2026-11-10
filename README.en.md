@@ -32,7 +32,8 @@ antigravity汉化包/
 - **Windows x64**: patches the installed client with a backup; restore puts the original back.
 - **macOS, Apple Silicon**: keeps the official app untouched and builds a locally signed Chinese copy at `~/Applications/Antigravity 中文.app`. Intel Macs are not verified.
 - Every client version must pass structure and resource checks. Unregistered versions are adapted dynamically from the running UI; nothing is forced.
-- The tool never force-kills the client and never changes proxy, node or TUN settings.
+- If the client is running, you get 60 seconds to save and quit. Quitting yourself is detected automatically; press `Y` to force-close now or `N` to wait for you without forcing. With no answer the tool asks the client to quit, then force-closes it.
+- The tool never changes proxy, node or TUN settings.
 
 ## What gets translated
 

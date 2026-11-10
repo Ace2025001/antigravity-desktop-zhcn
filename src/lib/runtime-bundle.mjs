@@ -1,46 +1,110 @@
 import https from "node:https";
 import { mkdir, open, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { inflateRawSync } from "node:zlib";
+import { crc32, inflateRawSync } from "node:zlib";
 import { sha256Buffer, sha256File } from "./hash.mjs";
 import { getAntigravityUserDataRoot, getStateRoot } from "./paths.mjs";
 
 const MAX_BUNDLE_BYTES = 50 * 1024 * 1024;
+const MIN_BUNDLE_BYTES = 500_000;
+const ZIP_LOCAL_HEADER = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
+const ENTRY_NAME = "main.js";
+// Stable UI strings that must appear in the real desktop UI bundle.
+const UI_MARKERS = ["New Conversation", "Automations", "Plugins", "Settings"];
 
-// This Windows x64 build ships main.js in a ZIP inside language_server.exe.
-const WINDOWS_230_EMBEDDED_UI = {
-  asarSha256: "00153A89EA4D870D192B7BEACAE2C26057FA6D698AB8EE777017105C582E60EE",
-  entryOffset: 168_770_270,
-  compressedSize: 3_478_740,
-  size: 11_711_794,
-  sha256: "35E0DA21894A7F6560075EAE2501C88FEDE5204EB6067FAC2653E2C7A63DC403",
-};
+/**
+ * Find every ZIP local-file entry named exactly `main.js` in a binary buffer.
+ * Exported for tests; the caller decides how many candidates are acceptable.
+ */
+export function findEmbeddedUiEntries(buffer, baseOffset = 0) {
+  const entries = [];
+  let index = buffer.indexOf(ZIP_LOCAL_HEADER);
+  while (index >= 0) {
+    if (index + 30 <= buffer.length) {
+      const nameLength = buffer.readUInt16LE(index + 26);
+      const nameEnd = index + 30 + nameLength;
+      if (nameLength === ENTRY_NAME.length && nameEnd <= buffer.length &&
+          buffer.toString("latin1", index + 30, nameEnd) === ENTRY_NAME) {
+        entries.push({
+          offset: baseOffset + index,
+          flags: buffer.readUInt16LE(index + 6),
+          method: buffer.readUInt16LE(index + 8),
+          crc: buffer.readUInt32LE(index + 14),
+          compressedSize: buffer.readUInt32LE(index + 18),
+          size: buffer.readUInt32LE(index + 22),
+          nameLength,
+          extraLength: buffer.readUInt16LE(index + 28),
+        });
+      }
+    }
+    index = buffer.indexOf(ZIP_LOCAL_HEADER, index + 1);
+  }
+  return entries;
+}
 
-export async function readEmbeddedWindowsUi(inspection) {
-  const target = WINDOWS_230_EMBEDDED_UI;
-  if (inspection.packageVersion !== "2.30.0" || inspection.appAsarSha256 !== target.asarSha256) return null;
-
-  const executable = path.join(path.dirname(inspection.appAsarPath), "bin", "language_server.exe");
-  const file = await open(executable, "r");
+/** Decode and validate one embedded entry. Returns the UI buffer or a reason string. */
+export function decodeEmbeddedUiEntry(entry, data) {
+  // Bit 0: encrypted. Bit 3: sizes live in a trailing descriptor, so the header is unusable.
+  if (entry.flags & 0b1001) return { reason: "压缩条目带加密或延迟尺寸标记" };
+  if (entry.method !== 0 && entry.method !== 8) return { reason: `不支持的压缩方式 ${entry.method}` };
+  if (entry.size < MIN_BUNDLE_BYTES || entry.size > MAX_BUNDLE_BYTES) return { reason: `界面文件尺寸异常（${entry.size} 字节）` };
+  if (data.length !== entry.compressedSize) return { reason: "压缩数据不完整" };
+  let buffer;
   try {
-    const entry = Buffer.alloc(37 + target.compressedSize);
-    const { bytesRead } = await file.read(entry, 0, entry.length, target.entryOffset);
-    if (bytesRead !== entry.length ||
-        entry.readUInt32LE(0) !== 0x04034b50 ||
-        entry.readUInt16LE(6) !== 0 ||
-        entry.readUInt16LE(8) !== 8 ||
-        entry.readUInt32LE(18) !== target.compressedSize ||
-        entry.readUInt32LE(22) !== target.size ||
-        entry.readUInt16LE(26) !== 7 ||
-        entry.readUInt16LE(28) !== 0 ||
-        entry.toString("ascii", 30, 37) !== "main.js") {
-      throw new Error("本机内置界面资源结构与已验证构建不一致。");
+    buffer = entry.method === 8 ? inflateRawSync(data, { maxOutputLength: entry.size }) : Buffer.from(data);
+  } catch (error) {
+    return { reason: `解压失败：${error.message}` };
+  }
+  if (buffer.length !== entry.size) return { reason: "解压后尺寸与记录不一致" };
+  if (crc32(buffer) !== entry.crc) return { reason: "CRC 校验失败" };
+  const text = buffer.toString("utf8");
+  const missing = UI_MARKERS.filter((marker) => !text.includes(marker));
+  if (missing.length) return { reason: `缺少界面标记：${missing.join("、")}` };
+  return { buffer };
+}
+
+/**
+ * Read the original UI bundle that Windows builds embed in a ZIP inside
+ * bin/language_server.exe. No version allow-list: the entry is located by
+ * name, verified by its ZIP CRC and by UI markers, and the patcher's own
+ * structural gate still runs afterwards. Returns null to fall back to the
+ * running client when the layout is absent or ambiguous.
+ */
+export async function readEmbeddedWindowsUi(inspection, { log = console.log } = {}) {
+  const executable = path.join(path.dirname(inspection.appAsarPath), "bin", "language_server.exe");
+  let file;
+  try {
+    file = await open(executable, "r");
+  } catch {
+    return null;
+  }
+  try {
+    const { size } = await file.stat();
+    const chunkSize = 16 * 1024 * 1024;
+    const overlap = 64;
+    const candidates = [];
+    for (let position = 0; position < size; position += chunkSize - overlap) {
+      const chunk = Buffer.alloc(Math.min(chunkSize, size - position));
+      const { bytesRead } = await file.read(chunk, 0, chunk.length, position);
+      for (const entry of findEmbeddedUiEntries(chunk.subarray(0, bytesRead), position)) {
+        if (!candidates.some((item) => item.offset === entry.offset)) candidates.push(entry);
+      }
+      if (position + chunk.length >= size) break;
     }
-    const buffer = inflateRawSync(entry.subarray(37), { maxOutputLength: target.size });
-    if (buffer.length !== target.size || sha256Buffer(buffer) !== target.sha256) {
-      throw new Error("本机内置界面资源校验失败。");
+    if (candidates.length !== 1) {
+      if (candidates.length > 1) log(`安装目录中找到 ${candidates.length} 份界面资源，无法确定使用哪一份，改为从客户端读取。`);
+      return null;
     }
-    return { buffer, source: "embedded" };
+    const [entry] = candidates;
+    const data = Buffer.alloc(entry.compressedSize);
+    const dataOffset = entry.offset + 30 + entry.nameLength + entry.extraLength;
+    const { bytesRead } = await file.read(data, 0, data.length, dataOffset);
+    const result = decodeEmbeddedUiEntry(entry, data.subarray(0, bytesRead));
+    if (!result.buffer) {
+      log(`安装目录中的界面资源未通过校验（${result.reason}），改为从客户端读取。`);
+      return null;
+    }
+    return { buffer: result.buffer, source: "embedded" };
   } finally {
     await file.close();
   }

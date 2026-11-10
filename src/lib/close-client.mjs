@@ -1,5 +1,6 @@
 import {execFile} from "node:child_process";
 import {promisify} from "node:util";
+import {readFile} from "node:fs/promises";
 import {closeWithPolicy} from "./close-policy.mjs";
 import path from "node:path";
 import os from "node:os";
@@ -29,26 +30,52 @@ export async function clientProcesses() {
 
 async function requestClose() {
   if (process.platform === "win32") {
-    // WM_CLOSE lets the application show save/exit confirmation. No taskkill /F.
+    // WM_CLOSE asks for a normal quit. With "run in background" enabled the
+    // client only hides, so the policy follows up with forceClose if needed.
     const ids=(await clientProcesses()).map(item=>item.Id);
     if (!ids.length) return;
-    await exec("powershell.exe",["-NoProfile","-NonInteractive","-Command","$ids=ConvertFrom-Json $env:AGY_CLOSE_PIDS; Get-Process -Id $ids -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 -and (!$env:AGY_CLOSE_EXECUTABLE -or $_.Path -eq $env:AGY_CLOSE_EXECUTABLE) } | ForEach-Object { [void]$_.CloseMainWindow() }"],{env:{...process.env,AGY_CLOSE_PIDS:JSON.stringify(ids),AGY_CLOSE_EXECUTABLE:process.env.AGY_INSTALL_PATH?path.join(process.env.AGY_INSTALL_PATH,"Antigravity.exe"):""},windowsHide:true,timeout:10000});
+    await exec("powershell.exe",["-NoProfile","-NonInteractive","-Command","$ids=ConvertFrom-Json $env:AGY_CLOSE_PIDS; Get-Process -Id $ids -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 -and (!$env:AGY_CLOSE_EXECUTABLE -or $_.Path -eq $env:AGY_CLOSE_EXECUTABLE) } | ForEach-Object { [void]$_.CloseMainWindow() }"],{env:{...process.env,AGY_CLOSE_PIDS:JSON.stringify(ids),AGY_CLOSE_EXECUTABLE:process.env.AGY_INSTALL_PATH?path.join(process.env.AGY_INSTALL_PATH,"Antigravity.exe"):""},windowsHide:true,timeout:10000}).catch(()=>{});
   } else {
     const apps=[...new Set((await clientProcesses()).map(item=>item.app))];
     for (const app of apps) {
-      try {
-        await exec("/usr/bin/osascript",["-l","JavaScript","-e","function run(argv) { Application(argv[0]).quit(); }",app],{timeout:10000});
-      } catch (error) {
-        // If the process has exited during the request there is nothing left to close.
-        if ((await clientProcesses()).some(item=>item.app===app)) throw new Error("客户端拒绝或未响应退出请求，请先保存并正常退出，再重试。");
-      }
+      // A refused or timed-out quit is handled by the policy's force step.
+      await exec("/usr/bin/osascript",["-l","JavaScript","-e","function run(argv) { Application(argv[0]).quit(); }",app],{timeout:10000}).catch(()=>{});
     }
   }
 }
 
-export async function closeClientForChanges() {
-  const exitHint = process.platform === "win32"
-    ? "请在 Antigravity 主窗口按 Ctrl+Q 并确认退出，或右键系统托盘中的 Antigravity 图标选择 Quit（退出）。只关闭窗口时，程序可能仍在后台。"
-    : "请在 Antigravity 中按 ⌘Q 完全退出。";
-  await closeWithPolicy({running:async()=>(await clientProcesses()).length>0,requestClose,exitHint});
+async function forceClose() {
+  const processes=await clientProcesses();
+  if (!processes.length) return;
+  if (process.platform === "win32") {
+    const args=["/F","/T",...processes.flatMap(item=>["/PID",String(item.Id)])];
+    await exec("taskkill.exe",args,{windowsHide:true,timeout:15000}).catch(async error=>{
+      if ((await clientProcesses()).length) throw new Error(`强制关闭客户端失败：${error.message}`);
+    });
+  } else {
+    for (const item of processes) await exec("/bin/kill",["-9",String(item.pid)],{timeout:5000}).catch(()=>{});
+  }
+}
+
+/** Windows only: whether Antigravity's "run in background" setting is on. */
+export async function runsInBackground() {
+  if (process.platform !== "win32" || !process.env.APPDATA) return false;
+  try {
+    const settings=JSON.parse(await readFile(path.join(process.env.APPDATA,"Antigravity","app_storage.json"),"utf8"));
+    return String(settings.runInBackground) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export async function closeClientForChanges({owned=false}={}) {
+  let exitHint;
+  if (process.platform === "win32") {
+    exitHint = await runsInBackground()
+      ? "你开启了 Antigravity 的“后台运行”：关闭窗口不会退出程序。请右键系统托盘中的 Antigravity 图标选择 Quit（退出），或在主窗口按 Ctrl+Q 并确认退出。"
+      : "请在 Antigravity 主窗口按 Ctrl+Q 并确认退出，或右键系统托盘中的 Antigravity 图标选择 Quit（退出）。";
+  } else {
+    exitHint = "请在 Antigravity 中按 ⌘Q 完全退出。";
+  }
+  await closeWithPolicy({running:async()=>(await clientProcesses()).length>0,requestClose,forceClose,exitHint,owned});
 }

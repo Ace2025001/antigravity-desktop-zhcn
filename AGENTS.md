@@ -25,7 +25,7 @@ Only install when the user has asked for it. Full step-by-step guide: [docs/ai-i
 5. Restore English: `win启动\恢复英文.bat` or `mac启动/恢复英文.command`.
 
 Rules / 规则:
-- Never force-kill the client; the tool asks the user to save and quit. 不要强杀客户端。
+- Ask the user to save their work before running. If the client is running, the tool waits 60 s, then requests a normal quit and force-closes it. Press `N` in the terminal if the user prefers to quit manually. Do not kill the client yourself outside the tool. 运行前先提醒用户保存工作，不要绕开工具自行结束客户端。
 - Exit code 0 is not proof of success. Confirm Chinese UI in the client before reporting success.
 - Do not disable signature/structure checks, Gatekeeper, SIP, or forge compatibility entries.
 - Do not star, watch, or change account settings on the user's behalf.
