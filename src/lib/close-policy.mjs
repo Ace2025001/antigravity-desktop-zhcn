@@ -1,7 +1,8 @@
 // A running process does not prove that the user has no unsaved work.
-export async function closeWithPolicy({running, requestClose, log=console.log, sleep=ms=>new Promise(r=>setTimeout(r,ms)), now=Date.now, responseMs=60000, exitMs=15000}) {
+export async function closeWithPolicy({running, requestClose, log=console.log, sleep=ms=>new Promise(r=>setTimeout(r,ms)), now=Date.now, responseMs=60000, exitMs=15000, exitHint=""}) {
   if (!(await running())) { log("客户端已退出，可以继续。"); return; }
   log("需要暂时退出 Antigravity。无法可靠判断是否有未完成任务，请先保存工作并正常退出。");
+  if (exitHint) log(exitHint);
   log("60 秒后将自动请求正常退出；Ctrl+C 可取消本次操作。不会强制终止进程。");
   const deadline = now()+responseMs;
   let previous;
@@ -28,7 +29,7 @@ export async function closeWithPolicy({running, requestClose, log=console.log, s
   await requestClose();
   const exitDeadline = now()+exitMs;
   while (await running()) {
-    if (now() >= exitDeadline) throw new Error("客户端未退出，可能有未保存提示或任务阻止退出。已停止本次操作，请处理客户端提示后重试。");
+    if (now() >= exitDeadline) throw new Error(`客户端未退出，已停止本次操作。${exitHint || "请处理客户端提示后重试。"}`);
     await sleep(500);
   }
   log("客户端已正常退出，继续处理。");

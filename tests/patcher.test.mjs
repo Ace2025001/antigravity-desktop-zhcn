@@ -35,6 +35,20 @@ test("patchCustomSchemeSource adds a scoped scheme and redirect", () => {
   assert.match(patched, /scheme: 'plugin'/);
 });
 
+test("patchCustomSchemeSource leaves the 2.30 favicon handler untouched", () => {
+  const faviconHandler = `function handleFaviconProtocolRequest() {
+    return new Response(null, {
+        status: 404,
+    });
+}
+`;
+  const newerSource = fixture.replace("function registerCustomSchemeHandlers()", faviconHandler + "function registerCustomSchemeHandlers()")
+    .replace(/    \}\);\n\}\n$/, "    });\n    protocol.handle('agy-favicon', handleFaviconProtocolRequest);\n}\n");
+  const patched = patchCustomSchemeSource(newerSource);
+  assert.ok(patched.includes(faviconHandler));
+  assert.match(patched, /function registerCustomSchemeHandlers\(\) \{[\s\S]*agy-zhcn:\/\/bundle\/main\.js/);
+});
+
 test("patchCustomSchemeSource refuses a second patch", () => {
   const patched = patchCustomSchemeSource(fixture);
   assert.throws(

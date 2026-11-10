@@ -37,12 +37,9 @@ const SCHEME_LIST_REPLACEMENT = `        },
     ]);
 }`;
 
-const HANDLER_SUFFIX = `    });
-}
-`;
+const HANDLER_ANCHOR = "function registerCustomSchemeHandlers() {";
 
-const HANDLER_REPLACEMENT = `    });
-
+const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
     // Antigravity Desktop ZHCN: serve a verified local UI bundle.
     electron_1.session.defaultSession.clearCache().catch((err) => {
         console.error("Failed to clear cache before loading ZHCN UI:", err);
@@ -421,7 +418,6 @@ const HANDLER_REPLACEMENT = `    });
     } catch (dialogErr) {
         console.error("Failed to hook native dialog localization:", dialogErr);
     }
-}
 `;
 
 export function patchCustomSchemeSource(source) {
@@ -431,14 +427,14 @@ export function patchCustomSchemeSource(source) {
   }
 
   const schemeAnchorCount = normalized.split(SCHEME_LIST_ANCHOR).length - 1;
-  const handlerSuffixCount = normalized.split(HANDLER_SUFFIX).length - 1;
-  if (schemeAnchorCount !== 1 || handlerSuffixCount !== 1) {
+  const handlerAnchorCount = normalized.split(HANDLER_ANCHOR).length - 1;
+  if (schemeAnchorCount !== 1 || handlerAnchorCount !== 1) {
     throw new Error("customScheme.js 补丁锚点不唯一，拒绝修改。");
   }
 
   return normalized
     .replace(SCHEME_LIST_ANCHOR, SCHEME_LIST_REPLACEMENT)
-    .replace(HANDLER_SUFFIX, HANDLER_REPLACEMENT);
+    .replace(HANDLER_ANCHOR, HANDLER_REPLACEMENT);
 }
 
 export function patchLoadingOverlaySource(source) {

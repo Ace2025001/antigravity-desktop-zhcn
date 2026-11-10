@@ -11,9 +11,10 @@ export async function clientProcesses() {
     const {stdout}=await exec("powershell.exe",["-NoProfile","-NonInteractive","-Command",script],{windowsHide:true,timeout:10000,encoding:"utf8"});
     const processes=JSON.parse(stdout.replace(/^\uFEFF/,"").trim() || "[]");
     if (!process.env.AGY_INSTALL_PATH) return processes;
-    if (processes.some(item=>!item.Path)) throw new Error("无法确认部分客户端进程的位置，请手动退出后重试。");
     const expected=path.join(process.env.AGY_INSTALL_PATH,"Antigravity.exe").toLowerCase();
-    return processes.filter(item=>item.Path.toLowerCase()===expected);
+    // Windows can stop reporting Path before a process disappears from Get-Process.
+    // Keep unknown processes pending; requestClose still requires an exact path match.
+    return processes.filter(item=>!item.Path || item.Path.toLowerCase()===expected);
   }
   if (process.platform !== "darwin") throw new Error("不支持此系统的客户端退出操作。");
   const {stdout}=await exec("/bin/ps",["-axo","pid=,comm="],{timeout:5000});
@@ -46,5 +47,8 @@ async function requestClose() {
 }
 
 export async function closeClientForChanges() {
-  await closeWithPolicy({running:async()=>(await clientProcesses()).length>0,requestClose});
+  const exitHint = process.platform === "win32"
+    ? "请在 Antigravity 主窗口按 Ctrl+Q 并确认退出，或右键系统托盘中的 Antigravity 图标选择 Quit（退出）。只关闭窗口时，程序可能仍在后台。"
+    : "请在 Antigravity 中按 ⌘Q 完全退出。";
+  await closeWithPolicy({running:async()=>(await clientProcesses()).length>0,requestClose,exitHint});
 }

@@ -1,6 +1,6 @@
 import { showClient } from "../src/lib/show-client.mjs";
 import { copyFile, mkdtemp, mkdir, rename, rm, writeFile } from "node:fs/promises";
-import { execFile, spawn, spawnSync } from "node:child_process";
+import { execFile, spawnSync } from "node:child_process";
 import { localizationFingerprint } from "../src/lib/language-pack.mjs";
 import { projectRoot } from "../src/lib/paths.mjs";
 import os from "node:os";
@@ -14,7 +14,8 @@ import { getAntigravityUserDataRoot, getStateRoot } from "../src/lib/paths.mjs";
 import { findLatestUiPort, fetchUiBundle } from "../src/lib/runtime-bundle.mjs";
 import { createLocalizedBundle, loadDomTranslations, writeLocalizedBundle } from "../src/lib/translator.mjs";
 import { readInstallState, writeInstallState } from "../src/lib/state.mjs";
-import { gracefulCloseAntigravity } from "../src/lib/processes.mjs";
+import { gracefulCloseAntigravity, launchAntigravity } from "../src/lib/processes.mjs";
+import { clientProcesses } from "../src/lib/close-client.mjs";
 
 const execFileAsync = promisify(execFile);
 const CUSTOM_SCHEME_PATH = "dist/customScheme.js";
@@ -23,7 +24,10 @@ const BUNDLE_NAME = "agy_zhcn_ui_main.js";
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 async function waitForRuntimeUi(executablePath) {
-  let started = false;
+  if (!(await clientProcesses()).length) {
+    console.log("需要临时打开原版 Antigravity 读取界面。请等终端提示后再退出客户端。");
+    await launchAntigravity(executablePath);
+  }
   for (let attempt = 0; attempt < 120; attempt += 1) {
     if (attempt > 0 && attempt % 10 === 0) console.log("仍在等待客户端界面就绪…");
     const port = await findLatestUiPort();
@@ -35,19 +39,9 @@ async function waitForRuntimeUi(executablePath) {
         // The local server can be available before main.js is ready.
       }
     }
-    if (!started) {
-      const child = spawn(executablePath, [], { cwd: path.dirname(executablePath), detached: true, stdio: "ignore", windowsHide: true });
-      child.unref();
-      started = true;
-      console.log("已启动更新后的 Antigravity，正在读取其运行时界面…");
-    }
     await sleep(1_000);
   }
   throw new Error("两分钟内未能读取新版本运行时 UI，未修改 app.asar。");
-}
-
-async function closeAntigravity() {
-  await gracefulCloseAntigravity({ maxWaitMs: 5_000 });
 }
 
 async function ensureBackup(sourcePath, backupPath, expectedHash) {
@@ -141,8 +135,8 @@ if (existingBundleHash && existingBundleHash !== previousBundleHash) {
   console.log("已备份检测到的本地迭代中文 UI，再继续自动更新。");
 }
 
-console.log(`检测到 ${inspection.packageVersion}；结构校验通过，正在安全重注入汉化…`);
-await closeAntigravity();
+console.log(`已读取 ${inspection.packageVersion} 的界面。客户端完全退出后将应用汉化并重新打开。`);
+await gracefulCloseAntigravity();
 const recheck = await inspectInstallation({ allowRemoteCompatibility: false });
 if (recheck.appAsarSha256 !== inspection.appAsarSha256 || recheck.packageVersion !== inspection.packageVersion) {
   throw new Error("关闭客户端期间安装文件再次变化，拒绝修改。");
