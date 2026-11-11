@@ -1933,3 +1933,43 @@ test("free user quota upgrade and search across conversations NUX tooltip are fu
     assert.equal(res, expected, "NUX case mismatch: " + src);
   }
 });
+
+test("in-page find widget, Y4 markdown renderer injection, and plugin sublevel commands are fully covered", async () => {
+  const dict = await loadDomTranslations();
+
+  // 1. 查找栏（Find in page）计数及操作
+  assert.equal(translateDictionaryValue("2 of 2", dict), "第 2 项，共 2 项");
+  assert.equal(translateDictionaryValue("1 of 10", dict), "第 1 项，共 10 项");
+  assert.equal(translateDictionaryValue("No Results", dict), "无结果");
+  assert.equal(translateDictionaryValue("Match Case (Aa)", dict), "区分大小写 (Aa)");
+  assert.equal(translateDictionaryValue("Match Whole Word (ab)", dict), "全字匹配 (ab)");
+  assert.equal(translateDictionaryValue("Use Regular Expression (.*)", dict), "使用正则表达式 (.*)");
+  assert.equal(translateDictionaryValue("Previous Match", dict), "上一个匹配项");
+  assert.equal(translateDictionaryValue("Next Match", dict), "下一个匹配项");
+
+  // 2. 插件详情子级（Commands, Skills, MCP, 状态提示）
+  assert.equal(translateDictionaryValue("Commands", dict), "命令");
+  assert.equal(translateDictionaryValue("Skills", dict), "技能");
+  assert.equal(translateDictionaryValue("Agents", dict), "智能体");
+  assert.equal(translateDictionaryValue("MCP servers", dict), "MCP 服务器");
+  assert.equal(translateDictionaryValue("Setup required", dict), "需要配置");
+  assert.equal(translateDictionaryValue("Accounts tab", dict), "“账户”标签页");
+  assert.equal(translateDictionaryValue("UI Extension 1", dict), "UI 扩展 1");
+  assert.equal(translateDictionaryValue("Automation 2", dict), "自动化 2");
+
+  // 3. Gmail 概览与命令
+  const gmailOverview = "Run your Gmail inbox. Search and summarize threads, draft replies, organize labels, and send messages with your approval.";
+  assert.equal(translateDictionaryValue(gmailOverview, dict), "高效管理你的 Gmail 收件箱。搜索并总结邮件会话、起草回复、整理标签，并在获得你的确认后发送邮件。");
+
+  const gmailCmdTruncated = "Read, search, send, and manage Gmail messages, drafts, labels, and emoji reactions using a Go CLI. Use when...";
+  assert.equal(translateDictionaryValue(gmailCmdTruncated, dict), "使用 Go 命令行工具读取、搜索、发送并管理 Gmail 邮件、草稿、标签和表情回应。当用户…");
+
+  // 4. 2.31.0 Y4 MarkdownRenderer 注入验证
+  const mockY4 = Buffer.from(
+    'function Y4({markdown:a,className:b,baseDirUri:c}){return B.createElement(cz,{value:void 0},B.createElement(j4,{cascadeId:void 0,markdown:a,context:"artifact"}))}',
+    "utf8"
+  );
+  const localizedY4 = createLocalizedBundle(mockY4, dict).buffer.toString("utf8");
+  assert.ok(localizedY4.includes("globalThis.__AGY_ZHCN_TRANSLATE_MD__"), "Y4 MarkdownRenderer must be injected with translateMarkdownText hook");
+});
+

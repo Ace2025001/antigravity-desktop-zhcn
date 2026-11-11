@@ -1245,6 +1245,60 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   );
   sourceText = sourceText.replaceAll('label:"Browser Actuation Rules"', 'label:"浏览器执行规则"');
 
+  // 5. 查找栏（Find in page）结果计数、占位符与悬浮按钮原生汉化
+  sourceText = sourceText.replace(
+    'b===0?"No Results":`${a+1} of ${c!==void 0&&b>=c?`${c}+`:`${b}`}`',
+    'b===0?"无结果":`第 ${a+1} 项，共 ${c!==void 0&&b>=c?`${c}+`:`${b}`} 项`'
+  );
+  sourceText = sourceText.replaceAll('"Match Case (Aa)"', '"区分大小写 (Aa)"');
+  sourceText = sourceText.replaceAll('"Match Whole Word (ab)"', '"全字匹配 (ab)"');
+  sourceText = sourceText.replaceAll('"Use Regular Expression (.*)"', '"使用正则表达式 (.*)"');
+  sourceText = sourceText.replaceAll('"Previous Match"', '"上一个匹配项"');
+  sourceText = sourceText.replaceAll('"Next Match"', '"下一个匹配项"');
+  sourceText = sourceText.replaceAll('placeholder:"Find"', 'placeholder:"查找"');
+
+  // 6. 官方 2.31.0 底包 Markdown 组件 (Y4) 动态挂接
+  sourceText = sourceText.replace(
+    'function Y4({markdown:a,className:b,baseDirUri:c}){',
+    'function Y4({markdown:a,className:b,baseDirUri:c}){a=globalThis.__AGY_ZHCN_TRANSLATE_MD__?globalThis.__AGY_ZHCN_TRANSLATE_MD__(a):a;'
+  );
+
+  // 7. 插件详情页所有子级面板标题与提示原生汉化
+  sourceText = sourceText.replaceAll('title:"Commands"', 'title:"命令"');
+  sourceText = sourceText.replaceAll('title:"Skills"', 'title:"技能"');
+  sourceText = sourceText.replaceAll('title:"Agents"', 'title:"智能体"');
+  sourceText = sourceText.replaceAll('title:"MCP servers"', 'title:"MCP 服务器"');
+  sourceText = sourceText.replaceAll('title:"Rules"', 'title:"规则"');
+  sourceText = sourceText.replaceAll('title:"Hooks"', 'title:"钩子"');
+  sourceText = sourceText.replaceAll('title:"UI extensions"', 'title:"UI 扩展"');
+  sourceText = sourceText.replaceAll('title:"Automations"', 'title:"自动化"');
+  sourceText = sourceText.replaceAll('title:"Context Providers"', 'title:"上下文提供者"');
+  sourceText = sourceText.replaceAll('title:"Themes"', 'title:"主题"');
+  sourceText = sourceText.replaceAll('"Setup required"', '"需要配置"');
+  sourceText = sourceText.replaceAll('"This server needs you to sign in before the agent can use its tools."', '"此服务器需要你先登录，智能体才能使用其工具。"');
+  sourceText = sourceText.replaceAll('"These servers need you to sign in before the agent can use their tools."', '"这些服务器需要你先登录，智能体才能使用它们的工具。"');
+  sourceText = sourceText.replaceAll('"Accounts tab"', '"“账户”标签页"');
+  sourceText = sourceText.replaceAll('"Pick one of these themes under Preset in Settings > Appearance."', '"在“设置 > 外观 > 预设”中选择其中一款主题。"');
+  sourceText = sourceText.replaceAll('"Open Appearance"', '"打开外观设置"');
+
+  // 8. 计划策略提示、项目自动化权限与删除项目警告深度原生汉化（杜绝碎片拼凑与机翻）
+  sourceText = sourceText.replace(
+    'B.createElement("span",null,"Type"," ",B.createElement("code",{className:"px-1.5 py-0.5 rounded bg-secondary text-foreground font-mono text-[11px] border border-border"},"/")," ","and select"," ",B.createElement("code",{className:"px-1.5 py-0.5 rounded bg-secondary text-foreground font-mono text-[11px] border border-border"},"plan")," ","to have the agent generate a plan.")',
+    'B.createElement("span",null,"输入 ",B.createElement("code",{className:"px-1.5 py-0.5 rounded bg-secondary text-foreground font-mono text-[11px] border border-border"},"/")," 并选择 ",B.createElement("code",{className:"px-1.5 py-0.5 rounded bg-secondary text-foreground font-mono text-[11px] border border-border"},"plan"),"，即可让智能体生成计划。")'
+  );
+  sourceText = sourceText.replace(
+    'kf=H?B.createElement("span",null,"This project was created for"," ",J?B.createElement(B.Fragment,null,"the ",B.createElement("strong",null,J)):"an"," ","automation. ",$e):B.createElement("span",null,$e)',
+    'kf=H?B.createElement("span",null,"此项目专为 ",J?B.createElement(B.Fragment,null,"“",B.createElement("strong",null,J),"”"):"某项"," 自动化创建。 ",$e):B.createElement("span",null,$e)'
+  );
+  sourceText = sourceText.replace(
+    '"Also includes"," ",B.createElement("span",{onClick:se,className:"text-link hover:underline cursor-pointer font-medium"},"Global Permissions")," ","when working ",M,"."," "',
+    '"同时包含在",M==="in these conversations"?"这些对话":"此项目","中生效的 ",B.createElement("span",{onClick:se,className:"text-link hover:underline cursor-pointer font-medium"},"全局权限"),"。 "'
+  );
+  sourceText = sourceText.replace(
+    'p?B.createElement("span",null,"This ",A.lowercase," is managed by the"," ",B.createElement("strong",null,q)," automation and can only be deleted by deleting that automation."):',
+    'p?B.createElement("span",null,"此",A.lowercase==="workspace"?"工作区":"项目","由 ",B.createElement("strong",null,q)," 自动化统一管理，只能通过删除该自动化来删除。"):'
+  );
+
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
   return {
