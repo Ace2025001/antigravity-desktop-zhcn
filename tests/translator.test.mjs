@@ -609,7 +609,7 @@ test("third-party model access notice and notifications are covered by exact and
     },
     {
       source: "Manage your model quota and AI credits.",
-      expected: "管理你的模型额度与 AI 点数。"
+      expected: "管理你的模型配额与 AI 点数。"
     },
     {
       source: "Selected model does not support this media type",
@@ -745,7 +745,7 @@ test("model quota policy description and comprehensive UI strings are covered", 
       source:
         "Within each group, models share a weekly limit and a 5-hour limit. Quota is consumed proportionally to the cost of the tokens. Thus, limits will last longer with shorter tasks or using more cost-effective models. The 5-hour limit smooths out aggregate demand to fairly distribute global capacity across all users, while your weekly limit is tied directly to your individual tier.",
       expected:
-        "在每个组内，模型共享每周限额和 5 小时限额。配额根据 Token 的消耗成本按比例扣减。因此，对于耗时较短的任务或使用更高性价比的模型，配额使用时间将更持久。5 小时限额用于平滑总体请求峰值，以在所有用户间公平分配全局算力；而你的每周限额则直接与你的个人套餐级别挂钩。",
+        "在每个组内，模型共享每周配额和 5 小时配额。配额根据 Token 的消耗成本按比例扣减。因此，对于耗时较短的任务或使用更高性价比的模型，配额使用时间将更持久。5 小时配额用于平滑总体请求峰值，以在所有用户间公平分配全局算力；而你的每周配额则直接与你的个人套餐级别挂钩。",
     },
     {
       source: "Manage your model quota and credits.",
@@ -1082,7 +1082,7 @@ test("entity empty states, dropdowns, and common action phrases are fully covere
     { source: "No projects found.", expected: "未找到项目。" },
     { source: "No project found", expected: "未找到项目" },
     { source: "No matching projects found", expected: "未找到匹配的项目" },
-    { source: "No projects created", expected: "未创建任何项目" },
+    { source: "No projects created", expected: "尚未创建项目" },
     { source: "No projects yet", expected: "暂无项目" },
     { source: "No Project", expected: "未选择项目" },
     { source: "No project selected", expected: "未选择项目" },
@@ -1358,7 +1358,7 @@ test("translator localizes context menu, notifications, extensions and model quo
     { source: "Thinking for 1m 20s", expected: "思考耗时 1 分钟 20 秒" },
     { source: "Worked for 15s", expected: "工作耗时 15 秒" },
     { source: "Stopped after 30s", expected: "耗时 30 秒后停止" },
-    { source: "Exited with code 1", expected: "已退出，代码：1" },
+    { source: "Exited with code 1", expected: "已退出，退出码 1。" },
     { source: "Folder", expected: "文件夹" },
     { source: "Folders", expected: "文件夹" },
     { source: "folder", expected: "文件夹" },
@@ -1368,13 +1368,13 @@ test("translator localizes context menu, notifications, extensions and model quo
     { source: "Controls whether the agent can run custom JavaScript to automate complex browser actions.", expected: "控制智能体是否可以运行自定义 JavaScript 来自动执行复杂的浏览器操作。" },
     { source: "No extensions available", expected: "暂无可用扩展" },
     { source: "Extensions", expected: "扩展" },
-    { source: "Replace with New", expected: "替换为新建" },
+    { source: "Replace with New", expected: "替换为新对话" },
     { source: "Search tabs, files, extensions, subagents, artifacts, tasks...", expected: "搜索标签页、文件、扩展、子智能体、工件、任务..." },
     { source: "Quote", expected: "引用" },
     { source: "Quote Selection", expected: "引用所选内容" },
-    { source: "Weekly limit", expected: "周限额" },
-    { source: "Daily limit", expected: "日限额" },
-    { source: "5h limit", expected: "5小时限额" },
+    { source: "Weekly limit", expected: "每周配额" },
+    { source: "Daily limit", expected: "每日配额" },
+    { source: "5h limit", expected: "5 小时配额" },
     
     { source: "Unavailable", expected: "不可用" },
     { source: "98% left", expected: "剩余 98%" },
@@ -1399,8 +1399,8 @@ test("translator localizes context menu, notifications, extensions and model quo
     { source: "Move Conversation Up", expected: "上移对话" },
     { source: "Move Conversation Down", expected: "下移对话" },
     { source: "Toggle Maximize Auxiliary Pane", expected: "切换最大化辅助面板" },
-    { source: "检索右键菜单定义代码段 · Exited with code 1", expected: "检索右键菜单定义代码段 · 退出代码 1" },
-    { source: "Exited with code 1", expected: "已退出，代码：1" },
+    { source: "检索右键菜单定义代码段 · Exited with code 1", expected: "检索右键菜单定义代码段 · 退出码 1" },
+    { source: "Exited with code 1", expected: "已退出，退出码 1。" },
     { source: "Background Commands", expected: "后台命令" },
     { source: "No background commands", expected: "暂无后台命令" },
     { source: "6s timer", expected: "6 秒定时器" },
@@ -1774,15 +1774,15 @@ test("2.29.0 6-screenshot audit: native image context menu, permissions, appeara
   // 图 5: 模型与用量动态配额变量
   assert.equal(
     translateDictionaryValue("Gemini 4 Argon Weekly Limit", current),
-    "Gemini 4 Argon 每周剩余额度"
+    "Gemini 4 Argon 每周剩余配额"
   );
   assert.equal(
     translateDictionaryValue("Claude Opus 4.6 Daily Limit", current),
-    "Claude Opus 4.6 每日剩余额度"
+    "Claude Opus 4.6 每日剩余配额"
   );
   assert.equal(
     translateDictionaryValue("Gemini 3.1 Pro 5-Hour Limit", current),
-    "Gemini 3.1 Pro 5 小时剩余额度"
+    "Gemini 3.1 Pro 5 小时剩余配额"
   );
 
   // 图 6: 插件市场全部卡片（含截断状态与完整状态）
@@ -1815,7 +1815,7 @@ test("2.29.0 6-screenshot audit: native image context menu, permissions, appeara
   const localized = createLocalizedBundle(mockBundle, current).buffer.toString("utf8");
   assert.ok(localized.includes('label:a==="video"?"保存视频":"保存图片"'));
   assert.ok(localized.includes('id:"copy-image",label:"复制图片"'));
-  assert.ok(localized.includes('const gna={daily:"日限额",weekly:"周限额"}'));
+  assert.ok(localized.includes('const gna={daily:"每日配额",weekly:"每周配额"}'));
   assert.ok(localized.includes('{label:"详细",value:"verbose"}'));
   assert.ok(localized.includes('{value:"fill",label:"铺满"}'));
   assert.ok(localized.includes("hookNativeContextMenu"));
@@ -1889,7 +1889,7 @@ test("level-3 modals, sub-entries, quota reset banner, and natural plugin naming
   const bannerText = "Your plan's baseline quota will refresh on 2026/11/14 17:02:51. You can upgrade to a Google AI Ultra plan to receive higher rate limits. See plans.";
   const bannerTr = translateDictionaryValue(bannerText, current);
   assert.ok(bannerTr, "Quota banner should be translated");
-  assert.match(bannerTr, /你的方案基线配额将于 2026\/11\/14 17:02:51 刷新。你可以升级至 Google AI Ultra 方案以获取更高的速率限制。查看方案。/);
+  assert.match(bannerTr, /你的方案基线配额将于 2026\/11\/14 17:02:51 刷新。你可以升级至 Google AI Ultra 方案以获取更高配额。查看方案。/);
 
   // 4. 三级 SKILL.md 文档段落（/twg-setup 及 /gdocs）
   const twgHeading = "TWG Setup";
@@ -1905,16 +1905,17 @@ test("level-3 modals, sub-entries, quota reset banner, and natural plugin naming
 test("free user quota upgrade and search across conversations NUX tooltip are fully covered", async () => {
   const dict = await loadDomTranslations();
   const quotaCases = [
-    ["Free users and Google AI Plus users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.", "免费用户与 Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。"],
-    ["Free users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.", "免费用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。"],
-    ["Free users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro to receive higher rate limits.", "免费用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 以获取更高额度限制。"],
-    ["Google AI Plus users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.", "Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。"],
-    ["Free users receive the minimum base limits on Antigravity.", "免费用户在 Antigravity 上享有最低基础限制额度。"]
+    ["Free users and Google AI Plus users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.", "免费用户与 Google AI Plus 用户在 Antigravity 上享有最低基础配额。你可以升级到 Google AI Pro 或更高方案以获取更高配额。"],
+    ["Free users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.", "免费用户在 Antigravity 上享有最低基础配额。你可以升级到 Google AI Pro 或更高方案以获取更高配额。"],
+    ["Free users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro to receive higher rate limits.", "免费用户在 Antigravity 上享有最低基础配额。你可以升级到 Google AI Pro 以获取更高配额。"],
+    ["Google AI Plus users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.", "Google AI Plus 用户在 Antigravity 上享有最低基础配额。你可以升级到 Google AI Pro 或更高方案以获取更高配额。"],
+    ["Free users receive the minimum base limits on Antigravity.", "免费用户在 Antigravity 上享有最低基础配额。"]
   ];
   for (const [src, expected] of quotaCases) {
     const res = translateDictionaryValue(src, dict);
     assert.equal(res, expected, "Quota case mismatch: " + src);
     assert.ok(!res.includes("or above") && !res.includes("Free") && !res.includes("receive"), "Quota translation should have no leftover English: " + res);
+    assert.ok(!/限额|速率限制|最低基础限制|更高额度限制/.test(res), "Quota translation must unify to 配额: " + res);
   }
 
   const nuxCases = [
@@ -1962,7 +1963,7 @@ test("in-page find widget, Y4 markdown renderer injection, and plugin sublevel c
   assert.equal(translateDictionaryValue(gmailOverview, dict), "高效管理你的 Gmail 收件箱。搜索并总结邮件会话、起草回复、整理标签，并在获得你的确认后发送邮件。");
 
   const gmailCmdTruncated = "Read, search, send, and manage Gmail messages, drafts, labels, and emoji reactions using a Go CLI. Use when...";
-  assert.equal(translateDictionaryValue(gmailCmdTruncated, dict), "使用 Go 命令行工具读取、搜索、发送并管理 Gmail 邮件、草稿、标签和表情回应。当用户…");
+  assert.equal(translateDictionaryValue(gmailCmdTruncated, dict), "使用 Go 命令行工具读取、搜索、发送并管理 Gmail 邮件、草稿、标签和表情回应。适用于…");
 
   // 4. 2.31.0 Y4 MarkdownRenderer 注入验证
   const mockY4 = Buffer.from(
@@ -1972,4 +1973,101 @@ test("in-page find widget, Y4 markdown renderer injection, and plugin sublevel c
   const localizedY4 = createLocalizedBundle(mockY4, dict).buffer.toString("utf8");
   assert.ok(localizedY4.includes("globalThis.__AGY_ZHCN_TRANSLATE_MD__"), "Y4 MarkdownRenderer must be injected with translateMarkdownText hook");
 });
+
+test("Antigravity 2.31.0 (v2.3.9) 10-screenshot & 1-4 level overlay, chapter, quota, progress, and layout regression suite", async () => {
+  const dict = await loadDomTranslations();
+
+  // 1. 词库边界断言（禁词检查 + 术语统一）
+  assert.equal(dict.exact["Stay up to date."], "订阅最新资讯。");
+  assert.equal(translateDictionaryValue("1 update", dict), "1 条进度更新");
+  assert.equal(translateDictionaryValue("2 updates", dict), "2 条进度更新");
+  assert.notEqual(dict.exact["1 update"], "1 条更新");
+  assert.equal(dict.exact["Replace with New"], "替换为新对话");
+  assert.equal(dict.exact["Google Privacy Policy"], "Google 隐私权政策");
+  assert.equal(dict.exact["Request Review"], "请求评审");
+
+  // 2. 在 vm 沙箱中执行真实 createRuntimeOverlay，验证运行时导出函数
+  const overlayCode = createRuntimeOverlay(dict);
+  const ctx = {
+    globalThis: {},
+    window: {},
+    Node: { TEXT_NODE: 3, ELEMENT_NODE: 1 },
+    document: {
+      readyState: "loading",
+      documentElement: { lang: "" },
+      body: {},
+      addEventListener: () => {},
+      createElement: () => ({ style: {} }),
+      head: { appendChild: () => {} },
+    },
+    MutationObserver: class {
+      observe() {}
+      disconnect() {}
+    },
+    console,
+  };
+  ctx.globalThis = ctx;
+  vm.createContext(ctx);
+  new vm.Script(overlayCode).runInContext(ctx);
+
+  // 图 10: 进度更新 & 耗时统一为 "条进度更新" 与 4 单位中文耗时
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE__("1 update"), "1 条进度更新");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE__("2 updates"), "2 条进度更新");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE__("14 updates"), "14 条进度更新");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE__("Worked for 31s · 2 updates"), "工作耗时 31 秒 · 2 条进度更新");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE__("Worked for 14s · 1 update"), "工作耗时 14 秒 · 1 条进度更新");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE__("Worked for 15m 20s · 3 updates"), "工作耗时 15 分钟 20 秒 · 3 条进度更新");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_DUR__("3d 18h"), "3 天 18 小时");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_DUR__("2h 5m 10s"), "2 小时 5 分钟 10 秒");
+
+  // 图 4 & 6: 套餐名称与多句描述统一使用 "配额" 且无 "限额/速率限制/最低基础限制"
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_PLAN__("Antigravity Starter Quota"), "Antigravity 入门版配额");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_PLAN__("Antigravity Pro Quota"), "Antigravity 专业版配额");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_PLAN__("Antigravity Ultra Quota"), "Antigravity 旗舰版配额");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_PLAN__("Google AI Pro"), "Google AI Pro");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_PLAN__("Enterprise Gateway"), "企业网关");
+
+  const starterDesc = "Google AI Plus users receive the minimum base limits on Antigravity. You can upgrade to Google AI Pro or above to receive higher rate limits.";
+  const trStarterDesc = ctx.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(starterDesc);
+  assert.equal(trStarterDesc, "Google AI Plus 用户在 Antigravity 上享有最低基础配额。你可以升级到 Google AI Pro 或更高方案以获取更高配额。");
+  assert.ok(!/限额|速率限制|最低基础限制|更高额度限制/.test(trStarterDesc));
+
+  const proDesc = "You can upgrade to Google AI Ultra plan to receive higher rate limits.";
+  const trProDesc = ctx.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(proDesc);
+  assert.equal(trProDesc, "你可以升级至 Google AI Ultra 方案以获取更高配额。");
+
+  const proForDesc = "You can upgrade to Google AI Ultra for higher rate limits.";
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(proForDesc), "你可以升级至 Google AI Ultra 方案以获取更高配额。");
+
+  const plusForDesc = "Google AI Plus users get minimum baseline limits on Antigravity. You can upgrade to Google AI Pro or above for higher rate limits.";
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(plusForDesc), "Google AI Plus 用户在 Antigravity 上享有最低基础配额。你可以升级至 Google AI Pro 或更高方案以获取更高配额。");
+
+  // 图 7 / 8 / 9: 章节标题 & 未知标题含时间后缀不出现错位/残词
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_CHAPTER__("Refining Antigravity desktop Chinese localization"), "优化 Antigravity 桌面端中文本地化");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_CHAPTER__("Fixing missed code fragments during debugging"), "修复调试期间遗漏的代码片段");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_CHAPTER__("Synchronizing local and GitHub repositories"), "同步本地与 GitHub 仓库");
+  const dynChapter = ctx.__AGY_ZHCN_TRANSLATE_CHAPTER__("Resolving bilingual interface text issues during debugging");
+  assert.equal(dynChapter, "解决调试期间的双语界面文本问题");
+  assert.equal(ctx.__AGY_ZHCN_TRANSLATE_CHAPTER__("Fixing bilingual UI text issues during debugging"), "修复调试期间的双语界面文本问题");
+
+  // 3. 首页布局红线：BXc 与 flexBasis:"clamp(72px, calc(32vh - 66px), 264px)" 绝对零修改 + 2.31.0 核心注入通过语法检查
+  const sample231Source = [
+    'B.createElement("div",{"aria-hidden":"true",className:"shrink min-h-0 -mb-6",style:{flexBasis:"clamp(72px, calc(32vh - 66px), 264px)"}}),B.createElement(BXc,null)',
+    'const R6=[{named:a=>`Hey ${a}, what should we build today?`,unnamed:"Hey there, what should we build today?"},{named:a=>`Welcome back, ${a}. Where should we pick up?`,unnamed:"Welcome back. Where should we pick up?"},{named:a=>`Good to see you, ${a}. What\'s next?`,unnamed:"Good to see you. What\'s next?"}];',
+    'v=`${v} ${v===1?"update":"updates"}`;t=t>0?`Worked for ${Is(t)} \\u00b7 ${v}`:v;',
+    'B.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"font-medium leading-snug text-foreground"},d??DVc(a,b))',
+    'const RBc=[{id:"overview",label:"Overview"},{id:"accounts",label:"Accounts"},{id:"skills",label:"Skills"},{id:"mcp",label:"MCP"},{id:"agents",label:"Agents"},{id:"hooks",label:"Hooks"},{id:"rules",label:"Rules"},{id:"uiExtensions",label:"UI Extensions"},{id:"sidecars",label:"Automations"},{id:"context-providers",label:"Context Providers"}];',
+    'B.createElement(RP,{title:B.createElement("div",\n{className:"flex items-center gap-1.5"},B.createElement("span",null,"Models & Usage"),B.createElement(Uy,{variant:"ghost",size:"icon-lg",onClick:w,disabled:n===void 0,title:"Refresh quota and credits data","aria-label":"Refresh quota and credits data"},B.createElement(dq,{name:"refresh",size:20,className:n===void 0?"animate-spin":""}))),description:"Manage your model quota and credits."},h==="signedIn"&&l&&B.createElement(VP,{title:"Plan"},B.createElement(TP,null,B.createElement(UP,{label:B.createElement("div",\n{className:"font-medium"},"Your Plan: ",l),description:m,rightElement:c?.userTier?.upgradeSubscriptionUri&&B.createElement("a",{href:jA(c.userTier.upgradeSubscriptionUri,"utm_campaign","ARGON_MODELS_PAGE"),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"},c.userTier.upgradeButtonText||"Upgrade")}))),y!==void 0&&B.createElement(VP,{title:"Model Credits"},B.createElement(TP,\nnull,B.createElement(wIb,{label:"Enable AI Credit Overages",description:`When toggled on, ${g} will use your AI credits to fulfill model requests once you\'re out of model quota. ${g} will always use your model quota first before using AI credits.`,isSwitchOn:x,pushUpdate:A}),x&&B.createElement(UP,{label:`Available AI Credits: ${y??"0"}`,description:"Remaining AI credits"}))));',
+    'kj={project4k:{title:"Project 4K",description:"Project 4K interface without developer tooling."},default:{title:"Default",description:"The full developer experience."}};'
+  ].join("\n");
+  const out231 = createLocalizedBundle(Buffer.from(sample231Source, "utf8"), dict).buffer.toString("utf8");
+  assert.doesNotThrow(() => new vm.Script(out231), "2.31.0 localized output must be valid JavaScript");
+  assert.ok(out231.includes('style:{flexBasis:"clamp(72px, calc(32vh - 66px), 264px)"}}),B.createElement(BXc,null)'));
+  assert.ok(out231.includes("条进度更新"));
+  assert.ok(out231.includes("__AGY_ZHCN_TRANSLATE_CHAPTER__"));
+  assert.ok(out231.includes('{id:"overview",label:"概览"}'));
+  assert.ok(out231.includes("__AGY_ZHCN_TRANSLATE_PLAN__"));
+  assert.ok(out231.includes('title:"知识工作"'));
+});
+
 
