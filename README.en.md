@@ -37,7 +37,7 @@ antigravity汉化包/
 
 ## What gets translated
 
-Menus, tray, settings, the standalone chat panel, agent execution traces and status labels (running, cancelled, interrupted, background task checks), conversation timeline cards, input shortcuts, model and quota panels, plugin and skill detail pages with Markdown content, and permission prompts. Over 12,000 exact rules and 3,000 dynamic rules. Product names such as Catppuccin, Dracula, One Dark Pro and Tokyo Night are kept as-is.
+Menus, tray, settings, the standalone chat panel, deep agent execution traces and tool calling lifecycle (file operations, shell commands with exit codes, MCP tools, multi-modal image generation, thinking/working status), conversation timeline cards, input shortcuts (Cancel Ctrl+D, send, queue), dynamic home greetings, model and user quota panels, the complete plugin marketplace catalog (75+ official & partner plugins with sub-options and suggested prompts), and permission prompts. Over 12,300 exact rules and 3,100 dynamic rules. Product and command names such as `agy` CLI, Catppuccin, Dracula, One Dark Pro and Tokyo Night are preserved.
 
 ## Language pack updates
 

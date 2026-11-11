@@ -2856,7 +2856,7 @@
     "Search Across Conversations": "跨对话搜索",
     "Search conversations with": "在左上方点击",
     "in the top left.": "即可搜索对话。",
-    "in the top left": "（位于左上角）",
+    "in the top left": "即可搜索对话",
     "View archived in the sidebar (": "在侧边栏中查看已归档内容（",
     "View archived in the sidebar": "在侧边栏中查看已归档内容",
     "menu).": "菜单）。",
@@ -10415,7 +10415,7 @@
     "Create a new project using normal folders and/or citc workspaces.": "使用普通文件夹和/或 CitC 工作区创建新项目。",
     "Created a new branch on GitHub.": "已在 GitHub 上创建新分支。",
     "Created a new branch on Origin.": "已在远程源上创建新分支。",
-    "Created outline": "已生成大纲",
+    "Created outline": "已创建大纲",
     "Creating Fork...": "正在创建派生分支...",
     "Creating projects for your conversations": "正在为你的对话创建项目",
     "Credentials for one or more automations expire in less than a week.": "一个或多个自动化任务的凭据将在一周内过期。",
@@ -10566,7 +10566,7 @@
     "Next voice": "下一个音色",
     "Next: Review Permissions": "下一步：审查权限",
     "No apps available.": "暂无可用应用。",
-    "No apps connected yet. Connect one from Marketplace.": "尚未连接任何应用。请从插件市场连接应用。",
+    "No apps connected yet. Connect one from Marketplace.": "尚未连接任何应用。可从插件市场连接应用。",
     "No conversation": "无对话",
     "No custom flag matches your search.": "没有与你的搜索匹配的自定义标志。",
     "No matching project folders. Apply to use the custom URI.": "没有匹配的项目文件夹。应用以使用自定义 URI。",
@@ -12264,9 +12264,125 @@
     "Open in tab": "在标签页中打开",
     "Developer: Reset Onboarding": "开发者：重置新手引导",
     "Developer: Reset NUX": "开发者：重置全新用户体验 (NUX)",
-    "Sets the `workspaceUri` URL parameter and reloads, repointing the active workspace. Pick a folder from an existing project or enter a custom URI (e.g. file:///path/to/workspace).": "设置 `workspaceUri` URL 参数并重新加载以重新指向活动工作区。请从现有项目中选择文件夹或输入自定义 URI（例如 file:///path/to/workspace）。"
+    "Sets the `workspaceUri` URL parameter and reloads, repointing the active workspace. Pick a folder from an existing project or enter a custom URI (e.g. file:///path/to/workspace).": "设置 `workspaceUri` URL 参数并重新加载以重新指向活动工作区。请从现有项目中选择文件夹或输入自定义 URI（例如 file:///path/to/workspace）。",
+    "You can change this later in Settings.": "你稍后可在设置中更改。",
+    "You can change this in Settings later.": "你稍后可在设置中更改。",
+    "Free users and Google AI Plus users on Antigravity have the lowest base limits. You can upgrade to Google AI Pro or above for higher limits.": "免费用户与 Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。",
+    "You can upgrade to Google AI Pro or above for higher limits.": "你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。",
+    "You can upgrade to Google AI Pro or above to receive higher rate limits.": "你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。",
+    "You can upgrade to Google AI Pro or above to receive higher rate limits": "你可以升级到 Google AI Pro 或更高方案以获取更高额度限制",
+    "or above": "或更高方案",
+    "lowest base limits": "最低基础限制",
+    "This project is managed by the Swarm automation and can only be deleted by deleting that automation.": "此项目由 Swarm 自动化管理，只能通过删除该自动化来删除。",
+    "This workspace is managed by the Swarm automation and can only be deleted by deleting that automation.": "此工作区由 Swarm 自动化管理，只能通过删除该自动化来删除。",
+    "Permanently delete this project.": "永久删除此项目。",
+    "Permanently delete this project": "永久删除此项目",
+    "Permanently delete this workspace.": "永久删除此工作区。",
+    "Permanently delete this workspace": "永久删除此工作区",
+    "automation and can only be deleted by deleting that automation.": "自动化管理，只能通过删除该自动化来删除。",
+    "automation and can only be deleted by deleting that automation": "自动化管理，只能通过删除该自动化来删除",
+    "is managed by the": "由",
+    "Unlock the power of agent swarms.": "释放智能体蜂群的协作潜能。",
+    "Unlock the power of agent swarms": "释放智能体蜂群的协作潜能",
+    "migrate-agent-settings": "迁移智能体配置",
+    "Migrates the user's MCP servers, skills, slash commands, subagents, and instruction files from other coding agents (Claude Code, Codex, Cursor, Gemini CLI) into one new Antigravity plugin.": "将用户的 MCP 服务器、技能、斜杠命令、子智能体和指令文件从其他编程智能体（Claude Code、Codex、Cursor、Gemini CLI）迁移到一个新的 Antigravity 插件中。",
+    "ONLY for the native-swarm worker whose brief says it is the monitor. On a timer, it checks whether the whole swarm has stalled and calls on the one member who can unstick it. Coordinators and other workers: do not load this.": "仅供任务摘要指明为监视器的原生蜂群工作人员使用。通过定时器检查整个蜂群是否停滞，并唤醒能够排除阻塞的成员。协调员和其他工作人员请勿加载此技能。",
+    "(Preview & Quota Heavy) Run a swarm: several agents working in parallel on one task, each in its own conversation, collaborating through a shared message board. Use when the work splits into pieces that can be done at the same time, or when a second pair of eyes should check the first pair's work.": "（预览版且消耗大量配额）运行蜂群智能体：多个智能体在同一任务上并行协作，各自处于独立对话中并通过共享消息板进行通信。适用于任务可拆分为可同时执行的子任务，或需要第二组视角复核首组工作成果的场景。",
+    "Antigravity CLI (agy)": "Antigravity 命令行工具 (agy)",
+    "Restoring the official english client": "恢复官方英文客户端",
+    "Troubleshooting Website Access Issues": "排查网站访问异常问题",
+    "Fixing missing localization patches": "修复缺失的汉化补丁",
+    "Running for": "已运行",
+    "Paused.": "已暂停。",
+    "Could not start.": "无法启动。",
+    "Created automation": "已创建自动化",
+    "Task failed with exit code": "任务失败，退出代码",
+    "exit code 1": "退出代码 1",
+    "exit code 0": "退出代码 0",
+    "Exit code": "退出代码",
+    "exit code": "退出代码",
+    "Good to see you, Ace. What's next?": "很高兴见到你，Ace。接下来想做点什么？",
+    "Good to see you. What's next?": "很高兴见到你。接下来想做点什么？",
+    "Hey Ace, what should we build today?": "你好 Ace，今天想做点什么？",
+    "Hey there, what should we build today?": "你好，今天想做点什么？",
+    "Welcome back, Ace. Where should we pick up?": "欢迎回来，Ace。我们从哪里继续？",
+    "Welcome back. Where should we pick up?": "欢迎回来。我们从哪里继续？",
+    "Search, read, draft, and send emails in Gmail.": "在 Gmail 中搜索、阅读、起草和发送邮件。",
+    "Summarize my unread emails from today": "总结我今天的所有未读邮件",
+    "Draft a reply to the latest thread about launch readiness": "起草关于上线就绪最新会话的回复",
+    "Find emails with attachments from last week": "查找上周带有附件的邮件",
+    "Develop ideas with context and review documents with fresh eyes.": "结合上下文发散构想，并以全新视角审阅文档。",
+    "Query Arize AX projects, traces, datasets, and experiments from Antigravity, with skills for tracing, evals, and prompt optimization.": "从 Antigravity 查询 Arize AX 项目、追踪链路、数据集和实验，提供链路追踪、指标评估及提示词优化技能。",
+    "List my Arize projects and show recent traces with errors": "列出我的 Arize 项目并显示近期报错的追踪链路",
+    "Add Arize tracing to this application": "为此应用程序添加 Arize 链路追踪",
+    "Show the prompt version labeled production in my Arize Prompt Hub": "在我的 Arize 提示词中心中显示标记为生产环境的提示词版本",
+    "AI-powered code review, review-comment autofix, and repository configuration, powered by CodeRabbit.": "基于 CodeRabbit 的 AI 代码审查、评审建议自动修复及代码仓库配置。",
+    "Up-to-date documentation lookup. Pull version-specific documentation and code examples directly from source repositories into your coding agent's context.": "实时文档检索。直接将源代码仓库中特定版本的文档和代码示例拉取到编程智能体的上下文中。",
+    "Turn an idea into a website, dashboard, report, or small web tool you can share. Build it in chat or bring your own work, and publish it with Spacefast.": "将创意转化为可分享的网站、仪表盘、报告或轻量网页工具。在对话中实时构建或导入现有工作，并通过 Spacefast 一键发布。",
+    "Build a website for my project and publish it on Spacefast.": "为我的项目构建网站并在 Spacefast 上发布。",
+    "Publish this dashboard and give me a link to share.": "发布此仪表盘并提供分享链接。",
+    "Update the content and design of my existing Spacefast site.": "更新我现有的 Spacefast 网站内容与设计。",
+    "Find plugins - bundles of skills, agents, MCP servers, UI extensions and more - to customize Antigravity.": "发现插件——包含技能、智能体、MCP 服务器、UI 扩展等全套组件，深度定制你的 Antigravity。",
+    "Plugins requiring setup": "需要设置的插件",
+    "Plugins needing sign in": "需要登录的插件",
+    "Processing plugin...": "正在处理插件..."
   },
   "patterns": [
+    {
+      "source": "^No plugins found for \"(.+?)\"\\.?$",
+      "target": "未找到与“$1”匹配的插件。",
+      "flags": "u"
+    },
+    {
+      "source": "^Search for \"(.+?)\" in the Marketplace$",
+      "target": "在插件市场中搜索“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^Created automation \"(.+?)\"\\.?$",
+      "target": "已创建自动化“$1”。",
+      "flags": "u"
+    },
+    {
+      "source": "^Generated image: \"(.+?)\"$",
+      "target": "已生成图片：“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^Used MCP tool: (.+?)$",
+      "target": "已使用 MCP 工具：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Ran command: (.+?) \\(`(.+?)`\\)$",
+      "target": "已运行命令：$1 (`$2`)",
+      "flags": "u"
+    },
+    {
+      "source": "^Welcome back[,，]\\s*(.+?)[.。]\\s*Where should we pick up\\?$",
+      "target": "欢迎回来，$1。我们从哪里继续？",
+      "flags": "u"
+    },
+    {
+      "source": "^Hey[\\s,，]*(.+?)[,，]\\s*what should we build today\\?$",
+      "target": "你好 $1，今天想做点什么？",
+      "flags": "u"
+    },
+    {
+      "source": "^Good to see you[,，]\\s*(.+?)[.。]\\s*What's next\\?$",
+      "target": "很高兴见到你，$1。接下来想做点什么？",
+      "flags": "u"
+    },
+    {
+      "source": "^Free users and Google AI Plus users on Antigravity have the lowest base limits\\..*?upgrade to Google AI Pro or above.*?$",
+      "target": "免费用户与 Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制。",
+      "flags": "u"
+    },
+    {
+      "source": "^(?:This)?\\s*(?:project|workspace)?\\s*is managed by the\\s+(.+?)\\s+automation and can only be deleted by deleting that automation\\.?$",
+      "target": "此项目由 $1 自动化管理，只能通过删除该自动化来删除。",
+      "flags": "u"
+    },
     {
       "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(\\d+)d\\s*(\\d+)h$",
       "target": "$1，将在 $2 天 $3 小时后重置",
