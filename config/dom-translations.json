@@ -1782,7 +1782,7 @@
     "Prompt for approval before running browser scripts.": "运行浏览器脚本前请求批准。",
     "Prototype, build & run modern apps that users love with Firebase's backend, AI, and operational infrastructure.": "利用 Firebase 的后端、AI 和运维基础设施，原型设计、构建并运行深受用户喜爱的现代化应用。",
     "Provide Feedback": "提供反馈",
-    "Provides a comprehensive guide, quick reference, and sitemap for Google Antigravity (AGY), including the Antigravity CLI (agy), Antigravity 2.0, Antigravity IDE, Python SDK, slash commands, keybindings, and customizations (skills, rules, MCP, sidecars). Activate this skill when the user asks questions about how to use, configure, or customize Antigravity, AGY, the agy CLI, the Antigravity IDE, or Antigravity 2.0.": "提供 Google Antigravity (AGY) 的全面指南、快速参考与站点地图，包括 Antigravity CLI (agy)、Antigravity 2.0、Antigravity IDE、Python SDK、斜杠命令、快捷键和自定义项（技能、规则、MCP、侧车）。当用户询问如何使用、配置或自定义 Antigravity、AGY、agy CLI、Antigravity IDE 或 Antigravity 2.0 时激活此技能。",
+    "Provides a comprehensive guide, quick reference, and sitemap for Google Antigravity (AGY), including the Antigravity CLI (agy), Antigravity 2.0, Antigravity IDE, Python SDK, slash commands, keybindings, and customizations (skills, rules, MCP, sidecars). Activate this skill when the user asks questions about how to use, configure, or customize Antigravity, AGY, the agy CLI, the Antigravity IDE, or Antigravity 2.0.": "提供 Google Antigravity (AGY) 的全面指南、快速参考与站点地图，涵盖 Antigravity 命令行工具 (agy)、Antigravity 2.0、Antigravity IDE、Python SDK、斜杠命令、快捷键绑定以及各类自定义项（技能、规则、MCP、边车服务）。当用户询问如何使用、配置或自定义 Antigravity、AGY、agy CLI、Antigravity IDE 或 Antigravity 2.0 时激活此技能。",
     "Pull request creation": "创建拉取请求",
     "Pull requests": "拉取请求",
     "Purchase Credits": "购买点数",
@@ -10622,7 +10622,7 @@
     "Process Error": "进程错误",
     "Processing": "正在处理",
     "Project + Worktree": "项目 + 工作树",
-    "Project 4K interface without developer tooling.": "不包含开发者工具的 Project 4K 界面。",
+    "Project 4K interface without developer tooling.": "针对文字与非代码任务优化的轻量界面（输入框居顶）。",
     "Project ID:": "项目 ID：",
     "Project Required": "需要选择项目",
     "Prompt": "提示词",
@@ -12180,7 +12180,7 @@
     "View archived in the sidebar (menu).": "在侧边栏中查看已归档内容（菜单）。",
     "View archived in the sidebar (Display options menu).": "在侧边栏中查看已归档内容（显示选项菜单）。",
     "Interface Layout": "界面布局",
-    "Knowledge Work": "知识工作",
+    "Knowledge Work": "知识工作（Project 4K）",
     "Simplified interface for research, writing, and everyday tasks.": "专为研究、写作与日常任务打造的精简界面。",
     "Software Engineering": "软件工程",
     "Full interface for coding, developer tools, and managing agents.": "包含代码编写、开发工具及智能体管理的完整开发界面。",
@@ -12273,14 +12273,14 @@
     "You can upgrade to Google AI Pro or above to receive higher rate limits": "你可以升级到 Google AI Pro 或更高方案以获取更高额度限制",
     "or above": "或更高方案",
     "lowest base limits": "最低基础限制",
-    "This project is managed by the Swarm automation and can only be deleted by deleting that automation.": "此项目由 Swarm 自动化管理，只能通过删除该自动化来删除。",
-    "This workspace is managed by the Swarm automation and can only be deleted by deleting that automation.": "此工作区由 Swarm 自动化管理，只能通过删除该自动化来删除。",
+    "This project is managed by the Swarm automation and can only be deleted by deleting that automation.": "此项目由 Swarm 自动化统一管理，只能通过删除该自动化来删除。",
+    "This workspace is managed by the Swarm automation and can only be deleted by deleting that automation.": "此工作区由 Swarm 自动化统一管理，只能通过删除该自动化来删除。",
     "Permanently delete this project.": "永久删除此项目。",
     "Permanently delete this project": "永久删除此项目",
     "Permanently delete this workspace.": "永久删除此工作区。",
     "Permanently delete this workspace": "永久删除此工作区",
-    "automation and can only be deleted by deleting that automation.": "自动化管理，只能通过删除该自动化来删除。",
-    "automation and can only be deleted by deleting that automation": "自动化管理，只能通过删除该自动化来删除",
+    "automation and can only be deleted by deleting that automation.": "自动化统一管理，只能通过删除该自动化来删除。",
+    "automation and can only be deleted by deleting that automation": "自动化统一管理，只能通过删除该自动化来删除",
     "is managed by the": "由",
     "Unlock the power of agent swarms.": "释放智能体蜂群的协作潜能。",
     "Unlock the power of agent swarms": "释放智能体蜂群的协作潜能",
@@ -12325,7 +12325,48 @@
     "Find plugins - bundles of skills, agents, MCP servers, UI extensions and more - to customize Antigravity.": "发现插件——包含技能、智能体、MCP 服务器、UI 扩展等全套组件，深度定制你的 Antigravity。",
     "Plugins requiring setup": "需要设置的插件",
     "Plugins needing sign in": "需要登录的插件",
-    "Processing plugin...": "正在处理插件..."
+    "Processing plugin...": "正在处理插件...",
+    "in Settings": "在设置中",
+    "Select a voice for Antigravity": "选择 Antigravity 的语音",
+    "Free users and Google AI Plus": "免费用户与 Google AI Plus",
+    "Free and Google AI Plus": "免费与 Google AI Plus",
+    "Free users and Google AI Plus users on Antigravity have the lowest base limits. You can upgrade to Google AI Pro or above for higher limits": "免费用户与 Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 Google AI Pro 或更高方案以获取更高额度限制",
+    "You can upgrade to Google AI Pro or above for higher limits": "你可以升级到 Google AI Pro 或更高方案以获取更高额度限制",
+    "or above to receive higher rate limits.": "或更高方案以获取更高额度限制。",
+    "or above to receive higher rate limits": "或更高方案以获取更高额度限制",
+    "or above for higher limits.": "或更高方案以获取更高额度限制。",
+    "or above for higher limits": "或更高方案以获取更高额度限制",
+    "View archived in the sidebar (☰ menu).": "在侧边栏中查看已归档内容（🝕 菜单）。",
+    "View archived in the sidebar ( ☰ menu ).": "在侧边栏中查看已归档内容（🝕 菜单）。",
+    "View archived in the sidebar (☰ menu)": "在侧边栏中查看已归档内容（🝕 菜单）",
+    "(☰ menu)": "（🝕 菜单）",
+    "( ☰ menu )": "（🝕 菜单）",
+    "Good to see you, Neifer. What's next?": "很高兴见到你，Neifer。接下来想做点什么？",
+    "Good to see you": "很高兴见到你",
+    "What's next?": "接下来想做点什么？",
+    "What's next": "接下来想做点什么",
+    "This project is managed by the": "此项目由",
+    "This workspace is managed by the": "此工作区由",
+    "and can only be deleted by deleting that automation.": "，只能通过删除该自动化来删除。",
+    "and can only be deleted by deleting that automation": "，只能通过删除该自动化来删除",
+    "Antigravity CL (agy)": "Antigravity 命令行工具 (agy)",
+    "including the Antigravity CLI (agy),": "涵盖 Antigravity 命令行工具 (agy)、",
+    "including the Antigravity CL (agy),": "涵盖 Antigravity 命令行工具 (agy)、",
+    "Migrates the user's MCP servers, skills, slash commands, subagents, and instruction files from other coding agents (Claude Code, Codex, Cursor, Gemini CLI) into one new Antigravity plugin...": "将用户的 MCP 服务器、技能、斜杠命令、子智能体和指令文件从其他编程智能体（Claude Code、Codex、Cursor、Gemini CLI）迁移到一个新的 Antigravity 插件中…",
+    "Migrates the user's MCP servers, skills, slash commands, subagents, and instruction files from other coding agents (Claude Code, Codex, Cursor, Gemini CLI) into one new Antigravity plugin": "将用户的 MCP 服务器、技能、斜杠命令、子智能体和指令文件从其他编程智能体（Claude Code、Codex、Cursor、Gemini CLI）迁移到一个新的 Antigravity 插件中",
+    "(Preview & Quota Heavy) Run a swarm: several agents working in parallel on one task, each in its own conversation, collaborating through a shared message board. Use when the work splits into...": "（预览版且消耗大量配额）运行蜂群智能体：多个智能体在同一任务上并行协作，各自处于独立对话中并通过共享消息板进行通信。适用于任务可拆分为可同时执行的子任务…",
+    "ONLY for the native-swarm worker whose brief says it is the monitor. On a timer, it checks whether the whole swarm has stalled and calls on the one member who can unstick it. Coordinators and other workers: do not load this...": "仅供任务摘要指明为监视器的原生蜂群工作人员使用。通过定时器检查整个蜂群是否停滞，并唤醒能够排除阻塞的成员。协调员和其他工作人员请勿加载此技能…",
+    "Search, read, draft, and send emails in Gmail": "在 Gmail 中搜索、阅读、起草和发送邮件",
+    "Develop ideas with context and review documents with fresh eyes": "结合上下文发散构想，并以全新视角审阅文档",
+    "Develop ideas with context and review docum...": "结合上下文发散构想，并以全新视角审阅文档…",
+    "Develop ideas with context and review docum…": "结合上下文发散构想，并以全新视角审阅文档…",
+    "Query Arize AX projects, traces, datasets, and spans directly from Antigravity.": "直接在 Antigravity 中查询 Arize AX 项目、追踪链路、数据集与跨度。",
+    "Query Arize AX projects, traces, datasets, and ...": "直接在 Antigravity 中查询 Arize AX 项目、追踪链路、数据集…",
+    "Query Arize AX projects, traces, datasets, and …": "直接在 Antigravity 中查询 Arize AX 项目、追踪链路、数据集…",
+    "Turn an idea into a website, dashboard, report...": "将创意转化为可分享的网站、仪表盘、报告或轻量网页工具…",
+    "Turn an idea into a website, dashboard, report…": "将创意转化为可分享的网站、仪表盘、报告或轻量网页工具…",
+    "Default interface with full developer tooling.": "包含代码编写与开发工具的默认完整界面体验（输入框居底）。",
+    "Lightweight interface optimized for non-code tasks.": "针对非代码任务优化的轻量界面（输入框居顶）。"
   },
   "patterns": [
     {
@@ -12380,7 +12421,7 @@
     },
     {
       "source": "^(?:This)?\\s*(?:project|workspace)?\\s*is managed by the\\s+(.+?)\\s+automation and can only be deleted by deleting that automation\\.?$",
-      "target": "此项目由 $1 自动化管理，只能通过删除该自动化来删除。",
+      "target": "此项目由 $1 自动化统一管理，只能通过删除该自动化来删除。",
       "flags": "u"
     },
     {
@@ -12491,31 +12532,6 @@
     {
       "source": "^Good to see you,\\s+([^,?.!]+)[.!]?$",
       "target": "很高兴见到你，$1。",
-      "flags": "u"
-    },
-    {
-      "source": "^(?:Free users and Google AI Plus|Google AI Plus and Free users|Free and Google AI Plus) users receive the minimum base limits on Antigravity\\.\\s*You can upgrade to\\s+(.+?)(?:\\s+or above)?\\s+to receive higher rate limits\\.?$",
-      "target": "免费用户与 Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 $1 或更高方案以获取更高额度限制。",
-      "flags": "u"
-    },
-    {
-      "source": "^Free users receive the minimum base limits on Antigravity\\.\\s*You can upgrade to\\s+(.+?)(?:\\s+or above)?\\s+to receive higher rate limits\\.?$",
-      "target": "免费用户在 Antigravity 上享有最低基础限制。你可以升级到 $1 或更高方案以获取更高额度限制。",
-      "flags": "u"
-    },
-    {
-      "source": "^Google AI Plus users receive the minimum base limits on Antigravity\\.\\s*You can upgrade to\\s+(.+?)(?:\\s+or above)?\\s+to receive higher rate limits\\.?$",
-      "target": "Google AI Plus 用户在 Antigravity 上享有最低基础限制。你可以升级到 $1 或更高方案以获取更高额度限制。",
-      "flags": "u"
-    },
-    {
-      "source": "^(.+?)\\s+users receive the minimum base limits on Antigravity\\.\\s*You can upgrade to\\s+(.+?)\\s+or above to receive higher rate limits\\.?$",
-      "target": "$1 用户在 Antigravity 上享有最低基础限制。你可以升级到 $2 或更高方案以获取更高额度限制。",
-      "flags": "u"
-    },
-    {
-      "source": "^(.+?)\\s+users receive the minimum base limits on Antigravity\\.\\s*You can upgrade to\\s+(.+?)\\s+to receive higher rate limits\\.?$",
-      "target": "$1 用户在 Antigravity 上享有最低基础限制。你可以升级到 $2 以获取更高额度限制。",
       "flags": "u"
     },
     {
@@ -27886,6 +27902,61 @@
     {
       "source": "^Managed by the\\s+(automation|plugin)\\s+(automation|plugin)$",
       "target": "由 $1 托管",
+      "flags": "u"
+    },
+    {
+      "source": "^Good to see you[,，]\\s*([^,.!?]+?)[.。!?]?\\s*What's next\\??$",
+      "target": "很高兴见到你，$1。接下来想做点什么？",
+      "flags": "u"
+    },
+    {
+      "source": "^Hey[\\s,，]*([^,.!?]+?)[,，]?\\s*what should we build today\\??$",
+      "target": "你好 $1，今天想做点什么？",
+      "flags": "u"
+    },
+    {
+      "source": "^Welcome back[,，]\\s*([^,.!?]+?)[.。!?]?\\s*Where should we pick up\\??$",
+      "target": "欢迎回来，$1。我们从哪里继续？",
+      "flags": "u"
+    },
+    {
+      "source": "^Search conversations with\\s+.*$",
+      "target": "在左上方点击即可搜索对话。",
+      "flags": "u"
+    },
+    {
+      "source": "^View archived in the sidebar.*$",
+      "target": "在侧边栏中查看已归档内容（🝕 菜单）。",
+      "flags": "u"
+    },
+    {
+      "source": "^Develop ideas with context and review docum.*$",
+      "target": "结合上下文发散构想，并以全新视角审阅文档…",
+      "flags": "u"
+    },
+    {
+      "source": "^Query Arize AX projects, traces, datasets, and.*$",
+      "target": "直接在 Antigravity 中查询 Arize AX 项目、追踪链路、数据集…",
+      "flags": "u"
+    },
+    {
+      "source": "^Turn an idea into a website, dashboard, report.*$",
+      "target": "将创意转化为可分享的网站、仪表盘、报告或轻量网页工具…",
+      "flags": "u"
+    },
+    {
+      "source": "^Migrates the user's MCP servers, skills, slash commands.*$",
+      "target": "将用户的 MCP 服务器、技能、斜杠命令、子智能体和指令文件从其他编程智能体迁移到一个新的 Antigravity 插件中。",
+      "flags": "u"
+    },
+    {
+      "source": "^\\(Preview & Quota Heavy\\) Run a swarm: several agents working in parallel.*$",
+      "target": "（预览版且消耗大量配额）运行蜂群智能体：多个智能体在同一任务上并行协作，各自处于独立对话中并通过共享消息板通信。",
+      "flags": "u"
+    },
+    {
+      "source": "^ONLY for the native-swarm worker whose brief says it is the monitor.*$",
+      "target": "仅供任务摘要指明为监视器的原生蜂群工作人员使用。通过定时器检查整个蜂群是否停滞并唤醒成员。",
       "flags": "u"
     }
   ]
