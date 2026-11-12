@@ -2070,4 +2070,51 @@ test("Antigravity 2.31.0 (v2.3.9) 10-screenshot & 1-4 level overlay, chapter, qu
   assert.ok(out231.includes('title:"知识工作"'));
 });
 
+test("Antigravity 2.31.0 (v2.3.10) onboarding, entrance, and auth components are fully localized", async () => {
+  const dict = await loadDomTranslations();
+
+  // 1. Exact 覆盖核查
+  assert.equal(dict.exact["Welcome to Antigravity!"], "欢迎使用 Antigravity！");
+  assert.equal(dict.exact["Sign In with SSO"], "使用 SSO 登录");
+  assert.equal(dict.exact["Trouble signing in? Enter authorization code"], "登录遇到问题？输入授权码");
+  assert.equal(dict.exact["Authorization code"], "授权码");
+  assert.equal(dict.exact["Paste authorization code"], "粘贴授权码");
+  assert.equal(dict.exact["Submit code"], "提交代码");
+  assert.equal(dict.exact["Select Billing Model"], "选择结算模式");
+  assert.equal(dict.exact["Choose a Subscription"], "选择订阅方案");
+
+  // 2. Dynamic 动态正则匹配核查
+  const dynWelcome = "Welcome to Antigravity!".replace(
+    new RegExp(Object.keys(dict.dynamic).find(k => new RegExp(k).test("Welcome to Antigravity!"))),
+    dict.dynamic["^Welcome to (.+?)!$"]
+  );
+  assert.equal(dynWelcome, "欢迎使用 Antigravity！");
+
+  // 3. 源码级精准替换与语法核查
+  const sampleOnboarding = [
+    'B.createElement("div",{className:"entrance-title text-3xl font-normal z-10 text-center px-4 max-w-full break-words"},t?a:`Welcome to ${a}!`)',
+    'B.createElement("div",{className:"font-medium mb-8 text-xl"},a?`Select ${a} Theme`:"Select Theme")',
+    'B.createElement("h2",{className:"text-xl font-medium text-center"},"Get Anything Done with ",a)',
+    'a=`Hey ${g?.trim().split(/\\s+/)[0]||"there"}!`;',
+    'a=d?b||`Sorry, this account is ineligible to use ${a}`:`Further action is required to use ${a}`',
+    'const yPc=[{id:"build",icon:"code_blocks",title:"Build new features",description:"Hand off a feature and come back to working code."},{id:"fix",icon:"bug_report",title:"Debug and fix",description:"Automatically reproduce bugs, trace causes, test fixes."},{id:"research",icon:"lightbulb_2",title:"Research anything",description:"Ask about your code or any topic, get clear answers."},{id:"write",icon:"edit",title:"Write and edit docs",description:"Draft documents, emails, and notes that sound like you."}];',
+    '[{id:"enterprise",icon:"spark",title:"Subscription",desc:"Use Antigravity through your Gemini subscription."},{id:"paygo",icon:"cloud",title:"Pay As You Go",desc:"Pay only for the tokens you use, billed through Gemini platform."}]',
+    'var WBb=[{id:"global",label:"Global"},{id:"us",label:"United States"},{id:"eu",label:"Europe"}];',
+    'B.createElement("p",{className:"mb-8 px-4 text-muted-foreground max-w-[468px] text-center"},"Plugins are packaged collections of skills and MCPs to help the Agent"," ",f?`in ${f} `:"","work with Google developer products. You can always change your choices in Settings.")',
+    '"Location: ",D.location||"Global"'
+  ].join("\n");
+
+  const out = createLocalizedBundle(Buffer.from(sampleOnboarding, "utf8"), dict).buffer.toString("utf8");
+  assert.doesNotThrow(() => new vm.Script(out), "Onboarding output must be valid JavaScript");
+  assert.ok(out.includes("欢迎使用 ${a}！"));
+  assert.ok(out.includes("选择 ${a} 主题"));
+  assert.ok(out.includes('使用 ",a," 搞定一切任务'));
+  assert.ok(out.includes('你好${g?.trim().split(/\\s+/)[0]?"，"+g.trim().split(/\\s+/)[0]:""}！'));
+  assert.ok(out.includes("构建新功能"));
+  assert.ok(out.includes("订阅制"));
+  assert.ok(out.includes('{id:"global",label:"全球"}'));
+  assert.ok(out.includes("位置："));
+});
+
+
 

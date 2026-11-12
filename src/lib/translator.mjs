@@ -1456,6 +1456,48 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     'p?B.createElement("span",null,"此",A.lowercase==="workspace"?"工作区":"项目","由 ",B.createElement("strong",null,q)," 自动化统一管理，只能通过删除该自动化来删除。"):'
   );
 
+  // 9.9 登录入口、授权引导、角色定制与向导组件深度原生汉化 (wPc/sPc/APc/CPc/zPc/xPc/uPc/tPc/QDb/WBb)
+  sourceText = sourceText.replace(
+    'B.createElement("div",{className:"entrance-title text-3xl font-normal z-10 text-center px-4 max-w-full break-words"},t?a:`Welcome to ${a}!`)',
+    'B.createElement("div",{className:"entrance-title text-3xl font-normal z-10 text-center px-4 max-w-full break-words"},t?a:`欢迎使用 ${a}！`)'
+  );
+  sourceText = sourceText.replace(
+    'B.createElement("div",{className:"font-medium mb-8 text-xl"},a?`Select ${a} Theme`:"Select Theme")',
+    'B.createElement("div",{className:"font-medium mb-8 text-xl"},a?`选择 ${a} 主题`:"选择主题")'
+  );
+  sourceText = sourceText.replace(
+    'B.createElement("h2",{className:"text-xl font-medium text-center"},"Get Anything Done with ",a)',
+    'B.createElement("h2",{className:"text-xl font-medium text-center"},"使用 ",a," 搞定一切任务")'
+  );
+  sourceText = sourceText.replace(
+    'a=`Hey ${g?.trim().split(/\\s+/)[0]||"there"}!`;',
+    'a=`你好${g?.trim().split(/\\s+/)[0]?"，"+g.trim().split(/\\s+/)[0]:""}！`;'
+  );
+  sourceText = sourceText.replace(
+    'a=d?b||`Sorry, this account is ineligible to use ${a}`:`Further action is required to use ${a}`',
+    'a=d?b||`抱歉，该账号不符合使用 ${a} 的资格`:`需要进一步操作方可使用 ${a}`'
+  );
+  sourceText = sourceText.replace(
+    'const yPc=[{id:"build",icon:"code_blocks",title:"Build new features",description:"Hand off a feature and come back to working code."},{id:"fix",icon:"bug_report",title:"Debug and fix",description:"Automatically reproduce bugs, trace causes, test fixes."},{id:"research",icon:"lightbulb_2",title:"Research anything",description:"Ask about your code or any topic, get clear answers."},{id:"write",icon:"edit",title:"Write and edit docs",description:"Draft documents, emails, and notes that sound like you."}];',
+    'const yPc=[{id:"build",icon:"code_blocks",title:"构建新功能",description:"把功能需求交出去，回来直接获得可用代码。"},{id:"fix",icon:"bug_report",title:"调试与修复",description:"自动复现缺陷、追踪根因并测试修复方案。"},{id:"research",icon:"lightbulb_2",title:"调研任何技术问题",description:"就代码或任何主题提问，获取清晰明确的解答。"},{id:"write",icon:"edit",title:"编写与编辑文档",description:"撰写契合你表达风格的文档、邮件与笔记。"}];'
+  );
+  sourceText = sourceText.replace(
+    '[{id:"enterprise",icon:"spark",title:"Subscription",desc:"Use Antigravity through your Gemini subscription."},{id:"paygo",icon:"cloud",title:"Pay As You Go",desc:"Pay only for the tokens you use, billed through Gemini platform."}]',
+    '[{id:"enterprise",icon:"spark",title:"订阅制",desc:"通过你的 Gemini 订阅使用 Antigravity。"},{id:"paygo",icon:"cloud",title:"按量付费",desc:"仅为你消耗的 Token 付费，通过 Gemini 平台结算。"}]'
+  );
+  sourceText = sourceText.replace(
+    'var WBb=[{id:"global",label:"Global"},{id:"us",label:"United States"},{id:"eu",label:"Europe"}];',
+    'var WBb=[{id:"global",label:"全球"},{id:"us",label:"美国"},{id:"eu",label:"欧洲"}];'
+  );
+  sourceText = sourceText.replace(
+    'B.createElement("p",{className:"mb-8 px-4 text-muted-foreground max-w-[468px] text-center"},"Plugins are packaged collections of skills and MCPs to help the Agent"," ",f?`in ${f} `:"","work with Google developer products. You can always change your choices in Settings.")',
+    'B.createElement("p",{className:"mb-8 px-4 text-muted-foreground max-w-[468px] text-center"},"插件是技能与 MCP 的封装合集，可帮助智能体",f?`在 ${f} 中 `:" ","与 Google 开发者产品协同工作。你随时可以在“设置”中更改选择。")'
+  );
+  sourceText = sourceText.replace(
+    '"Location: ",D.location||"Global"',
+    '"位置：",D.location==="Global"||!D.location?"全球":D.location'
+  );
+
   // 原生深度汉化注入：工作耗时、时间单位、动作前缀等
   sourceText = sourceText.replaceAll(
     '${l.killed?"Stopped after":"Worked for"}',
