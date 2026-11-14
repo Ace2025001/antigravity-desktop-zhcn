@@ -2160,3 +2160,37 @@ test("v2.3.11: comprehensive audit for deep menus, variables, timeline and marke
   assert.ok(out.includes("条进度更新"), "Must localize update/updates in progress");
 });
 
+test("v2.3.12: deep penetration audit for onboarding modal, plan names, skills, and marketplace", async () => {
+  const current = await loadDomTranslations();
+
+  // 1. 新增内置技能与插件说明
+  assert.equal(current.exact["mcp-app-development"], "MCP 应用开发");
+  assert.ok(current.exact["Build, package, and debug MCP Apps for Antigravity: MCP server tools whose results render as interactive UI in the conversation, in the side pane, or full-page from the sidebar. Use when adding interactive app capabilities or full-page views to your tools."].includes("为 Antigravity 构建、打包和调试 MCP 应用"));
+
+  // 2. 插件市场与深度子菜单
+  assert.equal(current.exact["Custom Context Menus"], "自定义右键菜单");
+  assert.equal(current.exact["Open Links In"], "打开链接方式");
+  assert.equal(current.exact["Enable Browser Tools"], "启用浏览器工具");
+  assert.equal(current.exact["Browser Javascript Execution Policy"], "浏览器 JavaScript 执行策略");
+  assert.equal(current.exact["Browser Actuation Rules"], "浏览器操作规则");
+  assert.equal(current.exact["Coordinators"], "协调器");
+  assert.equal(current.exact["Environments"], "运行环境");
+
+  // 3. 首次引导弹窗源码替换验证
+  const modalSample = [
+    'B.createElement("h2",{className:q},"One last thing before getting started\\u2026"),B.createElement("p",{className:n?"text-secondary-foreground mt-1":"text-secondary-foreground mt-1 text-center"},"A few things to know, and a couple settings to review.")),B.createElement("ul",{className:"list-none p-0 m-0 flex flex-col gap-4"},B.createElement("li",null,B.createElement(iqc,{title:"Optimized for you"},',
+    '"Customize your experience across the agent, plugins, and product from the settings and marketplace. We won\\u2019t show you ads or let advertisers influence what ",a," says.")),B.createElement("li",null,B.createElement(iqc,{title:"Built to help, not hurt"},"Automated safeguards help to protect your conversations from insecure or unsafe content. That being said, users should be aware of potential agentic risks, including data exfiltration.")),B.createElement("li",null,B.createElement(iqc,{title:"You are in control"},',
+    'a,"\\u2019s agents are powerful and will help you get a lot done better and faster than before, but still make sure to verify the actions taken by the agent."))),B.createElement("hr",{className:"border-t border-border my-4"}),h?B.createElement("p",{className:"text-sm text-muted-foreground leading-normal"},"For ",k,", ",a," does not collect any of your prompts, content, or model responses but will still collect general usage patterns (e.g., feature adoption, active user counts)."):B.createElement("div",',
+    '{className:"flex flex-col gap-3"},B.createElement(tz,{checked:b,onChange:c,disabled:g,alignTop:!0,label:B.createElement(jqc,{title:`Help us improve ${a}.`},"Allow Google to collect and use your Interactions data, subject to the"," ",B.createElement("a",{href:"https://antigravity.google/terms",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"},"Google ",a," Terms of Service")," ","and"," ",B.createElement("a",{href:"https://policies.google.com/privacy",className:"text-link hover:underline",',
+    'target:"_blank",rel:"noreferrer"},"Google Privacy Policy"),". You can control this from your settings at any point.")}),B.createElement(tz,{checked:d,onChange:f,disabled:g,alignTop:!0,label:B.createElement(jqc,{title:"Stay up to date."},"Sign up for newsletters, tips and tricks, and other notifications about ",a,".")}))'
+  ].join("\n");
+
+  const out = createLocalizedBundle(Buffer.from(modalSample, "utf8"), current).buffer.toString("utf8");
+  assert.ok(out.includes("开始使用前，还有最后几项确认…"), "Must translate modal title");
+  assert.ok(out.includes("专属定制优化"), "Must translate section 1");
+  assert.ok(out.includes("秉持安全设计，赋能开发"), "Must translate section 2");
+  assert.ok(out.includes("一切由你掌控"), "Must translate section 3");
+  assert.ok(out.includes("帮助改进 ${a}。") || out.includes("帮助我们改进 ${a}。"), "Must translate checkbox 1 title");
+  assert.ok(out.includes("始终保持最新版本。") || out.includes("订阅最新资讯。"), "Must translate checkbox 2 title");
+});
+
