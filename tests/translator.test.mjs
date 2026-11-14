@@ -2116,5 +2116,47 @@ test("Antigravity 2.31.0 (v2.3.10) onboarding, entrance, and auth components are
   assert.ok(out.includes("位置："));
 });
 
+test("v2.3.11: comprehensive audit for deep menus, variables, timeline and marketplace", async () => {
+  const current = await loadDomTranslations();
 
+  // 1. 快捷键与各级子菜单
+  assert.equal(current.exact["Submit Prompt (Alternate to Enter)"], "提交提示词（Enter 的备用快捷键）");
+  assert.equal(current.exact["Enter always submits. This adds a second shortcut."], "按 Enter 键始终可提交。此项用于添加备用快捷键。");
+  assert.equal(current.exact["Jump to Previous Prompt"], "跳转到上一条提示词");
+  assert.equal(current.exact["Jump to Next Prompt"], "跳转到下一条提示词");
+  assert.equal(current.exact["Pin / Unpin Conversation"], "置顶/取消置顶对话");
+  assert.equal(current.exact["Toggle Word Wrap"], "切换自动换行");
+  assert.equal(current.exact["Connect to SSH Host…"], "连接到 SSH 主机…");
+  assert.equal(current.exact["Stop SSH Server…"], "停止 SSH 服务器…");
+  assert.equal(current.exact["Switch to This Computer"], "切换到此电脑");
+  assert.equal(current.exact["Delete Side Question"], "删除侧边提问");
+  assert.equal(current.exact["Coordinator settings"], "协调智能体设置");
+
+  // 2. 账户与方案名称
+  assert.equal(current.exact["Your Plan:"], "你的方案：");
+  assert.equal(current.exact["Antigravity Starter Quota"], "Antigravity 入门版配额");
+  assert.equal(current.exact["Google AI Pro"], "Google AI 专业版");
+
+  // 3. 首次启动弹窗与欢迎登录页
+  assert.equal(current.exact["Welcome to Antigravity!"], "欢迎使用 Antigravity！");
+  assert.equal(current.exact["One last thing before getting started…"], "开始前最后确认一下…");
+  assert.equal(current.exact["A few things to know, and a couple settings to review."], "在开始之前，有一些注意事项和几项设置需要你确认。");
+
+  // 4. 源码级补丁断言：章节挂接、项目权限、删除项目、Your Plan
+  const sampleBundle = [
+    'var card = B.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"font-medium leading-snug text-foreground"},d??E_c(a,b));',
+    'var plan = B.createElement(UP,{label:B.createElement("div",\n{className:"font-medium"},"Your Plan: ",l),description:m,rightElement:c?.userTier?.upgradeSubscriptionUri&&B.createElement("a",{href:jA(c.userTier.upgradeSubscriptionUri,"utm_campaign","ARGON_MODELS_PAGE"),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"},c.userTier.upgradeButtonText||"Upgrade")});',
+    'var del = {description:p?B.createElement("span",null,"This ",A.lowercase," is managed by the"," ",B.createElement("strong",null,q)," automation and can only be deleted by deleting that automation."):null};',
+    'var kf = H?B.createElement("span",null,"This project was created for"," ",J?B.createElement(B.Fragment,null,"the ",B.createElement("strong",null,J)):"an"," ","automation. ",$e):null;',
+    'var v=u.length;v=`${v} ${v===1?"update":"updates"}`;t=t>0?`Worked for ${Is(t)} \\u00b7 ${v}`:v;'
+  ].join("\n");
+
+  const out = createLocalizedBundle(Buffer.from(sampleBundle, "utf8"), current).buffer.toString("utf8");
+  assert.doesNotThrow(() => new vm.Script(out), "Localized bundle must have valid syntax");
+  assert.ok(out.includes("__AGY_ZHCN_TRANSLATE_CHAPTER__"), "Must hook chapter translation on E_c");
+  assert.ok(out.includes("你的方案：") || out.includes("当前方案："), "Must translate Your Plan");
+  assert.ok(out.includes("此项目由 "), "Must eliminate project in deletion");
+  assert.ok(out.includes("此项目专为 "), "Must eliminate broken Swarm automation text");
+  assert.ok(out.includes("条进度更新"), "Must localize update/updates in progress");
+});
 
