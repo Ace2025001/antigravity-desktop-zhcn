@@ -652,6 +652,58 @@ export function createRuntimeOverlay(dictionary) {
 
     var deEllipsis = trimmed.replace(/(?:\.\.\.|\u2026|\s)+$/g, "").trim();
     if (deEllipsis) {
+      var hit2 = exactTranslations.get(deEllipsis) ?? exactTranslations.get(deEllipsis + ".");
+      if (hit2 !== undefined) return hit2;
+    }
+
+    // 常用技能名称映射
+    var skillNameMap = {
+      "mcp-app-development": "MCP 应用开发",
+      "swarm": "Swarm 蜂群协作",
+      "swarm_monitor": "Swarm 蜂群监视器",
+      "swarm_narrator": "Swarm 协调叙述者",
+      "UI Extension": "UI 扩展",
+      "Swarm": "Swarm 蜂群协作"
+    };
+    if (skillNameMap[trimmed]) return skillNameMap[trimmed];
+
+    // 强前缀保底规则库（覆盖截断/不同标点/多子版本变体）
+    var prefixRules = [
+      [/^Manages Arize users/i, "管理 Arize 用户、组织、空间、项目、角色、角色绑定、资源限制与 API 密钥等。"],
+      [/^Creates,\s*reads,\s*updates,\s*and deletes Arize AI/i, "创建、读取、更新并删除用于存储大语言模型 (LLM) 服务商凭证的 Arize AI 集成。"],
+      [/^Creates and manages annotation configs/i, "创建并管理标注配置（类别型、连续型、自由格式标签体系）及人工标注流程。"],
+      [/^INVOKE THIS SKILL when auditing an AI agent/i, "在审查 AI 智能体或 LLM 应用的合规性与监管标准时调用此技能，涵盖主流全球 AI 法规与合规框架。"],
+      [/^Creates,\s*manages,\s*and queries Arize datasets/i, "创建、管理并查询 Arize 数据集与测试用例，支持数据集增删改查、追加样本以及数据导出。"],
+      [/^Handles LLM-as-judge and code evaluator/i, "处理 Arize 上的 LLM 评审与代码评估器工作流，支持创建、测试和持续更新评估逻辑。"],
+      [/^Creates,\s*runs,\s*and analyzes Arize experiments/i, "创建、运行并深入分析 Arize 实验，用于评估和对比不同模型的性能表现。"],
+      [/^Adds Arize AX tracing to an LLM application/i, "首次为 LLM 应用程序添加 Arize AX 链路追踪。智能检测技术栈、接入对应埋点并验证链路数据。"],
+      [/^Audits instrumentation health of existing Arize traces/i, "审计现有 Arize 链路追踪健康状态，对链路结构、属性与报错状态执行确定性校验。"],
+      [/^Generates deep links to the Arize UI/i, "为项目、链路、Span、会话、数据集、实验及标注队列生成直达 Arize 控制台的深度链接。"],
+      [/^Migrates LLM observability from Braintrust/i, "将 LLM 可观测性数据从 Braintrust 迁移至 Arize AX——支持通过 OTLP 导入历史链路、数据集和提示词。"],
+      [/^Migrates LLM observability from Langfuse/i, "将 LLM 可观测性数据从 Langfuse 迁移至 Arize AX——支持通过 OTLP 导入历史链路（Span、会话与元数据）。"],
+      [/^Migrates LLM observability from LangSmith/i, "将 LLM 可观测性数据从 LangSmith 迁移至 Arize AX——支持通过 OTLP 导入历史链路、运行记录与用户反馈。"],
+      [/^Migrate existing Phoenix \(PX\) traces/i, "将现有 Phoenix (PX) 链路、数据集、实验及存储的评估结果完整平滑迁移至 Arize AX。"],
+      [/^Optimizes,\s*improves,\s*and debugs LLM prompts/i, "结合线上生产链路数据、自动化评估与人工标注，优化、改进并调试大模型提示词。"],
+      [/^INVOKE THIS SKILL for Arize Prompt Hub/i, "在进行 Arize 提示词中心与 'ax prompts' 工作流时调用此技能：编写或导入模板并部署版本。"],
+      [/^Use when one Python service must send each agent/i, "当单个 Python 服务必须将各智能体、租户、团队或请求的 Span 链路分流发送到对应的 Arize 空间和项目时使用。"],
+      [/^Exports,\s*views,\s*and debugs Arize AX traces/i, "通过 ax 命令行工具导出、查看并调试 Arize AX 链路追踪、Span 和会话。"],
+      [/^Call the Gemini API from the shell/i, "通过终端使用 gemini-api 命令行调用 Gemini API。适用于媒体生成（图像、TTS、音乐、视频）、本地文件与 YouTube 分析、音视频转录、深度研究及沙箱智能体。"],
+      [/^Build,\s*package,\s*and debug MCP Apps/i, "为 Antigravity 构建、打包并调试 MCP 应用程序：MCP 服务端工具可将其结果在对话中作为交互式 UI、在侧边栏窗格中或从侧边栏整页呈现。在为 MCP 工具添加 UI、构建或定制应用主题、将其打包为插件，或调试未按预期渲染或运行的应用时使用此技能。"],
+      [/^Live view of the native swarm board/i, "实时查看当前会话 Swarm 智能体群组的原生消息看板、成员花名册与 @提及关系图。"],
+      [/^Swarm Live view of the native swarm board/i, "Swarm 实时查看当前会话 Swarm 智能体群组的原生消息看板、成员花名册与 @提及关系图。"],
+      [/^ONLY for the native-swarm worker whose brief says it is the narrator/i, "仅供任务摘要指明为叙述者的原生蜂群工作人员使用。负责监视消息板并实时更新用户概览（view.json）背后的事实信息。协调员和其他工作人员请勿加载此技能。"]
+    ];
+
+    for (var i = 0; i < prefixRules.length; i++) {
+      if (prefixRules[i][0].test(trimmed)) return prefixRules[i][1];
+    }
+    if (typeof desc !== "string" || !desc.trim()) return desc;
+    var trimmed = desc.trim();
+    var hit = exactTranslations.get(trimmed);
+    if (hit !== undefined) return hit;
+
+    var deEllipsis = trimmed.replace(/(?:\.\.\.|\u2026|\s)+$/g, "").trim();
+    if (deEllipsis) {
       var hit2 = exactTranslations.get(deEllipsis);
       if (hit2 !== undefined) return hit2;
     }
@@ -2374,6 +2426,18 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   
   // 9.8 插件市场详情页：V4 (UI 扩展/自动化描述)、ABc (侧边栏弹窗类型)、SAc (MCP 退出确认)、qBc (MCP 备注)
   sourceText = sourceText.replace('n=k.config?.description||(c==="sidecar"?n:void 0)||k.sidecarId;', 'n=k.config?.description||(c==="sidecar"?n:void 0)||k.sidecarId;n=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(n):n);');
+  sourceText = sourceText.replace('var m=BBc(k.sidecarId,k.config?.displayName)||(c==="extension"?`UI Extension ${l+1}`:`Automation ${l+1}`),', 'var m=BBc(k.sidecarId,k.config?.displayName)||(c==="extension"?`UI 扩展 ${l+1}`:`自动化 ${l+1}`);if(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__)m=globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(m);var ');
+
+  // 9.9 设置页技能与规则列表 (VS 组件) 及作用域徽章 (BKb 组件) 深度汉化
+  sourceText = sourceText.replace(
+    'const BKb=({isGlobal:a,workspaceName:b})=>B.createElement("span",{className:`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${a?"bg-blue-500/10 text-blue-400":"bg-green-500/10 text-green-400"}`},a?"Global":b?b.length>15?b.substring(0,15)+"\\u2026":b:"Workspace");',
+    'const BKb=({isGlobal:a,workspaceName:b})=>B.createElement("span",{className:`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${a?"bg-blue-500/10 text-blue-400":"bg-green-500/10 text-green-400"}`},a?"全局":b?b.length>15?b.substring(0,15)+"\\u2026":b:"工作区");'
+  );
+  sourceText = sourceText.replace(
+    'var VS=({name:a,path:b,onCopyPath:c,description:d,badge:f,disabled:g=!1,adminDisabled:h=!1,disabledReason:k,toggleTooltip:l,isLast:m=!1,onDelete:n,deleteTitle:p="Delete",onToggle:q,toggleChecked:t,toggleDisabled:u=!1,expandableContent:v,actions:w})=>{var x=w||n||q,',
+    'var VS=({name:a,path:b,onCopyPath:c,description:d,badge:f,disabled:g=!1,adminDisabled:h=!1,disabledReason:k,toggleTooltip:l,isLast:m=!1,onDelete:n,deleteTitle:p="删除",onToggle:q,toggleChecked:t,toggleDisabled:u=!1,expandableContent:v,actions:w})=>{var x=w||n||q;if(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__){if(d)d=globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(d);if(a)a=globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(a);}'
+  );
+  sourceText = sourceText.replaceAll('"Copy Path"', '"复制路径"');
   sourceText = sourceText.replace('D=f==="extension"||c.config?.hasWebUi?"UI Extension (SidePanel)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"Scheduled Task":"Automation"', 'D=f==="extension"||c.config?.hasWebUi?"UI 扩展 (侧边栏)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"计划任务":"自动化"');
   sourceText = sourceText.replace('window.confirm("Sign out of this server?")', 'window.confirm("确定要退出登录此服务器吗？")');
   sourceText = sourceText.replace('k=d?.get(f.serverName);', 'k=d?.get(f.serverName);if(k)k=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(k):k);');

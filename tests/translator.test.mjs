@@ -2238,3 +2238,54 @@ test("Case 138: translate plugin overview markdown, table cells, V4 UI extension
   assert.ok(bundleOut.includes('"确定要退出登录此服务器吗？"'), "Must translate sign out confirm");
   assert.ok(bundleOut.includes('k=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__'), "Must hook MCP server note");
 });
+
+test("Case 139: translate Google business account rate limits notice in settings and model popover", async () => {
+  const current = await loadDomTranslations();
+
+  const source = "Antigravity does not support higher rate limits on this Google plan. Consider paid Google AI plans via a personal account or logging in with a Google Cloud project from a business account.";
+  const expected = "Antigravity 不支持在此 Google 方案下提升速率限制。请考虑通过个人账号购买付费 Google AI 方案，或使用企业账号的 Google Cloud 项目登录。";
+
+  // 1. 测试精确翻译
+  assert.equal(translateDictionaryValue(source, current), expected);
+
+  // 2. 测试正则匹配单个句子
+  const part1 = "Antigravity does not support higher rate limits on this Google plan.";
+  assert.equal(translateDictionaryValue(part1, current), "Antigravity 不支持在此 Google 方案下提升速率限制。");
+
+  const part2 = "Consider paid Google AI plans via a personal account or logging in with a Google Cloud project from a business account.";
+  assert.equal(translateDictionaryValue(part2, current), "请考虑通过个人账号购买付费 Google AI 方案，或使用企业账号的 Google Cloud 项目登录。");
+});
+
+test("Case 140: translate settings skills/rules, global badge, Arize commands and Gemini overview", async () => {
+  const current = await loadDomTranslations();
+
+  // 1. 作用域标签：Global -> 全局
+  assert.equal(translateDictionaryValue("Global", current), "全局");
+
+  // 2. 内置技能名称与官方描述
+  assert.equal(translateDictionaryValue("mcp-app-development", current), "MCP 应用开发");
+  assert.equal(translateDictionaryValue("swarm", current), "Swarm 蜂群协作");
+  assert.equal(translateDictionaryValue("swarm_monitor", current), "Swarm 蜂群监视器");
+  assert.equal(translateDictionaryValue("swarm_narrator", current), "Swarm 协调叙述者");
+
+  const mcpDesc = "Build, package, and debug MCP Apps for Antigravity: MCP server tools whose results render as interactive UI in the conversation, in the side pane, or full-page from the sidebar. Use when adding a UI to an MCP tool, building or theming the app itself, packaging it as a plugin, or debugging an app that doesn't render or behave as expected.";
+  assert.match(translateDictionaryValue(mcpDesc, current), /为 Antigravity 构建、打包并调试 MCP 应用程序/);
+
+  // 3. Arize AX 命令与描述（完整及截断版）
+  const arizeAdmin = "Manages Arize users, organizations, spaces, projects, roles, role bindings, resource restrictions, and API ...";
+  assert.match(translateDictionaryValue(arizeAdmin, current), /管理 Arize 用户、组织、空间/);
+
+  const arizeAudit = "INVOKE THIS SKILL when auditing an AI agent or LLM app for regulatory compliance. Cover...";
+  assert.match(translateDictionaryValue(arizeAudit, current), /在审查 AI 智能体或 LLM 应用的合规性/);
+
+  const arizeRoute = "Use when one Python service must send each agent's, tenant's, team's, or request's spans to its c...";
+  assert.match(translateDictionaryValue(arizeRoute, current), /当单个 Python 服务必须将各智能体/);
+
+  // 4. Gemini API 概览与表格单元格
+  const geminiCell = "Build applications with the Interactions API ↗ and Decisions API ↗. Covers text generation, stateful multi-turn chat, streaming, function calling, structured output, calibrated decisions, image generation, speech generation (TTS), Voice Design, Voice Replication, managed agents, Deep Research, and migrations from generateContent.";
+  assert.match(translateDictionaryValue(geminiCell, current), /使用 Interactions API ↗ 与 Decisions API ↗/);
+
+  // 5. Swarm UI 扩展
+  const swarmExt = "Live view of the native swarm board, roster and @mention graph for the current conversation's swarm.";
+  assert.match(translateDictionaryValue(swarmExt, current), /实时查看当前会话 Swarm 智能体群组的原生消息看板/);
+});
