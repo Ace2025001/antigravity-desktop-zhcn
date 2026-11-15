@@ -131,7 +131,8 @@ export function countBundleDictionaryHits(bundleText, dictionary) {
 
 export function createRuntimeOverlay(dictionary) {
   const serialized = JSON.stringify(dictionary.exact);
-  const normalizedPatterns = (dictionary.patterns ?? []).map((p) => ({
+  const patternsList = dictionary.patterns ?? dictionary.dynamic ?? [];
+  const normalizedPatterns = patternsList.map((p) => ({
     ...p,
     target: normalizePatternTarget(p.target),
   }));

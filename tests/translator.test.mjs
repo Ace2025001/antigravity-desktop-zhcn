@@ -2262,3 +2262,36 @@ test("Case 140: safe translate settings skills/rules without white screen, Googl
   assert.equal(translateDictionaryValue("swarm_monitor", current), "Swarm 蜂群监视器");
   assert.equal(translateDictionaryValue("swarm_narrator", current), "Swarm 协调叙述者");
 });
+
+test("Case 141: verify full patterns retention (chat history times, weekly limits, timers) and Looker overview", async () => {
+  const current = await loadDomTranslations();
+
+  // 1. 会话历史时间 (图 1)
+  assert.equal(translateDictionaryValue("2d", current), "2天");
+  assert.equal(translateDictionaryValue("4d", current), "4天");
+  assert.equal(translateDictionaryValue("15d", current), "15天");
+  assert.equal(translateDictionaryValue("1mo", current), "1月");
+  assert.equal(translateDictionaryValue("2mo", current), "2月");
+
+  // 2. 配额限制刷新语句 (图 3)
+  const weeklyText = "You have used some of your weekly limit, it will fully refresh in 6 days, 9 hours.";
+  assert.equal(translateDictionaryValue(weeklyText, current), "你已使用部分每周配额，将在 6 天 9 小时后完全恢复。");
+  const fiveHourText = "You have used some of your 5-hour limit, it will fully refresh in 33 minutes.";
+  assert.equal(translateDictionaryValue(fiveHourText, current), "你已使用部分 5 小时配额，将在 33 分钟后完全恢复。");
+
+  // 3. 任务栏定时器 (图 4)
+  assert.equal(translateDictionaryValue("35s timer", current), "35 秒定时器");
+  assert.equal(translateDictionaryValue("1m timer", current), "1 分钟定时器");
+  assert.equal(translateDictionaryValue("20s timer", current), "20 秒定时器");
+
+  // 4. Looker 插件详情页 (图 2)
+  assert.equal(translateDictionaryValue("Looker Plugin for Antigravity", current), "Antigravity 的 Looker 插件");
+  assert.equal(translateDictionaryValue("Register the OAuth Client App in Looker (One-Time Admin Setup)", current), "在 Looker 中注册 OAuth 客户端应用（管理员一次性设置）");
+
+  // 5. 覆盖层动态规则绝不能为 0
+  const overlay = createRuntimeOverlay(current);
+  const m = overlay.match(/const patternTranslations\s*=\s*(\[[\s\S]*?\])\.map/);
+  assert.ok(m, "patternTranslations array must exist in overlay");
+  const parsed = JSON.parse(m[1]);
+  assert.ok(parsed.length >= 3000, "patternTranslations must contain >= 3000 rules, got: " + parsed.length);
+});
