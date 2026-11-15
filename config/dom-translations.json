@@ -7670,7 +7670,7 @@
     "OK": "确定",
     "ONLY for the native-swarm worker whose brief says it is the monitor. On a timer, it checks whether the whole swarm has stalled and calls on the one member who can unstick it. Coordinators and other workers: do not load this.": "仅供任务摘要指明为监视器的原生蜂群工作人员使用。通过定时器检查整个蜂群是否停滞，并唤醒能够排除阻塞的成员。协调员和其他工作人员请勿加载此技能。",
     "ONLY for the native-swarm worker whose brief says it is the monitor. On a timer, it checks whether the whole swarm has stalled and calls on the one member who can unstick it. Coordinators and other workers: do not load this...": "仅供任务摘要指明为监视器的原生蜂群工作人员使用。通过定时器检查整个蜂群是否停滞，并唤醒能够排除阻塞的成员。协调员和其他工作人员请勿加载此技能…",
-    "ONLY for the native-swarm worker whose brief says it is the narrator. It watches the board and keeps the facts behind the user's Overview (view.json) current. Coordinators and other workers: do not load this.": "仅供任务摘要指明为叙述者的原生蜂群工作人员使用。负责监视消息板并实时更新用户概览（view.json）背后的事实信息。协调员和其他工作人员请勿加载此技能。",
+    "ONLY for the native-swarm worker whose brief says it is the narrator. It watches the board and keeps the facts behind the user's Overview (view.json) current. Coordinators and other workers: do not load this.": "仅适用于简报中指定为“旁白员”（narrator）的原生 Swarm 协同工作成员。它持续监听协作看板，保持面向用户的概览视图（view.json）事实数据实时更新。协调者与其他工作成员请勿加载此技能。",
     "OS-Specific Path and Output Formatting:": "特定操作系统的路径与输出格式：",
     "OS-Specific Path and Output Formatting: - Adapt path resolution to the host OS (%USERPROFILE% on Windows vs. $HOME on macOS/Linux). - When presenting tables, progress, or summaries to the user, always format paths using the host OS path separators (e.g. \\ on Windows such as %USERPROFILE%\\.gemini\\config\\global_workflows\\.md, / on macOS/Linux).": "特定操作系统的路径与输出格式： - 根据主机操作系统适配路径解析（Windows 上使用 %USERPROFILE%，macOS/Linux 上使用 $HOME）。 - 向用户展示表格、进度或摘要时，始终使用主机操作系统的路径分隔符格式化路径（例如在 Windows 上使用 \\，如 %USERPROFILE%\\.gemini\\config\\global_workflows\\.md；在 macOS/Linux 上使用 /）。",
     "OS-Specific Path and Output Formatting::": "特定操作系统的路径与输出格式：：",
@@ -12657,6 +12657,28 @@
     "Live view of the native swarm board, roster and @mention graph for the current conversation's swarm.": "实时查看当前会话 Swarm 智能体群组的原生消息看板、成员花名册与 @提及关系图。",
     "Live view of the native swarm board, roster and @mention graph for the current conversation's swa...": "实时查看当前会话 Swarm 智能体群组的原生消息看板、成员花名册与 @提及关系图……",
     "Live view of the native swarm board, roster and @mention graph for the current conversation's swa…": "实时查看当前会话 Swarm 智能体群组的原生消息看板、成员花名册与 @提及关系图……",
+    "Connect to Google Workspace, including Docs, Sheets, Slides, Drive, Calendar, and Gmail.": "连接至 Google Workspace，涵盖文档、表格、幻灯片、云端硬盘、日历与 Gmail。",
+    "Connect to Google Workspace, including Docs, Sheets, Slides, Drive, Calendar, and Gmail": "连接至 Google Workspace，涵盖文档、表格、幻灯片、云端硬盘、日历与 Gmail",
+    "1s ago": "1 秒前",
+    "2s ago": "2 秒前",
+    "10s ago": "10 秒前",
+    "30s ago": "30 秒前",
+    "1m ago": "1 分钟前",
+    "2m ago": "2 分钟前",
+    "5m ago": "5 分钟前",
+    "10m ago": "10 分钟前",
+    "30m ago": "30 分钟前",
+    "1h ago": "1 小时前",
+    "2h ago": "2 小时前",
+    "3h ago": "3 小时前",
+    "4h ago": "4 小时前",
+    "5h ago": "5 小时前",
+    "6h ago": "6 小时前",
+    "12h ago": "12 小时前",
+    "24h ago": "24 小时前",
+    "1d ago": "1 天前",
+    "2d ago": "2 天前",
+    "7d ago": "7 天前",
     "Antigravity does not support higher rate limits on this Google plan. Consider paid Google AI plans via a personal account or logging in with a Google Cloud project from a business account.": "Antigravity 不支持在此 Google 方案下提升速率限制。请考虑通过个人账号购买付费 Google AI 方案，或使用企业账号的 Google Cloud 项目登录。",
     "Antigravity does not support higher rate limits on this Google plan. Consider paid Google AI plans via a personal account or logging in with a Google Cloud project from a business account": "Antigravity 不支持在此 Google 方案下提升速率限制。请考虑通过个人账号购买付费 Google AI 方案，或使用企业账号的 Google Cloud 项目登录。",
     "Antigravity does not support higher rate limits on this Google plan.": "Antigravity 不支持在此 Google 方案下提升速率限制。",
@@ -28521,21 +28543,6 @@
     {
       "source": "^Read, search, send, and manage Gmail messages, drafts, labels, and emoji reactions using a Go CLI\\.(?:\\s*Use when[\\s\\S]*)?$",
       "target": "使用 Go 命令行工具读取、搜索、发送并管理 Gmail 邮件、草稿、标签和表情回应。适用于阅读、搜索、发送邮件及管理草稿与标签。",
-      "flags": "u"
-    },
-    {
-      "source": "^Antigravity does not support higher rate limits on this Google plan\\.\\s*Consider paid Google AI plans via a personal account or logging in with a Google Cloud project from a business account\\.?$",
-      "target": "Antigravity 不支持在此 Google 方案下提升速率限制。请考虑通过个人账号购买付费 Google AI 方案，或使用企业账号的 Google Cloud 项目登录。",
-      "flags": "u"
-    },
-    {
-      "source": "^Antigravity does not support higher rate limits on this Google plan\\.?$",
-      "target": "Antigravity 不支持在此 Google 方案下提升速率限制。",
-      "flags": "u"
-    },
-    {
-      "source": "^Consider paid Google AI plans via a personal account or logging in with a Google Cloud project from a business account\\.?$",
-      "target": "请考虑通过个人账号购买付费 Google AI 方案，或使用企业账号的 Google Cloud 项目登录。",
       "flags": "u"
     }
   ],

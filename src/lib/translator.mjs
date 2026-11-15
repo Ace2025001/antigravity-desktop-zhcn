@@ -656,7 +656,6 @@ export function createRuntimeOverlay(dictionary) {
       if (hit2 !== undefined) return hit2;
     }
 
-    // 常用技能名称映射
     var skillNameMap = {
       "mcp-app-development": "MCP 应用开发",
       "swarm": "Swarm 蜂群协作",
@@ -667,7 +666,6 @@ export function createRuntimeOverlay(dictionary) {
     };
     if (skillNameMap[trimmed]) return skillNameMap[trimmed];
 
-    // 强前缀保底规则库（覆盖截断/不同标点/多子版本变体）
     var prefixRules = [
       [/^Manages Arize users/i, "管理 Arize 用户、组织、空间、项目、角色、角色绑定、资源限制与 API 密钥等。"],
       [/^Creates,\s*reads,\s*updates,\s*and deletes Arize AI/i, "创建、读取、更新并删除用于存储大语言模型 (LLM) 服务商凭证的 Arize AI 集成。"],
@@ -2428,16 +2426,35 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replace('n=k.config?.description||(c==="sidecar"?n:void 0)||k.sidecarId;', 'n=k.config?.description||(c==="sidecar"?n:void 0)||k.sidecarId;n=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(n):n);');
   sourceText = sourceText.replace('var m=BBc(k.sidecarId,k.config?.displayName)||(c==="extension"?`UI Extension ${l+1}`:`Automation ${l+1}`),', 'var m=BBc(k.sidecarId,k.config?.displayName)||(c==="extension"?`UI 扩展 ${l+1}`:`自动化 ${l+1}`);if(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__)m=globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(m);var ');
 
-  // 9.9 设置页技能与规则列表 (VS 组件) 及作用域徽章 (BKb 组件) 深度汉化
+  // 安全注入 1：设置页技能项 DKb 调用点前置翻译 name 与 description（绝不修改 VS 组件内部避免破坏 Hook 声明导致白屏）
+  sourceText = sourceText.replace(
+    'const DKb=({item:a,onCopyPath:b,isLast:c,showBadge:d=!0})=>B.createElement(VS,{name:a.name,path:a.path,onCopyPath:b,description:a.description',
+    'const DKb=({item:a,onCopyPath:b,isLast:c,showBadge:d=!0})=>B.createElement(VS,{name:(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(a.name):a.name),path:a.path,onCopyPath:b,description:(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(a.description):a.description)'
+  );
+
+  // 安全注入 2：作用域徽章 BKb 杜绝“全球”与“Workspace”
   sourceText = sourceText.replace(
     'const BKb=({isGlobal:a,workspaceName:b})=>B.createElement("span",{className:`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${a?"bg-blue-500/10 text-blue-400":"bg-green-500/10 text-green-400"}`},a?"Global":b?b.length>15?b.substring(0,15)+"\\u2026":b:"Workspace");',
     'const BKb=({isGlobal:a,workspaceName:b})=>B.createElement("span",{className:`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${a?"bg-blue-500/10 text-blue-400":"bg-green-500/10 text-green-400"}`},a?"全局":b?b.length>15?b.substring(0,15)+"\\u2026":b:"工作区");'
   );
+
+  // 安全注入 3：主界面底部模型选择弹窗气泡中的配额说明
   sourceText = sourceText.replace(
-    'var VS=({name:a,path:b,onCopyPath:c,description:d,badge:f,disabled:g=!1,adminDisabled:h=!1,disabledReason:k,toggleTooltip:l,isLast:m=!1,onDelete:n,deleteTitle:p="Delete",onToggle:q,toggleChecked:t,toggleDisabled:u=!1,expandableContent:v,actions:w})=>{var x=w||n||q,',
-    'var VS=({name:a,path:b,onCopyPath:c,description:d,badge:f,disabled:g=!1,adminDisabled:h=!1,disabledReason:k,toggleTooltip:l,isLast:m=!1,onDelete:n,deleteTitle:p="删除",onToggle:q,toggleChecked:t,toggleDisabled:u=!1,expandableContent:v,actions:w})=>{var x=w||n||q;if(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__){if(d)d=globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(d);if(a)a=globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(a);}'
+    'B.createElement("span",null,b?.userTier?.upgradeSubscriptionText)',
+    'B.createElement("span",null,(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(b?.userTier?.upgradeSubscriptionText):b?.userTier?.upgradeSubscriptionText))'
   );
-  sourceText = sourceText.replaceAll('"Copy Path"', '"复制路径"');
+
+  // 安全注入 4：账户设置页中的方案配额说明
+  sourceText = sourceText.replace(
+    'B.createElement("div",\n{className:"font-medium"},"Your Plan: ",l),description:m,rightElement:',
+    'B.createElement("div",\n{className:"font-medium"},"Your Plan: ",l),description:(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(m):m),rightElement:'
+  );
+
+  // 安全注入 5：会话中配额耗尽黄色错误横幅
+  sourceText = sourceText.replace(
+    'l||p?d=B.createElement("span",null,f):(b=`${f} ${b}`',
+    'l||p?d=B.createElement("span",null,f):(b=`${f} ${globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(b):b}`'
+  );
   sourceText = sourceText.replace('D=f==="extension"||c.config?.hasWebUi?"UI Extension (SidePanel)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"Scheduled Task":"Automation"', 'D=f==="extension"||c.config?.hasWebUi?"UI 扩展 (侧边栏)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"计划任务":"自动化"');
   sourceText = sourceText.replace('window.confirm("Sign out of this server?")', 'window.confirm("确定要退出登录此服务器吗？")');
   sourceText = sourceText.replace('k=d?.get(f.serverName);', 'k=d?.get(f.serverName);if(k)k=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(k):k);');
