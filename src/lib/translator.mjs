@@ -702,6 +702,40 @@ export function createRuntimeOverlay(dictionary) {
     return trimmed;
   }
 
+  
+  function __translatePluginHeading(h) {
+    if (!h) return null;
+    var ht = h.trim();
+    var hit = exactTranslations.get(ht);
+    if (hit !== undefined) return hit;
+    var map = {
+      "Setup": "安装与设置",
+      "Releasing": "发布版本",
+      "License": "许可证",
+      "Feedback": "意见反馈",
+      "Prerequisites": "前提条件",
+      "What's included": "包含内容",
+      "What's Included": "包含内容",
+      "What you get": "包含内容",
+      "Skills": "技能",
+      "Commands": "命令",
+      "MCP server": "MCP 服务器",
+      "MCP servers": "MCP 服务器",
+      "Tools": "工具",
+      "Example prompts": "示例提示词",
+      "Resources": "相关资源",
+      "Usage": "使用方法",
+      "Authentication": "身份验证",
+      "Configuration": "配置指南",
+      "Installation": "安装指南",
+      "Available Tools": "可用工具",
+      "Version Pinning": "版本锁定"
+    };
+    if (map[ht]) return map[ht];
+    if (ht.endsWith(" MCP")) return ht.replace(/\s+MCP$/, "") + " MCP 服务器";
+    return null;
+  }
+
   globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__ = __translatePluginDesc;
   globalThis.__AGY_ZHCN_TRANSLATE_PLAN__ = __translatePlanName;
   globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__ = __translatePlanDesc;
@@ -2337,6 +2371,13 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   );
 
   
+  
+  // 9.8 插件市场详情页：V4 (UI 扩展/自动化描述)、ABc (侧边栏弹窗类型)、SAc (MCP 退出确认)、qBc (MCP 备注)
+  sourceText = sourceText.replace('n=k.config?.description||(c==="sidecar"?n:void 0)||k.sidecarId;', 'n=k.config?.description||(c==="sidecar"?n:void 0)||k.sidecarId;n=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(n):n);');
+  sourceText = sourceText.replace('D=f==="extension"||c.config?.hasWebUi?"UI Extension (SidePanel)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"Scheduled Task":"Automation"', 'D=f==="extension"||c.config?.hasWebUi?"UI 扩展 (侧边栏)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"计划任务":"自动化"');
+  sourceText = sourceText.replace('window.confirm("Sign out of this server?")', 'window.confirm("确定要退出登录此服务器吗？")');
+  sourceText = sourceText.replace('k=d?.get(f.serverName);', 'k=d?.get(f.serverName);if(k)k=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(k):k);');
+
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
   return {

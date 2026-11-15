@@ -2214,3 +2214,27 @@ test("Case 137: translate plugin marketplace commands, tabs and descriptions via
   assert.ok(out.includes('"需要配置"'), "Must translate setup required");
   assert.ok(out.includes('"已配置的服务器"'), "Must translate configured servers");
 });
+
+test("Case 138: translate plugin overview markdown, table cells, V4 UI extensions, and MCP server notes", async () => {
+  const current = await loadDomTranslations();
+
+  // 1. 词典深度录入核验
+  assert.equal(current.exact["Your meetings in your workflow."], "会议融入你的工作流。");
+  assert.equal(current.exact["Swarm Plugin"], "Swarm 插件");
+  assert.equal(current.exact["Live view of the native swarm board, roster and @mention graph for the current conversation's swarm."], "实时查看当前会话 Swarm 智能体群组的原生消息看板、成员花名册与 @提及关系图。");
+  assert.ok(current.exact["Equip your agent with current SDK patterns, CLI workflows, model identifiers, and live documentation lookup for building with the Gemini API."].includes("为你的智能体配备最新的 SDK 规范"));
+
+  // 2. 测试 V4 UI 扩展拦截与 ABc 弹窗本地化
+  const sampleV4 = [
+    'n=k.config?.description||(c==="sidecar"?n:void 0)||k.sidecarId;',
+    'D=f==="extension"||c.config?.hasWebUi?"UI Extension (SidePanel)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"Scheduled Task":"Automation"',
+    'window.confirm("Sign out of this server?")',
+    'k=d?.get(f.serverName);'
+  ].join("\n");
+
+  const bundleOut = createLocalizedBundle(Buffer.from(sampleV4, "utf8"), current).buffer.toString("utf8");
+  assert.ok(bundleOut.includes("globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__"), "Must hook V4 description");
+  assert.ok(bundleOut.includes('"UI 扩展（侧边面板）"'), "Must translate UI Extension SidePanel");
+  assert.ok(bundleOut.includes('"确定要退出登录此服务器吗？"'), "Must translate sign out confirm");
+  assert.ok(bundleOut.includes('k=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__'), "Must hook MCP server note");
+});
