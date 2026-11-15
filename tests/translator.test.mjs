@@ -2194,3 +2194,23 @@ test("v2.3.12: deep penetration audit for onboarding modal, plan names, skills, 
   assert.ok(out.includes("始终保持最新版本。") || out.includes("订阅最新资讯。"), "Must translate checkbox 2 title");
 });
 
+
+test("Case 137: translate plugin marketplace commands, tabs and descriptions via K4 hook and dictionary", async () => {
+  const current = await loadDomTranslations();
+  const sample = [
+    'const RBc=[{id:"overview",label:"Overview"},{id:"accounts",label:"Accounts"},{id:"skills",label:"Skills"},{id:"mcp",label:"MCP"},{id:"agents",label:"Agents"},{id:"hooks",label:"Hooks"},{id:"rules",label:"Rules"},{id:"uiExtensions",label:"UI Extensions"},{id:"sidecars",label:"Automations"},{id:"context-providers",label:"Context Providers"}];',
+    'const PBc={starting:"Starting...",stopping:"Stopping...",disabled:"Disabled",idle:void 0};',
+    'function K4({title:a,displayPath:b,copyPath:c,description:d,content:f,modalChildren:g,badge:h,actions:k,actionsPaddingClass:l,disabled:m=!1,MarkdownRenderer:n}){var [p,q]=(0,B.useState)(!1),t=!!d||!!f||!!g,u=d||b;',
+    'B.createElement("div",{className:"flex items-center gap-1.5 mb-1.5 px-3 font-semibold text-foreground"},"Setup required",B.createElement(w4,{variant:"muted"},ic.length)),B.createElement("p",{className:"px-3 text-sm text-muted-foreground mb-2 leading-relaxed"},ic.length===1?"This server needs you to sign in before the agent can use its tools.":"These servers need you to sign in before the agent can use their tools.")',
+    'ic.length>0&&B.createElement("div",{className:"mb-2 px-3 font-semibold text-foreground"},\n"Configured servers")'
+  ].join("\n");
+
+  const out = createLocalizedBundle(Buffer.from(sample, "utf8"), current).buffer.toString("utf8");
+  assert.ok(out.includes('{id:"overview",label:"概览"}'), "Must translate plugin overview tab");
+  assert.ok(out.includes('{id:"skills",label:"技能"}'), "Must translate plugin skills tab");
+  assert.ok(out.includes('{id:"agents",label:"智能体"}'), "Must translate plugin agents tab");
+  assert.ok(out.includes('PBc={starting:"正在启动...",stopping:"正在停止...",disabled:"已禁用",idle:void 0}'), "Must translate MCP status");
+  assert.ok(out.includes('globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?.(d)'), "Must hook K4 description");
+  assert.ok(out.includes('"需要配置"'), "Must translate setup required");
+  assert.ok(out.includes('"已配置的服务器"'), "Must translate configured servers");
+});

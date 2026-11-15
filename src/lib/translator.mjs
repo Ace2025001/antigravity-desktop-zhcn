@@ -611,6 +611,98 @@ export function createRuntimeOverlay(dictionary) {
     return t;
   }
 
+  
+  function __translatePluginSubject(subj) {
+    if (!subj) return "";
+    var s = subj.trim();
+    var dictHit = exactTranslations.get(s);
+    if (dictHit !== undefined) return dictHit;
+    return s
+      .replace(/\bLLM provider credentials\b/gi, "大语言模型提供商凭据")
+      .replace(/\bLLM provider cred(?:entials)?\b/gi, "大模型提供商凭据")
+      .replace(/\bLLM observability\b/gi, "大语言模型可观测性")
+      .replace(/\bLLM prompts\b/gi, "大语言模型提示词")
+      .replace(/\bLLM app\b/gi, "大语言模型应用")
+      .replace(/\bLLM\b/gi, "大语言模型")
+      .replace(/\bAI agent\b/gi, "AI 智能体")
+      .replace(/\bAI agents\b/gi, "AI 智能体")
+      .replace(/\bAPI keys\b/gi, "API 密钥")
+      .replace(/\bAPI key\b/gi, "API 密钥")
+      .replace(/\bannotation configs\b/gi, "标注配置")
+      .replace(/\bdatasets and examples\b/gi, "数据集与示例")
+      .replace(/\bdatasets\b/gi, "数据集")
+      .replace(/\bexperiments\b/gi, "实验")
+      .replace(/\btracing\b/gi, "链路追踪")
+      .replace(/\btraces\b/gi, "链路追踪")
+      .replace(/\bspans\b/gi, "跨度链路")
+      .replace(/\bproduction trace data\b/gi, "生产环境链路追踪数据")
+      .replace(/\bevaluations\b/gi, "评估指标")
+      .replace(/\bevaluators\b/gi, "评估器")
+      .replace(/\bprompts\b/gi, "提示词")
+      .replace(/\bprompt\b/gi, "提示词")
+      .replace(/\bworkflows\b/gi, "工作流")
+      .replace(/\bworkflow\b/gi, "工作流");
+  }
+
+  function __translatePluginDesc(desc) {
+    if (typeof desc !== "string" || !desc.trim()) return desc;
+    var trimmed = desc.trim();
+    var hit = exactTranslations.get(trimmed);
+    if (hit !== undefined) return hit;
+
+    var deEllipsis = trimmed.replace(/(?:\.\.\.|\u2026|\s)+$/g, "").trim();
+    if (deEllipsis) {
+      var hit2 = exactTranslations.get(deEllipsis);
+      if (hit2 !== undefined) return hit2;
+    }
+
+    var m;
+    m = trimmed.match(/^Manages\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "管理 " + __translatePluginSubject(m[1]) + "。";
+
+    m = trimmed.match(/^Creates,\s*reads,\s*updates,\s*and\s*deletes\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "创建、读取、更新并删除 " + __translatePluginSubject(m[1]) + "。";
+
+    m = trimmed.match(/^Creates\s*and\s*manages\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "创建并管理 " + __translatePluginSubject(m[1]) + "。";
+
+    m = trimmed.match(/^Creates,\s*manages,\s*and\s*queries\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "创建、管理并查询 " + __translatePluginSubject(m[1]) + "。";
+
+    m = trimmed.match(/^Creates,\s*runs,\s*and\s*analyzes\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "创建、运行并分析 " + __translatePluginSubject(m[1]) + "。";
+
+    m = trimmed.match(/^Optimizes,\s*improves,\s*and\s*debugs\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "优化、改进并调试 " + __translatePluginSubject(m[1]) + "。";
+
+    m = trimmed.match(/^INVOKE\s+THIS\s+SKILL\s+when\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "在 " + __translatePluginSubject(m[1]) + " 时调用此技能。";
+
+    m = trimmed.match(/^Handles\s+(.+?)\s+workflows\s+on\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "处理 " + m[2].trim() + " 上的 " + __translatePluginSubject(m[1]) + " 工作流。";
+
+    m = trimmed.match(/^Adds\s+(.+?)\s+tracing\s+to\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "为 " + m[2].trim() + " 添加 " + __translatePluginSubject(m[1]) + " 链路追踪。";
+
+    m = trimmed.match(/^Audits\s+(.+?)\s+health\s+of\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "审计 " + m[2].trim() + " 的 " + __translatePluginSubject(m[1]) + " 健康状态。";
+
+    m = trimmed.match(/^Generates\s+deep\s+links\s+to\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "生成指向 " + __translatePluginSubject(m[1]) + " 的深层链接。";
+
+    m = trimmed.match(/^Migrates?\s+(.+?)\s+from\s+(.+?)\s+into\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "将 " + __translatePluginSubject(m[1]) + " 从 " + m[2].trim() + " 迁移至 " + m[3].trim() + "。";
+
+    m = trimmed.match(/^Migrate\s+existing\s+(.+?)\s+into\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "将现有的 " + __translatePluginSubject(m[1]) + " 迁移至 " + m[2].trim() + "。";
+
+    m = trimmed.match(/^Use\s+when\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
+    if (m) return "当 " + __translatePluginSubject(m[1]) + " 时使用。";
+
+    return trimmed;
+  }
+
+  globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__ = __translatePluginDesc;
   globalThis.__AGY_ZHCN_TRANSLATE_PLAN__ = __translatePlanName;
   globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__ = __translatePlanDesc;
   globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__ = __translateChapterTitle;
@@ -1089,7 +1181,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   );
   sourceText = sourceText.replace(
     'function K4({title:a,displayPath:b,copyPath:c,description:d,content:f,modalChildren:g,badge:h,actions:k,actionsPaddingClass:l,disabled:m=!1,MarkdownRenderer:n}){',
-    'function K4({title:a,displayPath:b,copyPath:c,description:d,content:f,modalChildren:g,badge:h,actions:k,actionsPaddingClass:l,disabled:m=!1,MarkdownRenderer:n}){var _d=d&&(globalThis.__AGY_ZHCN_TRANSLATE__?.(d)??globalThis.__AGY_ZHCN_TRANSLATE_MD__?.(d));if(_d)d=_d;var _f=f&&globalThis.__AGY_ZHCN_TRANSLATE_MD__?.(f);if(_f)f=_f;'
+    'function K4({title:a,displayPath:b,copyPath:c,description:d,content:f,modalChildren:g,badge:h,actions:k,actionsPaddingClass:l,disabled:m=!1,MarkdownRenderer:n}){var _d=d&&(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?.(d)??globalThis.__AGY_ZHCN_TRANSLATE__?.(d)??globalThis.__AGY_ZHCN_TRANSLATE_MD__?.(d));if(_d)d=_d;var _f=f&&globalThis.__AGY_ZHCN_TRANSLATE_MD__?.(f);if(_f)f=_f;'
   );
   sourceText = sourceText.replace(
     'const RBc=[{id:"overview",label:"Overview"},{id:"accounts",label:"Accounts"},{id:"skills",label:"Skills"},{id:"mcp",label:"MCP"},{id:"agents",label:"Agents"},{id:"hooks",label:"Hooks"},{id:"rules",label:"Rules"},{id:"uiExtensions",label:"UI Extensions"},{id:"sidecars",label:"Automations"},{id:"context-providers",label:"Context Providers"}];',
@@ -1131,6 +1223,16 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('"Configure")', '"配置")');
   sourceText = sourceText.replaceAll('"Authenticate")', '"身份验证")');
   sourceText = sourceText.replaceAll('case 1:return{label:"Ready"', 'case 1:return{label:"就绪"');
+
+  sourceText = sourceText.replace(
+    'const PBc={starting:"Starting...",stopping:"Stopping...",disabled:"Disabled",idle:void 0};',
+    'const PBc={starting:"正在启动...",stopping:"正在停止...",disabled:"已禁用",idle:void 0};'
+  );
+  sourceText = sourceText.replace(
+    'ic.length>0&&B.createElement("div",{className:"mb-2 px-3 font-semibold text-foreground"},\n"Configured servers")',
+    'ic.length>0&&B.createElement("div",{className:"mb-2 px-3 font-semibold text-foreground"},\n"已配置的服务器")'
+  );
+
   sourceText = sourceText.replaceAll('case 2:return{label:"Unauthenticated"', 'case 2:return{label:"未认证"');
   sourceText = sourceText.replaceAll('case 3:return{label:"App update required"', 'case 3:return{label:"需要更新应用"');
   sourceText = sourceText.replaceAll('case 4:return{label:"Plugin update required"', 'case 4:return{label:"需要更新插件"');
@@ -2234,6 +2336,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     '"同时包含在",M==="in these conversations"?"这些对话":M==="in this workspace"?"此工作区":"此项目","中生效的 ",B.createElement("span",{onClick:se,className:"text-link hover:underline cursor-pointer font-medium"},"全局权限"),"。 "'
   );
 
+  
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
   return {
