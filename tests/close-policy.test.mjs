@@ -187,3 +187,19 @@ test("进程分类器精准区分 Electron 主进程、Chromium 子进程与孤�
   assert.equal(withMain.active.length, 2);
   assert.equal(withMain.orphans.length, 0);
 });
+
+test("按 1 立即强制关闭（与设置问题的数字一致）", async () => {
+  const f = fixture({ keysAt: { 4000: "1" } });
+  await closeWithPolicy(f.args);
+  assert.equal(f.forced, 1);
+  assert.ok(f.time < 10_000);
+});
+
+test("按 2 不强制，一直等到手动退出", async () => {
+  const f = fixture({ keysAt: { 3000: "2" } });
+  const sleep = f.args.sleep;
+  f.args.sleep = async (ms) => { await sleep(ms); if (f.time >= 200_000) f.active = false; };
+  await closeWithPolicy(f.args);
+  assert.equal(f.forced, 0);
+  assert.ok(f.time >= 200_000);
+});

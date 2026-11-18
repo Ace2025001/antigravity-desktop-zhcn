@@ -10,8 +10,6 @@ export const DEFAULT_SETTINGS = Object.freeze({
   autoFollow: "auto",
   onlineTranslate: true,
   titleWriteBack: false,
-  // null = follow defaultDesktopShortcut(); true/false = user's explicit choice.
-  desktopShortcut: null,
 });
 const SETTINGS_FILE = "settings.json";
 
@@ -45,8 +43,6 @@ export function normalizeSettings(raw = {}) {
   if (online !== undefined) settings.onlineTranslate = online;
   const writeBack = parseBoolean(raw.titleWriteBack);
   if (writeBack !== undefined) settings.titleWriteBack = writeBack;
-  const desktop = parseBoolean(raw.desktopShortcut);
-  if (desktop !== undefined) settings.desktopShortcut = desktop;
   return settings;
 }
 
@@ -57,8 +53,6 @@ export function settingsFromEnv(env = process.env) {
   if (AUTO_FOLLOW_MODES.includes(mode)) overrides.autoFollow = mode;
   const online = parseBoolean(env.AGY_ONLINE_TRANSLATE);
   if (online !== undefined) overrides.onlineTranslate = online;
-  const desktop = parseBoolean(env.AGY_DESKTOP_SHORTCUT);
-  if (desktop !== undefined) overrides.desktopShortcut = desktop;
   return overrides;
 }
 
@@ -83,21 +77,11 @@ export async function writeUserSettings(settings, { env = process.env, platform 
   return normalized;
 }
 
-/** Desktop shortcut is redundant when Windows auto-follow already handles updates. */
-export function defaultDesktopShortcut(settings, platform = process.platform) {
-  return platform !== "win32" || settings.autoFollow !== "auto";
-}
-
-export function wantsDesktopShortcut(settings, platform = process.platform) {
-  return typeof settings.desktopShortcut === "boolean" ? settings.desktopShortcut : defaultDesktopShortcut(settings, platform);
-}
-
 export function describeSettings(settings, platform = process.platform) {
   const follow = { auto: "自动汉化", ask: "先问我", off: "不处理" }[settings.autoFollow];
   const lines = [];
   if (platform === "win32") lines.push(`客户端更新后：${follow}`);
   lines.push(`联网补充翻译：${settings.onlineTranslate ? "开启" : "关闭"}`);
-  lines.push(`桌面“Antigravity自动汉化”快捷方式：${wantsDesktopShortcut(settings, platform) ? "创建" : "不创建"}`);
   lines.push(`对话标题写回记录：${settings.titleWriteBack ? "开启" : "关闭（只在界面上显示中文）"}`);
   return lines;
 }
@@ -118,16 +102,6 @@ export const ONLINE_TRANSLATE_QUESTION = [
   "  机器翻译偶尔不够通顺。",
   "  1. 开启（推荐）   2. 关闭",
 ];
-
-export function desktopShortcutQuestion(defaultYes) {
-  return [
-    "【设置】是否在桌面创建“Antigravity自动汉化”快捷方式？",
-    "  用它打开 Antigravity 时，会先检查汉化是否有效，客户端更新过就自动重新汉化再打开。",
-    ...(defaultYes
-      ? ["  1. 创建（推荐）   2. 不创建"]
-      : ["  已开启“自动汉化”时后台会自动处理更新，一般不需要。", "  1. 创建   2. 不创建（推荐）"]),
-  ];
-}
 
 /** Parse a menu answer; empty input picks the default. Returns undefined for invalid input. */
 export function parseChoice(answer, map, fallback) {

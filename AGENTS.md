@@ -27,14 +27,13 @@ Only install when the user has asked for it. Full step-by-step guide: [docs/ai-i
    - macOS: `mac启动/启动中文.command` (set `AGY_MAC_SOURCE` to the official `.app` to skip the picker). First run is interactive: open the official app, wait for the home screen, quit with ⌘Q, then press Enter.
 5. Restore English: `win启动\恢复英文.bat` or `mac启动/恢复英文.command`.
 
-First-run questions only appear in an interactive terminal. In unattended runs the defaults apply (auto-follow `auto`, online translation on, no desktop shortcut on Windows). Tell the user about these defaults, or preset them with environment variables before running:
+First-run questions only appear in an interactive terminal. In unattended runs the defaults apply (auto-follow `auto`, online translation on). Tell the user about these defaults, or preset them with environment variables before running:
 
 - `AGY_AUTO_FOLLOW=auto|ask|off`
 - `AGY_ONLINE_TRANSLATE=on|off`
-- `AGY_DESKTOP_SHORTCUT=on|off`
 
 Rules / 规则:
-- Ask the user to save their work before running. If the client is running, the tool waits 60 s, then requests a normal quit and force-closes it. Press `N` in the terminal if the user prefers to quit manually. Do not kill the client yourself outside the tool. 运行前先提醒用户保存工作，不要绕开工具自行结束客户端。
+- Ask the user to save their work before running. If the client is running, the tool waits 60 s, then requests a normal quit and force-closes it. Press `2` in the terminal if the user prefers to quit manually. Do not kill the client yourself outside the tool. 运行前先提醒用户保存工作，不要绕开工具自行结束客户端。
 - Exit code 0 is not proof of success. Confirm Chinese UI in the client before reporting success.
 - Do not disable signature/structure checks, Gatekeeper, SIP, or forge compatibility entries.
 - Do not star, watch, or change account settings on the user's behalf.

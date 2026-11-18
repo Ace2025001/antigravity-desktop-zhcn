@@ -86,7 +86,7 @@ export async function closeWithPolicy({
   log("需要暂时退出 Antigravity。无法可靠判断是否有未完成任务，请先保存工作。");
   if (exitHint) log(exitHint);
   if (input) {
-    log("关闭 Antigravity 窗口后将自动继续；也可按 Y 立即关闭，或按 N 一直等待手动退出。");
+    log("关闭 Antigravity 窗口后将自动继续；也可按 1 立即关闭，或按 2 不强制、一直等你手动退出。");
     log("不操作：60 秒后先请求正常退出，仍未退出则强制关闭。Ctrl+C 取消本次操作。");
   } else {
     log("60 秒内关闭窗口或退出即可自动继续；超时后先请求正常退出，仍未退出则强制关闭。");
@@ -99,7 +99,7 @@ export async function closeWithPolicy({
     if (mode !== "auto") return;
     const remaining = Math.max(0, Math.ceil((deadline - now()) / 1000));
     if (remaining === previous) return;
-    if (log === console.log && process.stdout.isTTY) process.stdout.write(`\r等待退出：剩余 ${String(remaining).padStart(2, " ")} 秒（关闭窗口自动继续 / Y 立即关闭 / N 不强制）  `);
+    if (log === console.log && process.stdout.isTTY) process.stdout.write(`\r等待退出：剩余 ${String(remaining).padStart(2, " ")} 秒（关闭窗口自动继续 / 1 立即关闭 / 2 不强制）  `);
     else if (remaining % 10 === 0) log(`等待退出：剩余 ${remaining} 秒。`);
     previous = remaining;
   };
@@ -111,11 +111,12 @@ export async function closeWithPolicy({
     while (await running()) {
       const key = input?.next();
       if (key === "\u0003") { endLine(); throw new CloseCancelledError("已取消本次操作，未修改任何安装文件。"); }
-      if (key === "y" || key === "Y") { endLine(); await forceAndConfirm("已确认强制关闭，正在关闭客户端…"); return; }
-      if ((key === "n" || key === "N") && mode === "auto") {
+      // 1 / 2 match the numbered settings questions; Y / N stay accepted.
+      if (key === "1" || key === "y" || key === "Y") { endLine(); await forceAndConfirm("已确认强制关闭，正在关闭客户端…"); return; }
+      if ((key === "2" || key === "n" || key === "N") && mode === "auto") {
         endLine();
         mode = "manual";
-        log("已取消自动强制关闭。请保存工作后手动退出客户端，退出后会自动继续；需要时仍可按 Y 强制关闭，Ctrl+C 取消。");
+        log("已取消自动强制关闭。请保存工作后手动退出客户端，退出后会自动继续；需要时仍可按 1 强制关闭，Ctrl+C 取消。");
       }
       if (mode === "auto" && typeof autoContinueWhen === "function") {
         const pollReason = await autoContinueWhen("poll");

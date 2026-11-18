@@ -183,9 +183,11 @@ $taskName = '${AUTO_FOLLOW_TASK_NAME}'
 $vbs = '${vbsPath.replaceAll("'", "''")}'
 $action = New-ScheduledTaskAction -Execute 'wscript.exe' -Argument ('//B //NoLogo "' + $vbs + '" --periodic')
 $triggerPeriodic = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes ${AUTO_FOLLOW_INTERVAL_MINUTES}) -RepetitionDuration (New-TimeSpan -Days 3650)
-$triggerLogon = New-ScheduledTaskTrigger -AtLogOn
+$user = "$env:USERDOMAIN\\$env:USERNAME"
+$triggerLogon = New-ScheduledTaskTrigger -AtLogOn -User $user
+$principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 15) -MultipleInstances IgnoreNew -Hidden
-Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($triggerPeriodic, $triggerLogon) -Settings $settings -Force | Out-Null
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($triggerPeriodic, $triggerLogon) -Settings $settings -Principal $principal -Force | Out-Null
 `;
   try {
     await execFileAsync(

@@ -5,12 +5,10 @@ import path from "node:path";
 import { mkdtemp, rm } from "node:fs/promises";
 import {
   DEFAULT_SETTINGS,
-  defaultDesktopShortcut,
   normalizeSettings,
   parseChoice,
   readUserSettings,
   settingsFromEnv,
-  wantsDesktopShortcut,
   writeUserSettings,
 } from "../src/lib/user-settings.mjs";
 
@@ -27,18 +25,9 @@ test("无效值回落到默认值", () => {
 });
 
 test("无人值守安装可用环境变量预设", () => {
-  const env = { AGY_AUTO_FOLLOW: "ASK", AGY_ONLINE_TRANSLATE: "off", AGY_DESKTOP_SHORTCUT: "1" };
-  assert.deepEqual(settingsFromEnv(env), { autoFollow: "ask", onlineTranslate: false, desktopShortcut: true });
+  const env = { AGY_AUTO_FOLLOW: "ASK", AGY_ONLINE_TRANSLATE: "off" };
+  assert.deepEqual(settingsFromEnv(env), { autoFollow: "ask", onlineTranslate: false });
   assert.deepEqual(settingsFromEnv({}), {});
-});
-
-test("桌面快捷方式默认值：Windows 自动汉化时不建，其他情况建，明确选择优先", () => {
-  assert.equal(defaultDesktopShortcut({ autoFollow: "auto" }, "win32"), false);
-  assert.equal(defaultDesktopShortcut({ autoFollow: "ask" }, "win32"), true);
-  assert.equal(defaultDesktopShortcut({ autoFollow: "off" }, "win32"), true);
-  assert.equal(defaultDesktopShortcut({ autoFollow: "auto" }, "darwin"), true);
-  assert.equal(wantsDesktopShortcut({ autoFollow: "auto", desktopShortcut: true }, "win32"), true);
-  assert.equal(wantsDesktopShortcut({ autoFollow: "off", desktopShortcut: false }, "win32"), false);
 });
 
 test("菜单输入：空回车取默认，非法输入返回 undefined", () => {
@@ -53,10 +42,10 @@ test("首次运行前没有设置文件；保存后可读回", async () => {
   const env = { AGY_ZHCN_STATE_DIR: dir };
   try {
     assert.equal((await readUserSettings({ env })).exists, false);
-    await writeUserSettings({ autoFollow: "off", onlineTranslate: false, desktopShortcut: true }, { env });
+    await writeUserSettings({ autoFollow: "off", onlineTranslate: false }, { env });
     const { settings, exists } = await readUserSettings({ env });
     assert.equal(exists, true);
-    assert.deepEqual(settings, { autoFollow: "off", onlineTranslate: false, titleWriteBack: false, desktopShortcut: true });
+    assert.deepEqual(settings, { autoFollow: "off", onlineTranslate: false, titleWriteBack: false });
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

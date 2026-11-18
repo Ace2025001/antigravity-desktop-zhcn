@@ -2,17 +2,11 @@
 // terminal; unattended runs (silent launcher, background task, AI agents)
 // fall back to defaults plus AGY_* environment overrides.
 import { createInterface } from "node:readline/promises";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { applyAutoFollowSetting } from "./auto-follow-task.mjs";
-import { ensureAutoShortcuts } from "./auto-shortcuts.mjs";
-import { getStateRoot } from "./paths.mjs";
 import {
   AUTO_FOLLOW_QUESTION,
   ONLINE_TRANSLATE_QUESTION,
-  defaultDesktopShortcut,
   describeSettings,
-  desktopShortcutQuestion,
   parseChoice,
   readUserSettings,
   settingsFromEnv,
@@ -49,8 +43,6 @@ export async function askFirstRunSettings({ platform = process.platform } = {}) 
         chosen.autoFollow = await ask(rl, AUTO_FOLLOW_QUESTION, "请输入 1、2 或 3，直接回车选 1：", AUTO_FOLLOW_CHOICES, chosen.autoFollow);
       }
       chosen.onlineTranslate = await ask(rl, ONLINE_TRANSLATE_QUESTION, "请输入 1 或 2，直接回车选 1：", YES_NO, chosen.onlineTranslate);
-      const desktopDefault = typeof chosen.desktopShortcut === "boolean" ? chosen.desktopShortcut : defaultDesktopShortcut(chosen, platform);
-      chosen.desktopShortcut = await ask(rl, desktopShortcutQuestion(desktopDefault), `请输入 1 或 2，直接回车选 ${desktopDefault ? 1 : 2}：`, YES_NO, desktopDefault);
     } finally {
       rl.close();
     }
@@ -61,14 +53,6 @@ export async function askFirstRunSettings({ platform = process.platform } = {}) 
   for (const line of describeSettings(saved, platform)) console.log(`  ${line}`);
   console.log("");
   return saved;
-}
-
-async function rememberedClient() {
-  try {
-    return JSON.parse(await readFile(path.join(getStateRoot(), "selected-installation.json"), "utf8")).path ?? null;
-  } catch {
-    return null;
-  }
 }
 
 /** Interactive settings editor. Returns a process exit code. */
@@ -86,7 +70,7 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
       console.log("===== Antigravity 汉化设置 =====");
       describeSettings(settings, platform).forEach((line, index) => console.log(`  ${index + 1}. ${line}`));
       console.log("  0. 保存并退出");
-      const options = platform === "win32" ? ["autoFollow", "onlineTranslate", "desktopShortcut", "titleWriteBack"] : ["onlineTranslate", "desktopShortcut", "titleWriteBack"];
+      const options = platform === "win32" ? ["autoFollow", "onlineTranslate", "titleWriteBack"] : ["onlineTranslate", "titleWriteBack"];
       const pick = (await rl.question("请输入要修改的序号：")).trim();
       if (pick === "0" || pick === "") break;
       const key = options[Number(pick) - 1];
@@ -95,9 +79,6 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
         settings.autoFollow = await ask(rl, AUTO_FOLLOW_QUESTION, "请输入 1、2 或 3：", AUTO_FOLLOW_CHOICES, settings.autoFollow);
       } else if (key === "onlineTranslate") {
         settings.onlineTranslate = await ask(rl, ONLINE_TRANSLATE_QUESTION, "请输入 1 或 2：", YES_NO, settings.onlineTranslate);
-      } else if (key === "desktopShortcut") {
-        const current = typeof settings.desktopShortcut === "boolean" ? settings.desktopShortcut : defaultDesktopShortcut(settings, platform);
-        settings.desktopShortcut = await ask(rl, desktopShortcutQuestion(current), "请输入 1 或 2：", YES_NO, current);
       } else if (key === "titleWriteBack") {
         settings.titleWriteBack = await ask(rl, [
           "【高级】是否把中文对话标题写回对话记录？",
@@ -117,12 +98,6 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
   if (platform === "win32") {
     const result = await applyAutoFollowSetting(settings).catch((error) => ({ registered: false, reason: error.message }));
     console.log(settings.autoFollow === "off" ? "已关闭后台检查。" : result.registered ? "后台检查已按新设置生效。" : `后台检查未能设置：${result.reason}`);
-  }
-  const client = await rememberedClient();
-  if (client) {
-    await ensureAutoShortcuts(client).catch((error) => console.log(`快捷方式未能更新：${error.message}`));
-  } else {
-    console.log("快捷方式设置会在下次运行“启动中文”时生效。");
   }
   console.log("联网补充翻译和标题设置会在重新打开 Antigravity 后生效，无需重新汉化。");
   return 0;
