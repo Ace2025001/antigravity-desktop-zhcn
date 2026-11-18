@@ -17,5 +17,5 @@ test("后台线程生成结果与直接生成完全一致，并报告用时", as
   const actual = await createLocalizedBundleWithProgress(source, dictionary, { log: (s) => logs.push(s), stdout: { isTTY: false } });
   assert.equal(actual.sha256, expected.sha256);
   assert.deepEqual(actual.buffer, expected.buffer);
-  assert.ok(logs.at(-1).startsWith("中文界面已生成，用时"));
+  assert.ok(logs.at(-1).includes("中文界面已生成（用时"));
 });

@@ -2,6 +2,7 @@
 // terminal; unattended runs (silent launcher, background task, AI agents)
 // fall back to defaults plus AGY_* environment overrides.
 import { createInterface } from "node:readline/promises";
+import { SYMBOLS, banner, color } from "./console-ui.mjs";
 import { applyAutoFollowSetting } from "./auto-follow-task.mjs";
 import {
   AUTO_FOLLOW_QUESTION,
@@ -16,13 +17,19 @@ import {
 const AUTO_FOLLOW_CHOICES = { 1: "auto", 2: "ask", 3: "off" };
 const YES_NO = { 1: true, 2: false };
 
+// Question title in bold with a “?” marker, description dimmed, options indented.
 async function ask(rl, lines, prompt, map, fallback) {
+  const [title, ...rest] = lines;
   console.log("");
-  for (const line of lines) console.log(line);
+  console.log(`  ${color.cyan("?")} ${color.bold(title.replace(/^【[^】]*】/, ""))}`);
+  for (const line of rest) {
+    const trimmed = line.trim();
+    console.log(/^\d\./.test(trimmed) ? `    ${trimmed}` : `    ${color.dim(trimmed)}`);
+  }
   for (;;) {
-    const value = parseChoice(await rl.question(prompt), map, fallback);
+    const value = parseChoice(await rl.question(`  ${prompt}`), map, fallback);
     if (value !== undefined) return value;
-    console.log("输入无效，请重新输入。");
+    console.log(`  ${color.yellow(SYMBOLS.warn)} 输入无效，请重新输入。`);
   }
 }
 
@@ -38,7 +45,8 @@ export async function askFirstRunSettings({ platform = process.platform } = {}) 
   if (isInteractive()) {
     const rl = createInterface({ input: process.stdin, output: process.stdout });
     try {
-      console.log("首次使用，先确认几项设置（之后可以随时在“汉化设置”里修改）。");
+      console.log("");
+      console.log(`  ${color.bold("首次使用，先确认两项设置")}  ${color.dim("直接回车即用推荐值，之后可在“汉化设置”里修改")}`);
       if (platform === "win32") {
         chosen.autoFollow = await ask(rl, AUTO_FOLLOW_QUESTION, "请输入 1、2 或 3，直接回车选 1：", AUTO_FOLLOW_CHOICES, chosen.autoFollow);
       }
@@ -49,9 +57,7 @@ export async function askFirstRunSettings({ platform = process.platform } = {}) 
   }
   const saved = await writeUserSettings(chosen);
   console.log("");
-  console.log("已保存设置：");
-  for (const line of describeSettings(saved, platform)) console.log(`  ${line}`);
-  console.log("");
+  for (const line of describeSettings(saved, platform)) console.log(`  ${color.green(SYMBOLS.ok)} ${line}`);
   return saved;
 }
 
@@ -66,15 +72,16 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
   let changed = false;
   try {
     for (;;) {
+      banner("Antigravity 汉化设置");
       console.log("");
-      console.log("===== Antigravity 汉化设置 =====");
-      describeSettings(settings, platform).forEach((line, index) => console.log(`  ${index + 1}. ${line}`));
-      console.log("  0. 保存并退出");
+      describeSettings(settings, platform).forEach((line, index) => console.log(`  ${color.cyan(String(index + 1))}  ${line}`));
+      console.log(`  ${color.cyan("0")}  保存并退出`);
+      console.log("");
       const options = platform === "win32" ? ["autoFollow", "onlineTranslate", "titleWriteBack"] : ["onlineTranslate", "titleWriteBack"];
-      const pick = (await rl.question("请输入要修改的序号：")).trim();
+      const pick = (await rl.question("  请输入要修改的序号，直接回车保存并退出：")).trim();
       if (pick === "0" || pick === "") break;
       const key = options[Number(pick) - 1];
-      if (!key) { console.log("输入无效，请重新输入。"); continue; }
+      if (!key) { console.log(`  ${color.yellow(SYMBOLS.warn)} 输入无效，请重新输入。`); continue; }
       if (key === "autoFollow") {
         settings.autoFollow = await ask(rl, AUTO_FOLLOW_QUESTION, "请输入 1、2 或 3：", AUTO_FOLLOW_CHOICES, settings.autoFollow);
       } else if (key === "onlineTranslate") {

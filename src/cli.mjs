@@ -31,6 +31,7 @@ import {
 } from "./lib/translator.mjs";
 import { createLocalizedBundleWithProgress } from "./lib/localize-progress.mjs";
 import { removeAutoFollowDaemon } from "./lib/auto-follow-task.mjs";
+import { ok as uiOk, step as uiStep } from "./lib/console-ui.mjs";
 import {
   atomicReplaceFile,
   buildPatchedAsar,
@@ -765,6 +766,7 @@ async function restore() {
   await askUserToCloseAntigravity(
     "请彻底关闭 Antigravity，然后按回车继续恢复英文...",
   );
+  uiStep("恢复英文原版");
   const inspection = await inspectInstallation();
   if (
     !areSamePaths(inspection.installRoot, state.installRoot) ||
@@ -804,8 +806,8 @@ async function restore() {
   await removeVerifiedLocalizedBundle(state);
 
   const daemon = await removeAutoFollowDaemon().catch(() => ({ removed: false }));
-  if (daemon.removed) console.log("已删除后台自动跟进更新的计划任务。");
-  console.log("英文原版恢复完成。");
+  if (daemon.removed) uiOk("已删除后台自动汉化的计划任务");
+  uiOk("已恢复英文原版文件");
   return 0;
 }
 
