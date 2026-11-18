@@ -2295,3 +2295,49 @@ test("Case 141: verify full patterns retention (chat history times, weekly limit
   const parsed = JSON.parse(m[1]);
   assert.ok(parsed.length >= 3000, "patternTranslations must contain >= 3000 rules, got: " + parsed.length);
 });
+
+test("Case 142: translate Gemini 4 Carbon/Hydrogen/Argon promo cards, Orchestrator tooltips, Fast badge, Final Step and 2.32.2 components", async () => {
+  const current = await loadDomTranslations();
+
+  // 1. Gemini 4 推广卡片描述 (图 1 & 图 4)
+  assert.equal(
+    translateDictionaryValue("Our most advanced model yet!", current),
+    "迄今为止我们最先进的模型！"
+  );
+  assert.equal(
+    translateDictionaryValue("Our daily driver for rapid coding and dependable agentic execution!", current),
+    "专为快速编码与可靠智能体执行打造的日常主力模型！"
+  );
+
+  // 2. Orchestrator (Carbon / Argon) 悬停气泡描述 (图 2 & 图 3)
+  assert.equal(
+    translateDictionaryValue("Carbon that may offload routine steps to Hydrogen. Same Carbon-level quality, fewer tokens used.", current),
+    "可将常规步骤交由 Hydrogen 分担执行的 Carbon 模型。保持同等的 Carbon 级质量，消耗更少 Token。"
+  );
+  assert.equal(
+    translateDictionaryValue("Argon that may offload routine steps to Hydrogen. Same Argon-level quality, fewer tokens used.", current),
+    "可将常规步骤交由 Hydrogen 分担执行的 Argon 模型。保持同等的 Argon 级质量，消耗更少 Token。"
+  );
+
+  // 3. 搜索框最近文件与对话英文标题
+  assert.equal(translateDictionaryValue("Final Step 28", current), "最终步骤 28");
+  assert.equal(translateDictionaryValue("Using Chrome to Open Doubao", current), "使用 Chrome 打开豆包");
+  assert.equal(translateDictionaryValue("Google Superiority Video Script", current), "谷歌优势对比视频剧本");
+
+  // 4. 验证 2.32.2 组件名 (q2, T5, cNb, aNb, M_, vt) 在 createLocalizedBundle 中 100% 命中
+  const sample2322 = [
+    'var q2=({option:a,iconOnly:b=!1})=>{var c=eC();return a.tagTitle&&a.tagDescription?B.createElement(B.Fragment,null,B.createElement("div",{"data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-sm${b?" h-4 flex-none":""}`},!b&&B.createElement("span",null,a.tagTitle),B.createElement(nq,{name:"info",className:"h-3 w-3 flex-none"})),B.createElement(qz,{id:c},B.createElement("div",{className:"max-w-[200px]"},a.tagDescription))):a.tagTitle?B.createElement("div",\n{className:"bg-secondary rounded-full px-1.5 text-sm"},a.tagTitle):null};',
+    'function T5({markdown:a,className:b,baseDirUri:c}){return a}',
+    'const cNb=({item:a,onCopyPath:b,isLast:c,showBadge:d=!0})=>B.createElement(KT,{name:a.name,path:a.path,onCopyPath:b,description:a.description});',
+    'const aNb=({isGlobal:a,workspaceName:b})=>B.createElement("span",{className:`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${a?"bg-blue-500/10 text-blue-400":"bg-green-500/10 text-green-400"}`},a?"Global":b?b.length>15?b.substring(0,15)+"\\u2026":b:"Workspace");',
+    'var M_=({nux:a,logEvent:b,handleDismissNux:c,bodyContent:d,primaryCtaText:f,onPrimaryClick:g,secondaryCtaText:h,onSecondaryClick:k,onClose:l})=>{return null};',
+    'function vt(a){return a?.annotations?.title?.trim()||a?.summary?.trim()||void 0}'
+  ].join("\n");
+
+  const bundleOut = createLocalizedBundle(Buffer.from(sample2322, "utf8"), current).buffer.toString("utf8");
+  assert.ok(bundleOut.includes('"Fast":"快速"'), "Must translate Fast badge in q2");
+  assert.ok(bundleOut.includes("__AGY_ZHCN_TRANSLATE_MODEL_DESC__"), "Must hook model tag description");
+  assert.ok(bundleOut.includes("function T5({markdown:a,className:b,baseDirUri:c}){a=globalThis.__AGY_ZHCN_TRANSLATE_MD__"), "Must hook T5 MarkdownRenderer in 2.32.2");
+  assert.ok(bundleOut.includes('a?"全局":b?b.length>15?b.substring(0,15)+"\\u2026":b:"工作区"'), "Must translate aNb badge in 2.32.2");
+  assert.ok(bundleOut.includes("__AGY_ZHCN_TRANSLATE_CHAPTER__"), "Must hook vt conversation title in 2.32.2");
+});

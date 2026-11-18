@@ -12754,7 +12754,31 @@
     "Semantic Data Exploration": "语义数据探索",
     "Querying & Content": "查询与内容管理",
     "LookML Development": "LookML 开发",
-    "Instance Health": "实例健康检查"
+    "Instance Health": "实例健康检查",
+    "Our most advanced model yet!": "迄今为止我们最先进的模型！",
+    "Our most advanced model yet.": "迄今为止我们最先进的模型。",
+    "Our most advanced model yet": "迄今为止我们最先进的模型",
+    "Our daily driver for rapid coding and dependable agentic execution!": "专为快速编码与可靠智能体执行打造的日常主力模型！",
+    "Our daily driver for rapid coding and dependable agentic execution.": "专为快速编码与可靠智能体执行打造的日常主力模型。",
+    "Our daily driver for rapid coding and dependable agentic execution": "专为快速编码与可靠智能体执行打造的日常主力模型",
+    "Our frontier model for complex reasoning and deep coding tasks!": "面向复杂推理与深度编码任务的前沿模型！",
+    "Our frontier model for complex reasoning and deep coding tasks.": "面向复杂推理与深度编码任务的前沿模型。",
+    "Our balanced model for complex reasoning and coding!": "兼顾复杂推理与编码能力的均衡模型！",
+    "Our balanced model for complex reasoning and coding.": "兼顾复杂推理与编码能力的均衡模型。",
+    "Our most capable model for complex reasoning and coding!": "面向复杂推理与编码的最强能力模型！",
+    "Our most capable model for complex reasoning and coding.": "面向复杂推理与编码的最强能力模型。",
+    "Introducing Gemini 4 Carbon": "隆重推出 Gemini 4 Carbon",
+    "Introducing Gemini 4 Argon": "隆重推出 Gemini 4 Argon",
+    "Introducing Gemini 4 Hydrogen": "隆重推出 Gemini 4 Hydrogen",
+    "Carbon that may offload routine steps to Hydrogen. Same Carbon-level quality, fewer tokens used.": "可将常规步骤交由 Hydrogen 分担执行的 Carbon 模型。保持同等的 Carbon 级质量，消耗更少 Token。",
+    "Carbon that may offload routine steps to Hydrogen. Same Carbon-level quality, fewer tokens used": "可将常规步骤交由 Hydrogen 分担执行的 Carbon 模型。保持同等的 Carbon 级质量，消耗更少 Token",
+    "Argon that may offload routine steps to Hydrogen. Same Argon-level quality, fewer tokens used.": "可将常规步骤交由 Hydrogen 分担执行的 Argon 模型。保持同等的 Argon 级质量，消耗更少 Token。",
+    "Argon that may offload routine steps to Hydrogen. Same Argon-level quality, fewer tokens used": "可将常规步骤交由 Hydrogen 分担执行的 Argon 模型。保持同等的 Argon 级质量，消耗更少 Token",
+    "Hydrogen that may offload routine steps to Flash. Same Hydrogen-level quality, fewer tokens used.": "可将常规步骤交由 Flash 分担执行的 Hydrogen 模型。保持同等的 Hydrogen 级质量，消耗更少 Token。",
+    "Using Chrome to Open Doubao": "使用 Chrome 打开豆包",
+    "Using Chrome to Open Douyin": "使用 Chrome 打开抖音",
+    "Google Superiority Video Script": "谷歌优势对比视频剧本",
+    "Final Step 28": "最终步骤 28"
   },
   "patterns": [
     {
@@ -28570,6 +28594,26 @@
     {
       "source": "^Read, search, send, and manage Gmail messages, drafts, labels, and emoji reactions using a Go CLI\\.(?:\\s*Use when[\\s\\S]*)?$",
       "target": "使用 Go 命令行工具读取、搜索、发送并管理 Gmail 邮件、草稿、标签和表情回应。适用于阅读、搜索、发送邮件及管理草稿与标签。",
+      "flags": "u"
+    },
+    {
+      "source": "^([A-Za-z0-9 .+-]+) that may offload routine steps to ([A-Za-z0-9 .+-]+)\\. Same ([A-Za-z0-9 .+-]+)-level quality, fewer tokens used\\.?$",
+      "target": "可将常规步骤交由 $2 分担执行的 $1 模型。保持同等的 $3 级质量，消耗更少 Token。",
+      "flags": "u"
+    },
+    {
+      "source": "^Final Step (\\d+)$",
+      "target": "最终步骤 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Step (\\d+)$",
+      "target": "步骤 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Using (.+) to Open (.+)$",
+      "target": "使用 $1 打开 $2",
       "flags": "u"
     }
   ],

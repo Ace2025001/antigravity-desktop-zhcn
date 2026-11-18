@@ -399,7 +399,10 @@ export function createRuntimeOverlay(dictionary) {
     "Translating remaining untranslated error messages": "汉化剩余未翻译的错误提示",
     "Translating the user interface": "汉化用户界面",
     "Understanding the antigravity hot reload update": "解析 Antigravity 热重载更新机制",
-    "Updating and uploading localization files": "更新与上传本地化文件"
+    "Updating and uploading localization files": "更新与上传本地化文件",
+    "Using Chrome to Open Doubao": "使用 Chrome 打开豆包",
+    "Using Chrome to Open Douyin": "使用 Chrome 打开抖音",
+    "Google Superiority Video Script": "谷歌优势对比视频剧本"
   };
 
   function __translateChapterTitle(title) {
@@ -408,6 +411,12 @@ export function createRuntimeOverlay(dictionary) {
     if (__chapterExactMap[t]) return __chapterExactMap[t];
     var dictHit = exactTranslations.get(t);
     if (dictHit !== undefined) return dictHit;
+    if (/[\u4e00-\u9fff]/.test(t)) return title;
+    var mUsing = t.match(/^Using\s+(.+?)\s+to\s+[Oo]pen\s+(.+)$/i);
+    if (mUsing) {
+      var targetSite = mUsing[2].replace(/^Doubao$/i, "豆包").replace(/^Douyin$/i, "抖音");
+      return "使用 " + mUsing[1] + " 打开" + (/[\u4e00-\u9fff]/.test(targetSite[0]) ? "" : " ") + targetSite;
+    }
     var s = t;
     var verbMap = [
       [/^Fixing and releasing\\s+/i, "修复并发布 "],
@@ -787,11 +796,32 @@ export function createRuntimeOverlay(dictionary) {
     return null;
   }
 
+  function __translateModelTagDesc(desc) {
+    if (typeof desc !== "string" || !desc.trim()) return desc;
+    var t = desc.trim();
+    var hit = exactTranslations.get(t);
+    if (hit !== undefined) return hit;
+    var mOffload = t.match(/^([A-Za-z0-9 .+-]+)\s+that\s+may\s+offload\s+routine\s+steps\s+to\s+([A-Za-z0-9 .+-]+)\.\s*Same\s+([A-Za-z0-9 .+-]+)-level\s+quality,\s*fewer\s+tokens\s+used\.?$/i);
+    if (mOffload) {
+      return "可将常规步骤交由 " + mOffload[2].trim() + " 分担执行的 " + mOffload[1].trim() + " 模型。保持同等的 " + mOffload[3].trim() + " 级质量，消耗更少 Token。";
+    }
+    if (/^Our most advanced model yet[!.]?$/i.test(t)) {
+      return "迄今为止我们最先进的模型" + (t.endsWith("!") ? "！" : t.endsWith(".") ? "。" : "");
+    }
+    if (/^Our daily driver for rapid coding and dependable agentic execution[!.]?$/i.test(t)) {
+      return "专为快速编码与可靠智能体执行打造的日常主力模型" + (t.endsWith("!") ? "！" : t.endsWith(".") ? "。" : "");
+    }
+    var tr = translateValue(desc);
+    if (tr !== null) return tr;
+    return desc;
+  }
+
   globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__ = __translatePluginDesc;
   globalThis.__AGY_ZHCN_TRANSLATE_PLAN__ = __translatePlanName;
   globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__ = __translatePlanDesc;
   globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__ = __translateChapterTitle;
   globalThis.__AGY_ZHCN_TRANSLATE_DUR__ = __fmtDurToZh;
+  globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__ = __translateModelTagDesc;
 
   const collectorRecords = [];
   const collector = {
@@ -1495,8 +1525,8 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     'var _mL={"Rename":"重命名","Pin":"置顶","Unpin":"取消置顶","Mark Read":"标记为已读","Mark Unread":"标记为未读","Copy":"复制","Cut":"剪切","Paste":"粘贴","Select All":"全选","Undo":"撤销","Redo":"重做","Delete":"删除","Delete Permanently":"永久删除","Archive":"归档","Restore":"恢复","Share":"分享","Stop":"停止","Split":"拆分","Fork":"分支","View Debug":"查看调试信息","Telemetry":"遥测","New Group":"新建分组","Remove from Group":"从分组中移除","Conversation Name":"对话名称","Conversation ID":"对话 ID","Project Name":"项目名称","Workspace Name":"工作区名称","Worktree Name":"工作树名称","Split Right":"向右拆分","Split Down":"向下拆分","Replace with New":"替换为新对话","Replace With New":"替换为新对话","Remove from Split":"从拆分中移除","Copy Image":"复制图片","Save Image":"保存图片","Save Video":"保存视频","Open in Tab":"在标签页中打开","Open in New Tab":"在新标签页中打开","Copy Link Address":"复制链接地址","Open Link in New Tab":"在新标签页中打开链接","Open Link in External Browser":"在外部浏览器中打开链接","Open Image in New Tab":"在新标签页中打开图片","Copy Image Address":"复制图片地址","Copy Message":"复制消息","Copy Path":"复制路径","Undo to Here":"撤销到此处","Fork in Shared Workspace":"在共享工作区中派生","Fork in New Workspace":"在新建工作区中派生","Close Other Tabs":"关闭其他标签页","Close Tabs to the Left":"关闭左侧标签页","Close Tabs to the Right":"关闭右侧标签页","Comment":"评论","Open in Code Search":"在代码搜索中打开","Edit Shortcut":"编辑快捷键","Add Shortcut":"添加快捷键","Remove Shortcut":"移除快捷键","Reset to Default":"恢复默认"};var g={id:f,label:(_mL[d.label]||globalThis.__AGY_ZHCN_TRANSLATE__?.(d.label)||d.label),type:d.type&&d.type!=="item"&&d.type!=="label"?d.type:"normal"'
   );
   sourceText = sourceText.replace(
-    'var s1=({option:a,iconOnly:b=!1})=>{var c=qB();return a.tagTitle&&a.tagDescription?B.createElement(B.Fragment,null,B.createElement("div",{"data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-sm${b?" h-4 flex-none":""}`},!b&&B.createElement("span",null,a.tagTitle),B.createElement(dq,{name:"info",className:"h-3 w-3 flex-none"})),B.createElement(Sy,{id:c},B.createElement("div",{className:"max-w-[200px]"},a.tagDescription))):a.tagTitle?B.createElement("div",\n{className:"bg-secondary rounded-full px-1.5 text-sm"},a.tagTitle):null};',
-    'var s1=({option:a,iconOnly:b=!1})=>{var c=qB(),tT=({"Notice":"提示","Unavailable":"不可用","New":"新"}[a.tagTitle]||a.tagTitle),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription));return a.tagTitle&&a.tagDescription?B.createElement(B.Fragment,null,B.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-sm${b?" h-4 flex-none":""}`},!b&&B.createElement("span",{"data-model-selector-badge":"true"},tT),B.createElement(dq,{name:"info",className:"h-3 w-3 flex-none"})),B.createElement(Sy,{id:c},B.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?B.createElement("div",\n{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-sm"},tT):null};'
+    /var ([a-zA-Z0-9_$]+)=\(\{option:a,iconOnly:b=!1\}\)\s*=>\s*\{var c=([a-zA-Z0-9_$]+)\(\);return a\.tagTitle&&a\.tagDescription\?B\.createElement\(B\.Fragment,null,B\.createElement\("div",\{"data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1\.5 text-sm\${b\?" h-4 flex-none":""}`\},!b&&B\.createElement\("span",null,a\.tagTitle\),B\.createElement\(([a-zA-Z0-9_$]+),\{name:"info",className:"h-3 w-3 flex-none"\}\)\),B\.createElement\(([a-zA-Z0-9_$]+),\{id:c\},B\.createElement\("div",\{className:"max-w-\[200px\]"\},a\.tagDescription\)\)\):a\.tagTitle\?B\.createElement\("div",\s*\{className:"bg-secondary rounded-full px-1\.5 text-sm"\},a\.tagTitle\):null\};/g,
+    'var $1=({option:a,iconOnly:b=!1})=>{var c=$2(),tT=({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription));return a.tagTitle&&a.tagDescription?B.createElement(B.Fragment,null,B.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-sm${b?" h-4 flex-none":""}`},!b&&B.createElement("span",{"data-model-selector-badge":"true"},tT),B.createElement($3,{name:"info",className:"h-3 w-3 flex-none"})),B.createElement($4,{id:c},B.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?B.createElement("div",\n{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-sm"},tT):null};'
   );
   sourceText = sourceText.replaceAll('function S2b(a){switch(a){case "system":return"System UI";case "inter":return"Inter";case "google-sans":return"Google Sans"}}', 'function S2b(a){switch(a){case "system":return"系统默认";case "inter":return"Inter";case "google-sans":return"Google Sans"}}');
   sourceText = sourceText.replaceAll('label:"Screen Reader Mode",description:"Optimize the interface and terminal output for screen readers."', 'label:"屏幕阅读器模式",description:"针对屏幕阅读器优化界面和终端输出。"');
@@ -1824,13 +1854,13 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   // 模型数据适配层源头汉化（支持 Claude 思考模型、单项 GPT-OSS 规格汉化，保留多规格英文以确保二级菜单正常折叠聚合）
   sourceText = sourceText.replace(
     /([a-zA-Z0-9_$]+)=a=>a\.modelOrAlias\?\{label:a\.label,value:a\.modelOrAlias\.choice\.case==="model"\?a\.modelOrAlias\.choice\.value:([A-Za-z0-9_$]+)\.Model\.UNSPECIFIED,modelAlias:a\.modelOrAlias\.choice\.case==="alias"\?a\.modelOrAlias\.choice\.value:void 0,disabled:a\.disabled,supportedMimeTypes:new Map\(Object\.entries\(a\.supportedMimeTypes\)\),quotaInfo:a\.quotaInfo,tagTitle:a\.tagTitle,tagDescription:a\.tagDescription,/,
-    '$1=a=>a.modelOrAlias?{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$2.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新"}[a.tagTitle]||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription,'
+    '$1=a=>a.modelOrAlias?{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$2.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
   );
 
   // 兜底支持已解构参数的适配层
   sourceText = sourceText.replace(
     /\{label:a\.label,value:a\.modelOrAlias\.choice\.case==="model"\?a\.modelOrAlias\.choice\.value:([A-Za-z0-9_$]+)\.Model\.UNSPECIFIED,modelAlias:a\.modelOrAlias\.choice\.case==="alias"\?a\.modelOrAlias\.choice\.value:void 0,disabled:a\.disabled,supportedMimeTypes:new Map\(Object\.entries\(a\.supportedMimeTypes\)\),quotaInfo:a\.quotaInfo,tagTitle:a\.tagTitle,tagDescription:a\.tagDescription,/,
-    '{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$1.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新"}[a.tagTitle]||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":a.tagDescription,'
+    '{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$1.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
   );
 
   // 模型选择器标签徽章组件汉化（Notice -> 提示，Unavailable -> 不可用，兼容多版本混淆名）
@@ -2459,6 +2489,67 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replace('D=f==="extension"||c.config?.hasWebUi?"UI Extension (SidePanel)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"Scheduled Task":"Automation"', 'D=f==="extension"||c.config?.hasWebUi?"UI 扩展 (侧边栏)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"计划任务":"自动化"');
   sourceText = sourceText.replace('window.confirm("Sign out of this server?")', 'window.confirm("确定要退出登录此服务器吗？")');
   sourceText = sourceText.replace('k=d?.get(f.serverName);', 'k=d?.get(f.serverName);if(k)k=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(k):k);');
+
+  // 9.10 跨版本 (2.31.0 / 2.32.2+) 混淆名自适应增强与 Gemini 4 新模型卡片、会话标题拦截
+  // 首页问候语自适应 (R6 / S6)
+  sourceText = sourceText.replace(
+    '[{named:a=>`Hey ${a}, what should we build today?`,unnamed:"Hey there, what should we build today?"},{named:a=>`Welcome back, ${a}. Where should we pick up?`,unnamed:"Welcome back. Where should we pick up?"},{named:a=>`Good to see you, ${a}. What\'s next?`,unnamed:"Good to see you. What\'s next?"}]',
+    '[{named:a=>`嘿 ${a}，今天想一起打造些什么？`,unnamed:"嘿，今天想一起打造些什么？"},{named:a=>`欢迎回来，${a}。我们从哪里继续？`,unnamed:"欢迎回来，我们从哪里继续？"},{named:a=>`很高兴见到你，${a}。接下来做什么？`,unnamed:"很高兴见到你，接下来做什么？"}]'
+  );
+  // 工作耗时与进度更新自适应 (Is / Ws)
+  sourceText = sourceText.replace(
+    /v=`\${v} \${v===1\?"update":"updates"}`;t=t>0\?`Worked for \${([a-zA-Z0-9_$]+)\(t\)} \\u00b7 \${v}`:v;/g,
+    'v=`${v} 条进度更新`;t=t>0?`工作耗时 ${$1(t)} \\u00b7 ${v}`:v;'
+  );
+  // 插件详情头部、弹窗、标签栏、Markdown 渲染器、MCP 状态自适应 (LAc/VEc, K4/H5, RBc/gGc, Y4/T5, PBc/eGc, BBc/LFc)
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(\{name:a,titleId:b,logo:c,badges:d,subtitle:f,actions:g,description:h,layout:k="page"\}\)\{(?!var _h)/g,
+    'function $1({name:a,titleId:b,logo:c,badges:d,subtitle:f,actions:g,description:h,layout:k="page"}){var _h=h&&(globalThis.__AGY_ZHCN_TRANSLATE_MD__?.(h)||globalThis.__AGY_ZHCN_TRANSLATE__?.(h));if(_h)h=_h;'
+  );
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(\{title:a,displayPath:b,copyPath:c,description:d,content:f,modalChildren:g,badge:h,actions:k,actionsPaddingClass:l,disabled:m=!1,MarkdownRenderer:n\}\)\{(?!var _d)/g,
+    'function $1({title:a,displayPath:b,copyPath:c,description:d,content:f,modalChildren:g,badge:h,actions:k,actionsPaddingClass:l,disabled:m=!1,MarkdownRenderer:n}){var _d=d&&(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?.(d)??globalThis.__AGY_ZHCN_TRANSLATE__?.(d)??globalThis.__AGY_ZHCN_TRANSLATE_MD__?.(d));if(_d)d=_d;var _f=f&&globalThis.__AGY_ZHCN_TRANSLATE_MD__?.(f);if(_f)f=_f;'
+  );
+  sourceText = sourceText.replace(
+    '[{id:"overview",label:"Overview"},{id:"accounts",label:"Accounts"},{id:"skills",label:"Skills"},{id:"mcp",label:"MCP"},{id:"agents",label:"Agents"},{id:"hooks",label:"Hooks"},{id:"rules",label:"Rules"},{id:"uiExtensions",label:"UI Extensions"},{id:"sidecars",label:"Automations"},{id:"context-providers",label:"Context Providers"}]',
+    '[{id:"overview",label:"概览"},{id:"accounts",label:"账户"},{id:"skills",label:"技能"},{id:"mcp",label:"MCP"},{id:"agents",label:"智能体"},{id:"hooks",label:"钩子"},{id:"rules",label:"规则"},{id:"uiExtensions",label:"UI 扩展"},{id:"sidecars",label:"自动化"},{id:"context-providers",label:"上下文提供程序"}]'
+  );
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(\{markdown:a,className:b,baseDirUri:c\}\)\{(?!a=globalThis)/g,
+    'function $1({markdown:a,className:b,baseDirUri:c}){a=globalThis.__AGY_ZHCN_TRANSLATE_MD__?globalThis.__AGY_ZHCN_TRANSLATE_MD__(a):a;'
+  );
+  sourceText = sourceText.replace(
+    '{starting:"Starting...",stopping:"Stopping...",disabled:"Disabled",idle:void 0}',
+    '{starting:"正在启动...",stopping:"正在停止...",disabled:"已禁用",idle:void 0}'
+  );
+  sourceText = sourceText.replace(
+    /var m=([a-zA-Z0-9_$]+)\(k\.sidecarId,k\.config\?\.displayName\)\|\|\(c==="extension"\?`UI Extension \${l\+1}`:`Automation \${l\+1}`\),/g,
+    'var m=$1(k.sidecarId,k.config?.displayName)||(c==="extension"?`UI 扩展 ${l+1}`:`自动化 ${l+1}`);if(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__)m=globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(m);var '
+  );
+  // 设置页技能项与作用域徽章跨版本安全注入 (DKb/cNb, BKb/aNb，绝不修改 VS/KT 内部避免白屏)
+  sourceText = sourceText.replace(
+    /const ([a-zA-Z0-9_$]+)=\(\{item:a,onCopyPath:b,isLast:c,showBadge:d=!0\}\)\s*=>\s*B\.createElement\(([a-zA-Z0-9_$]+),\{name:a\.name,path:a\.path,onCopyPath:b,description:a\.description/g,
+    'const $1=({item:a,onCopyPath:b,isLast:c,showBadge:d=!0})=>B.createElement($2,{name:(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(a.name):a.name),path:a.path,onCopyPath:b,description:(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(a.description):a.description)'
+  );
+  sourceText = sourceText.replace(
+    /const ([a-zA-Z0-9_$]+)=\(\{isGlobal:a,workspaceName:b\}\)\s*=>\s*B\.createElement\("span",\{className:`text-\[10px\] px-1\.5 py-0\.5 rounded shrink-0 \${a\?"bg-blue-500\/10 text-blue-400":"bg-green-500\/10 text-green-400"}`\},a\?"Global":b\?b\.length>15\?b\.substring\(0,15\)\+"\\u2026":b:"Workspace"\);/g,
+    'const $1=({isGlobal:a,workspaceName:b})=>B.createElement("span",{className:`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${a?"bg-blue-500/10 text-blue-400":"bg-green-500/10 text-green-400"}`},a?"全局":b?b.length>15?b.substring(0,15)+"\\u2026":b:"工作区");'
+  );
+  // 账户设置页方案配额说明跨版本注入
+  sourceText = sourceText.replace(
+    '"Your Plan: ",l),description:m,rightElement:',
+    '"你的方案：",globalThis.__AGY_ZHCN_TRANSLATE_PLAN__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN__(l):l),description:(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(m):m),rightElement:'
+  );
+  // 右下角 NUX 新模型发布卡片组件 (M_) 原生前置翻译
+  sourceText = sourceText.replace(
+    /var ([a-zA-Z0-9_$]+)=\(\{nux:a,logEvent:b,handleDismissNux:c,bodyContent:d,primaryCtaText:f,onPrimaryClick:g,secondaryCtaText:h,onSecondaryClick:k,onClose:l\}\)\s*=>\s*\{/g,
+    'var $1=({nux:a,logEvent:b,handleDismissNux:c,bodyContent:d,primaryCtaText:f,onPrimaryClick:g,secondaryCtaText:h,onSecondaryClick:k,onClose:l})=>{if(a){var _nt=a.title&&(globalThis.__AGY_ZHCN_TRANSLATE__?.(a.title)||a.title),_nb=a.body&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.body)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.body)||a.body);if(_nt!==a.title||_nb!==a.body)a={...a,title:_nt,body:_nb};}if(typeof d==="string")d=globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(d)||globalThis.__AGY_ZHCN_TRANSLATE__?.(d)||d;'
+  );
+  // 会话标题提取函数 (ct / vt) 纯英文标题自动中文化拦截
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(a\)\{return a\?\.annotations\?\.title\?\.trim\(\)\|\|a\?\.summary\?\.trim\(\)\|\|void 0\}/g,
+    'function $1(a){var _t=a?.annotations?.title?.trim()||a?.summary?.trim()||void 0;return _t&&!/[\\u4e00-\\u9fff]/.test(_t)&&(globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__?.(_t)||globalThis.__AGY_ZHCN_TRANSLATE__?.(_t))||_t}'
+  );
 
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
