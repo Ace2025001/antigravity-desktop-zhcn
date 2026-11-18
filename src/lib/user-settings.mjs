@@ -82,7 +82,6 @@ export function describeSettings(settings, platform = process.platform) {
   const lines = [];
   if (platform === "win32") lines.push(`客户端更新后：${follow}`);
   lines.push(`联网补充翻译：${settings.onlineTranslate ? "开启" : "关闭"}`);
-  lines.push(`对话标题写回记录：${settings.titleWriteBack ? "开启" : "关闭（只在界面上显示中文）"}`);
   return lines;
 }
 

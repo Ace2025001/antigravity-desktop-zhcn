@@ -77,7 +77,7 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
       describeSettings(settings, platform).forEach((line, index) => console.log(`  ${color.cyan(String(index + 1))}  ${line}`));
       console.log(`  ${color.cyan("0")}  保存并退出`);
       console.log("");
-      const options = platform === "win32" ? ["autoFollow", "onlineTranslate", "titleWriteBack"] : ["onlineTranslate", "titleWriteBack"];
+      const options = platform === "win32" ? ["autoFollow", "onlineTranslate"] : ["onlineTranslate"];
       const pick = (await rl.question("  请输入要修改的序号，直接回车保存并退出：")).trim();
       if (pick === "0" || pick === "") break;
       const key = options[Number(pick) - 1];
@@ -86,13 +86,6 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
         settings.autoFollow = await ask(rl, AUTO_FOLLOW_QUESTION, "请输入 1、2 或 3：", AUTO_FOLLOW_CHOICES, settings.autoFollow);
       } else if (key === "onlineTranslate") {
         settings.onlineTranslate = await ask(rl, ONLINE_TRANSLATE_QUESTION, "请输入 1 或 2：", YES_NO, settings.onlineTranslate);
-      } else if (key === "titleWriteBack") {
-        settings.titleWriteBack = await ask(rl, [
-          "【高级】是否把中文对话标题写回对话记录？",
-          "  关闭（推荐）：只在界面上显示中文，你的对话记录不变，恢复英文后标题自动变回原样。",
-          "  开启：把翻译后的标题保存进对话记录，可能同步到你的账号，之后无法自动还原。",
-          "  1. 开启   2. 关闭",
-        ], "请输入 1 或 2：", YES_NO, settings.titleWriteBack);
       }
       changed = true;
     }
@@ -106,6 +99,6 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
     const result = await applyAutoFollowSetting(settings).catch((error) => ({ registered: false, reason: error.message }));
     console.log(settings.autoFollow === "off" ? "已关闭后台检查。" : result.registered ? "后台检查已按新设置生效。" : `后台检查未能设置：${result.reason}`);
   }
-  console.log("联网补充翻译和标题设置会在重新打开 Antigravity 后生效，无需重新汉化。");
+  console.log("联网补充翻译的改动会在重新打开 Antigravity 后生效，无需重新汉化。");
   return 0;
 }
