@@ -806,7 +806,7 @@ async function restore() {
   await removeVerifiedLocalizedBundle(state);
 
   const daemon = await removeAutoFollowDaemon().catch(() => ({ removed: false }));
-  if (daemon.removed) uiOk("已删除后台自动汉化的计划任务");
+  if (daemon.removed) uiOk("已清理旧版的后台计划任务");
   uiOk("已恢复英文原版文件");
   return 0;
 }

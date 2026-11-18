@@ -181,7 +181,7 @@ if (existingBundleHash && existingBundleHash !== previousBundleHash) {
 
 try {
   if (abortIfRunning && !launchedByTool && (await clientProcesses()).length) {
-    warn("客户端正在运行，后台汉化不会关闭它，留待下次检查。");
+    warn("客户端正在运行，后台汉化不会关闭它。");
     process.exit(3);
   }
   await gracefulCloseAntigravity({ owned: launchedByTool });

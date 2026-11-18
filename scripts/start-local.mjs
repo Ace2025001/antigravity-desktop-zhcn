@@ -11,8 +11,8 @@ import { readUserSettings } from "../src/lib/user-settings.mjs";
 const packageVersion = JSON.parse(await readFile(path.join(projectRoot, "package.json"), "utf8")).version;
 
 const FOLLOW_SUMMARY = {
-  auto: "以后客户端更新时，会在后台自动重新汉化。",
-  ask: "以后客户端更新时，会弹窗问你是否一键汉化。",
+  auto: "以后在客户端里点更新后，会自动跟着重新汉化。",
+  ask: "以后在客户端里点更新后，会弹窗问你是否一键汉化。",
   off: "以后客户端更新后，双击“启动中文”即可重新汉化。",
 };
 
