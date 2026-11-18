@@ -1090,8 +1090,9 @@ export function createRuntimeOverlay(dictionary) {
     if (typeof globalThis.__AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__ === "function") {
       return await globalThis.__AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__(preparedText);
     }
+    const makeTimeoutOpts = () => (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") ? { signal: AbortSignal.timeout(8000) } : {};
     try {
-      const proxyResp = await fetch("agy-zhcn://translate?q=" + encodeURIComponent(preparedText));
+      const proxyResp = await fetch("agy-zhcn://translate?q=" + encodeURIComponent(preparedText), makeTimeoutOpts());
       if (proxyResp && proxyResp.ok) {
         const proxyJson = await proxyResp.json();
         if (proxyJson && proxyJson.ok && typeof proxyJson.translated === "string") {
@@ -1101,7 +1102,7 @@ export function createRuntimeOverlay(dictionary) {
     } catch (_) {}
 
     const directUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=" + encodeURIComponent(preparedText);
-    const resp = await fetch(directUrl);
+    const resp = await fetch(directUrl, makeTimeoutOpts());
     if (!resp.ok) return null;
     const data = await resp.json();
     return Array.isArray(data && data[0]) ? data[0].map((seg) => (Array.isArray(seg) ? seg[0] : "")).join("") : null;
@@ -3486,7 +3487,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   return {
     buffer: localized,
     sha256: sha256Buffer(localized),
-    coverage: skipCoverage ? 0 : countBundleDictionaryHits(sourceText, dictionary),
+    coverage: skipCoverage ? { hits: 0, total: Object.keys(dictionary.exact).length } : countBundleDictionaryHits(sourceText, dictionary),
   };
 }
 

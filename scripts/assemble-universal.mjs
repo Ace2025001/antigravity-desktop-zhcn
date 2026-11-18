@@ -19,7 +19,7 @@ for(const name of ["src","config","node_modules"])await cp(path.join(source,name
 for(const name of ["dom-translations.json","macos-translations.json"])await unlink(path.join(core,"config",name));
 for(const name of ["package.json","package-lock.json","LICENSE"])await cp(path.join(source,name),path.join(core,name));
 await mkdir(path.join(core,"scripts"));
-for(const name of ["auto-follow-update.mjs","macos.mjs","start-local.mjs","choose-install.ps1","choose-install-mac.js","create-auto-shortcuts.ps1","show-window.ps1"])await cp(path.join(source,"scripts",name),path.join(core,"scripts",name));
+for(const name of ["auto-follow-update.mjs","silent-auto-follow-daemon.mjs","macos.mjs","start-local.mjs","choose-install.ps1","choose-install-mac.js","create-auto-shortcuts.ps1","show-window.ps1"])await cp(path.join(source,"scripts",name),path.join(core,"scripts",name));
 for(const [index,platform] of ["win","mac"].entries()){
   const entry=path.join(output,`${platform}启动`);
   await cp(path.join(source,"launchers",`${platform}启动`),entry,{recursive:true});

@@ -7,46 +7,122 @@ import { getAntigravityUserDataRoot, getStateRoot, projectRoot } from "./paths.m
 const execFileAsync = promisify(execFile);
 export const AUTO_FOLLOW_TASK_NAME = "AntigravityZhcnAutoFollow";
 
+/**
+ * Convert any Unicode string into a 100% pure 7-bit ASCII VBScript expression
+ * using ChrW(...) for non-ASCII characters. Prevents WScript/CScript CP936/ANSI
+ * multi-byte quote-swallowing syntax errors (800A0409) on all Windows locales.
+ */
+export function toVbsAsciiExpr(input) {
+  const str = String(input ?? "");
+  if (str.length === 0) return '""';
+  const tokens = [];
+  let asciiBuf = "";
+  const flushAscii = () => {
+    if (asciiBuf.length > 0) {
+      tokens.push(`"${asciiBuf.replaceAll('"', '""')}"`);
+      asciiBuf = "";
+    }
+  };
+  for (let i = 0; i < str.length; i += 1) {
+    const code = str.charCodeAt(i);
+    if (code >= 32 && code <= 126) {
+      asciiBuf += str[i];
+    } else {
+      flushAscii();
+      tokens.push(`ChrW(${code})`);
+    }
+  }
+  flushAscii();
+  return tokens.join(" & ");
+}
+
+function buildVbsVarAssignmentLines(varName, rawValue) {
+  const str = String(rawValue ?? "");
+  if (str.length === 0) return [`${varName} = ""`];
+  const lines = [];
+  const chunkSize = 24;
+  for (let offset = 0; offset < str.length; offset += chunkSize) {
+    const piece = str.slice(offset, offset + chunkSize);
+    const expr = toVbsAsciiExpr(piece);
+    if (offset === 0) {
+      lines.push(`${varName} = ${expr}`);
+    } else {
+      lines.push(`${varName} = ${varName} & ${expr}`);
+    }
+  }
+  return lines;
+}
+
+export function assertPureAsciiVbs(vbsSource) {
+  for (let i = 0; i < vbsSource.length; i += 1) {
+    const code = vbsSource.charCodeAt(i);
+    if (code > 126 || (code < 32 && code !== 13 && code !== 10 && code !== 9)) {
+      throw new Error(`VBS 脚本包含非 ASCII 字符 (code=${code}, index=${i})`);
+    }
+  }
+  return vbsSource;
+}
+
 export function buildSilentDaemonVbs({ nodeExePath, daemonScriptPath, languagePackDir }) {
-  const esc = (s) => String(s).replaceAll('"', '""');
-  return [
-    "' Antigravity ZhCN Silent Auto-Follow Daemon Wrapper (Zero Window)",
+  const lines = [
+    "' Antigravity ZhCN Silent Auto-Follow Daemon Wrapper (Pure ASCII, Zero Window)",
     "Option Explicit",
-    "Dim shell, args, extraArg, cmd",
+    "Dim shell, nodePath, daemonScript, packPath, extraArg, cmd",
     'Set shell = CreateObject("WScript.Shell")',
-    languagePackDir
-      ? `shell.Environment("Process")("AGY_LANGUAGE_PACK") = "${esc(languagePackDir)}"`
-      : "' using default language pack directory",
+    ...buildVbsVarAssignmentLines("nodePath", nodeExePath),
+    ...buildVbsVarAssignmentLines("daemonScript", daemonScriptPath),
+  ];
+  if (languagePackDir) {
+    lines.push(...buildVbsVarAssignmentLines("packPath", languagePackDir));
+    lines.push('shell.Environment("Process")("AGY_LANGUAGE_PACK") = packPath');
+  }
+  lines.push(
     'extraArg = ""',
     'If WScript.Arguments.Count > 0 Then extraArg = " " & WScript.Arguments(0)',
-    `cmd = """${esc(nodeExePath)}"" ""${esc(daemonScriptPath)}""" & extraArg`,
+    'cmd = """" & nodePath & """ """ & daemonScript & """" & extraArg',
     "shell.Run cmd, 0, False",
-    "",
-  ].join("\r\n");
+    ""
+  );
+  return assertPureAsciiVbs(lines.join("\r\n"));
 }
 
 export function buildSilentLauncherVbs() {
-  return [
-    "' Antigravity ZhCN Silent GUI Launcher (Zero Console Window)",
+  const errPrefix = "Antigravity 中文启动未完成（退出码 ";
+  const errSuffix = "）。你可双击 win启动\\启动中文.bat 查看详细提示。";
+  const errTitle = "Antigravity 中文助手";
+  const lines = [
+    "' Antigravity ZhCN Silent GUI Launcher (Pure ASCII, Zero Console Window)",
     "Option Explicit",
-    "Dim fso, shell, here, packDir, coreDir, nodeExe, scriptPath, cmd, exitCode",
+    "Dim fso, shell, here, relPack, relCore, relNode, packDir, coreDir, nodeExe, scriptPath, cmd, exitCode, errMsg, errTitle",
     'Set fso = CreateObject("Scripting.FileSystemObject")',
     'Set shell = CreateObject("WScript.Shell")',
     "here = fso.GetParentFolderName(WScript.ScriptFullName)",
-    'packDir = fso.BuildPath(here, "..\\语言包")',
-    'coreDir = fso.BuildPath(packDir, "核心程序")',
-    'nodeExe = fso.BuildPath(here, "配套程序\\node.exe")',
+    ...buildVbsVarAssignmentLines("relPack", "..\\语言包"),
+    ...buildVbsVarAssignmentLines("relCore", "核心程序"),
+    ...buildVbsVarAssignmentLines("relNode", "配套程序\\node.exe"),
+    "packDir = fso.GetAbsolutePathName(fso.BuildPath(here, relPack))",
+    "coreDir = fso.BuildPath(packDir, relCore)",
+    "nodeExe = fso.BuildPath(here, relNode)",
     'If Not fso.FileExists(nodeExe) Then nodeExe = "node.exe"',
     'scriptPath = fso.BuildPath(coreDir, "scripts\\start-local.mjs")',
+    'If Not fso.FileExists(scriptPath) Then',
+    ...buildVbsVarAssignmentLines("errMsg", "未找到汉化核心组件（语言包\\核心程序\\scripts\\start-local.mjs），请确认汉化包解压完整。"),
+    ...buildVbsVarAssignmentLines("errTitle", errTitle),
+    "  MsgBox errMsg, 48, errTitle",
+    "  WScript.Quit 1",
+    "End If",
     'shell.Environment("Process")("AGY_LANGUAGE_PACK") = packDir',
     'shell.Environment("Process")("AGY_SILENT_LAUNCH") = "1"',
     'cmd = """" & nodeExe & """ """ & scriptPath & """ start"',
     "exitCode = shell.Run(cmd, 0, True)",
     "If exitCode <> 0 Then",
-    '  MsgBox "Antigravity 中文自动跟进启动遇到问题（退出码 " & exitCode & "）。您可运行 win启动\\启动中文.bat 查看详细诊断信息。", 48, "Antigravity 中文助手"',
+    `  errMsg = ${toVbsAsciiExpr(errPrefix)} & CStr(exitCode) & ${toVbsAsciiExpr(errSuffix)}`,
+    ...buildVbsVarAssignmentLines("errTitle", errTitle),
+    "  MsgBox errMsg, 48, errTitle",
     "End If",
     "",
-  ].join("\r\n");
+  ];
+  return assertPureAsciiVbs(lines.join("\r\n"));
 }
 
 export async function ensureAutoFollowDaemonRegistered({
@@ -68,9 +144,9 @@ export async function ensureAutoFollowDaemonRegistered({
     languagePackDir,
   });
 
-  const existingVbs = await readFile(vbsPath, "utf8").catch(() => null);
+  const existingVbs = await readFile(vbsPath, "ascii").catch(() => null);
   if (existingVbs !== vbsContent) {
-    await writeFile(vbsPath, vbsContent, "utf8");
+    await writeFile(vbsPath, vbsContent, "ascii");
   }
 
   // Write quit-hook metadata so Electron main process can trigger post-quit update follow
@@ -117,7 +193,6 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($triggerPe
     );
     return { registered: true, vbsPath, taskName: AUTO_FOLLOW_TASK_NAME };
   } catch (err) {
-    // Fallback to schtasks.exe if ScheduledTasks module is restricted
     try {
       await execFileAsync(
         "schtasks.exe",

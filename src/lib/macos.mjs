@@ -62,11 +62,23 @@ export async function signMacApp(appPath) {
 }
 
 export async function runningMacApps() {
-  const { stdout } = await exec("/bin/ps", ["-axo", "pid=,comm="]);
-  return stdout.split("\n").flatMap((line) => {
-    const match = line.trim().match(/^(\d+) (.+\/Contents\/MacOS\/Antigravity)$/);
-    return match ? [{ pid: Number(match[1]), executable: match[2] }] : [];
+  const { stdout } = await exec("/bin/ps", ["-axo", "pid=,args="]);
+  const raw = stdout.split("\n").flatMap((line) => {
+    const match = line.trim().match(/^(\d+)\s+(.+?\.app\/Contents\/MacOS\/Antigravity)(?:\s+(.*))?$/);
+    if (!match) return [];
+    const argsText = match[3] || "";
+    const isSidecar = /sidecar_sdk|--import=/i.test(argsText);
+    const isSubprocess = /(?:^|\s)--type=[^\s]+/i.test(argsText);
+    return [{ pid: Number(match[1]), executable: match[2], isMainApp: !isSidecar && !isSubprocess }];
   });
+  const hasMain = raw.some((item) => item.isMainApp);
+  if (!hasMain) {
+    for (const orphan of raw) {
+      await exec("/bin/kill", ["-9", String(orphan.pid)], { timeout: 5000 }).catch(() => {});
+    }
+    return [];
+  }
+  return raw.filter((item) => item.isMainApp).map(({ pid, executable }) => ({ pid, executable }));
 }
 
 export async function requireMacAppsClosed() {

@@ -112,7 +112,7 @@ if (
       const embedded = await readEmbeddedWindowsUi(inspection);
       if (embedded) {
         const dict = await loadDomTranslations();
-        const relocalized = await createLocalizedBundleWithProgress(embedded.buffer, dict);
+        const relocalized = await createLocalizedBundleWithProgress(embedded.buffer, dict, { skipCoverage: true });
         const bundleTarget = path.join(getAntigravityUserDataRoot(), BUNDLE_NAME);
         await writeLocalizedBundle(bundleTarget, relocalized.buffer);
         await writeInstallState({
@@ -149,7 +149,7 @@ console.log(`已检测到 ${inspection.packageVersion}，正在读取本地界�
 const runtime = await readEmbeddedWindowsUi(inspection) ?? await waitForRuntimeUi(inspection.executablePath);
 if (runtime.source === "embedded") console.log("已校验并读取安装目录中的原版界面资源。");
 const dictionary = await loadDomTranslations();
-const localized = await createLocalizedBundleWithProgress(runtime.buffer, dictionary);
+const localized = await createLocalizedBundleWithProgress(runtime.buffer, dictionary, { skipCoverage: true });
 
 const stateRoot = getStateRoot();
 const preparedBundlePath = path.join(stateRoot, "prepared", "auto-follow-ui-main.js");
@@ -166,7 +166,14 @@ if (existingBundleHash && existingBundleHash !== previousBundleHash) {
   console.log("已备份检测到的本地迭代中文 UI，再继续自动更新。");
 }
 
-await gracefulCloseAntigravity({ owned: launchedByTool });
+try {
+  await gracefulCloseAntigravity({ owned: launchedByTool });
+} catch (closeErr) {
+  if (closeErr?.silentUserCancelled) {
+    process.exit(0);
+  }
+  throw closeErr;
+}
 const recheck = await inspectInstallation({ allowRemoteCompatibility: false });
 if (recheck.appAsarSha256 !== inspection.appAsarSha256 || recheck.packageVersion !== inspection.packageVersion) {
   throw new Error("关闭客户端期间安装文件再次变化，拒绝修改。");

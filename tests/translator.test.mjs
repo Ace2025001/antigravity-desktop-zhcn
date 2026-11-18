@@ -2440,7 +2440,7 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
   const vm = await import("node:vm");
   const os = await import("node:os");
   const path = await import("node:path");
-  const { mkdtemp, rm } = await import("node:fs/promises");
+  const { mkdtemp, mkdir, writeFile, rm } = await import("node:fs/promises");
   const { mergeAutoLearnedEntries, readAutoLearnedDict } = await import("../src/lib/auto-learned-dict.mjs");
   const { buildSilentLauncherVbs, buildSilentDaemonVbs } = await import("../src/lib/auto-follow-task.mjs");
 
@@ -2547,13 +2547,46 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
   assert.equal(persistedAnnotations[0].cid, "conv-new-1");
   assert.equal(persistedAnnotations[0].proto.proto.title, "使用 Gemini 分析豆包视频脚本");
 
-  // 3. 验证零黑框 VBScript 启动器与守护包装器使用窗口模式 0 (SW_HIDE)
+  // 3. 验证零黑框 VBScript 启动器与守护包装器 100% 纯 7-bit ASCII 编码（彻底免疫 GBK/ANSI 800A0409 语法错误）及隐藏窗口模式 0
   const launcherVbs = buildSilentLauncherVbs();
   const daemonVbs = buildSilentDaemonVbs({
-    nodeExePath: "C:\\node.exe",
-    daemonScriptPath: "C:\\silent-auto-follow-daemon.mjs",
-    languagePackDir: "C:\\lang"
+    nodeExePath: "D:\\Antigravity\\antigravity汉化包\\win启动\\配套程序\\node.exe",
+    daemonScriptPath: "D:\\Antigravity\\antigravity汉化包\\语言包\\核心程序\\scripts\\silent-auto-follow-daemon.mjs",
+    languagePackDir: "D:\\Antigravity\\antigravity汉化包\\语言包"
   });
+  assert.ok(!/[^\x09\x0a\x0d\x20-\x7e]/.test(launcherVbs), "Launcher VBS must be 100% pure 7-bit ASCII");
+  assert.ok(!/[^\x09\x0a\x0d\x20-\x7e]/.test(daemonVbs), "Daemon VBS must be 100% pure 7-bit ASCII even with Chinese paths");
   assert.ok(launcherVbs.includes("shell.Run(cmd, 0, True)"), "Launcher VBS must use window style 0 (hidden)");
   assert.ok(daemonVbs.includes("shell.Run cmd, 0, False"), "Daemon VBS must use window style 0 (hidden)");
+
+  if (process.platform === "win32") {
+    const { execFileSync } = await import("node:child_process");
+    const vbsRoot = await mkdtemp(path.join(os.tmpdir(), "agy-vbs-probe-"));
+    try {
+      const vbsProbeDir = path.join(vbsRoot, "中文目录测试", "win启动");
+      await mkdir(vbsProbeDir, { recursive: true });
+      const probeVbsPath = path.join(vbsProbeDir, "probe.vbs");
+      const probeOutPath = path.join(vbsRoot, "probe-out.txt");
+      const allLines = launcherVbs.split("\r\n");
+      const cutIdx = allLines.findIndex((l) => l.startsWith("scriptPath = "));
+      const probeLines = allLines
+        .slice(0, cutIdx + 1)
+        .concat([
+          "Dim outStream",
+          `Set outStream = fso.CreateTextFile("${probeOutPath.replaceAll('"', '""')}", True, True)`,
+          'outStream.Write packDir & "|" & coreDir & "|" & nodeExe',
+          "outStream.Close",
+          ""
+        ]);
+      await writeFile(probeVbsPath, probeLines.join("\r\n"), "ascii");
+      execFileSync("cscript.exe", ["//NoLogo", probeVbsPath], { windowsHide: true });
+      const { readFile: readFs } = await import("node:fs/promises");
+      const cscriptOut = (await readFs(probeOutPath, "utf16le")).replace(/^\uFEFF/, "").trim();
+      assert.ok(cscriptOut.includes("中文目录测试\\语言包|"), `Expected resolved Chinese packDir, got: ${cscriptOut}`);
+      assert.ok(cscriptOut.includes("语言包\\核心程序|"), `Expected resolved Chinese coreDir, got: ${cscriptOut}`);
+      assert.ok(cscriptOut.endsWith("|node.exe"), `Expected fallback node.exe when bundled node absent, got: ${cscriptOut}`);
+    } finally {
+      await rm(vbsRoot, { recursive: true, force: true });
+    }
+  }
 });

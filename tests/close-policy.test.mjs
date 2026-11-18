@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 const { closeWithPolicy, CloseCancelledError } = await import("../src/lib/close-policy.mjs");
+const { classifyAntigravityCommand, filterActiveClientProcesses } = await import("../src/lib/close-client.mjs");
 
 // A fake client: `quitOn` decides which request makes it exit ("graceful", "force" or "never").
 function fixture({ quitOn = "graceful", keysAt = {} } = {}) {
@@ -126,4 +127,63 @@ test("无法读取进程状态时不当作已退出", async () => {
   f.args.running = async () => { throw Error("读取失败"); };
   await assert.rejects(closeWithPolicy(f.args), /读取失败/);
   assert.equal(f.graceful + f.forced, 0);
+});
+
+test("倒计时期间用户关闭主窗口但后台托盘驻留时，立即自动结束等待并清理", async () => {
+  const f = fixture({ quitOn: "force" });
+  await closeWithPolicy({
+    ...f.args,
+    autoContinueWhen: async (stage) => {
+      if (stage === "poll" && f.time >= 3_500) {
+        return "检测到你已关闭 Antigravity 窗口，正在结束后台驻留进程并继续…";
+      }
+      return null;
+    },
+  });
+  assert.ok(f.time < 10_000, `Expected immediate continuation without waiting 60s, got ${f.time}ms`);
+  assert.equal(f.forced, 1);
+  assert.ok(f.logs.some((s) => s.includes("检测到你已关闭 Antigravity 窗口")));
+});
+
+test("初始已无可见窗口仅后台托盘驻留时，跳过 60 秒倒计时直接继续", async () => {
+  const f = fixture({ quitOn: "force" });
+  await closeWithPolicy({
+    ...f.args,
+    autoContinueWhen: async (stage) =>
+      stage === "initial" ? "检测到 Antigravity 当前未打开窗口（仅后台托盘驻留），正在结束后台进程并继续…" : null,
+  });
+  assert.ok(f.time < 5_000);
+  assert.equal(f.forced, 1);
+});
+
+test("进程分类器精准区分 Electron 主进程、Chromium 子进程与孤儿 sidecar_sdk 进程（Win/Mac 双端）", () => {
+  const winMain = classifyAntigravityCommand('"C:\\Users\\MI\\AppData\\Local\\Programs\\antigravity\\Antigravity.exe"');
+  const winRenderer = classifyAntigravityCommand('"C:\\Antigravity.exe" --type=renderer --lang=zh-CN');
+  const winSidecar = classifyAntigravityCommand('"C:\\Antigravity.exe" --import=file:///C:/Users/MI/.gemini/antigravity/lib/node_modules/sidecar_sdk/register_loader.js main.mjs');
+  const macMain = classifyAntigravityCommand("");
+  const macSidecar = classifyAntigravityCommand("--import=file:///Users/test/.gemini/antigravity/lib/node_modules/sidecar_sdk/register_loader.js main.mjs");
+
+  assert.equal(winMain.isMainApp, true);
+  assert.equal(winRenderer.isMainApp, false);
+  assert.equal(winRenderer.isSubprocess, true);
+  assert.equal(winSidecar.isMainApp, false);
+  assert.equal(winSidecar.isSidecar, true);
+  assert.equal(macMain.isMainApp, true);
+  assert.equal(macSidecar.isMainApp, false);
+
+  // 当主进程已退出、仅剩孤儿 sidecar 和子进程时，active 为空、orphans 被回收
+  const onlyOrphans = filterActiveClientProcesses([
+    { Id: 49284, ...winSidecar },
+    { Id: 48524, ...winRenderer },
+  ]);
+  assert.equal(onlyOrphans.active.length, 0);
+  assert.equal(onlyOrphans.orphans.length, 2);
+
+  // 当主进程仍在运行时，active 保留全部以便完整关闭
+  const withMain = filterActiveClientProcesses([
+    { Id: 35188, ...winMain },
+    { Id: 49284, ...winSidecar },
+  ]);
+  assert.equal(withMain.active.length, 2);
+  assert.equal(withMain.orphans.length, 0);
 });

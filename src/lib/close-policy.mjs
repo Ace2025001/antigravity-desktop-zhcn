@@ -48,6 +48,7 @@ export async function closeWithPolicy({
   exitHint = "",
   owned = false,
   keys,
+  autoContinueWhen = null,
 }) {
   if (!(await running())) { log("客户端已退出，可以继续。"); return; }
 
@@ -72,15 +73,23 @@ export async function closeWithPolicy({
     return;
   }
 
+  const immediateReason = typeof autoContinueWhen === "function" ? await autoContinueWhen("initial") : null;
+  if (immediateReason) {
+    log(immediateReason);
+    await requestClose();
+    if (await waitUntilExited({ running, sleep, now, timeoutMs: Math.min(gracefulMs, 3_000) })) { log("客户端已正常退出，继续处理。"); return; }
+    await forceAndConfirm("正在结束客户端后台驻留进程…");
+    return;
+  }
+
   const input = keys === undefined ? createTerminalKeys() : keys;
   log("需要暂时退出 Antigravity。无法可靠判断是否有未完成任务，请先保存工作。");
   if (exitHint) log(exitHint);
   if (input) {
-    log("按 Y：确认强制关闭，立即继续（未保存的内容会丢失）。");
-    log("按 N：不强制关闭，一直等你手动退出。");
+    log("关闭 Antigravity 窗口后将自动继续；也可按 Y 立即关闭，或按 N 一直等待手动退出。");
     log("不操作：60 秒后先请求正常退出，仍未退出则强制关闭。Ctrl+C 取消本次操作。");
   } else {
-    log("60 秒内手动退出即可继续；超时后先请求正常退出，仍未退出则强制关闭。");
+    log("60 秒内关闭窗口或退出即可自动继续；超时后先请求正常退出，仍未退出则强制关闭。");
   }
 
   const deadline = now() + responseMs;
@@ -90,12 +99,13 @@ export async function closeWithPolicy({
     if (mode !== "auto") return;
     const remaining = Math.max(0, Math.ceil((deadline - now()) / 1000));
     if (remaining === previous) return;
-    if (log === console.log && process.stdout.isTTY) process.stdout.write(`\r等待退出：剩余 ${String(remaining).padStart(2, " ")} 秒（Y 强制关闭 / N 不强制）  `);
+    if (log === console.log && process.stdout.isTTY) process.stdout.write(`\r等待退出：剩余 ${String(remaining).padStart(2, " ")} 秒（关闭窗口自动继续 / Y 立即关闭 / N 不强制）  `);
     else if (remaining % 10 === 0) log(`等待退出：剩余 ${remaining} 秒。`);
     previous = remaining;
   };
   const endLine = () => { if (log === console.log && process.stdout.isTTY) process.stdout.write("\n"); };
 
+  let autoTriggered = false;
   try {
     tick();
     while (await running()) {
@@ -107,6 +117,15 @@ export async function closeWithPolicy({
         mode = "manual";
         log("已取消自动强制关闭。请保存工作后手动退出客户端，退出后会自动继续；需要时仍可按 Y 强制关闭，Ctrl+C 取消。");
       }
+      if (mode === "auto" && typeof autoContinueWhen === "function") {
+        const pollReason = await autoContinueWhen("poll");
+        if (pollReason) {
+          endLine();
+          log(pollReason);
+          autoTriggered = true;
+          break;
+        }
+      }
       if (mode === "auto" && now() >= deadline) break;
       await sleep(250);
       tick();
@@ -117,8 +136,8 @@ export async function closeWithPolicy({
   endLine();
   if (!(await running())) { log("检测到客户端已退出，继续处理。"); return; }
 
-  log("等待时间已到，正在请求客户端正常退出…");
+  log(autoTriggered ? "正在结束客户端后台驻留进程…" : "等待时间已到，正在请求客户端正常退出…");
   await requestClose();
-  if (await waitUntilExited({ running, sleep, now, timeoutMs: gracefulMs })) { log("客户端已正常退出，继续处理。"); return; }
-  await forceAndConfirm("客户端未响应正常退出，正在强制关闭…");
+  if (await waitUntilExited({ running, sleep, now, timeoutMs: autoTriggered ? Math.min(gracefulMs, 3_000) : gracefulMs })) { log("客户端已正常退出，继续处理。"); return; }
+  await forceAndConfirm(autoTriggered ? "正在清理客户端后台托盘驻留进程…" : "客户端未响应正常退出，正在强制关闭…");
 }

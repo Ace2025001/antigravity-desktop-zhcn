@@ -12,11 +12,26 @@ Write-Host " 操作: 生成桌面快捷方式" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
-$targetBat = Join-Path $ProjectRoot "Windows\启动 Antigravity（自动汉化）.bat"
-if (-not (Test-Path -LiteralPath $targetBat)) {
-    Write-Host "错误: 未找到启动脚本: $targetBat" -ForegroundColor Red
-    exit 1
-}
+$targetVbs = Join-Path $ProjectRoot "Windows\silent-launch-zhcn.vbs"
+$vbsLines = @(
+    "' Antigravity ZhCN Standalone Silent Launcher (Pure ASCII, Zero Console Window)"
+    "Option Explicit"
+    "Dim fso, shell, here, root, nodeExe, scriptPath, cmd, exitCode"
+    'Set fso = CreateObject("Scripting.FileSystemObject")'
+    'Set shell = CreateObject("WScript.Shell")'
+    "here = fso.GetParentFolderName(WScript.ScriptFullName)"
+    'root = fso.GetParentFolderName(here)'
+    'nodeExe = fso.BuildPath(root, "runtime\node.exe")'
+    'If Not fso.FileExists(nodeExe) Then nodeExe = "node.exe"'
+    'scriptPath = fso.BuildPath(root, "scripts\auto-follow-update.mjs")'
+    'shell.Environment("Process")("AGY_SILENT_LAUNCH") = "1"'
+    'cmd = """" & nodeExe & """ """ & scriptPath & """"'
+    "exitCode = shell.Run(cmd, 0, True)"
+    "If exitCode <> 0 Then"
+    '  MsgBox "Antigravity " & ChrW(20013) & ChrW(25991) & ChrW(21551) & ChrW(21160) & ChrW(26410) & ChrW(23436) & ChrW(25104) & " (" & CStr(exitCode) & ")", 48, "Antigravity"'
+    "End If"
+) -join "`r`n"
+[System.IO.File]::WriteAllText($targetVbs, $vbsLines + "`r`n", [System.Text.Encoding]::ASCII)
 
 # 解析客户端图标路径
 $iconLocation = $null
@@ -31,15 +46,15 @@ if (Test-Path -LiteralPath $defaultExe) {
 }
 
 $desktopPath = [Environment]::GetFolderPath([Environment+SpecialFolder]::DesktopDirectory)
-$shortcutPath = Join-Path $desktopPath "启动 Antigravity（自动汉化）.lnk"
+$shortcutPath = Join-Path $desktopPath "Antigravity自动汉化.lnk"
 
 try {
     $wshShell = New-Object -ComObject WScript.Shell
     $shortcut = $wshShell.CreateShortcut($shortcutPath)
-    $shortcut.TargetPath = $targetBat
+    $shortcut.TargetPath = $targetVbs
     $shortcut.WorkingDirectory = $ProjectRoot
     $shortcut.Description = "Google Antigravity Desktop 自动汉化启动器"
-    $shortcut.WindowStyle = 7 # 最小化运行，避免黑框闪烁
+    $shortcut.WindowStyle = 1
     if ($iconLocation) {
         $shortcut.IconLocation = "$iconLocation,0"
     }
@@ -51,7 +66,7 @@ try {
         Write-Host "已关联图标: $iconLocation" -ForegroundColor Gray
     }
     Write-Host ""
-    Write-Host "以后您可以直接双击桌面的【启动 Antigravity（自动汉化）】使用中文版客户端！" -ForegroundColor Cyan
+    Write-Host "以后你可以直接双击桌面的【Antigravity自动汉化】无黑框打开中文版客户端！" -ForegroundColor Cyan
 } catch {
     Write-Host "创建快捷方式失败: $($_.Exception.Message)" -ForegroundColor Red
     exit 1

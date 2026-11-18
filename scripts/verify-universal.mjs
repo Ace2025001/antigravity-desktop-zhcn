@@ -17,7 +17,7 @@ for(const platform of ["win","mac"]){
 }
 const current=process.platform==="win32"?"win":"mac";
 const node=path.join(root,`${current}启动/配套程序`,current==="win"?"node.exe":"node");
-const script="const t=await import('./src/lib/translator.mjs');if(!(await t.loadDomTranslations()).exact.Settings)throw Error('词库未加载');await import('@electron/asar');for(const file of ['auto-shortcuts','close-client','install-discovery','show-client'])await import('./src/lib/'+file+'.mjs');console.log(process.platform+'/'+process.arch+' 共享核心、语言包、依赖及新功能导入通过');";
+const script="const t=await import('./src/lib/translator.mjs');if(!(await t.loadDomTranslations()).exact.Settings)throw Error('词库未加载');await import('@electron/asar');for(const file of ['auto-shortcuts','auto-follow-task','auto-learned-dict','close-client','install-discovery','show-client'])await import('./src/lib/'+file+'.mjs');console.log(process.platform+'/'+process.arch+' 共享核心、语言包、依赖及新功能导入通过');";
 execFileSync(node,["--input-type=module","-e",script],{cwd:core,env:{...process.env,AGY_LANGUAGE_PACK:path.join(root,"语言包")},stdio:"inherit",windowsHide:true});
-for(const name of ["start-local.mjs","auto-follow-update.mjs","macos.mjs","choose-install-mac.js"])execFileSync(node,["--check",path.join(core,"scripts",name)],{windowsHide:true});
+for(const name of ["start-local.mjs","auto-follow-update.mjs","silent-auto-follow-daemon.mjs","macos.mjs","choose-install-mac.js"])execFileSync(node,["--check",path.join(core,"scripts",name)],{windowsHide:true});
 console.log("双端包目录和当前平台离线运行检查通过。");

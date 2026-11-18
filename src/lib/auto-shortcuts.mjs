@@ -40,9 +40,9 @@ export async function ensureAutoShortcuts(selectedClient) {
     await access(batLauncher);
     const silentVbs=path.join(winEntry,"静默启动中文.vbs");
     const vbsContent=buildSilentLauncherVbs();
-    const existingVbs=await readFile(silentVbs,"utf8").catch(()=>null);
+    const existingVbs=await readFile(silentVbs,"ascii").catch(()=>null);
     if(existingVbs!==vbsContent) {
-      await writeFile(silentVbs,vbsContent,"utf8");
+      await writeFile(silentVbs,vbsContent,"ascii");
     }
     const {stdout}=await exec("powershell.exe",["-NoProfile","-ExecutionPolicy","Bypass","-File",path.join(projectRoot,"scripts/create-auto-shortcuts.ps1"),"-Launcher",silentVbs,"-ClientExe",path.join(selectedClient,"Antigravity.exe")],{encoding:"utf8",windowsHide:true,timeout:20000});
     if(stdout.trim())console.log(stdout.trim());

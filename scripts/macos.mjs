@@ -83,7 +83,7 @@ async function install(info) {
   const macDictionary = JSON.parse(await readFile(languageFile("macos-translations.json"), "utf8"));
   Object.assign(dictionary.exact, macDictionary.exact);
   dictionary.patterns.push(...macDictionary.patterns);
-  const localized = await createLocalizedBundleWithProgress(runtime, dictionary, { label: "正在生成中文界面…" });
+  const localized = await createLocalizedBundleWithProgress(runtime, dictionary, { label: "正在生成中文界面…", skipCoverage: true });
   await mkdir(macStateRoot, { recursive: true });
   const stagedRoot = await mkdtemp(path.join(macStateRoot, "build-"));
   const stagedApp = path.join(stagedRoot, "Antigravity 中文.app");

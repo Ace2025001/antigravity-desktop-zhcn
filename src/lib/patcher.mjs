@@ -103,7 +103,8 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                 }
                 const targetUrl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=' + encodeURIComponent(q);
                 const doFetch = (electron_1.net && typeof electron_1.net.fetch === 'function') ? electron_1.net.fetch.bind(electron_1.net) : fetch;
-                const resp = await doFetch(targetUrl);
+                const fetchOpts = (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') ? { signal: AbortSignal.timeout(8000) } : {};
+                const resp = await doFetch(targetUrl, fetchOpts);
                 const data = await resp.json();
                 const translated = Array.isArray(data && data[0]) ? data[0].map((seg) => (Array.isArray(seg) ? seg[0] : '')).join('') : '';
                 return new Response(JSON.stringify({ ok: Boolean(translated), translated }), {

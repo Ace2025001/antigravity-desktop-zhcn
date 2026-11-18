@@ -1,9 +1,6 @@
-import { closeClientForChanges } from "./close-client.mjs";
-import { execFile, spawn } from "node:child_process";
+import { clientProcesses, closeClientForChanges } from "./close-client.mjs";
+import { spawn } from "node:child_process";
 import path from "node:path";
-import { promisify } from "node:util";
-
-const execFileAsync = promisify(execFile);
 
 export async function launchAntigravity(executablePath) {
   if (process.platform !== "win32") {
@@ -26,17 +23,12 @@ export async function launchAntigravity(executablePath) {
 }
 
 export async function isAntigravityRunning() {
-  if (process.platform !== "win32") {
+  if (process.platform !== "win32" && process.platform !== "darwin") {
     return false;
   }
 
   try {
-    const { stdout } = await execFileAsync(
-      "tasklist.exe",
-      ["/FI", "IMAGENAME eq Antigravity.exe", "/FO", "CSV", "/NH"],
-      { windowsHide: true, encoding: "utf8" },
-    );
-    return /"Antigravity\.exe"/i.test(stdout);
+    return (await clientProcesses()).length > 0;
   } catch {
     return false;
   }

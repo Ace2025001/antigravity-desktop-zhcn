@@ -7,13 +7,13 @@ export function formatElapsed(seconds) {
 
 class WorkerUnavailableError extends Error {}
 
-function runInWorker(sourceBuffer, dictionary) {
+function runInWorker(sourceBuffer, dictionary, skipCoverage = false) {
   return new Promise((resolve, reject) => {
     let worker;
     try {
       // execArgv: [] keeps flags such as --input-type from breaking the worker.
       worker = new Worker(new URL("./localize-worker.mjs", import.meta.url), {
-        workerData: { source: sourceBuffer, dictionary },
+        workerData: { source: sourceBuffer, dictionary, skipCoverage },
         execArgv: [],
       });
     } catch (error) {
@@ -35,7 +35,7 @@ function runInWorker(sourceBuffer, dictionary) {
  * Same result as createLocalizedBundle, but shows a live “已用时” while it runs.
  * Falls back to the main thread if a worker cannot start.
  */
-export async function createLocalizedBundleWithProgress(sourceBuffer, dictionary, { log = console.log, stdout = process.stdout, label = "正在生成中文界面，可能需要几十秒，请勿关闭窗口…" } = {}) {
+export async function createLocalizedBundleWithProgress(sourceBuffer, dictionary, { log = console.log, stdout = process.stdout, label = "正在生成中文界面，请勿关闭窗口…", skipCoverage = false } = {}) {
   const startedAt = Date.now();
   const elapsed = () => Math.floor((Date.now() - startedAt) / 1000);
   const live = log === console.log && stdout.isTTY;
@@ -50,11 +50,11 @@ export async function createLocalizedBundleWithProgress(sourceBuffer, dictionary
   let result;
   try {
     try {
-      result = await runInWorker(sourceBuffer, dictionary);
+      result = await runInWorker(sourceBuffer, dictionary, skipCoverage);
     } catch (error) {
       // Only a worker that could not run falls back; translation errors propagate.
       if (!(error instanceof WorkerUnavailableError)) throw error;
-      result = createLocalizedBundle(sourceBuffer, dictionary);
+      result = createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage });
     }
   } finally {
     clearInterval(ticker);
