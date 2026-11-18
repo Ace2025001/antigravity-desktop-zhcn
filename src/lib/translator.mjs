@@ -402,7 +402,8 @@ export function createRuntimeOverlay(dictionary) {
     "Updating and uploading localization files": "更新与上传本地化文件",
     "Using Chrome to Open Doubao": "使用 Chrome 打开豆包",
     "Using Chrome to Open Douyin": "使用 Chrome 打开抖音",
-    "Google Superiority Video Script": "谷歌优势对比视频剧本"
+    "Google Superiority Video Script": "谷歌优势对比视频剧本",
+    "Google Superiority Video Script Review": "谷歌优势对比视频脚本评审"
   };
 
   function __translateChapterTitle(title) {
@@ -1851,16 +1852,16 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('"Context window"', '"上下文窗口"');
   sourceText = sourceText.replaceAll('window:"Default"', 'window:"默认"');
 
-  // 模型数据适配层源头汉化（支持 Claude 思考模型、单项 GPT-OSS 规格汉化，保留多规格英文以确保二级菜单正常折叠聚合）
+  // 模型数据适配层源头汉化（支持 Claude 思考模型、单项 GPT-OSS 规格汉化、Orchestrator 编排器汉化，保留多规格英文以确保二级菜单正常折叠聚合）
   sourceText = sourceText.replace(
     /([a-zA-Z0-9_$]+)=a=>a\.modelOrAlias\?\{label:a\.label,value:a\.modelOrAlias\.choice\.case==="model"\?a\.modelOrAlias\.choice\.value:([A-Za-z0-9_$]+)\.Model\.UNSPECIFIED,modelAlias:a\.modelOrAlias\.choice\.case==="alias"\?a\.modelOrAlias\.choice\.value:void 0,disabled:a\.disabled,supportedMimeTypes:new Map\(Object\.entries\(a\.supportedMimeTypes\)\),quotaInfo:a\.quotaInfo,tagTitle:a\.tagTitle,tagDescription:a\.tagDescription,/,
-    '$1=a=>a.modelOrAlias?{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$2.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
+    '$1=a=>a.modelOrAlias?{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)").replace(/^Orchestrator\\s*\\(/i,"编排器 ("):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$2.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
   );
 
   // 兜底支持已解构参数的适配层
   sourceText = sourceText.replace(
     /\{label:a\.label,value:a\.modelOrAlias\.choice\.case==="model"\?a\.modelOrAlias\.choice\.value:([A-Za-z0-9_$]+)\.Model\.UNSPECIFIED,modelAlias:a\.modelOrAlias\.choice\.case==="alias"\?a\.modelOrAlias\.choice\.value:void 0,disabled:a\.disabled,supportedMimeTypes:new Map\(Object\.entries\(a\.supportedMimeTypes\)\),quotaInfo:a\.quotaInfo,tagTitle:a\.tagTitle,tagDescription:a\.tagDescription,/,
-    '{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$1.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
+    '{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)").replace(/^Orchestrator\\s*\\(/i,"编排器 ("):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$1.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
   );
 
   // 模型选择器标签徽章组件汉化（Notice -> 提示，Unavailable -> 不可用，兼容多版本混淆名）
@@ -2869,6 +2870,130 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll(
     'placeholder:"Paste auth code","aria-label":`Auth code for ${x}`',
     'placeholder:"粘贴授权码","aria-label":`${x} 的授权码`'
+  );
+
+  // =========================================================================
+  // 9.12 自动化 (Automations) 创建页、定时计划编辑器与“通过提示词创建”全链路原生汉化
+  // =========================================================================
+
+  // 1. 点击“通过提示词创建”自动填入聊天输入框的默认提示词中文化（保留 [/automation](slashCommand;automation) 触发协议）
+  sourceText = sourceText.replace(
+    /\(f="\[\/automation\]\(slashCommand;automation\) Guide me through creating an automated task"\)\s*=>/g,
+    '(f="[/automation](slashCommand;automation) 引导我创建一个自动化任务")=>'
+  );
+
+  // 2. 自动化创建页面：本地电脑与远程云端环境说明
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)=>\2==="local"\?"Uses your local files and tools\. Schedules only\.":`Runs even when your computer is off\. \$\{([a-zA-Z0-9_$]+)\?"Schedules and events\.":"Schedules only\."\}`/g,
+    '$1=$2=>$2==="local"?"使用你的本地文件与工具。仅支持定时计划。":`即使电脑关机也能继续运行。${$3?"支持定时计划与事件触发。":"仅支持定时计划。"}`'
+  );
+
+  // 3. 定时计划时间选择器：AM/PM 时间格式、连接词 (at / on / on the / Repeat every)、频率与星期选项
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(a,b\)\{var c=a<12\?"AM":"PM";return`\$\{a%12===0\?12:a%12\}:\$\{String\(b\)\.padStart\(2,"0"\)\} \$\{c\}`\}/g,
+    'function $1(a,b){var c=a<12?"上午":"下午";return`${c} ${a%12===0?12:a%12}:${String(b).padStart(2,"0")}`}'
+  );
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(a\)\{return`\$\{a%12===0\?12:a%12\} \$\{a<12\?"AM":"PM"\}`\}/g,
+    'function $1(a){return`${a<12?"上午":"下午"} ${a%12===0?12:a%12} 点`}'
+  );
+  sourceText = sourceText.replace(
+    /const ([a-zA-Z0-9_$]+)=\[\{value:"hourly",label:"Every hour"\},\{value:"daily",label:"Every day"\},\{value:"weekdays",label:"Every weekday"\},\{value:"weekly",label:"Every week"\},\{value:"custom",label:"Custom\\u2026"\}\],([a-zA-Z0-9_$]+)=\["hourly","daily","weekly"\],([a-zA-Z0-9_$]+)=\[\{value:"hours",label:"hours"\},\{value:"week",label:"week"\},\{value:"month",label:"month"\}\],([a-zA-Z0-9_$]+)="Sun Mon Tue Wed Thu Fri Sat"\.split\(" "\),([a-zA-Z0-9_$]+)="Sunday Monday Tuesday Wednesday Thursday Friday Saturday"\.split\(" "\)/g,
+    'const $1=[{value:"hourly",label:"每小时"},{value:"daily",label:"每天"},{value:"weekdays",label:"每个工作日"},{value:"weekly",label:"每周"},{value:"custom",label:"自定义\\u2026"}],$2=["hourly","daily","weekly"],$3=[{value:"hours",label:"小时"},{value:"week",label:"周"},{value:"month",label:"个月"}],$4="日 一 二 三 四 五 六".split(" "),$5="周日 周一 周二 周三 周四 周五 周六".split(" ")'
+  );
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(a\)\{return a>=11&&a<=13\?`\$\{a\}th`:`\$\{a\}\$\{\["th","st","nd","rd"\]\[a%10\]\?\?"th"\}`\}/g,
+    'function $1(a){return`${a} 日`}'
+  );
+  sourceText = sourceText.replaceAll(
+    'B.createElement("span",{className:"text-muted-foreground select-none"},"at")',
+    'B.createElement("span",{className:"text-muted-foreground select-none"},"于")'
+  );
+  sourceText = sourceText.replaceAll(
+    'B.createElement("span",{className:"text-muted-foreground select-none"},"on")',
+    'B.createElement("span",{className:"text-muted-foreground select-none"},"于")'
+  );
+  sourceText = sourceText.replaceAll(
+    'B.createElement("span",{className:"text-muted-foreground select-none"},"on the")',
+    'B.createElement("span",{className:"text-muted-foreground select-none"},"于每月")'
+  );
+  sourceText = sourceText.replaceAll(
+    'B.createElement("span",{className:"text-muted-foreground select-none"},"Repeat every")',
+    'B.createElement("span",{className:"text-muted-foreground select-none"},"重复周期：每")'
+  );
+  sourceText = sourceText.replace(
+    /B\.createElement\(([a-zA-Z0-9_$]+),\{value:v,label:v,options:([a-zA-Z0-9_$]+),onChange:d,testId:"schedule-custom-unit",ariaLabel:"Repeat unit"\}\)/g,
+    'B.createElement($1,{value:v,label:({"hours":"小时","week":"周","month":"个月"}[v]||v),options:$2,onChange:d,testId:"schedule-custom-unit",ariaLabel:"重复单位"})'
+  );
+
+  // 4. 自动化列表、下次/上次运行时间、分组标题与创建向导字段
+  sourceText = sourceText.replace(
+    /if\(f===0\)return`Today \$\{d\}`;if\(f===1\)return`Tomorrow \$\{d\}`;if\(f===-1\)return`Yesterday \$\{d\}`;/g,
+    'if(f===0)return`今天 ${d}`;if(f===1)return`明天 ${d}`;if(f===-1)return`昨天 ${d}`;'
+  );
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(a\)\{switch\(a\)\{case "scheduled":return"Scheduled";case "live":return"Always on";case "paused":return"Paused";default:return a\}\}/g,
+    'function $1(a){switch(a){case "scheduled":return"已设定期限";case "live":return"常驻运行";case "paused":return"已暂停";default:return a}}'
+  );
+  sourceText = sourceText.replaceAll(
+    'a==="outside-of-project"?"Standalone":b',
+    'a==="outside-of-project"?"独立运行":b'
+  );
+  sourceText = sourceText.replaceAll(
+    'placeholder:"What should the agent do on each run? For example: summarize new bugs assigned to me and anything that changed overnight."',
+    'placeholder:"智能体在每次运行时应做什么？例如：汇总分配给我的新缺陷以及昨晚发生的所有变更。"'
+  );
+  sourceText = sourceText.replaceAll(
+    'label:"What should it do?",placeholder:"For example: every morning, summarize new bugs assigned to me and anything that changed overnight."',
+    'label:"它应该执行什么任务？",placeholder:"例如：每天早晨汇总分配给我的新缺陷以及昨晚发生的所有变更。"'
+  );
+  sourceText = sourceText.replaceAll(
+    'placeholder:"For example: Morning bug summary"',
+    'placeholder:"例如：每日晨间缺陷汇总"'
+  );
+  sourceText = sourceText.replaceAll(
+    '"Where should it run?"',
+    '"在哪里运行？"'
+  );
+  sourceText = sourceText.replaceAll(
+    '"When should it run?"',
+    '"何时运行？"'
+  );
+  sourceText = sourceText.replaceAll(
+    '{kind:"local",title:"This computer",icon:"computer"},{kind:"cloud",title:"Remote",icon:"cloud"}',
+    '{kind:"local",title:"本地电脑",icon:"computer"},{kind:"cloud",title:"远程",icon:"cloud"}'
+  );
+  sourceText = sourceText.replaceAll(
+    'title:a?"Approximate; may start a few minutes later":void 0',
+    'title:a?"预计时间；实际可能推迟几分钟启动":void 0'
+  );
+  sourceText = sourceText.replaceAll(
+    'customSubtitle:`Triggered ${u}`',
+    'customSubtitle:`触发于 ${u}`'
+  );
+  sourceText = sourceText.replaceAll(
+    '"Triggered ",u',
+    '"触发于 ",u'
+  );
+  sourceText = sourceText.replaceAll(
+    '"Your quota for this model is running low."',
+    '"此模型的剩余配额即将耗尽。"'
+  );
+  sourceText = sourceText.replaceAll(
+    '"Custom models are only supported on Linux machines."',
+    '"自定义模型仅在 Linux 设备上受支持。"'
+  );
+  sourceText = sourceText.replaceAll(
+    '"Loading models..."',
+    '"正在加载模型..."'
+  );
+  sourceText = sourceText.replaceAll(
+    '"No Model Selected"',
+    '"未选择模型"'
+  );
+  sourceText = sourceText.replaceAll(
+    '`${K.length} models selected`',
+    '`已选择 ${K.length} 个模型`'
   );
 
   const overlay = createRuntimeOverlay(dictionary);

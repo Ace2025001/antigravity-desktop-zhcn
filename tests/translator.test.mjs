@@ -2382,3 +2382,56 @@ test("Case 143: translate 2.32.2 Swarm automation managed project notice, permis
   assert.ok(sourcePart.includes('return"上次工作区"'), "Must translate KOb Last Workspace in 2.32.2");
   assert.ok(sourcePart.includes('return"从你的第一条消息自动创建一个新工作区。"'), "Must translate LOb description in 2.32.2");
 });
+
+test("Case 144: translate 2.32.2 Automations schedule editor, local/cloud description, create-with-prompt default text, and conversation title", async () => {
+  const current = await loadDomTranslations();
+
+  assert.equal(
+    translateDictionaryValue("Google Superiority Video Script Review", current),
+    "谷歌优势对比视频脚本评审"
+  );
+  assert.equal(
+    translateDictionaryValue("Uses your local files and tools. Schedules only.", current),
+    "使用你的本地文件与工具。仅支持定时计划。"
+  );
+  assert.equal(
+    translateDictionaryValue("Orchestrator (Carbon)", current),
+    "编排器 (Carbon)"
+  );
+  assert.equal(
+    translateDictionaryValue("Orchestrator (Argon)", current),
+    "编排器 (Argon)"
+  );
+
+  const sampleAutomation = [
+    'function K$c({goToHome:a,draftKey:b}){var {draftsRef:c,getLexicalEditor:d}=(0,B.useContext)(rC);return(0,B.useCallback)((f="[/automation](slashCommand;automation) Guide me through creating an automated task")=>{return f})}',
+    'S=ac=>ac==="local"?"Uses your local files and tools. Schedules only.":`Runs even when your computer is off. ${N?"Schedules and events.":"Schedules only."}`',
+    'function $6(a,b){var c=a<12?"AM":"PM";return`${a%12===0?12:a%12}:${String(b).padStart(2,"0")} ${c}`}',
+    'B.createElement("span",{className:"text-muted-foreground select-none"},"at")',
+    'var Upa=a=>a.modelOrAlias?{label:a.label,value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:E.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:a.tagTitle,tagDescription:a.tagDescription,'
+  ].join("\n");
+
+  const bundleOut = createLocalizedBundle(Buffer.from(sampleAutomation, "utf8"), current).buffer.toString("utf8");
+  const sourcePart = bundleOut.split("(() => {")[0];
+
+  assert.ok(
+    sourcePart.includes('(f="[/automation](slashCommand;automation) 引导我创建一个自动化任务")=>'),
+    "Must translate create-with-prompt default text while preserving [/automation](slashCommand;automation)"
+  );
+  assert.ok(
+    sourcePart.includes('ac==="local"?"使用你的本地文件与工具。仅支持定时计划。":`即使电脑关机也能继续运行。${N?"支持定时计划与事件触发。":"仅支持定时计划。"}`'),
+    "Must translate local and cloud automation descriptions"
+  );
+  assert.ok(
+    sourcePart.includes('function $6(a,b){var c=a<12?"上午":"下午";return`${c} ${a%12===0?12:a%12}:${String(b).padStart(2,"0")}`}'),
+    "Must translate $6 time formatter to Chinese AM/PM"
+  );
+  assert.ok(
+    sourcePart.includes('B.createElement("span",{className:"text-muted-foreground select-none"},"于")'),
+    "Must translate schedule connector 'at' to '于'"
+  );
+  assert.ok(
+    sourcePart.includes('.replace(/^Orchestrator\\s*\\(/i,"编排器 (")'),
+    "Must translate Orchestrator (Carbon/Argon) model label to 编排器 (Carbon/Argon)"
+  );
+});
