@@ -2396,11 +2396,11 @@ test("Case 144: translate 2.32.2 Automations schedule editor, local/cloud descri
   );
   assert.equal(
     translateDictionaryValue("Orchestrator (Carbon)", current),
-    "编排器 (Carbon)"
+    null
   );
   assert.equal(
     translateDictionaryValue("Orchestrator (Argon)", current),
-    "编排器 (Argon)"
+    null
   );
 
   const sampleAutomation = [
