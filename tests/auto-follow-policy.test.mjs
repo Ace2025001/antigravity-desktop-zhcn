@@ -33,14 +33,26 @@ test("后台脚本只由客户端退出钩子启动", async () => {
 
 test("恢复英文 / 卸载会删除计划任务", { skip: process.platform !== "win32" }, async () => {
   const calls = [];
-  const prev = process.env.AGY_ZHCN_STATE_DIR;
-  process.env.AGY_ZHCN_STATE_DIR = (await import("node:os")).tmpdir();
+  // Redirect both the state dir and the client's userData dir so the test never
+  // deletes the real quit-hook file on the developer's machine.
+  const { mkdtemp, writeFile: write, access } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const sandbox = await mkdtemp(join(tmpdir(), "agy-zhcn-test-"));
+  const saved = { state: process.env.AGY_ZHCN_STATE_DIR, userData: process.env.AGY_USER_DATA_PATH };
+  process.env.AGY_ZHCN_STATE_DIR = join(sandbox, "state");
+  process.env.AGY_USER_DATA_PATH = sandbox;
+  const restore = (key, value) => { if (value === undefined) delete process.env[key]; else process.env[key] = value; };
   try {
+    const hookFile = join(sandbox, "agy_zhcn_autofollow_hook.json");
+    await write(hookFile, "{}");
     const result = await removeAutoFollowDaemon({ exec: async (file, args) => { calls.push([file, ...args]); } });
     assert.equal(result.removed, true);
     assert.deepEqual(calls[0], ["schtasks.exe", "/Delete", "/TN", AUTO_FOLLOW_TASK_NAME, "/F"]);
+    await assert.rejects(access(hookFile), "沙盒里的钩子文件应被删除");
   } finally {
-    if (prev === undefined) delete process.env.AGY_ZHCN_STATE_DIR; else process.env.AGY_ZHCN_STATE_DIR = prev;
+    restore("AGY_ZHCN_STATE_DIR", saved.state);
+    restore("AGY_USER_DATA_PATH", saved.userData);
   }
 });
 
