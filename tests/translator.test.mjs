@@ -2431,8 +2431,8 @@ test("Case 144: translate 2.32.2 Automations schedule editor, local/cloud descri
     "Must translate schedule connector 'at' to '于'"
   );
   assert.ok(
-    sourcePart.includes('.replace(/^Orchestrator\\s*\\(/i,"编排器 (")'),
-    "Must translate Orchestrator (Carbon/Argon) model label to 编排器 (Carbon/Argon)"
+    !sourcePart.includes('编排器 ('),
+    "Must preserve official model tier names Orchestrator (Carbon/Argon) without renaming to 编排器"
   );
 });
 

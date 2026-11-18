@@ -12795,10 +12795,7 @@
     "Uses your local files and tools. Schedules only.": "使用你的本地文件与工具。仅支持定时计划。",
     "Runs even when your computer is off. Schedules and events.": "即使电脑关机也能继续运行。支持定时计划与事件触发。",
     "Runs even when your computer is off. Schedules only.": "即使电脑关机也能继续运行。仅支持定时计划。",
-    "Guide me through creating an automated task": "引导我创建一个自动化任务",
-    "Orchestrator (Carbon)": "编排器 (Carbon)",
-    "Orchestrator (Argon)": "编排器 (Argon)",
-    "Orchestrator (Hydrogen)": "编排器 (Hydrogen)"
+    "Guide me through creating an automated task": "引导我创建一个自动化任务"
   },
   "patterns": [
     {
