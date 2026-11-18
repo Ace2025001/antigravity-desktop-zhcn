@@ -17,16 +17,19 @@ import { createLocalizedBundleWithProgress } from "../src/lib/localize-progress.
 import { readInstallState, writeInstallState } from "../src/lib/state.mjs";
 import { gracefulCloseAntigravity, launchAntigravity } from "../src/lib/processes.mjs";
 import { clientProcesses } from "../src/lib/close-client.mjs";
+import { ensureAutoFollowDaemonRegistered } from "../src/lib/auto-follow-task.mjs";
 
 const execFileAsync = promisify(execFile);
 const CUSTOM_SCHEME_PATH = "dist/customScheme.js";
 const BUNDLE_NAME = "agy_zhcn_ui_main.js";
+const noLaunch = process.argv.includes("--no-launch");
+const ownedRestart = process.argv.includes("--owned-restart");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-// True only when this script started the client itself to read the UI. Such an
-// instance holds no user work, so it is closed without the 60-second wait.
-let launchedByTool = false;
+// True only when this script started the client itself to read the UI or is immediately
+// taking over a fresh updater relaunch.
+let launchedByTool = ownedRestart;
 
 async function waitForRuntimeUi(executablePath) {
   if (!(await clientProcesses()).length) {
@@ -105,6 +108,25 @@ if (
     throw error;
   });
   if (previousState.toolFingerprint !== toolFingerprint || currentBundleHash !== previousState.localizedBundleSha256) {
+    if (process.env.AGY_SILENT_LAUNCH === "1") {
+      const embedded = await readEmbeddedWindowsUi(inspection);
+      if (embedded) {
+        const dict = await loadDomTranslations();
+        const relocalized = await createLocalizedBundleWithProgress(embedded.buffer, dict);
+        const bundleTarget = path.join(getAntigravityUserDataRoot(), BUNDLE_NAME);
+        await writeLocalizedBundle(bundleTarget, relocalized.buffer);
+        await writeInstallState({
+          ...previousState,
+          toolFingerprint,
+          localizedBundleSha256: sha256Buffer(relocalized.buffer),
+        });
+        await ensureAutoFollowDaemonRegistered().catch(() => {});
+        if (!noLaunch) {
+          await showClient(inspection.executablePath);
+        }
+        process.exit(0);
+      }
+    }
     console.log("检测到语言包或汉化状态变化，恢复原始资源后重新应用中文。请先保存工作。");
     const restored = spawnSync(process.execPath, [path.join(projectRoot, "src/cli.mjs"), "restore"], { stdio: "inherit", windowsHide: true });
     if (restored.status !== 0) throw new Error("未完成恢复，已停止更新。");
@@ -112,7 +134,10 @@ if (
     process.exit(updated.status ?? 1);
   }
   console.log("当前版本已完成汉化，无需重复注入，直接启动 Antigravity。");
-  await showClient(inspection.executablePath);
+  await ensureAutoFollowDaemonRegistered().catch(() => {});
+  if (!noLaunch) {
+    await showClient(inspection.executablePath);
+  }
   process.exit(0);
 }
 const originalScheme = await readFileFromAsar(inspection.appAsarPath, CUSTOM_SCHEME_PATH);
@@ -195,4 +220,7 @@ try {
 }
 
 console.log("汉化已自动跟进当前更新，正在重新启动 Antigravity。");
-await showClient(recheck.executablePath);
+await ensureAutoFollowDaemonRegistered().catch(() => {});
+if (!noLaunch) {
+  await showClient(recheck.executablePath);
+}

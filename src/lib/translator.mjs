@@ -3,6 +3,7 @@ import path from "node:path";
 import { projectRoot } from "./paths.mjs";
 import { sha256Buffer } from "./hash.mjs";
 import { languageFile } from "./language-pack.mjs";
+import { readAutoLearnedDict } from "./auto-learned-dict.mjs";
 
 export async function loadDomTranslations() {
   const filePath = languageFile("dom-translations.json");
@@ -14,6 +15,10 @@ export async function loadDomTranslations() {
     !Array.isArray(data.patterns)
   ) {
     throw new Error("DOM 翻译词典格式无效。");
+  }
+  const learnedExact = await readAutoLearnedDict();
+  if (learnedExact && Object.keys(learnedExact).length > 0) {
+    data.exact = { ...learnedExact, ...data.exact };
   }
   for (const pattern of data.patterns) {
     if (
@@ -42,6 +47,48 @@ function compilePatternTranslations(dictionary) {
     regex: new RegExp(source, flags),
     target: normalizePatternTarget(target),
   }));
+}
+
+function fastAnchorReplace(source, anchor, regex, replacement) {
+  if (!source.includes(anchor)) return source;
+  if (source.length < 65536) return source.replace(regex, replacement);
+  const isGlobal = regex.global;
+  const singleRegex = isGlobal ? new RegExp(regex.source, regex.flags.replace("g", "")) : regex;
+  let result = "";
+  let cursor = 0;
+  let searchPos = 0;
+  while (true) {
+    const hit = source.indexOf(anchor, searchPos);
+    if (hit === -1) {
+      result += source.slice(cursor);
+      break;
+    }
+    let winStart = Math.max(cursor, hit - 600);
+    while (winStart > cursor && /[a-zA-Z0-9_$]/.test(source[winStart - 1])) {
+      winStart--;
+    }
+    let winEnd = Math.min(source.length, hit + anchor.length + 6000);
+    while (winEnd < source.length && /[a-zA-Z0-9_$]/.test(source[winEnd])) {
+      winEnd++;
+    }
+    const slice = source.slice(winStart, winEnd);
+    const m = singleRegex.exec(slice);
+    if (m) {
+      const absStart = winStart + m.index;
+      const absEnd = absStart + m[0].length;
+      const repPiece = m[0].replace(singleRegex, replacement);
+      result += source.slice(cursor, absStart) + repPiece;
+      cursor = absEnd;
+      searchPos = Math.max(absEnd, hit + 1);
+      if (!isGlobal) {
+        result += source.slice(cursor);
+        break;
+      }
+    } else {
+      searchPos = hit + 1;
+    }
+  }
+  return result;
 }
 
 export function formatPlanTermsToChinese(str) {
@@ -898,20 +945,369 @@ export function createRuntimeOverlay(dictionary) {
     return null;
   }
 
+  // =========================================================================
+  // 三层漏斗智能兜底引擎：四道防机翻护栏 + 硬盘级永久自学习词库 + 对话标题持久化
+  // =========================================================================
+  const __autoPendingKeys = new Set();
+  const __autoFailedKeys = new Set();
+  const __autoNodeSubscribers = new Map();
+  let __autoPersistQueue = {};
+  let __autoPersistTimer = null;
+  const __LOCAL_STORAGE_DICT_KEY = "__agy_zhcn_auto_learned_v1__";
+
+  const __PROTECTED_BRAND_PHRASES = [
+    "Google Workspace", "Google Cloud", "Google Docs", "Google Sheets", "Google Slides",
+    "Google Drive", "Google Calendar", "Gemini 4 Carbon", "Gemini 4 Argon", "Gemini 4 Hydrogen",
+    "Gemini 3.8 Flash", "Claude Sonnet", "Claude Opus", "GPT-OSS", "Antigravity", "BigQuery",
+    "Looker", "GitHub", "GitLab", "Bitbucket", "Linear", "Notion", "Figma", "Canva", "Vercel",
+    "Netlify", "Railway", "Dropbox", "Databricks", "Auth0", "Arize AX", "Arize", "Swarm",
+    "Gemini", "Claude", "Carbon", "Argon", "Hydrogen", "Tokens", "Token", "OAuth", "RBAC",
+    "MCP", "SSO", "PAT", "CLI", "IDE", "SDK", "API", "WSL", "SSH", "JSON", "YAML", "HTML", "CSS"
+  ];
+
+  const __PRE_ANCHOR_TERMS = [
+    [/\\bglobal permissions\\b/gi, "全局权限"],
+    [/\\bcontext windows?\\b/gi, "上下文窗口"],
+    [/\\bsubagents?\\b/gi, "子智能体"],
+    [/\\bagents?\\b/gi, "智能体"],
+    [/\\bworkspaces?\\b/gi, "工作区"],
+    [/\\bartifacts?\\b/gi, "工件"],
+    [/\\bprompts?\\b/gi, "提示词"],
+    [/\\bhooks?\\b/gi, "钩子"],
+    [/\\bworktrees?\\b/gi, "工作树"],
+    [/\\bDoubao\\b/gi, "豆包"],
+    [/\\bDouyin\\b/gi, "抖音"],
+    [/\\bXiaohongshu\\b/gi, "小红书"],
+    [/\\bFeishu\\b/gi, "飞书"],
+    [/\\bWeChat\\b/gi, "微信"],
+    [/\\bBilibili\\b/gi, "B站"]
+  ];
+
+  const __CHAT_OR_CODE_CONTAINER_SELECTOR = [
+    "[data-testid*='turn']",
+    "[data-testid*='message']",
+    "[data-testid*='thinking']",
+    "[data-testid*='thought']",
+    "[data-testid*='terminal']",
+    "[data-testid*='live-transcript']",
+    ".xterm",
+    ".monaco-editor",
+    "pre",
+    "code",
+    "textarea",
+    "input",
+    "[contenteditable='true']",
+    "[data-lexical-editor='true']",
+    "[data-model-selector-list]",
+    "[data-testid='model-selector-item']"
+  ].join(",");
+
+  function __canAutoTranslateRuntime() {
+    if (globalThis.__AGY_ZHCN_DISABLE_AUTO_TRANSLATE__ === true) return false;
+    if (typeof globalThis.__AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__ === "function") return true;
+    if (typeof window === "undefined" || typeof fetch !== "function") return false;
+    const proto = window.location?.protocol || "";
+    return proto === "https:" || proto === "http:" || proto === "agy-zhcn:" || proto === "file:";
+  }
+
+  function __isEligibleForAutoTranslate(core, parentEl, isTitle) {
+    if (typeof core !== "string") return false;
+    const t = core.trim();
+    if (isTitle ? (t.length < 3 || t.length > 160) : (t.length < 6 || t.length > 600)) return false;
+    if (!/[A-Za-z]/.test(t) || /[\\u4e00-\\u9fff]/.test(t)) return false;
+    if (isTitle) {
+      if (!/[A-Za-z]{4,}/.test(t) && !/[A-Za-z]{2,}[\\s\\-/]+[A-Za-z]{2,}/.test(t)) return false;
+    } else {
+      if (!/[A-Za-z]{2,}[\\s\\-/]+[A-Za-z]{2,}/.test(t)) return false;
+    }
+    if (/^Conversation\\s+[0-9a-f]{6,}$/i.test(t)) return false;
+    if (/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(t)) return false;
+    if (/^(?:https?|file|agy|ws|wss|vscode|chrome-extension):\\/\\//i.test(t)) return false;
+    if (/^[a-zA-Z]:[\\\\/]|^\\/[a-zA-Z0-9_\\-.]+|^\\.\\.?[\\\\/]/.test(t)) return false;
+    if (/\\.(?:exe|dll|asar|js|mjs|cjs|json|md|py|sh|ps1|log|png|jpg|jpeg|svg|css|html|ts|tsx|db|pbtxt)$/i.test(t)) return false;
+    if (/=>|\\bfunction\\s*\\(|[{}[\\]|\\\\<>=]|===|!==/.test(t)) return false;
+    if (/^[0-9a-fA-F-]{16,64}$/.test(t)) return false;
+    if (/^(?:Gemini|Claude|GPT-OSS|Google|Antigravity)\\s+[0-9A-Za-z.\\s()-]+$/i.test(t) && t.split(/\\s+/).length <= 4) return false;
+    if (parentEl && typeof parentEl.closest === "function") {
+      if (parentEl.closest(__CHAT_OR_CODE_CONTAINER_SELECTOR)) return false;
+    }
+    return true;
+  }
+
+  function __prepareAntiMtPayload(core) {
+    const placeholders = [];
+    const putToken = (val) => {
+      const idx = placeholders.length;
+      placeholders.push(val);
+      return "⟦" + idx + "⟧";
+    };
+    let text = core;
+    text = text.replace(/\\x60[^\\x60]+\\x60/g, (m) => putToken(m));
+    text = text.replace(/(?:^|\\s)(\\/[a-z][a-z0-9_-]*)/g, (m, cmd) => m.slice(0, m.length - cmd.length) + putToken(cmd));
+    text = text.replace(/\\bv\\d+\\.\\d+(?:\\.\\d+)?(?:-[0-9A-Za-z.-]+)?\\b/g, (m) => putToken(m));
+
+    for (let i = 0; i < __PROTECTED_BRAND_PHRASES.length; i++) {
+      const phrase = __PROTECTED_BRAND_PHRASES[i];
+      const escaped = phrase.replace(/[.*+?^{}$()|[\\]\\\\]/g, "\\\\$&");
+      const reg = new RegExp("\\\\b" + escaped + "\\\\b", "g");
+      text = text.replace(reg, (m) => putToken(m));
+    }
+
+    for (let i = 0; i < __PRE_ANCHOR_TERMS.length; i++) {
+      text = text.replace(__PRE_ANCHOR_TERMS[i][0], __PRE_ANCHOR_TERMS[i][1]);
+    }
+    return { prepared: text, placeholders };
+  }
+
+  function __polishTranslatedZh(zhRaw, originalCore, placeholders, isTitle) {
+    if (typeof zhRaw !== "string" || !zhRaw.trim()) return null;
+    let out = zhRaw.trim();
+    out = out.replace(/⟦\\s*(\\d+)\\s*⟧/g, (_, idxStr) => {
+      const idx = Number(idxStr);
+      return idx >= 0 && idx < placeholders.length ? placeholders[idx] : _;
+    });
+    if (/⟦\\s*\\d+\\s*⟧/.test(out)) return null;
+
+    out = out
+      .replace(/您的/g, "你的")
+      .replace(/您/g, "你")
+      .replace(/工作空间/g, "工作区")
+      .replace(/人工制品/g, "工件")
+      .replace(/代理程序/g, "智能体")
+      .replace(/([\\u4e00-\\u9fff])([A-Za-z0-9])/g, "$1 $2")
+      .replace(/([A-Za-z0-9])([\\u4e00-\\u9fff])/g, "$1 $2")
+      .replace(/\\s{2,}/g, " ")
+      .trim();
+
+    if (isTitle || !/[.!?]$/.test(originalCore.trim())) {
+      out = out.replace(/[。.]+$/, "").trim();
+    }
+    if (!/[\\u4e00-\\u9fff]/.test(out)) return null;
+    return out;
+  }
+
+  async function __requestRemoteTranslate(preparedText) {
+    if (typeof globalThis.__AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__ === "function") {
+      return await globalThis.__AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__(preparedText);
+    }
+    try {
+      const proxyResp = await fetch("agy-zhcn://translate?q=" + encodeURIComponent(preparedText));
+      if (proxyResp && proxyResp.ok) {
+        const proxyJson = await proxyResp.json();
+        if (proxyJson && proxyJson.ok && typeof proxyJson.translated === "string") {
+          return proxyJson.translated;
+        }
+      }
+    } catch (_) {}
+
+    const directUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=" + encodeURIComponent(preparedText);
+    const resp = await fetch(directUrl);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return Array.isArray(data && data[0]) ? data[0].map((seg) => (Array.isArray(seg) ? seg[0] : "")).join("") : null;
+  }
+
+  function __persistAutoLearnedEntry(enKey, zhVal) {
+    exactTranslations.set(enKey, zhVal);
+    try {
+      if (typeof localStorage !== "undefined") {
+        const raw = localStorage.getItem(__LOCAL_STORAGE_DICT_KEY);
+        const cache = raw ? JSON.parse(raw) : {};
+        cache[enKey] = zhVal;
+        localStorage.setItem(__LOCAL_STORAGE_DICT_KEY, JSON.stringify(cache));
+      }
+    } catch (_) {}
+
+    __autoPersistQueue[enKey] = zhVal;
+    if (!__autoPersistTimer) {
+      __autoPersistTimer = setTimeout(async () => {
+        const batch = __autoPersistQueue;
+        __autoPersistQueue = {};
+        __autoPersistTimer = null;
+        try {
+          if (typeof globalThis.__AGY_ZHCN_ON_PERSIST_DICT__ === "function") {
+            await globalThis.__AGY_ZHCN_ON_PERSIST_DICT__(batch);
+          } else if (typeof fetch === "function") {
+            await fetch("agy-zhcn://auto-dict", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ entries: batch })
+            }).catch(() => {});
+          }
+        } catch (_) {}
+      }, 300);
+    }
+  }
+
+  async function __loadPersistedAutoDict() {
+    let loadedAny = false;
+    try {
+      if (typeof localStorage !== "undefined") {
+        const raw = localStorage.getItem(__LOCAL_STORAGE_DICT_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          for (const [k, v] of Object.entries(parsed || {})) {
+            if (typeof k === "string" && typeof v === "string" && !exactTranslations.has(k)) {
+              exactTranslations.set(k, v);
+              loadedAny = true;
+            }
+          }
+        }
+      }
+    } catch (_) {}
+
+    try {
+      if (typeof fetch === "function" && typeof window !== "undefined") {
+        const resp = await fetch("agy-zhcn://auto-dict").catch(() => null);
+        if (resp && resp.ok) {
+          const data = await resp.json().catch(() => null);
+          if (data && data.exact && typeof data.exact === "object") {
+            for (const [k, v] of Object.entries(data.exact)) {
+              if (typeof k === "string" && typeof v === "string" && !exactTranslations.has(k)) {
+                exactTranslations.set(k, v);
+                loadedAny = true;
+              }
+            }
+          }
+        }
+      }
+    } catch (_) {}
+
+    if (loadedAny && typeof document !== "undefined" && document.documentElement) {
+      stats.dictionarySize = exactTranslations.size;
+      translateTree(document.documentElement);
+    }
+  }
+
+  async function __translateAndLearnAsync(core, { isTitle = false } = {}) {
+    const normalized = core.trim().replace(/\\s+/g, " ");
+    if (exactTranslations.has(normalized)) return exactTranslations.get(normalized);
+    if (!__canAutoTranslateRuntime() || __autoFailedKeys.has(normalized)) return null;
+    if (__autoPendingKeys.has(normalized)) {
+      return new Promise((resolve) => {
+        const list = __autoNodeSubscribers.get(normalized) || [];
+        list.push(resolve);
+        __autoNodeSubscribers.set(normalized, list);
+      });
+    }
+    __autoPendingKeys.add(normalized);
+    try {
+      const { prepared, placeholders } = __prepareAntiMtPayload(normalized);
+      const rawTranslated = await __requestRemoteTranslate(prepared);
+      const polished = __polishTranslatedZh(rawTranslated, normalized, placeholders, isTitle);
+      if (polished && polished !== normalized) {
+        __persistAutoLearnedEntry(normalized, polished);
+        if (core.trim() !== normalized) {
+          __persistAutoLearnedEntry(core.trim(), polished);
+        }
+        const waiters = __autoNodeSubscribers.get(normalized) || [];
+        __autoNodeSubscribers.delete(normalized);
+        for (const fn of waiters) fn(polished);
+        return polished;
+      }
+      __autoFailedKeys.add(normalized);
+    } catch (_) {
+      __autoFailedKeys.add(normalized);
+    } finally {
+      __autoPendingKeys.delete(normalized);
+      const waiters = __autoNodeSubscribers.get(normalized);
+      if (waiters) {
+        __autoNodeSubscribers.delete(normalized);
+        for (const fn of waiters) fn(null);
+      }
+    }
+    return null;
+  }
+
+  globalThis.__AGY_ZHCN_AUTO_TRANSLATE__ = __translateAndLearnAsync;
+  globalThis.__AGY_ZHCN_PREPARE_ANTI_MT__ = __prepareAntiMtPayload;
+  globalThis.__AGY_ZHCN_POLISH_ZH__ = __polishTranslatedZh;
+
+  let __titleWatcherBoundStore = null;
+  const __processedConvTitleMap = new Map();
+  globalThis.__AGY_ZHCN_BIND_TITLE_WATCHER__ = function(store, updateAnnotationsFn) {
+    if (!store || typeof store.getState !== "function" || typeof store.subscribe !== "function") return;
+    if (__titleWatcherBoundStore === store) return;
+    __titleWatcherBoundStore = store;
+
+    const scanSummaries = () => {
+      try {
+        const st = store.getState();
+        const summaries = st?.trajectorySummaries?.summaries;
+        if (!summaries || typeof summaries !== "object") return;
+        for (const [cascadeId, item] of Object.entries(summaries)) {
+          if (!item) continue;
+          const rawTitle = (item.annotations?.title?.trim() || item.summary?.trim() || "");
+          if (!rawTitle || /[\\u4e00-\\u9fff]/.test(rawTitle)) continue;
+          if (__processedConvTitleMap.get(cascadeId) === rawTitle) continue;
+          if (!__isEligibleForAutoTranslate(rawTitle, null, true)) continue;
+
+          __processedConvTitleMap.set(cascadeId, rawTitle);
+          const localTry = exactTranslations.get(rawTitle) || __translateChapterTitle(rawTitle);
+          const applyTitle = (zhTitle) => {
+            if (!zhTitle || !/[\\u4e00-\\u9fff]/.test(zhTitle) || zhTitle === rawTitle) return;
+            __processedConvTitleMap.set(cascadeId, zhTitle);
+            try {
+              const helpers = globalThis.__AGY_ZHCN_ANNOT_HELPERS__;
+              if (helpers && typeof helpers.localAction === "function") {
+                store.dispatch(helpers.localAction({ cascadeId, annotations: { title: zhTitle } }));
+              }
+              if (typeof updateAnnotationsFn === "function" && helpers && typeof helpers.makeProto === "function") {
+                updateAnnotationsFn(cascadeId, helpers.makeProto({ title: zhTitle }), true).catch?.(() => {});
+              }
+            } catch (_) {}
+          };
+
+          if (localTry && localTry !== rawTitle && !/[A-Za-z]{4,}/.test(localTry.replace(/\\b(?:Chrome|Google|Gemini|Claude|Antigravity|GitHub|Swarm|MCP|Remotion|CAD|PPT|YouTube|AI|UI|CLI|IDE)\\b/gi, ""))) {
+            applyTitle(localTry);
+          } else {
+            __translateAndLearnAsync(rawTitle, { isTitle: true }).then((zhTitle) => {
+              if (zhTitle) applyTitle(zhTitle);
+            });
+          }
+        }
+      } catch (_) {}
+    };
+
+    scanSummaries();
+    let debounceTimer = null;
+    store.subscribe(() => {
+      if (debounceTimer) return;
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null;
+        scanSummaries();
+      }, 300);
+    });
+  };
+
   function translateTextNode(node) {
     const parent = node.parentElement;
     if (!parent || isBlocked(parent)) return;
-    const translated = translateValue(node.nodeValue);
-    if (translated !== null && translated !== node.nodeValue) {
+    const rawVal = node.nodeValue;
+    const translated = translateValue(rawVal);
+    if (translated !== null && translated !== rawVal) {
       node.nodeValue = translated;
       stats.translatedTextNodes += 1;
-    } else if (collector.enabled && translated === null && node.nodeValue?.trim()) {
-      collector.record({
-        text: node.nodeValue.trim(),
-        tagName: parent.tagName,
-        role: parent.getAttribute("role") || "",
-        attributeName: ""
-      });
+    } else if (translated === null && rawVal?.trim()) {
+      if (collector.enabled) {
+        collector.record({
+          text: rawVal.trim(),
+          tagName: parent.tagName,
+          role: parent.getAttribute("role") || "",
+          attributeName: ""
+        });
+      }
+      if (__canAutoTranslateRuntime() && __isEligibleForAutoTranslate(rawVal, parent, false)) {
+        const leading = rawVal.match(/^\\s*/u)?.[0] ?? "";
+        const trailing = rawVal.match(/\\s*$/u)?.[0] ?? "";
+        const core = rawVal.slice(leading.length, rawVal.length - trailing.length);
+        __translateAndLearnAsync(core, { isTitle: false }).then((zh) => {
+          if (zh && node.nodeValue === rawVal) {
+            node.nodeValue = leading + zh + trailing;
+            stats.translatedTextNodes += 1;
+          }
+        });
+      }
     }
   }
 
@@ -924,13 +1320,23 @@ export function createRuntimeOverlay(dictionary) {
       if (translated !== null && translated !== current) {
         element.setAttribute(attribute, translated);
         stats.translatedAttributes += 1;
-      } else if (collector.enabled && translated === null && current?.trim()) {
-        collector.record({
-          text: current.trim(),
-          tagName: element.tagName,
-          role: element.getAttribute("role") || "",
-          attributeName: attribute
-        });
+      } else if (translated === null && current?.trim()) {
+        if (collector.enabled) {
+          collector.record({
+            text: current.trim(),
+            tagName: element.tagName,
+            role: element.getAttribute("role") || "",
+            attributeName: attribute
+          });
+        }
+        if (__canAutoTranslateRuntime() && __isEligibleForAutoTranslate(current, element, false)) {
+          __translateAndLearnAsync(current, { isTitle: false }).then((zh) => {
+            if (zh && element.getAttribute(attribute) === current) {
+              element.setAttribute(attribute, zh);
+              stats.translatedAttributes += 1;
+            }
+          });
+        }
       }
     }
   }
@@ -1134,6 +1540,7 @@ export function createRuntimeOverlay(dictionary) {
     document.documentElement.lang = "zh-CN";
     hookNativeContextMenu();
     translateTree(document.documentElement);
+    __loadPersistedAutoDict();
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === "characterData") {
@@ -1170,7 +1577,7 @@ export function createRuntimeOverlay(dictionary) {
 `;
 }
 
-export function createLocalizedBundle(sourceBuffer, dictionary) {
+export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage = false } = {}) {
   let sourceText = sourceBuffer.toString("utf8");
 
   // =========================================================================
@@ -1845,7 +2252,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   // 侧边栏与自定义面板新建按钮精准汉化（避免全局字典 New 词条误伤模型徽章）
   sourceText = sourceText.replaceAll('A.createElement(X,{name:"add",size:16}),A.createElement("span",null,"New")', 'A.createElement(X,{name:"add",size:16}),A.createElement("span",null,"新建")');
   // 思考层级映射原生汉化（Low/Medium/High -> 低/中/高，兼容多版本混淆变量名）
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '{low:"Low",medium:"Medium"',
     /([a-zA-Z0-9_$]+)=\{low:"Low",medium:"Medium",high:"High",xhigh:"Extra",max:"Max"\}/,
     '$1={low:"低",medium:"中",high:"高",xhigh:"超高",max:"最大"}'
   );
@@ -1853,7 +2262,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replaceAll('window:"Default"', 'window:"默认"');
 
   // 模型数据适配层源头汉化（支持 Claude 思考模型、单项 GPT-OSS 规格汉化、Orchestrator 编排器汉化，保留多规格英文以确保二级菜单正常折叠聚合）
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '=a=>a.modelOrAlias?{label:a.label',
     /([a-zA-Z0-9_$]+)=a=>a\.modelOrAlias\?\{label:a\.label,value:a\.modelOrAlias\.choice\.case==="model"\?a\.modelOrAlias\.choice\.value:([A-Za-z0-9_$]+)\.Model\.UNSPECIFIED,modelAlias:a\.modelOrAlias\.choice\.case==="alias"\?a\.modelOrAlias\.choice\.value:void 0,disabled:a\.disabled,supportedMimeTypes:new Map\(Object\.entries\(a\.supportedMimeTypes\)\),quotaInfo:a\.quotaInfo,tagTitle:a\.tagTitle,tagDescription:a\.tagDescription,/,
     '$1=a=>a.modelOrAlias?{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)").replace(/^Orchestrator\\s*\\(/i,"编排器 ("):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$2.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
   );
@@ -2557,7 +2968,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   // =========================================================================
 
   // [核心修复 1] 设置 -> 项目 -> 危险区域：“此项目由 Swarm 自动化统一管理，只能通过删除该自动化来删除。”（忽略换行符与混淆变量名）
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '" is managed by the"',
     /([a-zA-Z0-9_$]+)\?B\.createElement\("span",null,"This ",([a-zA-Z0-9_$]+)\.lowercase," is managed by the",\s*" ",B\.createElement\("strong",null,([a-zA-Z0-9_$]+)\)," automation and can only be deleted by deleting that automation\."\):/g,
     '$1?B.createElement("span",null,"此",$2.lowercase==="workspace"?"工作区":"项目","由 ",B.createElement("strong",null,$3)," 自动化统一管理，只能通过删除该自动化来删除。"):'
   );
@@ -2585,11 +2998,15 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     /var ([a-zA-Z0-9_$]+)=\{request_review:\{label:"Request Review",description:"Every command requires approval\.",prefValues:\{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.OFF,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ASK,permissionPreset:E\.AgentPermissionPreset\.REQUEST_REVIEW\}\},"default":\{label:"Default",description:"Ask before sensitive operations\.",prefValues:\{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.PROCEED_IN_SANDBOX,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ASK,\s*permissionPreset:E\.AgentPermissionPreset\.DEFAULT\}\},auto:\{label:"Auto",description:"Automatically decide if commands run\.",prefValues:\{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.AUTO,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ASK,permissionPreset:E\.AgentPermissionPreset\.AUTO\}\},turbo:\{label:"Turbo",description:"Run all commands without restrictions\.",prefValues:\{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.EAGER,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ALLOW,\s*permissionPreset:E\.AgentPermissionPreset\.TURBO\}\}\}/g,
     'var $1={request_review:{label:"请求审核",description:"每条命令均需人工批准。",prefValues:{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.OFF,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ASK,permissionPreset:E.AgentPermissionPreset.REQUEST_REVIEW}},"default":{label:"默认",description:"敏感操作前向你询问确认。",prefValues:{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.PROCEED_IN_SANDBOX,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ASK,permissionPreset:E.AgentPermissionPreset.DEFAULT}},auto:{label:"自动",description:"自动判断是否运行命令。",prefValues:{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.AUTO,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ASK,permissionPreset:E.AgentPermissionPreset.AUTO}},turbo:{label:"极速",description:"无限制直接运行所有命令。",prefValues:{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.EAGER,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ALLOW,permissionPreset:E.AgentPermissionPreset.TURBO}}}'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '{macos_linux:{default_unix:',
     /([a-zA-Z0-9_$]+)=\{macos_linux:\{default_unix:\{displayName:"Default",shortDisplayName:"Default",shortDescription:"Requires manual review for all terminal commands and file accesses outside of the working folders\.",\s*longDescription:"Useful for typical development with an emphasis on security\. It prioritizes safety over speed by requiring manual approval for all terminal commands and files outside the project directory\.",iconName:"shield_lock"\},full_machine_unix:\{displayName:"Full machine",shortDisplayName:"Machine",shortDescription:"All terminal commands require review\. The agent can read or write to any file in the machine\.",longDescription:"Useful for tasks that require file access across your full machine\. The agent has full read and write access to all local files, but all proposed terminal commands require manual review and approval before running\.",\s*iconName:"laptop_shield"\},unrestricted_unix:\{displayName:"Turbo mode",shortDisplayName:"Turbo",shortDescription:"Disables all safety barriers for maximal iteration velocity\.",longDescription:"A high-risk mode that disables all safety barriers\. The agent operates with full system access, auto-executes all terminal commands, and reads or writes to all local files without review prompts\.",iconName:"gpp_maybe"\}\},windows:\{default_windows:\{displayName:"Default",shortDisplayName:"Default",shortDescription:"Requires manual review for all terminal commands and file accesses outside of the working folders\.",\s*longDescription:"Useful for typical development with an emphasis on security\. It prioritizes safety over speed by requiring manual approval for all terminal commands and files outside the project directory\.",iconName:"shield_lock"\},full_machine_windows:\{displayName:"Full machine",shortDisplayName:"Machine",shortDescription:"All terminal commands require review\. The agent can read or write to any file in the machine\.",longDescription:"Useful for tasks that require file access across your full machine\. The agent has full read and write access to all local files, but all proposed terminal commands require manual review and approval before running\.",\s*iconName:"laptop_shield"\},unrestricted_windows:\{displayName:"Turbo mode",shortDisplayName:"Turbo",shortDescription:"Disables all safety barriers for maximal iteration velocity\.",longDescription:"A high-risk mode that disables all safety barriers\. The agent operates with full system access, auto-executes all terminal commands, and reads or writes to all local files without review prompts\.",iconName:"gpp_maybe"\}\}\}/g,
     '$1={macos_linux:{default_unix:{displayName:"默认",shortDisplayName:"默认",shortDescription:"所有终端命令及工作目录外的文件访问均需人工审核。",longDescription:"适合注重安全性的日常开发。通过要求对所有终端命令与项目目录外的文件访问进行人工确认，优先保障安全。",iconName:"shield_lock"},full_machine_unix:{displayName:"全机模式",shortDisplayName:"整机",shortDescription:"所有终端命令均需审核；智能体可读写本机任意文件。",longDescription:"适合需要跨整个系统访问文件的任务。智能体拥有所有本地文件的完整读写权限，但所有终端命令在运行前均需人工审核批准。",iconName:"laptop_shield"},unrestricted_unix:{displayName:"极速模式",shortDisplayName:"极速",shortDescription:"禁用全部安全防护以获得最快迭代速度。",longDescription:"此高风险模式将关闭所有安全护栏。智能体拥有完整系统访问权限，会自动执行全部终端命令并读写所有本地文件，不再弹窗确认。",iconName:"gpp_maybe"}},windows:{default_windows:{displayName:"默认",shortDisplayName:"默认",shortDescription:"所有终端命令及工作目录外的文件访问均需人工审核。",longDescription:"适合注重安全性的日常开发。通过要求对所有终端命令与项目目录外的文件访问进行人工确认，优先保障安全。",iconName:"shield_lock"},full_machine_windows:{displayName:"全机模式",shortDisplayName:"整机",shortDescription:"所有终端命令均需审核；智能体可读写本机任意文件。",longDescription:"适合需要跨整个系统访问文件的任务。智能体拥有所有本地文件的完整读写权限，但所有终端命令在运行前均需人工审核批准。",iconName:"laptop_shield"},unrestricted_windows:{displayName:"极速模式",shortDisplayName:"极速",shortDescription:"禁用全部安全防护以获得最快迭代速度。",longDescription:"此高风险模式将关闭所有安全护栏。智能体拥有完整系统访问权限，会自动执行全部终端命令并读写所有本地文件，不再弹窗确认。",iconName:"gpp_maybe"}}}'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '{project4k:{title:"Project 4K"',
     /([a-zA-Z0-9_$]+)=\{project4k:\{title:"Project 4K",description:"Project 4K interface without developer tooling\."\},default:\{title:"Default",description:"The full developer experience\."\}\};/g,
     '$1={project4k:{title:"知识工作",description:"专为研究、写作与日常任务打造的精简界面。"},default:{title:"软件工程",description:"包含代码编写、开发工具及智能体管理的完整开发界面。"}};'
   );
@@ -2611,23 +3028,33 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   );
 
   // [核心修复 4] 权限与安全预设下拉框选项、继承全局说明、工具权限列表行跨版本正则替换
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '==="use_global"?',
     /([a-zA-Z0-9_$]+)==="use_global"\?\s*"Inherit Global":\1==="custom"\?"Custom":([a-zA-Z0-9_$]+)\[([a-zA-Z0-9_$]+)\]\[\1\]\?\.displayName\?\?\s*"Custom"/g,
     '$1==="use_global"?"继承全局":$1==="custom"?"自定义":$2[$3][$1]?.displayName??"自定义"'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Inherits your Global Permissions when working ',
     /([a-zA-Z0-9_$]+)==="use_global"\?`Inherits your Global Permissions when working \$\{([a-zA-Z0-9_$]+)\}\.`:\1==="custom"\?"Manually customize individual settings\.":([a-zA-Z0-9_$]+)\[([a-zA-Z0-9_$]+)\]\[\1\]\?\.(longDescription|shortDescription)/g,
     '$1==="use_global"?`在${$2==="in these conversations"?"这些对话":$2==="in this workspace"?"此工作区":"此项目"}中工作时继承全局权限。`:$1==="custom"?"手动自定义各项设置。":$3[$4][$1]?.$5'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '!=="use_global"&&',
     /([a-zA-Z0-9_$]+)!=="use_global"&&\1\?([a-zA-Z0-9_$]+)\[([a-zA-Z0-9_$]+)\(\1\)\]\?\.label\?\?\1:"Inherit Global"/g,
     '$1!=="use_global"&&$1?$2[$3($1)]?.label??$1:"继承全局"'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '==="use_global"?',
     /([a-zA-Z0-9_$]+)==="use_global"\?\s*"Inherit Global":([a-zA-Z0-9_$]+)\[\1\]\?\.label\?\?\1/g,
     '$1==="use_global"?"继承全局":$2[$1]?.label??$1'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Inherits your Global Permissions when working ',
     /([a-zA-Z0-9_$]+)==="use_global"\?`Inherits your Global Permissions when working \$\{([a-zA-Z0-9_$]+)\}\.`:([a-zA-Z0-9_$]+)\[\1\]\?\.description\?\?""/g,
     '$1==="use_global"?`在${$2==="in these conversations"?"这些对话":$2==="in this workspace"?"此工作区":"此项目"}中工作时继承全局权限。`:$3[$1]?.description??""'
   );
@@ -2647,11 +3074,15 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     /"Enabled":([a-zA-Z0-9_$]+)===void 0\?"Inherit Global":\s*\1\?"Enabled":"Disabled":"Disabled"/g,
     '"已启用":$1===void 0?"继承全局":$1?"已启用":"已禁用":"已禁用"'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '===void 0?"Inherit Global":',
     /([a-zA-Z0-9_$]+)===void 0\?"Inherit Global":\1===!0\?"Enabled":"Disabled"/g,
     '$1===void 0?"继承全局":$1===!0?"已启用":"已禁用"'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '==="use_global"?"Inherit Global":',
     /([a-zA-Z0-9_$]+)==="use_global"\?"Inherit Global":\1==="turbo"\?"Always Proceed":"Always Ask"/g,
     '$1==="use_global"?"继承全局":$1==="turbo"?"始终继续":"始终询问"'
   );
@@ -2683,7 +3114,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     /label:"GitHub",description:"Configure GitHub access policies\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("github"\)\}\},"Open"\)/g,
     'label:"GitHub",description:"配置 GitHub 访问策略。",rightElement:B.createElement($1,{variant:"secondary",size:"sm",onClick:()=>{$2("github")}},"打开")'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Modify permissions for file, terminal, and MCP tools."',
     /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?"Modify permissions for file, terminal, and MCP tools\.":"Modify permissions for file and terminal tools\."/g,
     '$1=$2?"修改文件、终端和 MCP 工具的相关权限。":"修改文件和终端工具的相关权限。"'
   );
@@ -2738,7 +3171,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     /B\.createElement\(([a-zA-Z0-9_$]+),\{title:B\.createElement\("div",\s*\{className:"flex items-center gap-1\.5"\},\s*B\.createElement\("span",null,"Models & Usage"\),\s*B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"ghost",size:"icon-lg",onClick:w,disabled:n===void 0,title:"Refresh quota and credits data","aria-label":"Refresh quota and credits data"\},\s*B\.createElement\(([a-zA-Z0-9_$]+),\{name:"refresh",size:20,className:n===void 0\?"animate-spin":""\}\)\)\),\s*description:"Manage your model quota and credits\."\},h==="signedIn"&&l&&B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Plan"\},B\.createElement\(([a-zA-Z0-9_$]+),null,B\.createElement\(([a-zA-Z0-9_$]+),\{label:B\.createElement\("div",\s*\{className:"font-medium"\},\s*"(Your Plan: |你的方案：)",([\s\S]+?)\),description:([\s\S]+?),rightElement:c\?\.userTier\?\.upgradeSubscriptionUri&&B\.createElement\("a",\{href:([a-zA-Z0-9_$]+)\(c\.userTier\.upgradeSubscriptionUri,"utm_campaign","ARGON_MODELS_PAGE"\),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary\/90"\},c\.userTier\.upgradeButtonText\|\|"Upgrade"\)\}\)\)\),y!==void 0&&B\.createElement\(\4,\{title:"Model Credits"\},B\.createElement\(\5,\s*null,B\.createElement\(([a-zA-Z0-9_$]+),\s*\{label:"Enable AI Credit Overages",description:`When toggled on, \$\{g\} will use your AI credits to fulfill model requests once you're out of model quota\. \$\{g\} will always use your model quota first before using AI credits\.`,isSwitchOn:x,pushUpdate:A\}\),x&&B\.createElement\(\6,\{label:`Available AI Credits: \$\{y\?\?"0"\}`,/g,
     'B.createElement($1,{title:B.createElement("div",{className:"flex items-center gap-1.5"},B.createElement("span",null,"模型与用量"),B.createElement($2,{variant:"ghost",size:"icon-lg",onClick:w,disabled:n===void 0,title:"刷新配额与点数数据","aria-label":"刷新配额与点数数据"},B.createElement($3,{name:"refresh",size:20,className:n===void 0?"animate-spin":""}))),description:"管理你的模型配额与 AI 点数。"},h==="signedIn"&&l&&B.createElement($4,{title:"订阅方案"},B.createElement($5,null,B.createElement($6,{label:B.createElement("div",{className:"font-medium"},"你的方案：",globalThis.__AGY_ZHCN_TRANSLATE_PLAN__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN__(l):l),description:(m&&(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(m):m)),rightElement:c?.userTier?.upgradeSubscriptionUri&&B.createElement("a",{href:$10(c.userTier.upgradeSubscriptionUri,"utm_campaign","ARGON_MODELS_PAGE"),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"},({"Upgrade":"升级","Manage":"管理","Learn more":"了解更多"}[c.userTier.upgradeButtonText]||c.userTier.upgradeButtonText||"升级"))}))),y!==void 0&&B.createElement($4,{title:"模型点数"},B.createElement($5,null,B.createElement($11,{label:"启用 AI 点数超额使用",description:`开启后，当模型配额用尽时，${g} 将自动使用你的 AI 点数继续处理请求。系统始终优先消耗模型配额。`,isSwitchOn:x,pushUpdate:A}),x&&B.createElement($6,{label:`可用 AI 点数：${y??"0"}`,'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '=(a,b,c,d,f,g)=>{if(g)return a=a||"this model"',
     /([a-zA-Z0-9_$]+)=\(a,b,c,d,f,g\)=>\{if\(g\)return a=a\|\|"this model",b&&\(b=new Date\(b\),!Number\.isNaN\(b\.getTime\(\)\)\)\?`Your quota for \$\{a\} will reset on \$\{b\.toLocaleString\(\)\}\. (?:Switch to another available model to continue\.|请切换到其他可用模型以继续。)`:`Your quota for \$\{a\} has been reached\. (?:Switch to another available model to continue\.|请切换到其他可用模型以继续。)`;g="";var h=d!==void 0;h&&c&&\(f===void 0\|\|d<f\)&&\(g=`You need \$\{f\?"at least "\+f:"more"\} AI Credits to send messages\. To continue using \$\{a\|\|"this model"\} now, purchase more AI Credits\.`\);if\(b\)try\{let k=\(new Date\(b\)\)\.toLocaleString\(\);\s*g\+=` (?:Your plan's baseline quota will refresh on|你的方案基线配额将于) \$\{k\}(?:\.| 刷新。)`\}catch\(k\)\{console\.warn\("Failed to parse quota reset timestamp",k\)\}h&&!c&&\(g\+=" (?:To continue using this model now, enable AI Credit overages\.|若要立即继续使用此模型，请启用 AI 点数超额使用。)"\);return g\};/g,
     '$1=(a,b,c,d,f,g)=>{if(g)return a=a||"此模型",b&&(b=new Date(b),!Number.isNaN(b.getTime()))?`你的 ${a} 配额将于 ${b.toLocaleString()} 重置。请切换到其他可用模型以继续。`:`你的 ${a} 配额已达上限。请切换到其他可用模型以继续。`;g="";var h=d!==void 0;h&&c&&(f===void 0||d<f)&&(g=`你还需要 ${f?"至少 "+f:"更多"} AI 点数才能继续发送消息。若要立即继续使用${a||"此模型"}，请购买更多 AI 点数。`);if(b)try{let k=(new Date(b)).toLocaleString();g+=` 你的方案基线配额将于 ${k} 刷新。`}catch(k){console.warn("Failed to parse quota reset timestamp",k)}h&&!c&&(g+=" 若要立即继续使用此模型，请启用 AI 点数超额使用。");return g};'
   );
@@ -2768,7 +3203,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     /function ([a-zA-Z0-9_$]+)\(a\)\{return a\.active\?"Working":a\.durationMs!==void 0&&a\.durationMs>0\?`Worked for \$\{([a-zA-Z0-9_$]+)\(a\.durationMs\)\}`:"Worked"\}/g,
     'function $1(a){return a.active?"处理中":a.durationMs!==void 0&&a.durationMs>0?`工作耗时 ${$2(a.durationMs)}`:"已完成"}'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '?w.startTimeMs?`Running for ',
     /([a-zA-Z0-9_$]+)\?w\.startTimeMs\?`Running for \$\{([a-zA-Z0-9_$]+)\(([a-zA-Z0-9_$]+)\.getTime\(\)-Number\(w\.startTimeMs\)\)\}`:"Starting":"Paused\."/g,
     '$1?w.startTimeMs?`已运行 ${$2($3.getTime()-Number(w.startTimeMs))}`:"正在启动":"已暂停。"'
   );
@@ -2776,7 +3213,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     /a\.startTimeMs\?`Up \$\{([a-zA-Z0-9_$]+)\(g\.getTime\(\)-Number\(a\.startTimeMs\)\)\}`:"Running"/g,
     'a.startTimeMs?`已运行 ${$1(g.getTime()-Number(a.startTimeMs))}`:"运行中"'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '.exitCode===-1?"Validation timed out.":',
     /([a-zA-Z0-9_$]+)\.exitCode===-1\?"Validation timed out\.":([a-zA-Z0-9_$]+)\|\|`Exited with code \$\{\1\.exitCode\}\.`/g,
     '$1.exitCode===-1?"验证超时。":$2||`已退出，退出码 ${$1.exitCode}。`'
   );
@@ -2808,7 +3247,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     /B\.createElement\("span",\{ref:h,"data-titled":d\?"true":void 0,className:"font-medium leading-snug text-foreground"\},d\?\?([a-zA-Z0-9_$]+)\(a,b\)\)/g,
     'B.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"font-medium leading-snug text-foreground"},(d?(globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__?globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__(d):d):d)??$1(a,b))'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '(`Turn ${',
     /([a-zA-Z0-9_$]+)\(`Turn \$\{([a-zA-Z0-9_$]+)\+\s*1\} of \$\{([a-zA-Z0-9_$]+)\.current\.turns\?\.length\}`,"polite"\)/g,
     '$1(`第 ${$2+1} 轮，共 ${$3.current.turns?.length} 轮`,"polite")'
   );
@@ -2816,21 +3257,46 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   // [核心修复 9] 插件页、气泡提示、终端空状态、工作区/项目选择器、MCP 搜索跨版本替换
   sourceText = sourceText.replace(/"Removing\.\.\.":([a-zA-Z0-9_$]+)\?"Enabling\.\.\.":"Adding\.\.\."/g, '"正在移除...":$1?"正在启用...":"正在添加..."');
   sourceText = sourceText.replace(/"Signed in as"," ",B\.createElement\(([a-zA-Z0-9_$]+)/g, '"当前登录账号"," ",B.createElement($1');
-  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)\.length>0&&B\.createElement\("div",\{className:"mb-2 px-3 font-semibold text-foreground"\},\s*"Configured servers"\)/g, '$1.length>0&&B.createElement("div",{className:"mb-2 px-3 font-semibold text-foreground"},"已配置的服务器")');
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Configured servers"',
+    /([a-zA-Z0-9_$]+)\.length>0&&B\.createElement\("div",\{className:"mb-2 px-3 font-semibold text-foreground"\},\s*"Configured servers"\)/g,
+    '$1.length>0&&B.createElement("div",{className:"mb-2 px-3 font-semibold text-foreground"},"已配置的服务器")'
+  );
   sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.RUNNING:return\{label:"Running"/g, 'case $1.SidecarStatus.RUNNING:return{label:"运行中"');
   sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.STARTING:return\{label:"Starting"/g, 'case $1.SidecarStatus.STARTING:return{label:"启动中"');
   sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.STOPPED:return\{label:"Stopped"/g, 'case $1.SidecarStatus.STOPPED:return{label:"已停止"');
   sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.ERRORED:return\{label:"Error"/g, 'case $1.SidecarStatus.ERRORED:return{label:"错误"');
   sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.BACKOFF:return\{label:"Backoff"/g, 'case $1.SidecarStatus.BACKOFF:return{label:"重试等待"');
   sourceText = sourceText.replace(/function ([a-zA-Z0-9_$]+)\(\{path:a,label:b="Copy Path"/g, 'function $1({path:a,label:b="复制路径"');
-  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)\?"No resources added yet\.":"No folders added yet\."/g, '$1?"尚未添加资源。":"尚未添加文件夹。"');
-  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?B\.createElement\(([a-zA-Z0-9_$]+),null\):"Controls the actions the agent can take\."/g, '$1=$2?B.createElement($3,null):"控制智能体可执行的各类操作。"');
-  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?B\.createElement\(([a-zA-Z0-9_$]+),null\):"Whether the agent asks you to review its documents\."/g, '$1=$2?B.createElement($3,null):"控制智能体在生成计划或文档后是否请求你评审。"');
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '?"No resources added yet.":"No folders added yet."',
+    /([a-zA-Z0-9_$]+)\?"No resources added yet\.":"No folders added yet\."/g,
+    '$1?"尚未添加资源。":"尚未添加文件夹。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Controls the actions the agent can take."',
+    /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?B\.createElement\(([a-zA-Z0-9_$]+),null\):"Controls the actions the agent can take\."/g,
+    '$1=$2?B.createElement($3,null):"控制智能体可执行的各类操作。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Whether the agent asks you to review its documents."',
+    /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?B\.createElement\(([a-zA-Z0-9_$]+),null\):"Whether the agent asks you to review its documents\."/g,
+    '$1=$2?B.createElement($3,null):"控制智能体在生成计划或文档后是否请求你评审。"'
+  );
   sourceText = sourceText.replace(/k\.length>0\?k\.map\(([a-zA-Z0-9_$]+)\)\.join\(", "\):"No access"/g, 'k.length>0?k.map(m=>({"read":"读取","update":"更新","merge":"合并","approve":"批准","create":"创建","delete":"删除"}[m]||$1(m))).join("、"):"无权限"');
   sourceText = sourceText.replace(/function ([a-zA-Z0-9_$]+)\(a\)\{switch\(a\)\{case "system":return"System UI";case "inter":return"Inter";case "google-sans":return"Google Sans"\}\}/g, 'function $1(a){switch(a){case "system":return"系统默认";case "inter":return"Inter";case "google-sans":return"Google Sans"}}');
   sourceText = sourceText.replace(/h\.length===0\?B\.createElement\(([a-zA-Z0-9_$]+),null,"No active terminals"\)/g, 'h.length===0?B.createElement($1,null,"暂无活动终端")');
   sourceText = sourceText.replace(/"No active terminals"\),B\.createElement\(([a-zA-Z0-9_$]+)/g, '"暂无活动终端"),B.createElement($1');
-  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)\?`See all \(\$\{([a-zA-Z0-9_$]+)\.items\.length\}\)`:"See less"/g, '$1?`查看全部 (${$2.items.length})`:"收起"');
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '.items.length})`:"See less"',
+    /([a-zA-Z0-9_$]+)\?`See all \(\$\{([a-zA-Z0-9_$]+)\.items\.length\}\)`:"See less"/g,
+    '$1?`查看全部 (${$2.items.length})`:"收起"'
+  );
   sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},h\?"Copied":"Copy code"\)/g, 'B.createElement($1,{id:$2,place:"top"},h?"已复制":"复制代码")');
   sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},"Insert in Terminal"\)/g, 'B.createElement($1,{id:$2,place:"top"},"在终端中插入")');
   sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top-end"\},([a-zA-Z0-9_$]+)\?"Copied":"Copy"\)/g, 'B.createElement($1,{id:$2,place:"top-end"},$3?"已复制":"复制")');
@@ -2840,7 +3306,12 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,\s*"Remote Projects"\)/g, 'B.createElement($1,null,"远程项目")');
   sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,"Recent"\)/g, 'B.createElement($1,null,"最近")');
   sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,"Environment"\)/g, 'B.createElement($1,null,"运行环境")');
-  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)\.trim\(\)\?`No matching \$\{([a-zA-Z0-9_$]+)\}`:`No remote \$\{\2\}`/g, '$1.trim()?`未找到匹配的${({"projects":"项目","workspaces":"工作区"}[$2]||$2)}`:`暂无远程${({"projects":"项目","workspaces":"工作区"}[$2]||$2)}`');
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '.trim()?`No matching ${',
+    /([a-zA-Z0-9_$]+)\.trim\(\)\?`No matching \$\{([a-zA-Z0-9_$]+)\}`:`No remote \$\{\2\}`/g,
+    '$1.trim()?`未找到匹配的${({"projects":"项目","workspaces":"工作区"}[$2]||$2)}`:`暂无远程${({"projects":"项目","workspaces":"工作区"}[$2]||$2)}`'
+  );
   sourceText = sourceText.replace(/B\.createElement\("p",\{className:"px-2\.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"\},"No ",([a-zA-Z0-9_$]+)\.emptyMessagePlural,\s*" match \\u201c",([a-zA-Z0-9_$]+),"\\u201d\."\)/g, 'B.createElement("p",{className:"px-2.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"},"未找到匹配“",$2,"”的",({"automations":"自动化","scheduled tasks":"定时任务"}[$1.emptyMessagePlural]||$1.emptyMessagePlural),"。")');
   sourceText = sourceText.replace(/paddingClassName:"pl-2\.5 pr-3",\s*icon:B\.createElement\(([a-zA-Z0-9_$]+),\{name:"add",size:14\}\)\},"New"\)\)\)/g, 'paddingClassName:"pl-2.5 pr-3",icon:B.createElement($1,{name:"add",size:14})},"新建")))');
   sourceText = sourceText.replace(/"Reconnect"\),B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"xs","aria-label":`Disconnect \$\{f\}`,onClick:\(\)\s*=>\s*\{d\(f\)\}\},"Disconnect"\)/g, '"重新连接"),B.createElement($1,{variant:"secondary",size:"xs","aria-label":`断开 ${f} 连接`,onClick:()=>{d(f)}},"断开连接")');
@@ -2883,7 +3354,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
   );
 
   // 2. 自动化创建页面：本地电脑与远程云端环境说明
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '?"Uses your local files and tools. Schedules only.":',
     /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)=>\2==="local"\?"Uses your local files and tools\. Schedules only\.":`Runs even when your computer is off\. \$\{([a-zA-Z0-9_$]+)\?"Schedules and events\.":"Schedules only\."\}`/g,
     '$1=$2=>$2==="local"?"使用你的本地文件与工具。仅支持定时计划。":`即使电脑关机也能继续运行。${$3?"支持定时计划与事件触发。":"仅支持定时计划。"}`'
   );
@@ -2996,12 +3469,24 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     '`已选择 ${K.length} 个模型`'
   );
 
+  // =========================================================================
+  // 9.13 新开对话英文标题实时自动转中文 + 原生持久化写回数据库钩子（跨版本自适应）
+  // =========================================================================
+  sourceText = sourceText.replace(
+    /("trajectorySummaries\/markConversationAsReadThunk",async\(a,b\)=>\{var c=e,d=e;try\{let f=a\.cascadeId,g=a\.agentService;b\.dispatch\(([a-zA-Z0-9_$]+)\(\{cascadeId:f,annotations:\{markedAsUnread:!1\}\}\)\);d\(await c\(g\.updateConversationAnnotations\?\.\(f,([a-zA-Z0-9_$]+)\(([a-zA-Z0-9_$]+)\.ConversationAnnotationsSchema,\{markedAsUnread:!1,lastUserViewTime:([a-zA-Z0-9_$]+)\(new Date\)\}\),!0\)\)\)\}finally\{c\(\)\}\}\);)/g,
+    '$1globalThis.__AGY_ZHCN_ANNOT_HELPERS__={localAction:(p)=>$2(p),makeProto:(o)=>$3($4.ConversationAnnotationsSchema,o)};'
+  );
+  sourceText = sourceText.replace(
+    /(\{updateConversationAnnotations:([a-zA-Z0-9_$]+)\}=[a-zA-Z0-9_$]+\(\),([a-zA-Z0-9_$]+)=[a-zA-Z0-9_$]+\(\),([a-zA-Z0-9_$]+)=[a-zA-Z0-9_$]+\(\);\s*\(0,B\.useEffect\)\(\(\)=>[a-zA-Z0-9_$]+\(\{subscribeToRoute:[a-zA-Z0-9_$]+=>[a-zA-Z0-9_$]+\.subscribe\("onResolved",[a-zA-Z0-9_$]+\),getCascadeIdParam:[a-zA-Z0-9_$]+,getBattleIdParam:[a-zA-Z0-9_$]+,dispatch:([a-zA-Z0-9_$]+)\.dispatch,deps:\{updateConversationAnnotations:\2,recordError:\3,getStartingConversationIds:\(\)=>[a-zA-Z0-9_$]+\(\5\.getState\(\)\)\}\}\),\[[^\]]+\]\);)(return \4\?)/g,
+    '$1globalThis.__AGY_ZHCN_BIND_TITLE_WATCHER__?.($5,$2);$6'
+  );
+
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
   return {
     buffer: localized,
     sha256: sha256Buffer(localized),
-    coverage: countBundleDictionaryHits(sourceText, dictionary),
+    coverage: skipCoverage ? 0 : countBundleDictionaryHits(sourceText, dictionary),
   };
 }
 

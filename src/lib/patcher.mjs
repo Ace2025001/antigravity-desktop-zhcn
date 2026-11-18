@@ -44,9 +44,75 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
     electron_1.session.defaultSession.clearCache().catch((err) => {
         console.error("Failed to clear cache before loading ZHCN UI:", err);
     });
-    electron_1.protocol.handle('agy-zhcn', async () => {
+    electron_1.protocol.handle('agy-zhcn', async (request) => {
         const path = require("path");
+        const os = require("os");
         const fsPromises = require("fs/promises");
+        const getAutoDictPath = () => {
+            if (process.env.AGY_ZHCN_STATE_DIR) return path.join(path.resolve(process.env.AGY_ZHCN_STATE_DIR), 'auto-learned-translations.json');
+            if (process.platform === 'win32' && process.env.LOCALAPPDATA) return path.join(process.env.LOCALAPPDATA, 'AntigravityZhcn', 'auto-learned-translations.json');
+            if (process.platform === 'darwin') return path.join(os.homedir(), 'Library', 'Application Support', 'AntigravityZhcn', 'auto-learned-translations.json');
+            return path.join(electron_1.app.getPath('userData'), 'auto-learned-translations.json');
+        };
+        try {
+            const reqUrl = new URL(request.url);
+            if (reqUrl.hostname === 'auto-dict') {
+                const dictPath = getAutoDictPath();
+                if (request.method === 'POST') {
+                    const body = await request.json().catch(() => ({}));
+                    const entries = (body && typeof body.entries === 'object' && body.entries) ? body.entries : {};
+                    let existing = {};
+                    try {
+                        const raw = await fsPromises.readFile(dictPath, 'utf8');
+                        const parsed = JSON.parse(raw);
+                        existing = (parsed && typeof parsed.exact === 'object') ? parsed.exact : {};
+                    } catch (_e) {}
+                    let changed = 0;
+                    for (const [k, v] of Object.entries(entries)) {
+                        if (typeof k === 'string' && typeof v === 'string' && k.trim() && v.trim() && existing[k] !== v) {
+                            existing[k] = v;
+                            changed++;
+                        }
+                    }
+                    if (changed > 0) {
+                        await fsPromises.mkdir(path.dirname(dictPath), { recursive: true });
+                        const tmp = dictPath + '.' + process.pid + '.' + Date.now() + '.tmp';
+                        await fsPromises.writeFile(tmp, JSON.stringify({ schemaVersion: 1, updatedAt: new Date().toISOString(), count: Object.keys(existing).length, exact: existing }, null, 2) + '\\n', 'utf8');
+                        await fsPromises.rename(tmp, dictPath);
+                    }
+                    return new Response(JSON.stringify({ ok: true, changed, total: Object.keys(existing).length }), {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
+                    });
+                }
+                let exact = {};
+                try {
+                    const raw = await fsPromises.readFile(dictPath, 'utf8');
+                    const parsed = JSON.parse(raw);
+                    exact = (parsed && typeof parsed.exact === 'object') ? parsed.exact : {};
+                } catch (_e) {}
+                return new Response(JSON.stringify({ ok: true, exact }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
+                });
+            }
+            if (reqUrl.hostname === 'translate') {
+                const q = reqUrl.searchParams.get('q') || '';
+                if (!q.trim()) {
+                    return new Response(JSON.stringify({ ok: false }), { status: 400, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' } });
+                }
+                const targetUrl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=' + encodeURIComponent(q);
+                const doFetch = (electron_1.net && typeof electron_1.net.fetch === 'function') ? electron_1.net.fetch.bind(electron_1.net) : fetch;
+                const resp = await doFetch(targetUrl);
+                const data = await resp.json();
+                const translated = Array.isArray(data && data[0]) ? data[0].map((seg) => (Array.isArray(seg) ? seg[0] : '')).join('') : '';
+                return new Response(JSON.stringify({ ok: Boolean(translated), translated }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
+                });
+            }
+        } catch (_routeErr) {}
+
         const bundlePath = path.join(electron_1.app.getPath('userData'), 'agy_zhcn_ui_main.js');
         const content = await fsPromises.readFile(bundlePath);
         return new Response(content, {
@@ -58,6 +124,37 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             }
         });
     });
+    try {
+        if (electron_1.app && !electron_1.app.__zhcnAutoFollowHooked) {
+            electron_1.app.__zhcnAutoFollowHooked = true;
+            electron_1.app.on('will-quit', () => {
+                try {
+                    const fs = require('fs');
+                    const path = require('path');
+                    const cp = require('child_process');
+                    const hookFile = path.join(electron_1.app.getPath('userData'), 'agy_zhcn_autofollow_hook.json');
+                    if (fs.existsSync(hookFile)) {
+                        const hook = JSON.parse(fs.readFileSync(hookFile, 'utf8'));
+                        if (process.platform === 'win32' && hook && hook.vbsPath && fs.existsSync(hook.vbsPath)) {
+                            const child = cp.spawn('wscript.exe', ['//B', '//NoLogo', hook.vbsPath, '--post-quit'], {
+                                detached: true,
+                                stdio: 'ignore',
+                                windowsHide: true
+                            });
+                            child.unref();
+                        } else if (hook && hook.nodePath && hook.daemonScript && fs.existsSync(hook.daemonScript)) {
+                            const child = cp.spawn(hook.nodePath, [hook.daemonScript, '--post-quit'], {
+                                detached: true,
+                                stdio: 'ignore',
+                                windowsHide: true
+                            });
+                            child.unref();
+                        }
+                    }
+                } catch (_quitErr) {}
+            });
+        }
+    } catch (_hookErr) {}
     electron_1.session.defaultSession.webRequest.onBeforeRequest(
         { urls: ['https://127.0.0.1:*/main.js'] },
         (_details, callback) => {

@@ -2435,3 +2435,125 @@ test("Case 144: translate 2.32.2 Automations schedule editor, local/cloud descri
     "Must translate Orchestrator (Carbon/Argon) model label to 编排器 (Carbon/Argon)"
   );
 });
+
+test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned dict, conversation title writeback, and zero-console VBS launcher", async () => {
+  const vm = await import("node:vm");
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const { mkdtemp, rm } = await import("node:fs/promises");
+  const { mergeAutoLearnedEntries, readAutoLearnedDict } = await import("../src/lib/auto-learned-dict.mjs");
+  const { buildSilentLauncherVbs, buildSilentDaemonVbs } = await import("../src/lib/auto-follow-task.mjs");
+
+  // 1. 测试硬盘级永久自学习词库读写与主词库合并优先级
+  const tempStateDir = await mkdtemp(path.join(os.tmpdir(), "agy-auto-dict-test-"));
+  const prevStateEnv = process.env.AGY_ZHCN_STATE_DIR;
+  try {
+    process.env.AGY_ZHCN_STATE_DIR = tempStateDir;
+    const added = await mergeAutoLearnedEntries({
+      "Brand New Official Feature Toggle": "全新官方功能开关",
+      "Copy": "机翻错误覆盖测试"
+    });
+    assert.equal(added, 2);
+    const diskDict = await readAutoLearnedDict();
+    assert.equal(diskDict["Brand New Official Feature Toggle"], "全新官方功能开关");
+
+    const merged = await loadDomTranslations();
+    // 新词条必须自动合并进主词库
+    assert.equal(merged.exact["Brand New Official Feature Toggle"], "全新官方功能开关");
+    // 人工精校主词库优先级必须高于自动学习词库（"Copy" 仍保持 "复制"）
+    assert.equal(merged.exact["Copy"], "复制");
+  } finally {
+    if (prevStateEnv === undefined) delete process.env.AGY_ZHCN_STATE_DIR;
+    else process.env.AGY_ZHCN_STATE_DIR = prevStateEnv;
+    await rm(tempStateDir, { recursive: true, force: true });
+  }
+
+  // 2. 测试运行时四道防机翻护栏 + 新对话英文标题自动转中文持久化写回
+  const current = await loadDomTranslations();
+  const sampleHooks = [
+    'var U4b=fk("trajectorySummaries/markConversationAsReadThunk",async(a,b)=>{var c=e,d=e;try{let f=a.cascadeId,g=a.agentService;b.dispatch(nl({cascadeId:f,annotations:{markedAsUnread:!1}}));d(await c(g.updateConversationAnnotations?.(f,Vb(uf.ConversationAnnotationsSchema,{markedAsUnread:!1,lastUserViewTime:Xe(new Date)}),!0)))}finally{c()}});',
+    'var b5b=()=>{var a=eH(),b=yk(),c=lI(),d=HI(),{updateConversationAnnotations:f}=kt(),g=ju(),h=GI();(0,B.useEffect)(()=>$4b({subscribeToRoute:k=>a.subscribe("onResolved",k),getCascadeIdParam:c,getBattleIdParam:d,dispatch:b.dispatch,deps:{updateConversationAnnotations:f,recordError:g,getStartingConversationIds:()=>Iva(b.getState())}}),[a,b,c,d,f,g]);return h?B.createElement(a5b,{battleId:h}):null};'
+  ].join("\n");
+
+  const bundleOut = createLocalizedBundle(Buffer.from(sampleHooks, "utf8"), { exact: {}, patterns: [], fragments: [] }).buffer.toString("utf8");
+  assert.ok(bundleOut.includes("globalThis.__AGY_ZHCN_ANNOT_HELPERS__="), "Must inject annotation helpers hook");
+  assert.ok(bundleOut.includes("globalThis.__AGY_ZHCN_BIND_TITLE_WATCHER__?.(b,f);"), "Must inject b5b global title watcher hook");
+
+  // 在沙箱中执行 overlay 验证防机翻占位保护、术语锚定、译后润色与标题写回
+  const overlayCode = createRuntimeOverlay({ exact: {}, patterns: [] });
+  const persistedBatches = [];
+  const dispatchedActions = [];
+  const persistedAnnotations = [];
+  const sandbox = {
+    document: {
+      readyState: "loading",
+      documentElement: { lang: "en" },
+      addEventListener() {}
+    },
+    Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 },
+    MutationObserver: class { observe() {} },
+    setTimeout,
+    clearTimeout,
+    __AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__: async (prepared) => {
+      // 验证专有名词已被占位符 ⟦0⟧ (`plan`) 和 ⟦1⟧ (Gemini 4 Carbon) 保护，且 agent/workspace 已被预锚定为 智能体/工作区
+      if (prepared.includes("智能体") && prepared.includes("工作区")) {
+        return "允许智能体在工作区中使用 ⟦ 1 ⟧ 运行 ⟦0⟧。";
+      }
+      if (prepared.includes("豆包")) {
+        return "使用 ⟦0⟧ 分析豆包视频脚本。";
+      }
+      return "设计现代客厅布局。";
+    },
+    __AGY_ZHCN_ON_PERSIST_DICT__: async (batch) => {
+      persistedBatches.push(batch);
+    },
+    __AGY_ZHCN_ANNOT_HELPERS__: {
+      localAction: (p) => ({ type: "LOCAL_ANNOT", payload: p }),
+      makeProto: (o) => ({ proto: o })
+    }
+  };
+  sandbox.globalThis = sandbox;
+  vm.runInNewContext(overlayCode, sandbox);
+
+  // 验证普通 UI 句子的四道防机翻翻译效果
+  const uiTranslated = await sandbox.__AGY_ZHCN_AUTO_TRANSLATE__(
+    "Allow agents to run `/plan` with Gemini 4 Carbon in workspaces"
+  );
+  assert.equal(uiTranslated, "允许智能体在工作区中使用 Gemini 4 Carbon 运行 `/plan`");
+
+  // 验证新开对话英文标题自动转中文并写回 store 与 updateConversationAnnotations
+  const fakeStore = {
+    state: {
+      trajectorySummaries: {
+        summaries: {
+          "conv-new-1": { summary: "Analyzing Doubao Video Script with Gemini", annotations: {} }
+        }
+      }
+    },
+    getState() { return this.state; },
+    dispatch(act) { dispatchedActions.push(act); },
+    subscribe() { return () => {}; }
+  };
+  const fakeUpdateAnnotations = async (cid, proto, merge) => {
+    persistedAnnotations.push({ cid, proto, merge });
+  };
+
+  sandbox.__AGY_ZHCN_BIND_TITLE_WATCHER__(fakeStore, fakeUpdateAnnotations);
+  await new Promise((r) => setTimeout(r, 50));
+
+  assert.equal(dispatchedActions.length, 1);
+  assert.equal(dispatchedActions[0].payload.annotations.title, "使用 Gemini 分析豆包视频脚本");
+  assert.equal(persistedAnnotations.length, 1);
+  assert.equal(persistedAnnotations[0].cid, "conv-new-1");
+  assert.equal(persistedAnnotations[0].proto.proto.title, "使用 Gemini 分析豆包视频脚本");
+
+  // 3. 验证零黑框 VBScript 启动器与守护包装器使用窗口模式 0 (SW_HIDE)
+  const launcherVbs = buildSilentLauncherVbs();
+  const daemonVbs = buildSilentDaemonVbs({
+    nodeExePath: "C:\\node.exe",
+    daemonScriptPath: "C:\\silent-auto-follow-daemon.mjs",
+    languagePackDir: "C:\\lang"
+  });
+  assert.ok(launcherVbs.includes("shell.Run(cmd, 0, True)"), "Launcher VBS must use window style 0 (hidden)");
+  assert.ok(daemonVbs.includes("shell.Run cmd, 0, False"), "Daemon VBS must use window style 0 (hidden)");
+});
