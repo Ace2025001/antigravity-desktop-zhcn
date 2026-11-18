@@ -97,7 +97,7 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
   console.log("设置已保存。");
   if (platform === "win32") {
     const result = await applyAutoFollowSetting(settings).catch((error) => ({ registered: false, reason: error.message }));
-    console.log(settings.autoFollow === "off" ? "已关闭后台检查。" : result.registered ? "后台检查已按新设置生效。" : `后台检查未能设置：${result.reason}`);
+    console.log(settings.autoFollow === "off" ? "已关闭更新后自动汉化。" : result.registered ? "更新后自动汉化已按新设置生效。" : `更新后自动汉化未能设置：${result.reason}`);
   }
   console.log("联网补充翻译的改动会在重新打开 Antigravity 后生效，无需重新汉化。");
   return 0;

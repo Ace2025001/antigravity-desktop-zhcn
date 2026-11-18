@@ -11,7 +11,7 @@ Simplified Chinese (zh-CN) localization for the **Google Antigravity Desktop** s
 - Not for the Antigravity **IDE extension**.
 - Ships its own Node.js runtime. No network install, no proxy/TUN changes.
 - Optional, user-chosen features (first-run questions, editable later via `汉化设置`):
-  - **Auto-follow updates** (Windows): a per-user scheduled task `AntigravityZhcnAutoFollow` (at logon + every 30 min) re-localizes after client updates. Removed on restore / uninstall.
+  - **Auto-follow updates** (Windows): when the patched client quits (e.g. the user clicks “Restart to update”), it starts a short-lived helper that waits for the installer, then re-localizes the new version (or asks first). No scheduled task or resident process; the hook is removed on restore / uninstall, and any `AntigravityZhcnAutoFollow` task left by v3.0.0 is deleted.
   - **Online supplementary translation**: untranslated UI strings and conversation titles are sent to Google Translate through the patched main process. Chat content, code, terminal output, files and user input are never sent.
 
 ## Installing for a user / 为用户安装

@@ -5,8 +5,8 @@ import { promisify } from "node:util";
 import { getAntigravityUserDataRoot, getStateRoot, projectRoot } from "./paths.mjs";
 
 const execFileAsync = promisify(execFile);
+// Only used to clean up the scheduled task that v3.0.0 registered.
 export const AUTO_FOLLOW_TASK_NAME = "AntigravityZhcnAutoFollow";
-export const AUTO_FOLLOW_INTERVAL_MINUTES = 30;
 
 /**
  * Convert any Unicode string into a 100% pure 7-bit ASCII VBScript expression
@@ -175,66 +175,29 @@ export async function ensureAutoFollowDaemonRegistered({
     // Ignore if userData dir is not accessible yet
   }
 
-  // User-level task: at logon and every 30 minutes. The daemon compares file
-  // size and timestamp first, so most runs finish without hashing anything.
-  const psScript = `
-$ErrorActionPreference = 'Stop'
-$taskName = '${AUTO_FOLLOW_TASK_NAME}'
-$vbs = '${vbsPath.replaceAll("'", "''")}'
-$action = New-ScheduledTaskAction -Execute 'wscript.exe' -Argument ('//B //NoLogo "' + $vbs + '" --periodic')
-$triggerPeriodic = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes ${AUTO_FOLLOW_INTERVAL_MINUTES}) -RepetitionDuration (New-TimeSpan -Days 3650)
-$user = "$env:USERDOMAIN\\$env:USERNAME"
-$triggerLogon = New-ScheduledTaskTrigger -AtLogOn -User $user
-$principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 15) -MultipleInstances IgnoreNew -Hidden
-Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($triggerPeriodic, $triggerLogon) -Settings $settings -Principal $principal -Force | Out-Null
-`;
+  // No scheduled task: the patched client starts the follow-up itself when it
+  // quits (for example after "restart to update"). Remove the task v3.0.0 added.
+  await deleteLegacyTask();
+  return { registered: true, vbsPath };
+}
+
+async function deleteLegacyTask(exec = execFileAsync) {
   try {
-    await execFileAsync(
-      "powershell.exe",
-      ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", psScript],
-      { windowsHide: true, timeout: 15000 }
-    );
-    return { registered: true, vbsPath, taskName: AUTO_FOLLOW_TASK_NAME };
-  } catch (err) {
-    try {
-      await execFileAsync(
-        "schtasks.exe",
-        [
-          "/Create",
-          "/TN",
-          AUTO_FOLLOW_TASK_NAME,
-          "/TR",
-          `wscript.exe //B //NoLogo "${vbsPath}" --periodic`,
-          "/SC",
-          "MINUTE",
-          "/MO",
-          String(AUTO_FOLLOW_INTERVAL_MINUTES),
-          "/F",
-        ],
-        { windowsHide: true, timeout: 15000 }
-      );
-      return { registered: true, vbsPath, taskName: AUTO_FOLLOW_TASK_NAME };
-    } catch {
-      return { registered: false, vbsPath, reason: err.message };
-    }
+    await exec("schtasks.exe", ["/Delete", "/TN", AUTO_FOLLOW_TASK_NAME, "/F"], { windowsHide: true, timeout: 15000 });
+    return true;
+  } catch {
+    return false; // The task did not exist.
   }
 }
 
 /**
- * Remove the scheduled task, its VBS wrapper and the quit-hook file. Used when
+ * Remove the quit hook, its VBS wrapper and any legacy scheduled task. Used when
  * the user turns auto-follow off and on restore / cleanup / purge. Safe to call
  * when nothing was registered.
  */
 export async function removeAutoFollowDaemon({ exec = execFileAsync } = {}) {
   if (process.platform !== "win32") return { removed: false, reason: "non-win32" };
-  let removed = false;
-  try {
-    await exec("schtasks.exe", ["/Delete", "/TN", AUTO_FOLLOW_TASK_NAME, "/F"], { windowsHide: true, timeout: 15000 });
-    removed = true;
-  } catch {
-    // The task did not exist.
-  }
+  const removed = await deleteLegacyTask(exec);
   const daemonDir = path.join(getStateRoot(), "daemon");
   await rm(path.join(daemonDir, "silent-auto-follow.vbs"), { force: true }).catch(() => {});
   await rm(path.join(daemonDir, "auto-follow.lock"), { force: true }).catch(() => {});
@@ -246,7 +209,7 @@ export async function removeAutoFollowDaemon({ exec = execFileAsync } = {}) {
   return { removed };
 }
 
-/** Register or remove the background check so it always matches the user's choice. */
+/** Install or remove the update follow-up so it always matches the user's choice. */
 export async function applyAutoFollowSetting(settings, options = {}) {
   if (process.platform !== "win32") return { registered: false, reason: "non-win32" };
   if (settings.autoFollow === "off") {

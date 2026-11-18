@@ -1,6 +1,8 @@
-// Background check started by the scheduled task (--periodic) or by the
-// patched client when it quits (--post-quit). What it does is decided by the
-// user's "客户端更新后怎么处理" setting; see src/lib/auto-follow-decision.mjs.
+// Started by the patched client when it quits (--post-quit), e.g. after the
+// user clicks "restart to update". If the installer replaces the client files
+// within a few minutes, the new version is localized right away according to
+// the "客户端更新后怎么处理" setting; see src/lib/auto-follow-decision.mjs.
+// A normal quit without an update just ends after the wait.
 import { execFile, spawn } from "node:child_process";
 import { appendFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -16,9 +18,10 @@ import { readUserSettings } from "../src/lib/user-settings.mjs";
 
 const execFileAsync = promisify(execFile);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const mode = process.argv[2] || "--periodic";
+const mode = process.argv[2] || "";
 const daemonDir = () => path.join(getStateRoot(), "daemon");
-const MAX_WAIT_MS = 12 * 60 * 60 * 1000;
+const INSTALL_WAIT_MS = 3 * 60 * 1000;
+const POLL_MS = 5000;
 
 async function logDaemon(message) {
   try {
@@ -48,6 +51,30 @@ async function acquireLock(lockPath) {
   } catch {
     return false;
   }
+}
+
+/** Run the localizer in a visible window so the user sees what is happening. */
+function runVisibleAutoFollowUpdate(extraArgs, installRoot) {
+  const env = { ...process.env, AGY_INSTALL_PATH: installRoot };
+  const script = path.join(projectRoot, "scripts", "auto-follow-update.mjs");
+  const parts = [process.execPath, script, ...extraArgs];
+  // "start" opens a new console the localizer writes to; "!" or quotes would break the command line.
+  if (parts.some((part) => /[!"]/.test(part))) return runAutoFollowUpdate(extraArgs, installRoot);
+  const quoted = parts.map((part) => `"${part}"`).join(" ");
+  const line = `/d /v:on /s /c "start "Antigravity 汉化" /wait ${quoted} & exit !errorlevel!"`;
+  return new Promise((resolve) => {
+    const child = spawn("cmd.exe", [line], { env, windowsVerbatimArguments: true, windowsHide: true, stdio: "ignore" });
+    child.once("error", () => resolve(1));
+    child.once("exit", (code) => resolve(code ?? 1));
+  });
+}
+
+async function notify(message) {
+  const file = path.join(os.tmpdir(), `agy-zhcn-note-${process.pid}.vbs`);
+  const vbs = `MsgBox ${toVbsAsciiExpr(message)}, 48 + 4096, ${toVbsAsciiExpr("Antigravity 汉化包")}`;
+  await writeFile(file, `${vbs}\r\n`, "ascii");
+  await execFileAsync("wscript.exe", ["//NoLogo", file], { timeout: 24 * 60 * 60 * 1000 }).catch(() => {});
+  await rm(file, { force: true }).catch(() => {});
 }
 
 function runAutoFollowUpdate(extraArgs, installRoot) {
@@ -101,49 +128,70 @@ async function detectUpdate(state) {
   return unchanged ? null : inspection;
 }
 
+async function asarStamp(state) {
+  const info = await stat(path.join(state.installRoot, "resources", "app.asar")).catch(() => null);
+  return info ? `${info.size}:${info.mtimeMs}` : "missing";
+}
+
+/** Wait until the installer has replaced app.asar and the file stops changing. */
+async function waitForInstalledUpdate(state) {
+  const initial = await asarStamp(state);
+  let previous = initial;
+  const deadline = Date.now() + INSTALL_WAIT_MS;
+  while (Date.now() < deadline) {
+    await sleep(POLL_MS);
+    const current = await asarStamp(state);
+    if (current !== initial && current !== "missing" && current === previous) return true;
+    previous = current;
+  }
+  return false;
+}
+
+async function takeOver(state) {
+  const code = await runVisibleAutoFollowUpdate(["--owned-restart"], state.installRoot);
+  await logDaemon(`接管更新后重启的客户端并汉化，退出码 ${code}`);
+  if (code !== 0) await notify("客户端已更新，但自动汉化没有完成。\n\n请双击 win启动 里的“启动中文”重新汉化。");
+}
+
 async function main() {
+  if (mode !== "--post-quit") return; // Only the client's quit hook starts this script.
   const { settings } = await readUserSettings();
   if (settings.autoFollow === "off") return;
   const state = await readInstallState().catch(() => null);
   if (!state || state.status !== "installed" || !state.installRoot || !state.patchedAsarSha256) return;
 
-  // After "restart to update" the installer needs a few seconds to replace files.
-  let update = null;
-  for (let i = 0; i < (mode === "--post-quit" ? 7 : 1); i += 1) {
-    if (i > 0 || mode === "--post-quit") await sleep(6000);
-    update = await detectUpdate(state);
-    if (update) break;
+  // A quit without an update ends here once the wait is over.
+  if (!(await waitForInstalledUpdate(state))) return;
+  await logDaemon("客户端退出后文件已被替换，开始检查新版本。");
+  const update = await detectUpdate(state);
+  if (!update) {
+    await logDaemon("新文件与已汉化版本一致或无法识别，不处理。");
+    return;
   }
-  if (!update) return;
 
   const lockPath = path.join(daemonDir(), "auto-follow.lock");
   if (!(await acquireLock(lockPath))) return;
   try {
+    await sleep(8000); // "restart to update" relaunches the client right after installing
     const declinedPath = path.join(daemonDir(), "declined.json");
     const declined = (await readJson(declinedPath))?.appAsarSha256 === update.appAsarSha256;
     const running = (await clientProcesses().catch(() => [])).length > 0;
-    const action = decideAutoFollow({ autoFollow: settings.autoFollow, updated: true, running, postQuit: mode === "--post-quit", declined });
+    const action = decideAutoFollow({ autoFollow: settings.autoFollow, updated: true, running, postQuit: true, declined });
     await logDaemon(`检测到客户端 ${update.packageVersion}，设置=${settings.autoFollow}，运行中=${running}，处理=${action}`);
 
     if (action === "localize") {
-      await logDaemon(`后台汉化完成，退出码 ${await runAutoFollowUpdate(["--no-launch", "--abort-if-running"], state.installRoot)}`);
+      // The client stayed closed (the update was installed on quit): localize quietly.
+      const code = await runAutoFollowUpdate(["--no-launch", "--abort-if-running"], state.installRoot);
+      await logDaemon(`后台汉化完成，退出码 ${code}`);
+      if (code === 3) await takeOver(state); // the client was relaunched meanwhile
     } else if (action === "take-over") {
-      await logDaemon(`接管重启后的客户端并汉化，退出码 ${await runAutoFollowUpdate(["--owned-restart"], state.installRoot)}`);
-    } else if (action === "wait-then-localize") {
-      const deadline = Date.now() + MAX_WAIT_MS;
-      while (Date.now() < deadline && (await clientProcesses().catch(() => [1])).length > 0) {
-        await writeFile(lockPath, String(process.pid)).catch(() => {}); // keep the lock fresh
-        await sleep(15_000);
-      }
-      if (Date.now() < deadline) {
-        await logDaemon(`客户端已关闭，后台汉化完成，退出码 ${await runAutoFollowUpdate(["--no-launch", "--abort-if-running"], state.installRoot)}`);
-      }
+      await takeOver(state);
     } else if (action === "ask") {
       const answer = await askUser(update.packageVersion);
       if (answer === "yes") {
         await logDaemon(openVisibleLauncher() ? "用户选择一键汉化，已打开汉化窗口。" : "用户选择一键汉化，但未找到启动中文入口。");
       } else if (answer === "error") {
-        await logDaemon("提示窗口未能正常显示，下次检查时再问。");
+        await logDaemon("提示窗口未能正常显示。");
       } else {
         await writeFile(declinedPath, JSON.stringify({ appAsarSha256: update.appAsarSha256, version: update.packageVersion, at: new Date().toISOString() }), "utf8").catch(() => {});
         await logDaemon("用户选择暂不汉化，此版本不再提醒。");

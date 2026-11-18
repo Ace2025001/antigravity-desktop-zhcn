@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { decideAutoFollow } from "../src/lib/auto-follow-decision.mjs";
-import { AUTO_FOLLOW_INTERVAL_MINUTES, AUTO_FOLLOW_TASK_NAME, removeAutoFollowDaemon } from "../src/lib/auto-follow-task.mjs";
+import { AUTO_FOLLOW_TASK_NAME, removeAutoFollowDaemon } from "../src/lib/auto-follow-task.mjs";
 import { createRuntimeOverlay } from "../src/lib/translator.mjs";
 
 test("自动跟进决策表", () => {
@@ -17,8 +17,18 @@ test("自动跟进决策表", () => {
   assert.equal(d({ autoFollow: "ask", declined: true }), "none");
 });
 
-test("后台检查间隔不短于 30 分钟", () => {
-  assert.ok(AUTO_FOLLOW_INTERVAL_MINUTES >= 30);
+test("不再注册定时计划任务，只清理旧版任务", async () => {
+  const source = await readFile(new URL("../src/lib/auto-follow-task.mjs", import.meta.url), "utf8");
+  assert.ok(!source.includes("Register-ScheduledTask"), "不得注册计划任务");
+  assert.ok(!source.includes('"/Create"'), "不得用 schtasks 创建任务");
+  assert.ok(source.includes('"/Delete", "/TN", AUTO_FOLLOW_TASK_NAME'), "必须清理旧版计划任务");
+});
+
+test("后台脚本只由客户端退出钩子启动", async () => {
+  const daemon = await readFile(new URL("../scripts/silent-auto-follow-daemon.mjs", import.meta.url), "utf8");
+  assert.ok(daemon.includes('if (mode !== "--post-quit") return;'), "后台脚本只响应退出钩子");
+  const patcher = await readFile(new URL("../src/lib/patcher.mjs", import.meta.url), "utf8");
+  assert.match(patcher, /'--post-quit'/);
 });
 
 test("恢复英文 / 卸载会删除计划任务", { skip: process.platform !== "win32" }, async () => {
@@ -56,12 +66,4 @@ test("红线：主进程翻译代理先检查联网开关再发请求", async ()
 test("红线：标题默认只显示不写回", () => {
   const overlay = createRuntimeOverlay({ exact: {}, patterns: [] });
   assert.match(overlay, /titleWriteBack !== true/);
-});
-
-test("计划任务的登录触发器限定为当前用户（普通权限即可注册）", async () => {
-  const source = await readFile(new URL("../src/lib/auto-follow-task.mjs", import.meta.url), "utf8");
-  // Inside the JS template literal the PowerShell backslash must be doubled.
-  assert.ok(source.includes('$user = "$env:USERDOMAIN\\\\$env:USERNAME"'), "域名与用户名之间必须保留反斜杠");
-  assert.match(source, /-AtLogOn -User \$user/);
-  assert.match(source, /-Principal \$principal/);
 });

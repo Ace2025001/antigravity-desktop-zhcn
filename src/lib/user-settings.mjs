@@ -88,8 +88,8 @@ export function describeSettings(settings, platform = process.platform) {
 export const AUTO_FOLLOW_QUESTION = [
   "【设置】客户端更新后怎么处理？",
   "  Antigravity 自动更新后会变回英文。",
-  "  1. 自动汉化：检测到更新后在后台自动重新汉化，无需任何操作（推荐）",
-  "  2. 先问我：检测到更新时弹窗提示“已检测到客户端更新，是否一键汉化？”",
+  "  1. 自动汉化：在客户端里点更新后，自动跟着重新汉化（推荐）",
+  "  2. 先问我：更新完成后弹窗问你是否一键汉化",
   "  3. 不处理：需要时自己双击“启动中文”",
 ];
 

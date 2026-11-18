@@ -5,7 +5,7 @@
 [![Platform](https://img.shields.io/badge/platform-Windows%20x64%20%7C%20macOS%20Apple%20Silicon-blue)](#faq)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google Antigravity Desktop** client. Works on Windows x64 and Apple Silicon Macs, runs straight from the ZIP folder, re-localizes after client updates, and restores English anytime.
+A **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google Antigravity Desktop** client. Works on Windows x64 and Apple Silicon Macs, runs straight from the extracted folder, re-localizes right after you click “Restart to update” in the client, and restores English anytime.
 
 [中文说明](README.md) · [Setup guides (Chinese)](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [Guide for AI agents](docs/ai-install.md)
 
@@ -18,8 +18,8 @@ A **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google 
 ## Features
 
 - **Ready to run**: bundled runtime, no Node.js needed; finds the client automatically.
-- **Follows updates**: re-localizes after client updates, or asks first (Windows).
-- **Thorough**: 16,000+ translations covering menus, settings, agent traces, tool calls, MCP and the plugin marketplace.
+- **Follows updates**: after “Restart to update”, the new version is localized and reopened in Chinese automatically, or you are asked first (Windows).
+- **Thorough**: 16,000+ curated translations: menus, tray, settings, agent execution traces and tool calls (file edits, shell commands with exit codes, MCP tools, image generation), the plugin marketplace (75+ plugins), quotas and input shortcuts. Names such as `agy` CLI, Catppuccin and Dracula are kept.
 - **Optional online fill-in**: untranslated UI strings go to Google Translate; chat content, code and files are never sent. Can be turned off.
 - **Reversible**: conversation data is never modified; on Mac the official app stays untouched.
 
@@ -33,4 +33,4 @@ A **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google 
 
 Requires Node.js >= 22.12.0. Run `npm ci --ignore-scripts`, `npm test` and `npm run validate`. See [architecture](docs/architecture.md), [releasing](docs/releasing.md), [contributing](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md).
 
-Thanks to [@javaht](https://github.com/javaht) for the macOS adaptation ([#7](https://github.com/Ace2025001/antigravity-desktop-zhcn/pull/7)). MIT licensed.
+MIT licensed.
