@@ -61,7 +61,7 @@ test("红线：标题默认只显示不写回", () => {
 test("计划任务的登录触发器限定为当前用户（普通权限即可注册）", async () => {
   const source = await readFile(new URL("../src/lib/auto-follow-task.mjs", import.meta.url), "utf8");
   // Inside the JS template literal the PowerShell backslash must be doubled.
-  assert.ok(source.includes('$user = "$env:USERDOMAIN\\$env:USERNAME"'), "域名与用户名之间必须保留反斜杠");
+  assert.ok(source.includes('$user = "$env:USERDOMAIN\\\\$env:USERNAME"'), "域名与用户名之间必须保留反斜杠");
   assert.match(source, /-AtLogOn -User \$user/);
   assert.match(source, /-Principal \$principal/);
 });
