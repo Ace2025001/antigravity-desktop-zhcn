@@ -1,4 +1,11 @@
 import { showClient } from "../src/lib/show-client.mjs";
+import { failure, info, ok, step, warn } from "../src/lib/console-ui.mjs";
+
+// Show a friendly summary instead of a stack trace when something goes wrong.
+process.on("uncaughtException", (error) => {
+  failure(error?.message ?? String(error), "保留这个窗口里的信息后重试；仍不行可到 GitHub 提交问题反馈。");
+  process.exit(1);
+});
 import { copyFile, mkdtemp, mkdir, rename, rm, writeFile } from "node:fs/promises";
 import { execFile, spawnSync } from "node:child_process";
 import { localizationFingerprint } from "../src/lib/language-pack.mjs";
@@ -17,13 +24,18 @@ import { createLocalizedBundleWithProgress } from "../src/lib/localize-progress.
 import { readInstallState, writeInstallState } from "../src/lib/state.mjs";
 import { gracefulCloseAntigravity, launchAntigravity } from "../src/lib/processes.mjs";
 import { clientProcesses } from "../src/lib/close-client.mjs";
-import { ensureAutoFollowDaemonRegistered } from "../src/lib/auto-follow-task.mjs";
+import { applyAutoFollowSetting } from "../src/lib/auto-follow-task.mjs";
+import { readUserSettings } from "../src/lib/user-settings.mjs";
+
+const syncAutoFollow = async () => applyAutoFollowSetting((await readUserSettings()).settings).catch(() => {});
 
 const execFileAsync = promisify(execFile);
 const CUSTOM_SCHEME_PATH = "dist/customScheme.js";
 const BUNDLE_NAME = "agy_zhcn_ui_main.js";
 const noLaunch = process.argv.includes("--no-launch");
 const ownedRestart = process.argv.includes("--owned-restart");
+// Background runs must never close a client the user opened in the meantime.
+const abortIfRunning = process.argv.includes("--abort-if-running");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -33,12 +45,12 @@ let launchedByTool = ownedRestart;
 
 async function waitForRuntimeUi(executablePath) {
   if (!(await clientProcesses()).length) {
-    console.log("需要临时打开原版 Antigravity 读取界面，读取完成后会自动关闭它，无需手动操作。");
+    info("需要临时打开原版 Antigravity 读取界面，读完会自动关闭，无需操作。");
     await launchAntigravity(executablePath);
     launchedByTool = true;
   }
   for (let attempt = 0; attempt < 120; attempt += 1) {
-    if (attempt > 0 && attempt % 10 === 0) console.log("仍在等待客户端界面就绪…");
+    if (attempt > 0 && attempt % 10 === 0) info("仍在等待客户端界面就绪…");
     const port = await findLatestUiPort();
     if (port) {
       try {
@@ -91,12 +103,12 @@ async function replaceBundle(bundlePath, buffer, expectedExistingHash) {
   return { sha256: expectedNewHash, replacement };
 }
 
-console.log("正在读取客户端版本、校验汉化资源和语言包，请稍候…");
 const previousState = await readInstallState();
 const inspection = await inspectInstallation({ allowRemoteCompatibility: false });
 const toolFingerprint = await localizationFingerprint("win32");
 // Reject malformed language updates before restoring or modifying an installation.
 await loadDomTranslations();
+if (process.env.AGY_UI_RERUN !== "1") ok(`客户端版本 ${inspection.packageVersion}，语言包校验通过`);
 if (
   previousState?.status === "installed" &&
   previousState.installRoot?.toLowerCase() === inspection.installRoot.toLowerCase() &&
@@ -120,21 +132,22 @@ if (
           toolFingerprint,
           localizedBundleSha256: sha256Buffer(relocalized.buffer),
         });
-        await ensureAutoFollowDaemonRegistered().catch(() => {});
+        await syncAutoFollow();
         if (!noLaunch) {
           await showClient(inspection.executablePath);
         }
         process.exit(0);
       }
     }
-    console.log("检测到语言包或汉化状态变化，恢复原始资源后重新应用中文。请先保存工作。");
+    info("汉化包有更新，需要先恢复原版文件，再重新应用中文。");
+    process.env.AGY_UI_RERUN = "1";
     const restored = spawnSync(process.execPath, [path.join(projectRoot, "src/cli.mjs"), "restore"], { stdio: "inherit", windowsHide: true });
     if (restored.status !== 0) throw new Error("未完成恢复，已停止更新。");
     const updated = spawnSync(process.execPath, [path.join(projectRoot, "scripts/auto-follow-update.mjs")], { stdio: "inherit", windowsHide: true });
     process.exit(updated.status ?? 1);
   }
-  console.log("当前版本已完成汉化，无需重复注入，直接启动 Antigravity。");
-  await ensureAutoFollowDaemonRegistered().catch(() => {});
+  ok("当前版本已经汉化，直接打开 Antigravity");
+  await syncAutoFollow();
   if (!noLaunch) {
     await showClient(inspection.executablePath);
   }
@@ -145,9 +158,9 @@ const originalScheme = await readFileFromAsar(inspection.appAsarPath, CUSTOM_SCH
 // This is the compatibility gate for newly updated builds. It only accepts the
 // exact structural anchors used by the patcher; an arbitrary new layout fails closed.
 patchCustomSchemeSource(originalScheme.toString("utf8"));
-console.log(`已检测到 ${inspection.packageVersion}，正在读取本地界面资源…`);
+step("准备中文界面");
 const runtime = await readEmbeddedWindowsUi(inspection) ?? await waitForRuntimeUi(inspection.executablePath);
-if (runtime.source === "embedded") console.log("已校验并读取安装目录中的原版界面资源。");
+ok("已读取原版界面");
 const dictionary = await loadDomTranslations();
 const localized = await createLocalizedBundleWithProgress(runtime.buffer, dictionary, { skipCoverage: true });
 
@@ -163,11 +176,16 @@ if (existingBundleHash && existingBundleHash !== previousBundleHash) {
   const preservedBundlePath = path.join(stateRoot, "backups", "localized-ui", `${existingBundleHash}.js`);
   await ensureBackup(installedBundlePath, preservedBundlePath, existingBundleHash);
   replaceableBundleHash = existingBundleHash;
-  console.log("已备份检测到的本地迭代中文 UI，再继续自动更新。");
+  info("已备份你本机原有的中文界面文件。");
 }
 
 try {
+  if (abortIfRunning && !launchedByTool && (await clientProcesses()).length) {
+    warn("客户端正在运行，后台汉化不会关闭它，留待下次检查。");
+    process.exit(3);
+  }
   await gracefulCloseAntigravity({ owned: launchedByTool });
+  step(noLaunch ? "应用汉化" : "应用汉化并启动");
 } catch (closeErr) {
   if (closeErr?.silentUserCancelled) {
     process.exit(0);
@@ -226,8 +244,8 @@ try {
   await rm(buildRoot, { recursive: true, force: true });
 }
 
-console.log("汉化已自动跟进当前更新，正在重新启动 Antigravity。");
-await ensureAutoFollowDaemonRegistered().catch(() => {});
+ok("已备份原版文件并应用中文");
+await syncAutoFollow();
 if (!noLaunch) {
   await showClient(recheck.executablePath);
 }

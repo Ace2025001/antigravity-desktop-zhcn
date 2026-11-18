@@ -5,7 +5,9 @@
 [![Platform](https://img.shields.io/badge/platform-Windows%20x64%20%7C%20macOS%20Apple%20Silicon-blue)](#supported-platforms)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-An open-source **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google Antigravity Desktop** standalone client, on Windows x64 and Apple Silicon macOS. One download works on both platforms, runs offline with a bundled runtime, finds your installation automatically, re-applies Chinese after client updates, and restores English at any time. Tested on Antigravity Desktop 2.29.0.
+An open-source **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google Antigravity Desktop** standalone client, on Windows x64 and Apple Silicon macOS. One download works on both platforms with a bundled runtime, finds your installation automatically, re-localizes after client updates, and restores English at any time. Tested on Antigravity Desktop 2.32.2 (Windows).
+
+On first run you choose: what to do after client updates (Windows: auto-localize / ask / do nothing; auto and ask add a per-user scheduled task `AntigravityZhcnAutoFollow`, removed on restore), whether to enable **online supplementary translation** (untranslated UI strings and conversation titles go to Google Translate; chat content, code, terminal output, files and your input are never sent). Change them anytime with `汉化设置` (Settings) in the launcher folder.
 
 This targets the standalone Desktop client, **not** the Antigravity IDE extension.
 
@@ -18,7 +20,7 @@ This targets the standalone Desktop client, **not** the Antigravity IDE extensio
 3. Open `win启动` (Windows) or `mac启动` (macOS) and run **`启动中文`** ("Start Chinese").
 4. To go back to English, save your work, quit the client and run **`恢复英文`** ("Restore English").
 
-After the first successful launch, an **Antigravity自动汉化** shortcut is created on the desktop. It checks the localization and re-applies it when the client or the language pack changes.
+On Windows, client updates are handled by the background auto-follow task, so the old **Antigravity自动汉化** shortcut is no longer created and earlier copies are removed. On Mac the shortcut is still created; it checks the localization and re-applies it when the client or the language pack changes.
 
 ```text
 antigravity汉化包/
@@ -32,7 +34,7 @@ antigravity汉化包/
 - **Windows x64**: patches the installed client with a backup; restore puts the original back.
 - **macOS, Apple Silicon**: keeps the official app untouched and builds a locally signed Chinese copy at `~/Applications/Antigravity 中文.app`. Intel Macs are not verified.
 - Every client version must pass structure and resource checks. Unregistered versions are adapted dynamically from the running UI; nothing is forced.
-- If the client is running, you get 60 seconds to save and quit. Quitting yourself is detected automatically; press `Y` to force-close now or `N` to wait for you without forcing. With no answer the tool asks the client to quit, then force-closes it.
+- If the client is running, you get 60 seconds to save and quit. Quitting yourself is detected automatically; press `1` to force-close now or `2` to wait for you without forcing. With no answer the tool asks the client to quit, then force-closes it.
 - The tool never changes proxy, node or TUN settings.
 
 ## What gets translated

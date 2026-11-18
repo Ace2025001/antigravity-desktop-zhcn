@@ -1002,9 +1002,23 @@ export function createRuntimeOverlay(dictionary) {
     "[data-testid='model-selector-item']"
   ].join(",");
 
+  // User switches from “汉化设置”, served by the patched main process. Until
+  // they are known (or if they cannot be read) online translation stays off.
+  let __zhcnSettings = null;
+  async function __loadZhcnSettings() {
+    try {
+      if (typeof fetch === "function") {
+        const resp = await fetch("agy-zhcn://settings");
+        if (resp && resp.ok) __zhcnSettings = await resp.json();
+      }
+    } catch (_) {}
+    if (!__zhcnSettings || typeof __zhcnSettings !== "object") __zhcnSettings = { onlineTranslate: false, titleWriteBack: false };
+    return __zhcnSettings;
+  }
   function __canAutoTranslateRuntime() {
     if (globalThis.__AGY_ZHCN_DISABLE_AUTO_TRANSLATE__ === true) return false;
     if (typeof globalThis.__AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__ === "function") return true;
+    if (!__zhcnSettings || __zhcnSettings.onlineTranslate !== true) return false;
     if (typeof window === "undefined" || typeof fetch !== "function") return false;
     const proto = window.location?.protocol || "";
     return proto === "https:" || proto === "http:" || proto === "agy-zhcn:" || proto === "file:";
@@ -1101,11 +1115,9 @@ export function createRuntimeOverlay(dictionary) {
       }
     } catch (_) {}
 
-    const directUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=" + encodeURIComponent(preparedText);
-    const resp = await fetch(directUrl, makeTimeoutOpts());
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    return Array.isArray(data && data[0]) ? data[0].map((seg) => (Array.isArray(seg) ? seg[0] : "")).join("") : null;
+    // No direct request from the page: the main-process proxy is the single
+    // network exit and it enforces the user's online-translation switch.
+    return null;
   }
 
   function __persistAutoLearnedEntry(enKey, zhVal) {
@@ -1221,11 +1233,23 @@ export function createRuntimeOverlay(dictionary) {
   }
 
   globalThis.__AGY_ZHCN_AUTO_TRANSLATE__ = __translateAndLearnAsync;
+  globalThis.__AGY_ZHCN_LOAD_SETTINGS__ = __loadZhcnSettings;
+  globalThis.__AGY_ZHCN_LOOKUP__ = (text) => exactTranslations.get(text);
   globalThis.__AGY_ZHCN_PREPARE_ANTI_MT__ = __prepareAntiMtPayload;
   globalThis.__AGY_ZHCN_POLISH_ZH__ = __polishTranslatedZh;
 
   let __titleWatcherBoundStore = null;
   const __processedConvTitleMap = new Map();
+  let __titleRefreshTimer = null;
+  function __scheduleTitleRefresh() {
+    if (__titleRefreshTimer || typeof document === "undefined") return;
+    __titleRefreshTimer = setTimeout(() => {
+      __titleRefreshTimer = null;
+      try {
+        if (document.documentElement) translateTree(document.documentElement);
+      } catch (_) {}
+    }, 200);
+  }
   globalThis.__AGY_ZHCN_BIND_TITLE_WATCHER__ = function(store, updateAnnotationsFn) {
     if (!store || typeof store.getState !== "function" || typeof store.subscribe !== "function") return;
     if (__titleWatcherBoundStore === store) return;
@@ -1248,6 +1272,13 @@ export function createRuntimeOverlay(dictionary) {
           const applyTitle = (zhTitle) => {
             if (!zhTitle || !/[\\u4e00-\\u9fff]/.test(zhTitle) || zhTitle === rawTitle) return;
             __processedConvTitleMap.set(cascadeId, zhTitle);
+            if (!__zhcnSettings || __zhcnSettings.titleWriteBack !== true) {
+              // Default: display only. The stored conversation title is untouched,
+              // so restoring English brings the original title back.
+              exactTranslations.set(rawTitle, zhTitle);
+              __scheduleTitleRefresh();
+              return;
+            }
             try {
               const helpers = globalThis.__AGY_ZHCN_ANNOT_HELPERS__;
               if (helpers && typeof helpers.localAction === "function") {
@@ -1357,23 +1388,11 @@ export function createRuntimeOverlay(dictionary) {
       !/[A-Za-z]{3,}/.test(source) ||
       (source.match(/[\u4e00-\u9fff]/g) || []).length > 8
     ) return;
-    element.dataset.agyZhcnDynamic = "pending";
-    try {
-      const response = await fetch("http://127.0.0.1:45831/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: source })
-      });
-      const result = response.ok ? await response.json() : null;
-      if (typeof result?.translatedText === "string" && result.translatedText.trim()) {
-        element.textContent = result.translatedText;
-        stats.translatedTextNodes += 1;
-      }
-    } catch (_) {
-      // Local translator is optional; leave the original UI visible if unavailable.
-    } finally {
-      element.dataset.agyZhcnDynamic = "done";
-    }
+    // The original prototype posted paragraph text (including model thinking)
+    // to a local translator on 127.0.0.1:45831 that was never shipped. That
+    // request is removed: page text must not leave the page except through the
+    // main-process proxy, which honours the user's online-translation switch.
+    element.dataset.agyZhcnDynamic = "done";
   }
 
   function translateTree(root) {
@@ -1541,7 +1560,8 @@ export function createRuntimeOverlay(dictionary) {
     document.documentElement.lang = "zh-CN";
     hookNativeContextMenu();
     translateTree(document.documentElement);
-    __loadPersistedAutoDict();
+    // Previously machine-translated entries are only used while online translation is on.
+    __loadZhcnSettings().then((settings) => { if (settings.onlineTranslate === true) __loadPersistedAutoDict(); });
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === "characterData") {

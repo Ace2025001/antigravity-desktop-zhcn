@@ -10,6 +10,9 @@ Simplified Chinese (zh-CN) localization for the **Google Antigravity Desktop** s
 - Platforms: Windows x64, Apple Silicon macOS. Intel Mac and Linux are not verified.
 - Not for the Antigravity **IDE extension**.
 - Ships its own Node.js runtime. No network install, no proxy/TUN changes.
+- Optional, user-chosen features (first-run questions, editable later via `汉化设置`):
+  - **Auto-follow updates** (Windows): a per-user scheduled task `AntigravityZhcnAutoFollow` (at logon + every 30 min) re-localizes after client updates. Removed on restore / uninstall.
+  - **Online supplementary translation**: untranslated UI strings and conversation titles are sent to Google Translate through the patched main process. Chat content, code, terminal output, files and user input are never sent.
 
 ## Installing for a user / 为用户安装
 
@@ -24,13 +27,28 @@ Only install when the user has asked for it. Full step-by-step guide: [docs/ai-i
    - macOS: `mac启动/启动中文.command` (set `AGY_MAC_SOURCE` to the official `.app` to skip the picker). First run is interactive: open the official app, wait for the home screen, quit with ⌘Q, then press Enter.
 5. Restore English: `win启动\恢复英文.bat` or `mac启动/恢复英文.command`.
 
+First-run questions only appear in an interactive terminal. In unattended runs the defaults apply (auto-follow `auto`, online translation on). Tell the user about these defaults, or preset them with environment variables before running:
+
+- `AGY_AUTO_FOLLOW=auto|ask|off`
+- `AGY_ONLINE_TRANSLATE=on|off`
+
 Rules / 规则:
-- Ask the user to save their work before running. If the client is running, the tool waits 60 s, then requests a normal quit and force-closes it. Press `N` in the terminal if the user prefers to quit manually. Do not kill the client yourself outside the tool. 运行前先提醒用户保存工作，不要绕开工具自行结束客户端。
+- Ask the user to save their work before running. If the client is running, the tool waits 60 s, then requests a normal quit and force-closes it. Press `2` in the terminal if the user prefers to quit manually. Do not kill the client yourself outside the tool. 运行前先提醒用户保存工作，不要绕开工具自行结束客户端。
 - Exit code 0 is not proof of success. Confirm Chinese UI in the client before reporting success.
 - Do not disable signature/structure checks, Gatekeeper, SIP, or forge compatibility entries.
 - Do not star, watch, or change account settings on the user's behalf.
 
 ## Developing / 参与开发
+
+### Red lines / 红线（日常补充词条时不得自行越过，需要时先征得维护者同意）
+
+1. **No new network access, background tasks or writes to user data without an explicit user setting.** Any new outbound request, scheduled task / daemon / autostart, or change to the user's Antigravity data (conversations, titles, settings) must be opt-in through `src/lib/user-settings.mjs`, shown in the first-run questions and `汉化设置`, removed on restore / uninstall, and documented in README. 不得未经用户设置就新增联网、常驻后台或修改用户数据。
+2. **Page code never calls the network directly.** Supplementary translation goes only through the `agy-zhcn://translate` proxy in `src/lib/patcher.mjs`, which checks `onlineTranslate` first. Do not reintroduce direct `fetch("https://…")` or local translator ports in `createRuntimeOverlay`. 页面代码不得直接联网。
+3. **Translation rules never shrink by accident.** `npm run validate` fails if the exact or pattern count drops below `config/translation-baseline.json`. Raise the baseline after adding rules; never lower it to make validation pass. 词条数量只增不减。
+4. **Behaviour changes update the docs in the same commit**: README, `docs/ai-install.md`, the FAQ page and this file. 行为变化必须同步更新说明。
+5. **Releases are batched**: one release per client version or per week at most, not one per commit. 合并发版，不要一次提交发一个版本。
+
+### Workflow
 
 - Node.js >= 22.12.0. Setup: `npm ci --ignore-scripts`.
 - Before committing: `npm test` and `npm run validate` must both pass.

@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { readFile } from "node:fs/promises";
 import { closeWithPolicy, CloseCancelledError } from "./close-policy.mjs";
+import { step } from "./console-ui.mjs";
 import path from "node:path";
 import os from "node:os";
 
@@ -205,6 +206,9 @@ export async function closeClientForChanges({ owned = false } = {}) {
     await closeWithPolicy({ running: async () => (await clientProcesses()).length > 0, requestClose, forceClose, owned: true });
     return;
   }
+
+  // Only show the “quit client” step when there is actually a client to close.
+  if ((await clientProcesses()).length) step(owned ? "关闭临时打开的客户端" : "退出客户端");
 
   let exitHint;
   if (process.platform === "win32") {

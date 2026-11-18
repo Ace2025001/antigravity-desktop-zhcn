@@ -1,3 +1,4 @@
+import {detail,info,ok} from "./console-ui.mjs";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { realpath, stat, readFile, mkdir, writeFile, rename } from "node:fs/promises";
@@ -66,15 +67,16 @@ export async function resolveInteractiveInstallation() {
   const preference = path.join(stateRoot,"selected-installation.json");
   let remembered;
   try { remembered = JSON.parse(await readFile(preference,"utf8")).path; }
-  catch (error) { if (error.code !== "ENOENT") console.log("之前的位置记录无法读取，将重新识别。"); }
+  catch (error) { if (error.code !== "ENOENT") info("之前记住的位置无法读取，将重新查找。"); }
   const explicit = process.platform === "win32" ? process.env.AGY_INSTALL_PATH : process.env.AGY_MAC_SOURCE;
-  const selected = await selectInstallation({explicit,remembered,candidates:discoverCandidates,validate:validateCandidate,choose,notify:console.log});
+  const selected = await selectInstallation({explicit,remembered,candidates:discoverCandidates,validate:validateCandidate,choose,notify:info});
   const temporary = `${preference}.${process.pid}.tmp`;
   try {
     await mkdir(stateRoot,{recursive:true});
     await writeFile(temporary,JSON.stringify({path:selected,platform:process.platform},null,2));
     await rename(temporary,preference);
-  } catch { console.log("无法记住选择的位置，本次仍可继续使用。"); }
-  console.log(`使用客户端：${selected}`);
+  } catch { info("无法记住这次选择的位置，本次仍可继续。"); }
+  ok("已找到 Antigravity 客户端");
+  detail(selected);
   return selected;
 }

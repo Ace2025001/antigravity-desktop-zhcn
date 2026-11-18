@@ -298,6 +298,20 @@ assert(
   `远程兼容性签名验证失败：${remoteCompatibilityValidation.stderr}`,
 );
 
+// Guard against accidental loss of translation rules (a regression once dropped
+// thousands of dynamic rules). Raise the baseline when rules are added.
+const translationBaseline = JSON.parse(
+  await readFile(path.join(projectRoot, "config", "translation-baseline.json"), "utf8"),
+);
+assert(
+  Object.keys(dictionary.exact).length >= translationBaseline.exact,
+  `精确词条数量 ${Object.keys(dictionary.exact).length} 低于基线 ${translationBaseline.exact}，可能误删了词条。`,
+);
+assert(
+  dictionary.patterns.length >= translationBaseline.patterns,
+  `动态规则数量 ${dictionary.patterns.length} 低于基线 ${translationBaseline.patterns}，可能误删了规则。`,
+);
+
 console.log(`兼容目标: ${compatibility.targets.length}`);
 console.log(
   `DOM 翻译: ${Object.keys(dictionary.exact).length} 条精确规则 + ${dictionary.patterns.length} 条动态规则`,

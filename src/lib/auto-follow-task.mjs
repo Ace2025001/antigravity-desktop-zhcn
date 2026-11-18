@@ -1,11 +1,12 @@
 import { execFile } from "node:child_process";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { getAntigravityUserDataRoot, getStateRoot, projectRoot } from "./paths.mjs";
 
 const execFileAsync = promisify(execFile);
 export const AUTO_FOLLOW_TASK_NAME = "AntigravityZhcnAutoFollow";
+export const AUTO_FOLLOW_INTERVAL_MINUTES = 30;
 
 /**
  * Convert any Unicode string into a 100% pure 7-bit ASCII VBScript expression
@@ -174,16 +175,19 @@ export async function ensureAutoFollowDaemonRegistered({
     // Ignore if userData dir is not accessible yet
   }
 
-  // Register a user-level Windows Scheduled Task running wscript.exe silently every 5 minutes and at logon
+  // User-level task: at logon and every 30 minutes. The daemon compares file
+  // size and timestamp first, so most runs finish without hashing anything.
   const psScript = `
 $ErrorActionPreference = 'Stop'
 $taskName = '${AUTO_FOLLOW_TASK_NAME}'
 $vbs = '${vbsPath.replaceAll("'", "''")}'
 $action = New-ScheduledTaskAction -Execute 'wscript.exe' -Argument ('//B //NoLogo "' + $vbs + '" --periodic')
-$triggerPeriodic = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 5) -RepetitionDuration (New-TimeSpan -Days 3650)
-$triggerLogon = New-ScheduledTaskTrigger -AtLogOn
+$triggerPeriodic = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes ${AUTO_FOLLOW_INTERVAL_MINUTES}) -RepetitionDuration (New-TimeSpan -Days 3650)
+$user = "$env:USERDOMAIN\\$env:USERNAME"
+$triggerLogon = New-ScheduledTaskTrigger -AtLogOn -User $user
+$principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 15) -MultipleInstances IgnoreNew -Hidden
-Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($triggerPeriodic, $triggerLogon) -Settings $settings -Force | Out-Null
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($triggerPeriodic, $triggerLogon) -Settings $settings -Principal $principal -Force | Out-Null
 `;
   try {
     await execFileAsync(
@@ -205,7 +209,7 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($triggerPe
           "/SC",
           "MINUTE",
           "/MO",
-          "5",
+          String(AUTO_FOLLOW_INTERVAL_MINUTES),
           "/F",
         ],
         { windowsHide: true, timeout: 15000 }
@@ -215,4 +219,39 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($triggerPe
       return { registered: false, vbsPath, reason: err.message };
     }
   }
+}
+
+/**
+ * Remove the scheduled task, its VBS wrapper and the quit-hook file. Used when
+ * the user turns auto-follow off and on restore / cleanup / purge. Safe to call
+ * when nothing was registered.
+ */
+export async function removeAutoFollowDaemon({ exec = execFileAsync } = {}) {
+  if (process.platform !== "win32") return { removed: false, reason: "non-win32" };
+  let removed = false;
+  try {
+    await exec("schtasks.exe", ["/Delete", "/TN", AUTO_FOLLOW_TASK_NAME, "/F"], { windowsHide: true, timeout: 15000 });
+    removed = true;
+  } catch {
+    // The task did not exist.
+  }
+  const daemonDir = path.join(getStateRoot(), "daemon");
+  await rm(path.join(daemonDir, "silent-auto-follow.vbs"), { force: true }).catch(() => {});
+  await rm(path.join(daemonDir, "auto-follow.lock"), { force: true }).catch(() => {});
+  try {
+    await rm(path.join(getAntigravityUserDataRoot(), "agy_zhcn_autofollow_hook.json"), { force: true });
+  } catch {
+    // userData root unavailable.
+  }
+  return { removed };
+}
+
+/** Register or remove the background check so it always matches the user's choice. */
+export async function applyAutoFollowSetting(settings, options = {}) {
+  if (process.platform !== "win32") return { registered: false, reason: "non-win32" };
+  if (settings.autoFollow === "off") {
+    await removeAutoFollowDaemon(options);
+    return { registered: false, reason: "off" };
+  }
+  return ensureAutoFollowDaemonRegistered(options);
 }

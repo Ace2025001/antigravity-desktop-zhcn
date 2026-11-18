@@ -30,6 +30,8 @@ import {
   writeLocalizedBundle,
 } from "./lib/translator.mjs";
 import { createLocalizedBundleWithProgress } from "./lib/localize-progress.mjs";
+import { removeAutoFollowDaemon } from "./lib/auto-follow-task.mjs";
+import { ok as uiOk, step as uiStep } from "./lib/console-ui.mjs";
 import {
   atomicReplaceFile,
   buildPatchedAsar,
@@ -764,6 +766,7 @@ async function restore() {
   await askUserToCloseAntigravity(
     "请彻底关闭 Antigravity，然后按回车继续恢复英文...",
   );
+  uiStep("恢复英文原版");
   const inspection = await inspectInstallation();
   if (
     !areSamePaths(inspection.installRoot, state.installRoot) ||
@@ -802,7 +805,9 @@ async function restore() {
 
   await removeVerifiedLocalizedBundle(state);
 
-  console.log("英文原版恢复完成。");
+  const daemon = await removeAutoFollowDaemon().catch(() => ({ removed: false }));
+  if (daemon.removed) uiOk("已删除后台自动汉化的计划任务");
+  uiOk("已恢复英文原版文件");
   return 0;
 }
 
@@ -880,7 +885,12 @@ async function purge({ assumeYes = false } = {}) {
   const refreshedTargets = await inspectPurgeTargets();
   const result = await removeCleanupTargets(refreshedTargets);
 
+  await removeAutoFollowDaemon().catch(() => {});
   const stateRoot = getStateRoot();
+  // Files that are not regenerable cache but still belong to this tool.
+  for (const name of ["daemon", "settings.json", "auto-learned-translations.json", "selected-installation.json"]) {
+    await rm(path.join(stateRoot, name), { recursive: true, force: true }).catch(() => {});
+  }
   await rmdir(stateRoot).catch((error) => {
     if (error?.code !== "ENOENT" && error?.code !== "ENOTEMPTY") {
       console.warn(`警告：无法删除空状态目录：${error.message}`);

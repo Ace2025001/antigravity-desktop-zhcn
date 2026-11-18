@@ -3,7 +3,8 @@ import {promisify} from "node:util";
 import {readFile,writeFile,chmod,access,lstat,rename,unlink} from "node:fs/promises";
 import path from "node:path";
 import {projectRoot} from "./paths.mjs";
-import {buildSilentLauncherVbs, ensureAutoFollowDaemonRegistered} from "./auto-follow-task.mjs";
+import {applyAutoFollowSetting} from "./auto-follow-task.mjs";
+import {readUserSettings} from "./user-settings.mjs";
 const exec=promisify(execFile);
 const marker="# antigravity-zhcn managed shortcut v1";
 export function shellQuote(value) { return "'"+value.replaceAll("'","'\"'\"'")+"'"; }
@@ -34,21 +35,21 @@ export async function writeMacShortcut(target,launcher,relative=false) {
 }
 export async function ensureAutoShortcuts(selectedClient) {
   const root=path.resolve(projectRoot,"../..");
+  const {settings}=await readUserSettings();
   if(process.platform==="win32") {
+    // The Windows “Antigravity自动汉化” shortcut is retired: the background
+    // auto-follow task covers client updates. Remove copies this tool created
+    // (identified by marker) and the silent launcher only they used.
     const winEntry=path.join(root,"win启动");
-    const batLauncher=path.join(winEntry,"启动中文.bat");
-    await access(batLauncher);
     const silentVbs=path.join(winEntry,"静默启动中文.vbs");
-    const vbsContent=buildSilentLauncherVbs();
-    const existingVbs=await readFile(silentVbs,"ascii").catch(()=>null);
-    if(existingVbs!==vbsContent) {
-      await writeFile(silentVbs,vbsContent,"ascii");
-    }
-    const {stdout}=await exec("powershell.exe",["-NoProfile","-ExecutionPolicy","Bypass","-File",path.join(projectRoot,"scripts/create-auto-shortcuts.ps1"),"-Launcher",silentVbs,"-ClientExe",path.join(selectedClient,"Antigravity.exe")],{encoding:"utf8",windowsHide:true,timeout:20000});
-    if(stdout.trim())console.log(stdout.trim());
+    try {
+      const {stdout}=await exec("powershell.exe",["-NoProfile","-ExecutionPolicy","Bypass","-File",path.join(projectRoot,"scripts/create-auto-shortcuts.ps1"),"-Launcher",silentVbs,"-ClientExe",path.join(selectedClient,"Antigravity.exe"),"-Remove"],{encoding:"utf8",windowsHide:true,timeout:20000});
+      if(stdout.trim())console.log(stdout.trim());
+    } catch(error) {console.log(`旧的自动汉化快捷方式未能移除：${error.message}`);}
+    await unlink(silentVbs).catch(()=>{});
     const bundledNode=path.join(winEntry,"配套程序/node.exe");
     const nodeExePath=await access(bundledNode).then(()=>bundledNode).catch(()=>process.execPath);
-    await ensureAutoFollowDaemonRegistered({nodeExePath,coreRoot:projectRoot,languagePackDir:path.join(root,"语言包")}).catch(()=>{});
+    await applyAutoFollowSetting(settings,{nodeExePath,coreRoot:projectRoot,languagePackDir:path.join(root,"语言包")}).catch(()=>{});
     return;
   }
   if(process.platform!=="darwin")throw new Error("快捷方式仅支持 Windows 与 macOS。");

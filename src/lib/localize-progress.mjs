@@ -1,3 +1,4 @@
+import { SYMBOLS, color, endLiveLine, liveLine } from "./console-ui.mjs";
 import { Worker } from "node:worker_threads";
 import { createLocalizedBundle } from "./translator.mjs";
 
@@ -39,12 +40,12 @@ export async function createLocalizedBundleWithProgress(sourceBuffer, dictionary
   const startedAt = Date.now();
   const elapsed = () => Math.floor((Date.now() - startedAt) / 1000);
   const live = log === console.log && stdout.isTTY;
-  if (live) stdout.write(`${label}已用时 0 秒`);
-  else log(label);
+  if (live) liveLine(`${label}已用时 0 秒`, stdout);
+  else log(`  ${label}`);
   let last = 0;
   const ticker = setInterval(() => {
     const seconds = elapsed();
-    if (live) stdout.write(`\r${label}已用时 ${formatElapsed(seconds)}  `);
+    if (live) liveLine(`${label}已用时 ${formatElapsed(seconds)}`, stdout);
     else if (seconds - last >= 15) { last = seconds; log(`仍在生成中文界面，已用时 ${formatElapsed(seconds)}…`); }
   }, 1000);
   let result;
@@ -58,8 +59,8 @@ export async function createLocalizedBundleWithProgress(sourceBuffer, dictionary
     }
   } finally {
     clearInterval(ticker);
-    if (live) stdout.write("\n");
+    if (live) endLiveLine(stdout);
   }
-  log(`中文界面已生成，用时 ${formatElapsed(elapsed())}。`);
+  log(`  ${color.green(SYMBOLS.ok)} 中文界面已生成（用时 ${formatElapsed(elapsed())}）`);
   return result;
 }

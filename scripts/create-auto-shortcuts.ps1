@@ -1,4 +1,4 @@
-﻿param([Parameter(Mandatory=$true)][string]$Launcher, [Parameter(Mandatory=$true)][string]$ClientExe, [string]$DesktopDirectory)
+﻿param([Parameter(Mandatory=$true)][string]$Launcher, [Parameter(Mandatory=$true)][string]$ClientExe, [string]$DesktopDirectory, [switch]$Remove)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 $marker = 'Antigravity ZhCN managed auto-update shortcut v1'
@@ -61,7 +61,24 @@ $Launcher = [AgShortcut]::NormalizePath($Launcher)
 $ClientExe = [AgShortcut]::NormalizePath($ClientExe)
 $desktop = if ($DesktopDirectory) { $DesktopDirectory } else { [Environment]::GetFolderPath('DesktopDirectory') }
 $entry = Split-Path -Parent $Launcher
-foreach ($directory in @($entry, $desktop) | Select-Object -Unique) {
+$targets = @($entry, $desktop)
+if ($Remove) {
+    # The Windows shortcut is retired. Remove only copies this tool created
+    # (identified by its marker); a user's own file with the same name stays.
+    foreach ($directory in $targets | Select-Object -Unique) {
+        if ([string]::IsNullOrWhiteSpace($directory)) { continue }
+        $shortcutPath = Join-Path $directory 'Antigravity自动汉化.lnk'
+        if (-not (Test-Path -LiteralPath $shortcutPath)) { continue }
+        $existing = [AgShortcut]::new($shortcutPath)
+        try { $managed = $existing.Description -eq $marker } finally { $existing.Dispose() }
+        if ($managed) {
+            Remove-Item -LiteralPath $shortcutPath -Force
+            Write-Host "已移除旧的自动汉化快捷方式（客户端更新后改由后台自动汉化）：$shortcutPath"
+        }
+    }
+    exit 0
+}
+foreach ($directory in $targets | Select-Object -Unique) {
     $shortcut = $null
     $saved = $null
     try {
