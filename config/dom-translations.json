@@ -11157,7 +11157,7 @@
     "Whether you installed via the CLI or by hand, the source of truth is the version field in the installed SKILL.md's frontmatter:": "无论你是通过 CLI 还是手动安装的，版本号的唯一真实来源都是已安装 SKILL.md 前置元数据中的 version 字段：",
     "Which MCP servers have AI agents connected to across the fleet?": "在整个主机群中，AI 智能体连接了哪些 MCP 服务器？",
     "Which open-source vector databases come up most in 2026 comparisons? Give me a table with license, latest version and a source for each": "在 2026 年的各项对比评测中，哪些开源向量数据库被提及最多？请给我一张包含开源协议、最新版本和各自来源的表格",
-    "Which workspace the New Conversation button and keyboard shortcut start you in.": "新建对话按钮与键盘快捷键默认进入的工作区。",
+    "Which workspace the New Conversation button and keyboard shortcut start you in.": "设置点击“新建对话”按钮或按下对应快捷键时默认进入的工作区。",
     "While /mcp shows a server loading, let it finish before selecting Authenticate again. If it reports an error, read that status before retrying; repeatedly installing or clicking Authenticate does not finish a pending code-entry step. In Antigravity's graphical settings, use Customizations → Authenticate and paste the callback code into the settings panel's authentication field. Follow Google's MCP authentication guide.": "当 /mcp 显示服务器正在加载时，请等待其加载完成，不要再次选择 Authenticate。如果报告错误，请在重试前阅读该状态信息；重复安装或点击 Authenticate 无法完成待处理的授权码输入步骤。在 Antigravity 的图形界面设置中，使用 Customizations → Authenticate 并将回调授权码粘贴到设置面板的身份验证输入框中。请遵循 Google 的 MCP 身份验证指南。",
     "While `/mcp` shows a server loading, let it finish before selecting Authenticate\nagain. If it reports an error, read that status before retrying; repeatedly\ninstalling or clicking Authenticate does not finish a pending code-entry step.\nIn Antigravity's graphical settings, use **Customizations → Authenticate** and\npaste the callback code into the settings panel's authentication field.\nFollow Google's [MCP authentication guide](https://antigravity.google/docs/mcp/).": "当 `/mcp` 显示服务器正在加载时，请等待其加载完成，不要再次选择 Authenticate。如果报告错误，请在重试前阅读该状态信息；重复安装或点击 Authenticate 无法完成待处理的授权码输入步骤。在 Antigravity 的图形界面设置中，使用 **Customizations → Authenticate** 并将回调授权码粘贴到设置面板的身份验证输入框中。请遵循 Google 的 [MCP 身份验证指南](https://antigravity.google/docs/mcp/)。",
     "While `/mcp` shows a server loading, let it finish before selecting Authenticate again. If it reports an error, read that status before retrying; repeatedly installing or clicking Authenticate does not finish a pending code-entry step. In Antigravity's graphical settings, use **Customizations → Authenticate** and paste the callback code into the settings panel's authentication field. Follow Google's [MCP authentication guide](https://antigravity.google/docs/mcp/).": "当 `/mcp` 显示服务器正在加载时，请等待其加载完成，不要再次选择 Authenticate。如果报告错误，请在重试前阅读该状态信息；重复安装或点击 Authenticate 无法完成待处理的授权码输入步骤。在 Antigravity 的图形界面设置中，使用 **Customizations → Authenticate** 并将回调授权码粘贴到设置面板的身份验证输入框中。请遵循 Google 的 [MCP 身份验证指南](https://antigravity.google/docs/mcp/)。",
@@ -12778,7 +12778,19 @@
     "Using Chrome to Open Doubao": "使用 Chrome 打开豆包",
     "Using Chrome to Open Douyin": "使用 Chrome 打开抖音",
     "Google Superiority Video Script": "谷歌优势对比视频剧本",
-    "Final Step 28": "最终步骤 28"
+    "Final Step 28": "最终步骤 28",
+    "This project was created for": "此项目专为",
+    "This workspace was created for": "此工作区专为",
+    "Also includes": "同时包含",
+    "when working": "生效范围：",
+    "in this project": "此项目",
+    "in this workspace": "此工作区",
+    "in these conversations": "这些对话",
+    "automation.": "自动化创建。",
+    "Last Workspace": "上次工作区",
+    "Create a new workspace from your first message.": "从你的第一条消息自动创建一个新工作区。",
+    "Start without a workspace, for general questions.": "不关联工作区直接开始，适合日常通用提问。",
+    "Reuse your last workspace.": "复用你上次使用的工作区。"
   },
   "patterns": [
     {

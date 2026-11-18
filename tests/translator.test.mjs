@@ -2341,3 +2341,44 @@ test("Case 142: translate Gemini 4 Carbon/Hydrogen/Argon promo cards, Orchestrat
   assert.ok(bundleOut.includes('a?"全局":b?b.length>15?b.substring(0,15)+"\\u2026":b:"工作区"'), "Must translate aNb badge in 2.32.2");
   assert.ok(bundleOut.includes("__AGY_ZHCN_TRANSLATE_CHAPTER__"), "Must hook vt conversation title in 2.32.2");
 });
+
+test("Case 143: translate 2.32.2 Swarm automation managed project notice, permission settings subtitle, and 2.32.2 settings components", async () => {
+  const current = await loadDomTranslations();
+
+  // 1. 验证 2.32.2 真实混淆源码片段在 createLocalizedBundle 中 100% 转化为纯正中文，绝无半中半英
+  const sample2322Settings = [
+    // 图 1：设置 -> 项目 -> 危险区域 -> 删除项目（含换行符）
+    'p?B.createElement("span",null,"This ",A.lowercase," is managed by the",\n" ",B.createElement("strong",null,q)," automation and can only be deleted by deleting that automation."):',
+    // 图 2：设置 -> 项目 -> 权限设置副标题（2.32.2 新变量名 pe, yc, I, y, ke, F, G 及换行符）
+    'pe=B.createElement(B.Fragment,null,"Also includes"," ",B.createElement("span",{onClick:yc,className:"text-link hover:underline cursor-pointer font-medium"},"Global Permissions")," ","when working ",I,"."," ",y.product.customLinks.docsPermissions&&B.createElement(B.Fragment,null,B.createElement("a",{href:y.product.customLinks.docsPermissions,target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline cursor-pointer font-medium"},"Learn more"),".")),ke=F?B.createElement("span",\nnull,"This project was created for"," ",G?B.createElement(B.Fragment,null,"the ",B.createElement("strong",null,G)):"an"," ","automation. ",pe):B.createElement("span",null,pe)',
+    // 2.32.2 权限行与新建对话按钮设置
+    'ch=B.createElement(KQ,{label:"File Access Rules",badge:Wb>0?Wb:void 0,description:"Configure allowed and denied paths for file reads and writes.",rightElement:B.createElement(sz,{variant:"secondary",size:"sm",onClick:()=>{lb("file")}},"Open")})',
+    'function KOb(a){switch(a){case "newWorkspace":return"New Workspace";case "noProject":return"No Project";case "lastWorkspace":return"Last Workspace"}}function LOb(a){switch(a){case "newWorkspace":return"Create a new workspace from your first message.";case "noProject":return"Start without a workspace, for general questions.";case "lastWorkspace":return"Reuse your last workspace."}}'
+  ].join("\n");
+
+  const bundleOut = createLocalizedBundle(Buffer.from(sample2322Settings, "utf8"), current).buffer.toString("utf8");
+  const sourcePart = bundleOut.split("(() => {")[0];
+
+  // 断言图 1 完全中文化且无 " is managed by the" 残留
+  assert.ok(
+    sourcePart.includes('p?B.createElement("span",null,"此",A.lowercase==="workspace"?"工作区":"项目","由 ",B.createElement("strong",null,q)," 自动化统一管理，只能通过删除该自动化来删除。"):'),
+    "Must translate 2.32.2 Swarm managed project notice with newline"
+  );
+  assert.ok(!sourcePart.includes('" is managed by the"'), "Must not leave English 'is managed by the'");
+
+  // 断言图 2 完全中文化且无 "This project was created for" 或 "Also includes" 残留
+  assert.ok(
+    sourcePart.includes('"此项目专为 ",G?B.createElement(B.Fragment,null,"“",B.createElement("strong",null,G),"”"):"某项"," 自动化创建。"'),
+    "Must translate 2.32.2 'This project was created for' with variable G"
+  );
+  assert.ok(
+    sourcePart.includes('"同时包含在",I==="in these conversations"?"这些对话":I==="in this workspace"?"此工作区":"此项目","中生效的 ",B.createElement("span",{onClick:yc,className:"text-link hover:underline cursor-pointer font-medium"},"全局权限"),"。 "'),
+    "Must translate 2.32.2 'Also includes Global Permissions when working' with variables yc and I"
+  );
+  assert.ok(!sourcePart.includes('"This project was created for"'), "Must not leave English 'This project was created for'");
+
+  // 断言 2.32.2 权限行与新建对话默认工作区设置
+  assert.ok(sourcePart.includes('label:"文件访问规则"'), "Must translate KQ File Access Rules in 2.32.2");
+  assert.ok(sourcePart.includes('return"上次工作区"'), "Must translate KOb Last Workspace in 2.32.2");
+  assert.ok(sourcePart.includes('return"从你的第一条消息自动创建一个新工作区。"'), "Must translate LOb description in 2.32.2");
+});

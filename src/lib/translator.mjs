@@ -2551,6 +2551,326 @@ export function createLocalizedBundle(sourceBuffer, dictionary) {
     'function $1(a){var _t=a?.annotations?.title?.trim()||a?.summary?.trim()||void 0;return _t&&!/[\\u4e00-\\u9fff]/.test(_t)&&(globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__?.(_t)||globalThis.__AGY_ZHCN_TRANSLATE__?.(_t))||_t}'
   );
 
+  // =========================================================================
+  // 9.11 Antigravity 2.32.2+ 全量动态变量、权限预设与深层设置组件跨版本自适应根治
+  // =========================================================================
+
+  // [核心修复 1] 设置 -> 项目 -> 危险区域：“此项目由 Swarm 自动化统一管理，只能通过删除该自动化来删除。”（忽略换行符与混淆变量名）
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)\?B\.createElement\("span",null,"This ",([a-zA-Z0-9_$]+)\.lowercase," is managed by the",\s*" ",B\.createElement\("strong",null,([a-zA-Z0-9_$]+)\)," automation and can only be deleted by deleting that automation\."\):/g,
+    '$1?B.createElement("span",null,"此",$2.lowercase==="workspace"?"工作区":"项目","由 ",B.createElement("strong",null,$3)," 自动化统一管理，只能通过删除该自动化来删除。"):'
+  );
+
+  // [核心修复 2] 设置 -> 项目 -> 权限设置副标题：“此项目专为“Swarm”自动化创建。同时包含在此项目中生效的全局权限。了解更多。”（跨变量名与换行符）
+  sourceText = sourceText.replace(
+    /"Also includes",\s*" ",\s*B\.createElement\("span",\{onClick:([a-zA-Z0-9_$]+),className:"text-link hover:underline cursor-pointer font-medium"\},"Global Permissions"\),\s*" ",\s*"when working ",\s*([a-zA-Z0-9_$]+),\s*"\.",\s*" "/g,
+    '"同时包含在",$2==="in these conversations"?"这些对话":$2==="in this workspace"?"此工作区":"此项目","中生效的 ",B.createElement("span",{onClick:$1,className:"text-link hover:underline cursor-pointer font-medium"},"全局权限"),"。 "'
+  );
+  sourceText = sourceText.replaceAll(
+    'target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline cursor-pointer font-medium"},"Learn more"),"."',
+    'target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline cursor-pointer font-medium"},"了解更多"),"。"'
+  );
+  sourceText = sourceText.replaceAll(
+    'target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline cursor-pointer font-medium"},\n"Learn more"),"."',
+    'target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline cursor-pointer font-medium"},\n"了解更多"),"。"'
+  );
+  sourceText = sourceText.replace(
+    /"This project was created for",\s*" ",\s*([a-zA-Z0-9_$]+)\?B\.createElement\(B\.Fragment,null,"the ",B\.createElement\("strong",null,\1\)\):"an",\s*" ",\s*"automation\. "/g,
+    '"此项目专为 ",$1?B.createElement(B.Fragment,null,"“",B.createElement("strong",null,$1),"”"):"某项"," 自动化创建。"'
+  );
+
+  // [核心修复 3] 权限预设 (AB / jC)、安全预设 (ZS / OT)、界面布局 (kj / sj)、向导卡片 (yPc / zUc)、设置搜索映射 (EBb / ZDb) 跨版本自适应
+  sourceText = sourceText.replace(
+    /var ([a-zA-Z0-9_$]+)=\{request_review:\{label:"Request Review",description:"Every command requires approval\.",prefValues:\{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.OFF,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ASK,permissionPreset:E\.AgentPermissionPreset\.REQUEST_REVIEW\}\},"default":\{label:"Default",description:"Ask before sensitive operations\.",prefValues:\{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.PROCEED_IN_SANDBOX,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ASK,\s*permissionPreset:E\.AgentPermissionPreset\.DEFAULT\}\},auto:\{label:"Auto",description:"Automatically decide if commands run\.",prefValues:\{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.AUTO,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ASK,permissionPreset:E\.AgentPermissionPreset\.AUTO\}\},turbo:\{label:"Turbo",description:"Run all commands without restrictions\.",prefValues:\{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.EAGER,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ALLOW,\s*permissionPreset:E\.AgentPermissionPreset\.TURBO\}\}\}/g,
+    'var $1={request_review:{label:"请求审核",description:"每条命令均需人工批准。",prefValues:{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.OFF,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ASK,permissionPreset:E.AgentPermissionPreset.REQUEST_REVIEW}},"default":{label:"默认",description:"敏感操作前向你询问确认。",prefValues:{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.PROCEED_IN_SANDBOX,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ASK,permissionPreset:E.AgentPermissionPreset.DEFAULT}},auto:{label:"自动",description:"自动判断是否运行命令。",prefValues:{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.AUTO,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ASK,permissionPreset:E.AgentPermissionPreset.AUTO}},turbo:{label:"极速",description:"无限制直接运行所有命令。",prefValues:{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.EAGER,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ALLOW,permissionPreset:E.AgentPermissionPreset.TURBO}}}'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)=\{macos_linux:\{default_unix:\{displayName:"Default",shortDisplayName:"Default",shortDescription:"Requires manual review for all terminal commands and file accesses outside of the working folders\.",\s*longDescription:"Useful for typical development with an emphasis on security\. It prioritizes safety over speed by requiring manual approval for all terminal commands and files outside the project directory\.",iconName:"shield_lock"\},full_machine_unix:\{displayName:"Full machine",shortDisplayName:"Machine",shortDescription:"All terminal commands require review\. The agent can read or write to any file in the machine\.",longDescription:"Useful for tasks that require file access across your full machine\. The agent has full read and write access to all local files, but all proposed terminal commands require manual review and approval before running\.",\s*iconName:"laptop_shield"\},unrestricted_unix:\{displayName:"Turbo mode",shortDisplayName:"Turbo",shortDescription:"Disables all safety barriers for maximal iteration velocity\.",longDescription:"A high-risk mode that disables all safety barriers\. The agent operates with full system access, auto-executes all terminal commands, and reads or writes to all local files without review prompts\.",iconName:"gpp_maybe"\}\},windows:\{default_windows:\{displayName:"Default",shortDisplayName:"Default",shortDescription:"Requires manual review for all terminal commands and file accesses outside of the working folders\.",\s*longDescription:"Useful for typical development with an emphasis on security\. It prioritizes safety over speed by requiring manual approval for all terminal commands and files outside the project directory\.",iconName:"shield_lock"\},full_machine_windows:\{displayName:"Full machine",shortDisplayName:"Machine",shortDescription:"All terminal commands require review\. The agent can read or write to any file in the machine\.",longDescription:"Useful for tasks that require file access across your full machine\. The agent has full read and write access to all local files, but all proposed terminal commands require manual review and approval before running\.",\s*iconName:"laptop_shield"\},unrestricted_windows:\{displayName:"Turbo mode",shortDisplayName:"Turbo",shortDescription:"Disables all safety barriers for maximal iteration velocity\.",longDescription:"A high-risk mode that disables all safety barriers\. The agent operates with full system access, auto-executes all terminal commands, and reads or writes to all local files without review prompts\.",iconName:"gpp_maybe"\}\}\}/g,
+    '$1={macos_linux:{default_unix:{displayName:"默认",shortDisplayName:"默认",shortDescription:"所有终端命令及工作目录外的文件访问均需人工审核。",longDescription:"适合注重安全性的日常开发。通过要求对所有终端命令与项目目录外的文件访问进行人工确认，优先保障安全。",iconName:"shield_lock"},full_machine_unix:{displayName:"全机模式",shortDisplayName:"整机",shortDescription:"所有终端命令均需审核；智能体可读写本机任意文件。",longDescription:"适合需要跨整个系统访问文件的任务。智能体拥有所有本地文件的完整读写权限，但所有终端命令在运行前均需人工审核批准。",iconName:"laptop_shield"},unrestricted_unix:{displayName:"极速模式",shortDisplayName:"极速",shortDescription:"禁用全部安全防护以获得最快迭代速度。",longDescription:"此高风险模式将关闭所有安全护栏。智能体拥有完整系统访问权限，会自动执行全部终端命令并读写所有本地文件，不再弹窗确认。",iconName:"gpp_maybe"}},windows:{default_windows:{displayName:"默认",shortDisplayName:"默认",shortDescription:"所有终端命令及工作目录外的文件访问均需人工审核。",longDescription:"适合注重安全性的日常开发。通过要求对所有终端命令与项目目录外的文件访问进行人工确认，优先保障安全。",iconName:"shield_lock"},full_machine_windows:{displayName:"全机模式",shortDisplayName:"整机",shortDescription:"所有终端命令均需审核；智能体可读写本机任意文件。",longDescription:"适合需要跨整个系统访问文件的任务。智能体拥有所有本地文件的完整读写权限，但所有终端命令在运行前均需人工审核批准。",iconName:"laptop_shield"},unrestricted_windows:{displayName:"极速模式",shortDisplayName:"极速",shortDescription:"禁用全部安全防护以获得最快迭代速度。",longDescription:"此高风险模式将关闭所有安全护栏。智能体拥有完整系统访问权限，会自动执行全部终端命令并读写所有本地文件，不再弹窗确认。",iconName:"gpp_maybe"}}}'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)=\{project4k:\{title:"Project 4K",description:"Project 4K interface without developer tooling\."\},default:\{title:"Default",description:"The full developer experience\."\}\};/g,
+    '$1={project4k:{title:"知识工作",description:"专为研究、写作与日常任务打造的精简界面。"},default:{title:"软件工程",description:"包含代码编写、开发工具及智能体管理的完整开发界面。"}};'
+  );
+  sourceText = sourceText.replace(
+    /const ([a-zA-Z0-9_$]+)=\[\{id:"build",icon:"code_blocks",title:"Build new features",description:"Hand off a feature and come back to working code\."\},\{id:"fix",icon:"bug_report",title:"Debug and fix",description:"Automatically reproduce bugs, trace causes, test fixes\."\},\{id:"research",icon:"lightbulb_2",title:"Research anything",description:"Ask about your code or any topic, get clear answers\."\},\{id:"write",icon:"edit",title:"Write and edit docs",description:"Draft documents, emails, and notes that sound like you\."\}\];/g,
+    'const $1=[{id:"build",icon:"code_blocks",title:"构建新功能",description:"把功能需求交出去，回来直接获得可用代码。"},{id:"fix",icon:"bug_report",title:"调试与修复",description:"自动复现缺陷、追踪根因并测试修复方案。"},{id:"research",icon:"lightbulb_2",title:"调研任何技术问题",description:"就代码或任何主题提问，获取清晰明确的解答。"},{id:"write",icon:"edit",title:"编写与编辑文档",description:"撰写契合你表达风格的文档、邮件与笔记。"}];'
+  );
+  sourceText = sourceText.replace(
+    /var ([a-zA-Z0-9_$]+)=\[\{id:"global",label:"Global"\},\{id:"us",label:"United States"\},\{id:"eu",label:"Europe"\}\];/g,
+    'var $1=[{id:"global",label:"全球"},{id:"us",label:"美国"},{id:"eu",label:"欧洲"}];'
+  );
+  sourceText = sourceText.replace(
+    /var ([a-zA-Z0-9_$]+)=\[\{value:E\.ArtifactReviewMode\.TURBO,label:"Always Proceed",description:"Agent never asks for review\. This maximizes the autonomy of the Agent, but also has the highest risk of the Agent operating over unsafe or injected Artifact content\."\},\{value:E\.ArtifactReviewMode\.ALWAYS,label:"Always Ask",description:"Agent always asks for review\."\}\];/g,
+    'var $1=[{value:E.ArtifactReviewMode.TURBO,label:"始终继续",description:"智能体始终不会请求人工评审。这可最大限度提高智能体自主性，但也具有执行不安全或注入工件内容的最高风险。"},{value:E.ArtifactReviewMode.ALWAYS,label:"始终询问",description:"智能体每次都会请求你进行评审。"}];'
+  );
+  sourceText = sourceText.replace(
+    /var ([a-zA-Z0-9_$]+)=new Map\(\[\["Appearance",\{sections:\[\{title:"Chat",settings:\["verboseConversationSteps"\]\},\{title:"Chat Layout",settings:\["themeMode","conversationWidth","artifactWidth","contextUsageIndicatorEnabled"\]\},\{title:"Terminal",settings:\["terminalPlacement"\]\},\{title:"Accessibility",settings:\["customContextMenusEnabled","screenReaderMode"\]\}\]\}\],\["General",\{sections:\[\{title:"Execution",settings:\["queuedMessageDeliveryStrategy"\]\},\{title:"Chat Input",settings:\["enterToSendOnMobile"\]\}\]\}\],\["Browser",\{sections:\[\{title:"General",\s*settings:\["defaultLinkOpenTarget","agentBrowserTools","browserJsExecutionPolicy"\]\}\]\}\],\["Account",\{sections:\[\{title:"General",settings:\["disableCodeSnippetTelemetry"\]\}\]\}\],\["Models",\{sections:\[\{title:"Quota",settings:\["useAICredits"\]\}\]\}\],\["Customizations",\{sections:\[\{title:"Default Customizations",settings:\["includeJetskiDefaultCustomizations"\]\},\{title:"Customize Global Skills",settings:\["antigravity\.customization\.skills"\]\},\{title:"Custom Agents",settings:\["antigravity\.customization\.customAgents"\]\},\s*\{title:"MCP Servers",settings:\["antigravity\.customization\.mcp"\]\}\]\}\],\["Notifications",\{sections:\[\{title:"General",settings:\["enableNotificationsForSpecialEvents","enableSoundsForSpecialEvents"\]\}\]\}\],\["App",\{sections:\[\{title:"General",settings:\["keepComputerAwake","runInBackground"\]\},\{title:"Updater",settings:\["autoCheckForUpdates"\]\}\]\}\],\["Jetski Chat",\{sections:\[\]\}\],\["Developer",\{sections:\[\]\}\]\]\);/g,
+    'var $1=new Map([["Appearance",{sections:[{title:"对话",settings:["verboseConversationSteps"]},{title:"对话布局",settings:["themeMode","conversationWidth","artifactWidth","contextUsageIndicatorEnabled"]},{title:"终端",settings:["terminalPlacement"]},{title:"辅助功能",settings:["customContextMenusEnabled","screenReaderMode"]}]}],["General",{sections:[{title:"消息执行",settings:["queuedMessageDeliveryStrategy"]},{title:"对话输入",settings:["enterToSendOnMobile"]}]}],["Browser",{sections:[{title:"通用",settings:["defaultLinkOpenTarget","agentBrowserTools","browserJsExecutionPolicy"]}]}],["Account",{sections:[{title:"通用",settings:["disableCodeSnippetTelemetry"]}]}],["Models",{sections:[{title:"配额",settings:["useAICredits"]}]}],["Customizations",{sections:[{title:"默认自定义项",settings:["includeJetskiDefaultCustomizations"]},{title:"自定义全局技能",settings:["antigravity.customization.skills"]},{title:"自定义智能体",settings:["antigravity.customization.customAgents"]},{title:"MCP 服务器",settings:["antigravity.customization.mcp"]}]}],["Notifications",{sections:[{title:"通用",settings:["enableNotificationsForSpecialEvents","enableSoundsForSpecialEvents"]}]}],["App",{sections:[{title:"通用",settings:["keepComputerAwake","runInBackground"]},{title:"自动更新",settings:["autoCheckForUpdates"]}]}],["Jetski Chat",{sections:[]}],["Developer",{sections:[]}]]);'
+  );
+
+  // [核心修复 4] 权限与安全预设下拉框选项、继承全局说明、工具权限列表行跨版本正则替换
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)==="use_global"\?\s*"Inherit Global":\1==="custom"\?"Custom":([a-zA-Z0-9_$]+)\[([a-zA-Z0-9_$]+)\]\[\1\]\?\.displayName\?\?\s*"Custom"/g,
+    '$1==="use_global"?"继承全局":$1==="custom"?"自定义":$2[$3][$1]?.displayName??"自定义"'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)==="use_global"\?`Inherits your Global Permissions when working \$\{([a-zA-Z0-9_$]+)\}\.`:\1==="custom"\?"Manually customize individual settings\.":([a-zA-Z0-9_$]+)\[([a-zA-Z0-9_$]+)\]\[\1\]\?\.(longDescription|shortDescription)/g,
+    '$1==="use_global"?`在${$2==="in these conversations"?"这些对话":$2==="in this workspace"?"此工作区":"此项目"}中工作时继承全局权限。`:$1==="custom"?"手动自定义各项设置。":$3[$4][$1]?.$5'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)!=="use_global"&&\1\?([a-zA-Z0-9_$]+)\[([a-zA-Z0-9_$]+)\(\1\)\]\?\.label\?\?\1:"Inherit Global"/g,
+    '$1!=="use_global"&&$1?$2[$3($1)]?.label??$1:"继承全局"'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)==="use_global"\?\s*"Inherit Global":([a-zA-Z0-9_$]+)\[\1\]\?\.label\?\?\1/g,
+    '$1==="use_global"?"继承全局":$2[$1]?.label??$1'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)==="use_global"\?`Inherits your Global Permissions when working \$\{([a-zA-Z0-9_$]+)\}\.`:([a-zA-Z0-9_$]+)\[\1\]\?\.description\?\?""/g,
+    '$1==="use_global"?`在${$2==="in these conversations"?"这些对话":$2==="in this workspace"?"此工作区":"此项目"}中工作时继承全局权限。`:$3[$1]?.description??""'
+  );
+  sourceText = sourceText.replace(
+    /\?"Inherit Global":([a-zA-Z0-9_$]+)===E\.AgentSettingPolicy\.ALLOW\?\s*"Allow":\1===E\.AgentSettingPolicy\.DENY\?"Deny":"Always Ask"/g,
+    '?"继承全局":$1===E.AgentSettingPolicy.ALLOW?"允许":$1===E.AgentSettingPolicy.DENY?"拒绝":"始终询问"'
+  );
+  sourceText = sourceText.replace(
+    /\?"Inherit Global":([a-zA-Z0-9_$]+)\(/g,
+    '?"继承全局":$1('
+  );
+  sourceText = sourceText.replace(
+    /\?"Inherit Global":([a-zA-Z0-9_$]+)===E\.CascadeCommandsAutoExecution\.EAGER\?\s*"Always Proceed":\1===E\.CascadeCommandsAutoExecution\.PROCEED_IN_SANDBOX\?"Proceed in Sandbox":"Require Review"/g,
+    '?"继承全局":$1===E.CascadeCommandsAutoExecution.EAGER?"始终自动执行":$1===E.CascadeCommandsAutoExecution.PROCEED_IN_SANDBOX?"沙箱内自动执行":"需要审核"'
+  );
+  sourceText = sourceText.replace(
+    /"Enabled":([a-zA-Z0-9_$]+)===void 0\?"Inherit Global":\s*\1\?"Enabled":"Disabled":"Disabled"/g,
+    '"已启用":$1===void 0?"继承全局":$1?"已启用":"已禁用":"已禁用"'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)===void 0\?"Inherit Global":\1===!0\?"Enabled":"Disabled"/g,
+    '$1===void 0?"继承全局":$1===!0?"已启用":"已禁用"'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)==="use_global"\?"Inherit Global":\1==="turbo"\?"Always Proceed":"Always Ask"/g,
+    '$1==="use_global"?"继承全局":$1==="turbo"?"始终继续":"始终询问"'
+  );
+  sourceText = sourceText.replace(
+    /label:"Enable Sandbox Mode",labelId:([a-zA-Z0-9_$]+),description:"Restricts agent tools to a secure, isolated local sandbox\."/g,
+    'label:"启用沙箱模式",labelId:$1,description:"将智能体工具限制在安全隔离的本地沙箱中运行。"'
+  );
+  sourceText = sourceText.replace(
+    /label:"File Access Rules",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:"Configure allowed and denied paths for file reads and writes\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("file"\)\}\},"Open"\)/g,
+    'label:"文件访问规则",badge:$1>0?$1:void 0,description:"配置允许或拒绝文件读写的路径。",rightElement:B.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("file")}},"打开")'
+  );
+  sourceText = sourceText.replace(
+    /label:"Network Access Rules",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:"Configure allowed and denied URLs for reading\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("network"\)\}\},"Open"\)/g,
+    'label:"网络访问规则",badge:$1>0?$1:void 0,description:"配置允许或拒绝读取的网址。",rightElement:B.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("network")}},"打开")'
+  );
+  sourceText = sourceText.replace(
+    /label:"Terminal Commands",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:"Configure allowed terminal commands\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("command"\)\}\},"Open"\)/g,
+    'label:"终端命令",badge:$1>0?$1:void 0,description:"配置允许执行的终端命令。",rightElement:B.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("command")}},"打开")'
+  );
+  sourceText = sourceText.replace(
+    /label:"Commands Outside Sandbox",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:"Configure allowed commands outside the sandbox\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("unsandboxed"\)\}\},"Open"\)/g,
+    'label:"沙箱外命令",badge:$1>0?$1:void 0,description:"配置允许在沙箱外执行的命令。",rightElement:B.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("unsandboxed")}},"打开")'
+  );
+  sourceText = sourceText.replace(
+    /label:"MCP Tools",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:"(?:Configure external tools via Model Context Protocol\.|通过模型上下文协议 \(MCP\) 配置外部工具。)",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("mcp"\)\}\},"Open"\)/g,
+    'label:"MCP 工具",badge:$1>0?$1:void 0,description:"通过模型上下文协议 (MCP) 配置外部工具。",rightElement:B.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("mcp")}},"打开")'
+  );
+  sourceText = sourceText.replace(
+    /label:"GitHub",description:"Configure GitHub access policies\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("github"\)\}\},"Open"\)/g,
+    'label:"GitHub",description:"配置 GitHub 访问策略。",rightElement:B.createElement($1,{variant:"secondary",size:"sm",onClick:()=>{$2("github")}},"打开")'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?"Modify permissions for file, terminal, and MCP tools\.":"Modify permissions for file and terminal tools\."/g,
+    '$1=$2?"修改文件、终端和 MCP 工具的相关权限。":"修改文件和终端工具的相关权限。"'
+  );
+  sourceText = sourceText.replace(
+    /label:"Tool Permissions",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:([a-zA-Z0-9_$]+),rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"md",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("tools"\)\}\},"Open"\)/g,
+    'label:"工具权限",badge:$1>0?$1:void 0,description:$2,rightElement:B.createElement($3,{variant:"secondary",size:"md",onClick:()=>{$4("tools")}},"打开")'
+  );
+  sourceText = sourceText.replace(
+    /\{title:"Tool Permissions",description:([a-zA-Z0-9_$]+)/g,
+    '{title:"工具权限",description:$1'
+  );
+  sourceText = sourceText.replace(
+    /label:"Commands Outside Sandbox",\s*description:"Allow\/deny agent command execution outside the sandbox\."/g,
+    'label:"沙箱外命令",description:"允许或拒绝智能体在沙箱外执行命令。"'
+  );
+
+  // [核心修复 5] 设置区块标题组件 (VP / LQ) 与设置行组件 (UP / KQ) 跨版本通用替换
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Danger Zone"\}/g, 'B.createElement($1,{title:"危险区域"}');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:([a-zA-Z0-9_$]+)\?"Global Permissions":"Agent Settings"\}/g, 'B.createElement($1,{title:$2?"全局权限":"智能体设置"}');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Agent Behavior"\}/g, 'B.createElement($1,{title:"智能体行为"}');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:([a-zA-Z0-9_$]+)\?"Permissions":"Global Permissions"/g, 'B.createElement($1,{title:$2?"权限":"全局权限"');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Permission Settings",/g, 'B.createElement($1,{title:"权限设置",');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Local Permissions",subtitle:([a-zA-Z0-9_$]+)\}/g, 'B.createElement($1,{title:"本地权限",subtitle:$2}');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Permission Details"\}/g, 'B.createElement($1,{title:"权限详情"}');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Network Permissions"\}/g, 'B.createElement($1,{title:"网络权限"}');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Terminal & Tooling Permissions"\}/g, 'B.createElement($1,{title:"终端与工具权限"}');
+  sourceText = sourceText.replace(/label:([a-zA-Z0-9_$]+)\?"This Computer":"Permission Preset"/g, 'label:$1?"本地电脑":"权限预设"');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Default Customizations"\}/g, 'B.createElement($1,{title:"默认自定义项"}');
+  sourceText = sourceText.replace(/label:"Include Jetski Default Customizations",\s*description:"When enabled, the agent will include default customizations, including default skills\."/g, 'label:"包含默认自定义项",description:"启用后，智能体会包含默认自定义内容，包括默认技能。"');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Token Usage"\}/g, 'B.createElement($1,{title:"Token 用量"}');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Sound"\}/g, 'B.createElement($1,{title:"声音"}');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Remote Agents Data"\}/g, 'B.createElement($1,{title:"远程智能体数据"}');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{label:"Delete All Remote Agents Data"/g, 'B.createElement($1,{label:"删除所有远程智能体数据"');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Browser Subagent",\s*subtitle:([a-zA-Z0-9_$]+)\?"The browser subagent has been disabled by your administrator\. Contact your administrator to enable browser use\.":/g, 'B.createElement($1,{title:"浏览器子智能体",subtitle:$2?"你的管理员已禁用浏览器子智能体。请联系管理员以启用浏览器功能。":');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Installed MCP Servers"/g, 'B.createElement($1,{title:"已安装的 MCP 服务器"');
+  sourceText = sourceText.replace(/title:"Refresh MCP servers",\s*"aria-label":"Refresh MCP servers"/g, 'title:"刷新 MCP 服务器","aria-label":"刷新 MCP 服务器"');
+  sourceText = sourceText.replace(
+    /title:"Customizations",description:B\.createElement\("span",null,"Configure default behaviors, skills, and MCP servers\.",([a-zA-Z0-9_$]+)\?\.docsCustomizations&&\s*B\.createElement\(B\.Fragment,null," ",B\.createElement\("a",\{href:\1\.docsCustomizations,target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline"\},"Learn more"\),"\."\)\)/g,
+    'title:"插件",description:B.createElement("span",null,"配置默认行为、技能与 MCP 服务器。",$1?.docsCustomizations&&B.createElement(B.Fragment,null," ",B.createElement("a",{href:$1.docsCustomizations,target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline"},"了解更多"),"。"))'
+  );
+  sourceText = sourceText.replace(
+    /,"Change\\u2026"\)\)\}\),([a-zA-Z0-9_$]+)&&B\.createElement\(([a-zA-Z0-9_$]+),\{label:"(?:Browsing History|浏览记录)",description:([a-zA-Z0-9_$]+)\?"(?:Clear visited URLs and autocomplete suggestions from side panel preview\.|清除侧边栏预览中的访问网址与自动填充建议。)":"(?:Clear visited URLs and autocomplete suggestions from the built-in browser\.|清除内置浏览器的访问网址与自动填充建议。|清除内置浏览器中的访问网址与自动填充建议。)",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",disabled:([a-zA-Z0-9_$]+)\.length===0,onClick:([a-zA-Z0-9_$]+),"data-testid":"clear-browser-history-button"\},"Clear"\)/g,
+    ',"更改…"))}),$1&&B.createElement($2,{label:"浏览记录",description:$3?"清除侧边栏预览中的访问网址与自动填充建议。":"清除内置浏览器中的访问网址与自动填充建议。",rightElement:B.createElement($4,{variant:"secondary",size:"sm",disabled:$5.length===0,onClick:$6,"data-testid":"clear-browser-history-button"},"清除")'
+  );
+
+  // [核心修复 6] 账户设置页、模型与用量页、配额重置函数 (Q9b / ucc) 跨版本正则替换
+  sourceText = sourceText.replace(
+    /B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Account"\},B\.createElement\(([a-zA-Z0-9_$]+),\s*null,P&&B\.createElement\(([a-zA-Z0-9_$]+),\{label:B\.createElement\("div",\{className:"font-medium"\},F\?`Your Plan: \$\{F\}`:"Your Plan",C&&" \(ADC\)"\),description:d\?"Authenticated via Enterprise Gateway":g&&h\?B\.createElement\(B\.Fragment,null,B\.createElement\("span",\{className:"text-foreground"\},"Project ID: ",h\),G&&B\.createElement\(B\.Fragment,null,B\.createElement\("br",null\),G\)\):G,rightElement:d\|\|x\?void 0:w&&g\?B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{z\(!0\)\}\},"Manage"\):c\?\.userTier\?\.upgradeSubscriptionUri\?\s*B\.createElement\("a",\{href:([a-zA-Z0-9_$]+)\(c\.userTier\.upgradeSubscriptionUri,"utm_campaign","ARGON_SETTINGS_PAGE"\),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary\/90"\},c\.userTier\?\.upgradeButtonText\|\|"Upgrade"\):void 0\}\),H&&B\.createElement\(\3,\{label:"Google One Referral",description:"Share your referral link with friends",rightElement:B\.createElement\(\4,\{variant:"secondary",size:"sm",\s*"data-testid":"g1-referral-invite-button",onClick:\(\)\s*=>\s*\{u\(H\)\}\},"Invite a Friend"\)\}\),J&&B\.createElement\(\3,\{label:B\.createElement\("div",\{className:"font-medium"\},f==="projectPicker"\?"Project Required":"License Required"\),description:f==="projectPicker"\?"A Google Cloud project is required to use Antigravity\.":"A license or project selection is required to use Antigravity\.",rightElement:B\.createElement\(\4,\{variant:"primary",size:"sm",onClick:\(\)\s*=>\s*\{z\(!0\)\}\},f==="projectPicker"\?"Select Project":"Manage License"\)\},\s*l\.settings\.isVisible\("antigravity\.section\.authChange"\)&&\(d\?B\.createElement\(\3,\{label:"Email",description:"Managed by Enterprise Gateway"\}\):K\?B\.createElement\(\3,\{label:"Email",description:c\?\.email,rightElement:B\.createElement\("span",\{"data-tooltip-id":v,tabIndex:n\?0:void 0\},B\.createElement\(\4,\{variant:"secondary",size:"sm",disabled:!!n\|\|A,onClick:async\(\)\s*=>\s*\{var O=e,Q=e;try\{D\(!0\);try\{Q\(await O\(a\.logout\(\)\)\)\}finally\{Q\(\),D\(!1\)\}\}finally\{O\(\)\}\}\},A\?"Signing Out\.\.\.":"Sign Out"\),B\.createElement\(([a-zA-Z0-9_$]+),\{id:v,content:n\}\)\)\}\):\s*B\.createElement\(\3,\{label:"Not Signed In",description:t\?`Sign in from the \$\{([a-zA-Z0-9_$]+)\} panel\.`:`Sign in to use \$\{\7\}!`/g,
+    'B.createElement($1,{title:"账户"},B.createElement($2,null,P&&B.createElement($3,{label:B.createElement("div",{className:"font-medium"},F?`你的方案：${globalThis.__AGY_ZHCN_TRANSLATE_PLAN__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN__(F):F}`:"你的方案",C&&" (ADC)"),description:d?"已通过企业网关验证":g&&h?B.createElement(B.Fragment,null,B.createElement("span",{className:"text-foreground"},"项目 ID：",h),G&&B.createElement(B.Fragment,null,B.createElement("br",null),(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(G):G))):G&&(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(G):G),rightElement:d||x?void 0:w&&g?B.createElement($4,{variant:"secondary",size:"sm",onClick:()=>{z(!0)}},"管理"):c?.userTier?.upgradeSubscriptionUri?B.createElement("a",{href:$5(c.userTier.upgradeSubscriptionUri,"utm_campaign","ARGON_SETTINGS_PAGE"),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"},({"Upgrade":"升级","Manage":"管理","Learn more":"了解更多"}[c.userTier?.upgradeButtonText]||c.userTier?.upgradeButtonText||"升级")):void 0}),H&&B.createElement($3,{label:"Google One 推荐",description:"与好友分享你的推荐链接",rightElement:B.createElement($4,{variant:"secondary",size:"sm","data-testid":"g1-referral-invite-button",onClick:()=>{u(H)}},"邀请好友")}),J&&B.createElement($3,{label:B.createElement("div",{className:"font-medium"},f==="projectPicker"?"需要关联项目":"需要许可证"),description:f==="projectPicker"?"使用 Antigravity 需要关联 Google Cloud 项目。":"使用 Antigravity 需要配置许可证或选择项目。",rightElement:B.createElement($4,{variant:"primary",size:"sm",onClick:()=>{z(!0)}},f==="projectPicker"?"选择项目":"管理许可证")}),l.settings.isVisible("antigravity.section.authChange")&&(d?B.createElement($3,{label:"邮箱",description:"由企业网关统一管理"}):K?B.createElement($3,{label:"邮箱",description:c?.email,rightElement:B.createElement("span",{"data-tooltip-id":v,tabIndex:n?0:void 0},B.createElement($4,{variant:"secondary",size:"sm",disabled:!!n||A,onClick:async()=>{var O=e,Q=e;try{D(!0);try{Q(await O(a.logout()))}finally{Q(),D(!1)}}finally{O()}}},A?"正在退出登录...":"退出登录"),B.createElement($6,{id:v,content:n}))}):B.createElement($3,{label:"未登录",description:t?`请在 ${$7} 面板中登录。`:`登录后即可使用 ${$7}！`'
+  );
+  sourceText = sourceText.replace(
+    /B\.createElement\(([a-zA-Z0-9_$]+),\{title:B\.createElement\("div",\s*\{className:"flex items-center gap-1\.5"\},\s*B\.createElement\("span",null,"Models & Usage"\),\s*B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"ghost",size:"icon-lg",onClick:w,disabled:n===void 0,title:"Refresh quota and credits data","aria-label":"Refresh quota and credits data"\},\s*B\.createElement\(([a-zA-Z0-9_$]+),\{name:"refresh",size:20,className:n===void 0\?"animate-spin":""\}\)\)\),\s*description:"Manage your model quota and credits\."\},h==="signedIn"&&l&&B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Plan"\},B\.createElement\(([a-zA-Z0-9_$]+),null,B\.createElement\(([a-zA-Z0-9_$]+),\{label:B\.createElement\("div",\s*\{className:"font-medium"\},\s*"(Your Plan: |你的方案：)",([\s\S]+?)\),description:([\s\S]+?),rightElement:c\?\.userTier\?\.upgradeSubscriptionUri&&B\.createElement\("a",\{href:([a-zA-Z0-9_$]+)\(c\.userTier\.upgradeSubscriptionUri,"utm_campaign","ARGON_MODELS_PAGE"\),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary\/90"\},c\.userTier\.upgradeButtonText\|\|"Upgrade"\)\}\)\)\),y!==void 0&&B\.createElement\(\4,\{title:"Model Credits"\},B\.createElement\(\5,\s*null,B\.createElement\(([a-zA-Z0-9_$]+),\s*\{label:"Enable AI Credit Overages",description:`When toggled on, \$\{g\} will use your AI credits to fulfill model requests once you're out of model quota\. \$\{g\} will always use your model quota first before using AI credits\.`,isSwitchOn:x,pushUpdate:A\}\),x&&B\.createElement\(\6,\{label:`Available AI Credits: \$\{y\?\?"0"\}`,/g,
+    'B.createElement($1,{title:B.createElement("div",{className:"flex items-center gap-1.5"},B.createElement("span",null,"模型与用量"),B.createElement($2,{variant:"ghost",size:"icon-lg",onClick:w,disabled:n===void 0,title:"刷新配额与点数数据","aria-label":"刷新配额与点数数据"},B.createElement($3,{name:"refresh",size:20,className:n===void 0?"animate-spin":""}))),description:"管理你的模型配额与 AI 点数。"},h==="signedIn"&&l&&B.createElement($4,{title:"订阅方案"},B.createElement($5,null,B.createElement($6,{label:B.createElement("div",{className:"font-medium"},"你的方案：",globalThis.__AGY_ZHCN_TRANSLATE_PLAN__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN__(l):l),description:(m&&(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(m):m)),rightElement:c?.userTier?.upgradeSubscriptionUri&&B.createElement("a",{href:$10(c.userTier.upgradeSubscriptionUri,"utm_campaign","ARGON_MODELS_PAGE"),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"},({"Upgrade":"升级","Manage":"管理","Learn more":"了解更多"}[c.userTier.upgradeButtonText]||c.userTier.upgradeButtonText||"升级"))}))),y!==void 0&&B.createElement($4,{title:"模型点数"},B.createElement($5,null,B.createElement($11,{label:"启用 AI 点数超额使用",description:`开启后，当模型配额用尽时，${g} 将自动使用你的 AI 点数继续处理请求。系统始终优先消耗模型配额。`,isSwitchOn:x,pushUpdate:A}),x&&B.createElement($6,{label:`可用 AI 点数：${y??"0"}`,'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)=\(a,b,c,d,f,g\)=>\{if\(g\)return a=a\|\|"this model",b&&\(b=new Date\(b\),!Number\.isNaN\(b\.getTime\(\)\)\)\?`Your quota for \$\{a\} will reset on \$\{b\.toLocaleString\(\)\}\. (?:Switch to another available model to continue\.|请切换到其他可用模型以继续。)`:`Your quota for \$\{a\} has been reached\. (?:Switch to another available model to continue\.|请切换到其他可用模型以继续。)`;g="";var h=d!==void 0;h&&c&&\(f===void 0\|\|d<f\)&&\(g=`You need \$\{f\?"at least "\+f:"more"\} AI Credits to send messages\. To continue using \$\{a\|\|"this model"\} now, purchase more AI Credits\.`\);if\(b\)try\{let k=\(new Date\(b\)\)\.toLocaleString\(\);\s*g\+=` (?:Your plan's baseline quota will refresh on|你的方案基线配额将于) \$\{k\}(?:\.| 刷新。)`\}catch\(k\)\{console\.warn\("Failed to parse quota reset timestamp",k\)\}h&&!c&&\(g\+=" (?:To continue using this model now, enable AI Credit overages\.|若要立即继续使用此模型，请启用 AI 点数超额使用。)"\);return g\};/g,
+    '$1=(a,b,c,d,f,g)=>{if(g)return a=a||"此模型",b&&(b=new Date(b),!Number.isNaN(b.getTime()))?`你的 ${a} 配额将于 ${b.toLocaleString()} 重置。请切换到其他可用模型以继续。`:`你的 ${a} 配额已达上限。请切换到其他可用模型以继续。`;g="";var h=d!==void 0;h&&c&&(f===void 0||d<f)&&(g=`你还需要 ${f?"至少 "+f:"更多"} AI 点数才能继续发送消息。若要立即继续使用${a||"此模型"}，请购买更多 AI 点数。`);if(b)try{let k=(new Date(b)).toLocaleString();g+=` 你的方案基线配额将于 ${k} 刷新。`}catch(k){console.warn("Failed to parse quota reset timestamp",k)}h&&!c&&(g+=" 若要立即继续使用此模型，请启用 AI 点数超额使用。");return g};'
+  );
+
+  // [核心修复 7] 首次引导最后一步弹窗、删除项目确认弹窗、活动对话计数跨版本正则替换
+  sourceText = sourceText.replace(
+    /B\.createElement\("h2",\{className:q\},"One last thing before getting started\\u2026"\),B\.createElement\("p",\{className:n\?"text-secondary-foreground mt-1":"text-secondary-foreground mt-1 text-center"\},"A few things to know, and a couple settings to review\."\)\),B\.createElement\("ul",\{className:"list-none p-0 m-0 flex flex-col gap-4"\},B\.createElement\("li",null,B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Optimized for you"\},\s*"Customize your experience across the agent, plugins, and product from the settings and marketplace\. We won\\u2019t show you ads or let advertisers influence what ",a," says\."\)\),B\.createElement\("li",null,B\.createElement\(\1,\{title:"Built to help, not hurt"\},"Automated safeguards help to protect your conversations from insecure or unsafe content\. That being said, users should be aware of potential agentic risks, including data exfiltration\."\)\),B\.createElement\("li",null,B\.createElement\(\1,\{title:"You are in control"\},\s*a,"\\u2019s agents are powerful and will help you get a lot done better and faster than before, but still make sure to verify the actions taken by the agent\."\)\)\),B\.createElement\("hr",\{className:"border-t border-border my-4"\}\),h\?B\.createElement\("p",\{className:"text-sm text-muted-foreground leading-normal"\},"For ",k,", ",a," does not collect any of your prompts, content, or model responses but will still collect general usage patterns \(e\.g\., feature adoption, active user counts\)\."\):B\.createElement\("div",\s*\{className:"flex flex-col gap-3"\},B\.createElement\(([a-zA-Z0-9_$]+),\{checked:b,onChange:c,disabled:g,alignTop:!0,label:B\.createElement\(([a-zA-Z0-9_$]+),\{title:`Help us improve \$\{a\}\.`\},"Allow Google to collect and use your Interactions data, subject to the",\s*" ",\s*B\.createElement\("a",\{href:"https:\/\/antigravity\.google\/terms",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"\},"Google ",a," Terms of Service"\),\s*(?:" ","and"," "|"\s*与\s*"),\s*B\.createElement\("a",\{href:"https:\/\/policies\.google\.com\/privacy",className:"text-link hover:underline",\s*target:"_blank",rel:"noreferrer"\},"Google Privacy Policy"\),"\. You can control this from your settings at any point\."\)\}\),B\.createElement\(\2,\{checked:d,onChange:f,disabled:g,alignTop:!0,label:B\.createElement\(\3,\{title:"Stay up to date\."\},"Sign up for newsletters, tips and tricks, and other notifications about ",a,"\."\)\}\)\)/g,
+    'B.createElement("h2",{className:q},"开始使用前，还有最后几项确认…"),B.createElement("p",{className:n?"text-secondary-foreground mt-1":"text-secondary-foreground mt-1 text-center"},"请了解以下说明，并确认相关偏好设置。")),B.createElement("ul",{className:"list-none p-0 m-0 flex flex-col gap-4"},B.createElement("li",null,B.createElement($1,{title:"专属定制优化"},"你可以通过设置与插件市场，自由定制智能体、插件与整体产品体验。我们绝不向你展示广告，也不会允许任何广告商影响 ",a," 的回复。")),B.createElement("li",null,B.createElement($1,{title:"秉持安全设计，赋能开发"},"内置自动安全防护机制有助于保护你的对话免受不安全或风险内容影响。尽管如此，请依然留意智能体操作潜在的安全风险（包括数据泄露）。")),B.createElement("li",null,B.createElement($1,{title:"一切由你掌控"},a," 的智能体功能强大，可助你更快、更出色地完成任务，但请务必仔细核实智能体执行的操作。"))),B.createElement("hr",{className:"border-t border-border my-4"}),h?B.createElement("p",{className:"text-sm text-muted-foreground leading-normal"},"对于 ",k,"，",a," 不会收集你的提示词、代码内容或模型回复，但仍会收集常规使用模式（例如功能启用情况与活跃用户数）。"):B.createElement("div",{className:"flex flex-col gap-3"},B.createElement($2,{checked:b,onChange:c,disabled:g,alignTop:!0,label:B.createElement($3,{title:`帮助改进 ${a}。`},"允许 Google 依据 ",B.createElement("a",{href:"https://antigravity.google/terms",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"},"Google ",a," 服务条款")," 与 ",B.createElement("a",{href:"https://policies.google.com/privacy",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"},"Google 隐私权政策")," 收集并使用你的交互数据。你随时可以在设置中管理此选项。")}),B.createElement($2,{checked:d,onChange:f,disabled:g,alignTop:!0,label:B.createElement($3,{title:"订阅最新资讯。"},"订阅关于 ",a," 的产品动态、实用技巧及其他通知邮件。")}))'
+  );
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(\{activeCount:a,archivedCount:b\}\)\{var c=\[\];a>0&&c\.push\(a===1\?"1 active conversation":`\$\{a\} active conversations`\);b>0&&c\.push\(b===1\?"1 archived conversation":`\$\{b\} archived conversations`\);return c\.join\(" and "\)\}/g,
+    'function $1({activeCount:a,archivedCount:b}){var c=[];a>0&&c.push(`${a} 个活动对话`);b>0&&c.push(`${b} 个已归档对话`);return c.join(" 与 ")}'
+  );
+  sourceText = sourceText.replace(
+    /title:`Delete \$\{h\.capitalized\}`,className:"rounded-md max-w-md"\},B\.createElement\("div",null,B\.createElement\("p",\s*\{className:"text-foreground opacity-80 leading-relaxed mb-3"\},"Are you sure you want to delete the ",h\.lowercase," ",B\.createElement\("strong",null,b\),"\\?"\),n&&B\.createElement\("p",\{className:"text-foreground opacity-80 leading-relaxed mb-4"\},"This will permanently delete ",B\.createElement\("strong",null,n\)," ","within it\."\),B\.createElement\("div",\{className:"flex justify-end gap-3"\},B\.createElement\(([a-zA-Z0-9_$]+),\{size:"md",variant:"secondary",onClick:m\},"Cancel"\),B\.createElement\(\1,\{size:"md",variant:"destructive",\s*onClick:l,"data-autofocus":"true"\},"Delete"\)\)\)/g,
+    'title:h.lowercase==="workspace"?"删除工作区":"删除项目",className:"rounded-md max-w-md"},B.createElement("div",null,B.createElement("p",{className:"text-foreground opacity-80 leading-relaxed mb-3"},"确定要删除",h.lowercase==="workspace"?"工作区":"项目"," ",B.createElement("strong",null,b)," 吗？"),n&&B.createElement("p",{className:"text-foreground opacity-80 leading-relaxed mb-4"},"此操作将永久删除其中的 ",B.createElement("strong",null,n),"。"),B.createElement("div",{className:"flex justify-end gap-3"},B.createElement($1,{size:"md",variant:"secondary",onClick:m},"取消"),B.createElement($1,{size:"md",variant:"destructive",onClick:l,"data-autofocus":"true"},"删除")))'
+  );
+
+  // [核心修复 8] 进度耗时、思考计时、步骤汇总、章节标题、时间格式化跨版本正则替换
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,"Card "\),m\+1," of ",l/g, 'B.createElement($1,null,"卡片 "),m+1," / ",l');
+  sourceText = sourceText.replace(/headerText:`Worked for \$\{([a-zA-Z0-9_$]+)\(a\)\}`/g, 'headerText:`工作耗时 ${$1(a)}`');
+  sourceText = sourceText.replace(
+    /subtitle:P\?"Killed":N\?void 0:L\?"Working\.\.\.":l\?\.createdAtMs&&l\?\.lastModifiedAtMs\?`Worked for \$\{([a-zA-Z0-9_$]+)\(l\.lastModifiedAtMs-l\.createdAtMs\)\}`:""/g,
+    'subtitle:P?"已终止":N?void 0:L?"处理中...":l?.createdAtMs&&l?.lastModifiedAtMs?`工作耗时 ${$1(l.lastModifiedAtMs-l.createdAtMs)}`:""'
+  );
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(a\)\{return a\.active\?"Working":a\.durationMs!==void 0&&a\.durationMs>0\?`Worked for \$\{([a-zA-Z0-9_$]+)\(a\.durationMs\)\}`:"Worked"\}/g,
+    'function $1(a){return a.active?"处理中":a.durationMs!==void 0&&a.durationMs>0?`工作耗时 ${$2(a.durationMs)}`:"已完成"}'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)\?w\.startTimeMs\?`Running for \$\{([a-zA-Z0-9_$]+)\(([a-zA-Z0-9_$]+)\.getTime\(\)-Number\(w\.startTimeMs\)\)\}`:"Starting":"Paused\."/g,
+    '$1?w.startTimeMs?`已运行 ${$2($3.getTime()-Number(w.startTimeMs))}`:"正在启动":"已暂停。"'
+  );
+  sourceText = sourceText.replace(
+    /a\.startTimeMs\?`Up \$\{([a-zA-Z0-9_$]+)\(g\.getTime\(\)-Number\(a\.startTimeMs\)\)\}`:"Running"/g,
+    'a.startTimeMs?`已运行 ${$1(g.getTime()-Number(a.startTimeMs))}`:"运行中"'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)\.exitCode===-1\?"Validation timed out\.":([a-zA-Z0-9_$]+)\|\|`Exited with code \$\{\1\.exitCode\}\.`/g,
+    '$1.exitCode===-1?"验证超时。":$2||`已退出，退出码 ${$1.exitCode}。`'
+  );
+  sourceText = sourceText.replace(
+    /const ([a-zA-Z0-9_$]+)=new Intl\.DateTimeFormat\(void 0,\{timeStyle:"short"\}\),([a-zA-Z0-9_$]+)=new Intl\.DateTimeFormat\(void 0,\{weekday:"long"\}\),([a-zA-Z0-9_$]+)=new Intl\.DateTimeFormat\(void 0,\{weekday:"short",month:"short",day:"numeric"\}\),([a-zA-Z0-9_$]+)=new Intl\.DateTimeFormat\(void 0,\{weekday:"short",month:"short",day:"numeric",year:"numeric"\}\);var ([a-zA-Z0-9_$]+)=\(\{date:a\}\)\s*=>\s*\{\{var b=new Date;let g=\1\.format\(a\);if\(([a-zA-Z0-9_$]+)\(a,b\)\)a=\{dayPart:"Today",timePart:g\};else\{var c=new Date\(b\);c\.setDate\(b\.getDate\(\)-1\);a=\6\(a,c\)\?\{dayPart:"Yesterday",timePart:g\}:Math\.abs\(([a-zA-Z0-9_$]+)\(b,a\)\)<7\?\{dayPart:\2\.format\(a\),timePart:g\}:\{dayPart:a\.getFullYear\(\)===b\.getFullYear\(\)\?\3\.format\(a\):\4\.format\(a\),timePart:`at \$\{g\}`\}\}\}/g,
+    'const $1=new Intl.DateTimeFormat("zh-CN",{timeStyle:"short"}),$2=new Intl.DateTimeFormat("zh-CN",{weekday:"long"}),$3=new Intl.DateTimeFormat("zh-CN",{weekday:"short",month:"short",day:"numeric"}),$4=new Intl.DateTimeFormat("zh-CN",{weekday:"short",month:"short",day:"numeric",year:"numeric"});var $5=({date:a})=>{{var b=new Date;let g=$1.format(a);if($6(a,b))a={dayPart:"今天",timePart:g};else{var c=new Date(b);c.setDate(b.getDate()-1);a=$6(a,c)?{dayPart:"昨天",timePart:g}:Math.abs($7(b,a))<7?{dayPart:$2.format(a),timePart:g}:{dayPart:a.getFullYear()===b.getFullYear()?$3.format(a):$4.format(a),timePart:g}}}'
+  );
+  sourceText = sourceText.replace(
+    /return a\?\/\^running\\b\/i\.test\(a\)\?a\.replace\(\/\^running\\b\/i,"Running"\):`Running \$\{([a-zA-Z0-9_$]+)\(a\)\}`:"Running command"\}/g,
+    'return a?/^running\\b/i.test(a)?a.replace(/^running\\b/i,"正在运行"):`正在运行 ${$1(a)}`:"正在运行命令"}'
+  );
+  sourceText = sourceText.replace(
+    /return c\?c:d==="edit"\?`Editing \$\{([a-zA-Z0-9_$]+)\(\[a\],b\)\}`:"Exploring"\}/g,
+    'return c?c:d==="edit"?`正在编辑 ${$1([a],b)}`:"正在探索"}'
+  );
+  sourceText = sourceText.replace(
+    /return c\?`Editing \$\{c\}`:void 0;if\(b\.step\.case==="viewFile"\|\|a\.metadata\?\.toolCall\?\.name==="read_file"\|\|([a-zA-Z0-9_$]+)\(a\)\?\.aggregationKey==="files"\)return c\?`Reading \$\{c\}`:void 0;if\(b\.step\.case==="listDirectory"\)return\(a=([a-zA-Z0-9_$]+)\(b\.step\.value\.directoryPathUri\)\)\?`Listing \$\{a\}`:void 0;/g,
+    'return c?`正在编辑 ${c}`:void 0;if(b.step.case==="viewFile"||a.metadata?.toolCall?.name==="read_file"||$1(a)?.aggregationKey==="files")return c?`正在读取 ${c}`:void 0;if(b.step.case==="listDirectory")return(a=$2(b.step.value.directoryPathUri))?`正在列出 ${a}`:void 0;'
+  );
+  sourceText = sourceText.replace(
+    /b\|\|!a\|\|a\.error\|\|([a-zA-Z0-9_$]+)\(a\)!=="plannerResponse"\?\(d=b\?\?d\[d\.length-1\]\)\?([a-zA-Z0-9_$]+)\(d,c\):"Working":"Thinking";b=d\.filter\(g=>([a-zA-Z0-9_$]+)\(g\)==="other"\);a=d\.filter\(g=>\3\(g\)==="terminal"\);var f=d\.filter\(g=>\3\(g\)==="edit"\);d=\[\];b\.length>0&&\(b=([a-zA-Z0-9_$]+)\(b,c\),d\.push\(b\?`Explored \$\{b\}`:"Explored"\)\);a\.length>0&&d\.push\(`\$\{d\.length===0\?"Ran":"ran"\} \$\{a\.length===1\?"command":"commands"\}`\);\s*f\.length>0&&\(c=\4\(f,c\),d\.push\(`\$\{d\.length===0\?"Edited":"edited"\} \$\{c\}`\)\);/g,
+    'b||!a||a.error||$1(a)!=="plannerResponse"?(d=b??d[d.length-1])?$2(d,c):"处理中":"思考中";b=d.filter(g=>$3(g)==="other");a=d.filter(g=>$3(g)==="terminal");var f=d.filter(g=>$3(g)==="edit");d=[];b.length>0&&(b=$4(b,c),d.push(b?`已探索 ${b}`:"已探索"));a.length>0&&d.push(`已运行 ${a.length} 条命令`);f.length>0&&(c=$4(f,c),d.push(`已编辑 ${c}`));'
+  );
+  sourceText = sourceText.replace(
+    /\)\?`Thought for \$\{Math\.max\(1,Number\(([a-zA-Z0-9_$]+)\.seconds\)\)\}s`:"Thought Process"/g,
+    ')?`思考耗时 ${Math.max(1,Number($1.seconds))} 秒`:"思考过程"'
+  );
+  sourceText = sourceText.replace(
+    /B\.createElement\("span",\{ref:h,"data-titled":d\?"true":void 0,className:"font-medium leading-snug text-foreground"\},d\?\?([a-zA-Z0-9_$]+)\(a,b\)\)/g,
+    'B.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"font-medium leading-snug text-foreground"},(d?(globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__?globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__(d):d):d)??$1(a,b))'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+)\(`Turn \$\{([a-zA-Z0-9_$]+)\+\s*1\} of \$\{([a-zA-Z0-9_$]+)\.current\.turns\?\.length\}`,"polite"\)/g,
+    '$1(`第 ${$2+1} 轮，共 ${$3.current.turns?.length} 轮`,"polite")'
+  );
+
+  // [核心修复 9] 插件页、气泡提示、终端空状态、工作区/项目选择器、MCP 搜索跨版本替换
+  sourceText = sourceText.replace(/"Removing\.\.\.":([a-zA-Z0-9_$]+)\?"Enabling\.\.\.":"Adding\.\.\."/g, '"正在移除...":$1?"正在启用...":"正在添加..."');
+  sourceText = sourceText.replace(/"Signed in as"," ",B\.createElement\(([a-zA-Z0-9_$]+)/g, '"当前登录账号"," ",B.createElement($1');
+  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)\.length>0&&B\.createElement\("div",\{className:"mb-2 px-3 font-semibold text-foreground"\},\s*"Configured servers"\)/g, '$1.length>0&&B.createElement("div",{className:"mb-2 px-3 font-semibold text-foreground"},"已配置的服务器")');
+  sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.RUNNING:return\{label:"Running"/g, 'case $1.SidecarStatus.RUNNING:return{label:"运行中"');
+  sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.STARTING:return\{label:"Starting"/g, 'case $1.SidecarStatus.STARTING:return{label:"启动中"');
+  sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.STOPPED:return\{label:"Stopped"/g, 'case $1.SidecarStatus.STOPPED:return{label:"已停止"');
+  sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.ERRORED:return\{label:"Error"/g, 'case $1.SidecarStatus.ERRORED:return{label:"错误"');
+  sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.BACKOFF:return\{label:"Backoff"/g, 'case $1.SidecarStatus.BACKOFF:return{label:"重试等待"');
+  sourceText = sourceText.replace(/function ([a-zA-Z0-9_$]+)\(\{path:a,label:b="Copy Path"/g, 'function $1({path:a,label:b="复制路径"');
+  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)\?"No resources added yet\.":"No folders added yet\."/g, '$1?"尚未添加资源。":"尚未添加文件夹。"');
+  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?B\.createElement\(([a-zA-Z0-9_$]+),null\):"Controls the actions the agent can take\."/g, '$1=$2?B.createElement($3,null):"控制智能体可执行的各类操作。"');
+  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?B\.createElement\(([a-zA-Z0-9_$]+),null\):"Whether the agent asks you to review its documents\."/g, '$1=$2?B.createElement($3,null):"控制智能体在生成计划或文档后是否请求你评审。"');
+  sourceText = sourceText.replace(/k\.length>0\?k\.map\(([a-zA-Z0-9_$]+)\)\.join\(", "\):"No access"/g, 'k.length>0?k.map(m=>({"read":"读取","update":"更新","merge":"合并","approve":"批准","create":"创建","delete":"删除"}[m]||$1(m))).join("、"):"无权限"');
+  sourceText = sourceText.replace(/function ([a-zA-Z0-9_$]+)\(a\)\{switch\(a\)\{case "system":return"System UI";case "inter":return"Inter";case "google-sans":return"Google Sans"\}\}/g, 'function $1(a){switch(a){case "system":return"系统默认";case "inter":return"Inter";case "google-sans":return"Google Sans"}}');
+  sourceText = sourceText.replace(/h\.length===0\?B\.createElement\(([a-zA-Z0-9_$]+),null,"No active terminals"\)/g, 'h.length===0?B.createElement($1,null,"暂无活动终端")');
+  sourceText = sourceText.replace(/"No active terminals"\),B\.createElement\(([a-zA-Z0-9_$]+)/g, '"暂无活动终端"),B.createElement($1');
+  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)\?`See all \(\$\{([a-zA-Z0-9_$]+)\.items\.length\}\)`:"See less"/g, '$1?`查看全部 (${$2.items.length})`:"收起"');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},h\?"Copied":"Copy code"\)/g, 'B.createElement($1,{id:$2,place:"top"},h?"已复制":"复制代码")');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},"Insert in Terminal"\)/g, 'B.createElement($1,{id:$2,place:"top"},"在终端中插入")');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top-end"\},([a-zA-Z0-9_$]+)\?"Copied":"Copy"\)/g, 'B.createElement($1,{id:$2,place:"top-end"},$3?"已复制":"复制")');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},\s*"At Mention Code Block"\)/g, 'B.createElement($1,{id:$2,place:"top"},"@ 提及代码块")');
+  sourceText = sourceText.replace(/placeholder:([a-zA-Z0-9_$]+)\?"Search or enter a URL":"Search tabs, files and more"/g, 'placeholder:$1?"搜索或输入网址":"搜索标签页、文件等更多内容"');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,"GitHub Repositories"\)/g, 'B.createElement($1,null,"GitHub 仓库")');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,\s*"Remote Projects"\)/g, 'B.createElement($1,null,"远程项目")');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,"Recent"\)/g, 'B.createElement($1,null,"最近")');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,"Environment"\)/g, 'B.createElement($1,null,"运行环境")');
+  sourceText = sourceText.replace(/([a-zA-Z0-9_$]+)\.trim\(\)\?`No matching \$\{([a-zA-Z0-9_$]+)\}`:`No remote \$\{\2\}`/g, '$1.trim()?`未找到匹配的${({"projects":"项目","workspaces":"工作区"}[$2]||$2)}`:`暂无远程${({"projects":"项目","workspaces":"工作区"}[$2]||$2)}`');
+  sourceText = sourceText.replace(/B\.createElement\("p",\{className:"px-2\.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"\},"No ",([a-zA-Z0-9_$]+)\.emptyMessagePlural,\s*" match \\u201c",([a-zA-Z0-9_$]+),"\\u201d\."\)/g, 'B.createElement("p",{className:"px-2.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"},"未找到匹配“",$2,"”的",({"automations":"自动化","scheduled tasks":"定时任务"}[$1.emptyMessagePlural]||$1.emptyMessagePlural),"。")');
+  sourceText = sourceText.replace(/paddingClassName:"pl-2\.5 pr-3",\s*icon:B\.createElement\(([a-zA-Z0-9_$]+),\{name:"add",size:14\}\)\},"New"\)\)\)/g, 'paddingClassName:"pl-2.5 pr-3",icon:B.createElement($1,{name:"add",size:14})},"新建")))');
+  sourceText = sourceText.replace(/"Reconnect"\),B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"xs","aria-label":`Disconnect \$\{f\}`,onClick:\(\)\s*=>\s*\{d\(f\)\}\},"Disconnect"\)/g, '"重新连接"),B.createElement($1,{variant:"secondary",size:"xs","aria-label":`断开 ${f} 连接`,onClick:()=>{d(f)}},"断开连接")');
+  sourceText = sourceText.replace(/"aria-label":`More for \$\{a\}`\},B\.createElement\(([a-zA-Z0-9_$]+),\{name:"more_vert",size:18\}\)\)\),B\.createElement\(([a-zA-Z0-9_$]+),\{align:"end"\},B\.createElement\(([a-zA-Z0-9_$]+),\{disabled:c,onClick:\(\)\s*=>\s*\{if\(!f\.current\)\{var g=b\(\);g&&\(f\.current=!0,d\(!0\),Promise\.resolve\(g\)\.finally\(\(\)\s*=>\s*\{f\.current=!1;d\(!1\)\}\)\)\}\}\},"Disconnect"\)/g, '"aria-label":`更多选项：${a}`},B.createElement($1,{name:"more_vert",size:18}))),B.createElement($2,{align:"end"},B.createElement($3,{disabled:c,onClick:()=>{if(!f.current){var g=b();g&&(f.current=!0,d(!0),Promise.resolve(g).finally(()=>{f.current=!1;d(!1)}))}}},"断开连接")');
+  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{className:"w-4 h-4"\}\),"Loading MCP servers\.\.\."/g, 'B.createElement($1,{className:"w-4 h-4"}),"正在加载 MCP 服务器..."');
+  sourceText = sourceText.replace(/B\.createElement\("div",\{className:"font-medium"\},\s*"No MCP servers installed"\),B\.createElement\("div",\{className:"text-muted-foreground max-w-sm"\},c\.openConfigFile\?"Use Add MCP to browse the store, or add a custom server via the MCP config\.":"Use Add MCP to browse the store\."\)/g, 'B.createElement("div",{className:"font-medium"},"尚未安装任何 MCP 服务器"),B.createElement("div",{className:"text-muted-foreground max-w-sm"},c.openConfigFile?"使用“添加 MCP”浏览市场，或通过 MCP 配置文件添加自定义服务器。":"使用“添加 MCP”浏览市场。")');
+  sourceText = sourceText.replace(/py-8 text-muted-foreground text-center"\},'No MCP servers found for "',([a-zA-Z0-9_$]+),'"'/g, 'py-8 text-muted-foreground text-center"},\'未找到与“\',$1,\'”匹配的 MCP 服务器\'');
+  sourceText = sourceText.replace(/B\.createElement\("span",null,"Type"," ",B\.createElement\("code",\{className:"px-1\.5 py-0\.5 rounded bg-secondary text-foreground font-mono text-\[11px\] border border-border"\},"\/"\)," ","and select"," ",B\.createElement\("code",\{className:"px-1\.5 py-0\.5 rounded bg-secondary text-foreground font-mono text-\[11px\] border border-border"\},\s*"plan"\)," ","to have the agent generate a plan\."\)/g, 'B.createElement("span",null,"输入 ",B.createElement("code",{className:"px-1.5 py-0.5 rounded bg-secondary text-foreground font-mono text-[11px] border border-border"},"/")," 并选择 ",B.createElement("code",{className:"px-1.5 py-0.5 rounded bg-secondary text-foreground font-mono text-[11px] border border-border"},"plan"),"，即可让智能体生成计划。")');
+
+  // [核心修复 10] 2.32.2 新增通用设置项（新建对话按钮默认工作区）与 MCP 工具展开状态原生汉化
+  sourceText = sourceText.replace(
+    /function ([a-zA-Z0-9_$]+)\(a\)\{switch\(a\)\{case "newWorkspace":return"(?:New Workspace|新建工作区)";case "noProject":return"(?:No Project|无项目)";case "lastWorkspace":return"Last Workspace"\}\}function ([a-zA-Z0-9_$]+)\(a\)\{switch\(a\)\{case "newWorkspace":return"Create a new workspace from your first message\.";case "noProject":return"Start without a workspace, for general questions\.";case "lastWorkspace":return"Reuse your last workspace\."\}\}/g,
+    'function $1(a){switch(a){case "newWorkspace":return"新建工作区";case "noProject":return"无项目";case "lastWorkspace":return"上次工作区"}}function $2(a){switch(a){case "newWorkspace":return"从你的第一条消息自动创建一个新工作区。";case "noProject":return"不关联工作区直接开始，适合日常通用提问。";case "lastWorkspace":return"复用你上次使用的工作区。"}}'
+  );
+  sourceText = sourceText.replaceAll(
+    'label:"New Conversation Button",description:"Which workspace the New Conversation button and keyboard shortcut start you in."',
+    'label:"新建对话按钮",description:"设置点击“新建对话”按钮或按下对应快捷键时默认进入的工作区。"'
+  );
+  sourceText = sourceText.replace(
+    /z\?`\$\{C\} tool\$\{C!==1\?"s":""\}\s*enabled`:`\$\{v\.tools\.length\} tool\$\{v\.tools\.length!==\s*1\?"s":""\}\s*disabled`/g,
+    'z?`已启用 ${C} 个工具`:`已禁用 ${v.tools.length} 个工具`'
+  );
+  sourceText = sourceText.replaceAll(
+    'G?"Click to disable tool":"Click to enable tool"',
+    'G?"点击禁用工具":"点击启用工具"'
+  );
+  sourceText = sourceText.replaceAll(
+    'placeholder:"Paste auth code","aria-label":`Auth code for ${x}`',
+    'placeholder:"粘贴授权码","aria-label":`${x} 的授权码`'
+  );
+
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
   return {
