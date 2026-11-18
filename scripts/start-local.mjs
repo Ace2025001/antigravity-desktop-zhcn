@@ -4,6 +4,7 @@ import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { getStateRoot, projectRoot } from "../src/lib/paths.mjs";
 import { resolveInteractiveInstallation } from "../src/lib/install-discovery.mjs";
 import { ensureAutoShortcuts } from "../src/lib/auto-shortcuts.mjs";
+import { askFirstRunSettings, runSettingsMenu } from "../src/lib/settings-prompts.mjs";
 
 function isPidAlive(pid) {
   if (!Number.isInteger(pid) || pid <= 0) return false;
@@ -43,7 +44,11 @@ let silentLockFile = null;
 try {
   const action = process.argv[2];
   const dryVerify = process.argv.includes("--dry-verify");
-  if (!["start", "restore"].includes(action)) throw new Error("请使用启动中文或恢复英文入口。");
+  if (!["start", "restore", "settings"].includes(action)) throw new Error("请使用启动中文、恢复英文或汉化设置入口。");
+  if (action === "settings") {
+    process.exitCode = await runSettingsMenu();
+    process.exit(process.exitCode);
+  }
 
   if (!dryVerify) {
     silentLockFile = await acquireSilentLaunchLock();
@@ -51,6 +56,8 @@ try {
       process.exit(0);
     }
   }
+
+  if (action === "start" && !dryVerify) await askFirstRunSettings();
 
   console.log("正在查找本机 Antigravity，并检查安装位置，请稍候…");
   const progress = setInterval(() => console.log("仍在查找或等待客户端选择，请勿重复打开启动器…"), 10000);

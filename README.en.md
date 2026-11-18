@@ -5,7 +5,9 @@
 [![Platform](https://img.shields.io/badge/platform-Windows%20x64%20%7C%20macOS%20Apple%20Silicon-blue)](#supported-platforms)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-An open-source **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google Antigravity Desktop** standalone client, on Windows x64 and Apple Silicon macOS. One download works on both platforms, runs offline with a bundled runtime, finds your installation automatically, re-applies Chinese after client updates, and restores English at any time. Tested on Antigravity Desktop 2.29.0.
+An open-source **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google Antigravity Desktop** standalone client, on Windows x64 and Apple Silicon macOS. One download works on both platforms with a bundled runtime, finds your installation automatically, re-localizes after client updates, and restores English at any time. Tested on Antigravity Desktop 2.32.2 (Windows).
+
+On first run you choose: what to do after client updates (Windows: auto-localize / ask / do nothing; auto and ask add a per-user scheduled task `AntigravityZhcnAutoFollow`, removed on restore), whether to enable **online supplementary translation** (untranslated UI strings and conversation titles go to Google Translate; chat content, code, terminal output, files and your input are never sent), and whether to create a desktop shortcut. Change them anytime with `汉化设置` (Settings) in the launcher folder.
 
 This targets the standalone Desktop client, **not** the Antigravity IDE extension.
 

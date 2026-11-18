@@ -17,13 +17,18 @@ import { createLocalizedBundleWithProgress } from "../src/lib/localize-progress.
 import { readInstallState, writeInstallState } from "../src/lib/state.mjs";
 import { gracefulCloseAntigravity, launchAntigravity } from "../src/lib/processes.mjs";
 import { clientProcesses } from "../src/lib/close-client.mjs";
-import { ensureAutoFollowDaemonRegistered } from "../src/lib/auto-follow-task.mjs";
+import { applyAutoFollowSetting } from "../src/lib/auto-follow-task.mjs";
+import { readUserSettings } from "../src/lib/user-settings.mjs";
+
+const syncAutoFollow = async () => applyAutoFollowSetting((await readUserSettings()).settings).catch(() => {});
 
 const execFileAsync = promisify(execFile);
 const CUSTOM_SCHEME_PATH = "dist/customScheme.js";
 const BUNDLE_NAME = "agy_zhcn_ui_main.js";
 const noLaunch = process.argv.includes("--no-launch");
 const ownedRestart = process.argv.includes("--owned-restart");
+// Background runs must never close a client the user opened in the meantime.
+const abortIfRunning = process.argv.includes("--abort-if-running");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -120,7 +125,7 @@ if (
           toolFingerprint,
           localizedBundleSha256: sha256Buffer(relocalized.buffer),
         });
-        await ensureAutoFollowDaemonRegistered().catch(() => {});
+        await syncAutoFollow();
         if (!noLaunch) {
           await showClient(inspection.executablePath);
         }
@@ -134,7 +139,7 @@ if (
     process.exit(updated.status ?? 1);
   }
   console.log("当前版本已完成汉化，无需重复注入，直接启动 Antigravity。");
-  await ensureAutoFollowDaemonRegistered().catch(() => {});
+  await syncAutoFollow();
   if (!noLaunch) {
     await showClient(inspection.executablePath);
   }
@@ -167,6 +172,10 @@ if (existingBundleHash && existingBundleHash !== previousBundleHash) {
 }
 
 try {
+  if (abortIfRunning && !launchedByTool && (await clientProcesses()).length) {
+    console.log("客户端正在运行，后台汉化不会关闭它，留待下次检查。");
+    process.exit(3);
+  }
   await gracefulCloseAntigravity({ owned: launchedByTool });
 } catch (closeErr) {
   if (closeErr?.silentUserCancelled) {
@@ -227,7 +236,7 @@ try {
 }
 
 console.log("汉化已自动跟进当前更新，正在重新启动 Antigravity。");
-await ensureAutoFollowDaemonRegistered().catch(() => {});
+await syncAutoFollow();
 if (!noLaunch) {
   await showClient(recheck.executablePath);
 }

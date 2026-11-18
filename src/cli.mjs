@@ -30,6 +30,7 @@ import {
   writeLocalizedBundle,
 } from "./lib/translator.mjs";
 import { createLocalizedBundleWithProgress } from "./lib/localize-progress.mjs";
+import { removeAutoFollowDaemon } from "./lib/auto-follow-task.mjs";
 import {
   atomicReplaceFile,
   buildPatchedAsar,
@@ -802,6 +803,8 @@ async function restore() {
 
   await removeVerifiedLocalizedBundle(state);
 
+  const daemon = await removeAutoFollowDaemon().catch(() => ({ removed: false }));
+  if (daemon.removed) console.log("已删除后台自动跟进更新的计划任务。");
   console.log("英文原版恢复完成。");
   return 0;
 }
@@ -880,7 +883,12 @@ async function purge({ assumeYes = false } = {}) {
   const refreshedTargets = await inspectPurgeTargets();
   const result = await removeCleanupTargets(refreshedTargets);
 
+  await removeAutoFollowDaemon().catch(() => {});
   const stateRoot = getStateRoot();
+  // Files that are not regenerable cache but still belong to this tool.
+  for (const name of ["daemon", "settings.json", "auto-learned-translations.json", "selected-installation.json"]) {
+    await rm(path.join(stateRoot, name), { recursive: true, force: true }).catch(() => {});
+  }
   await rmdir(stateRoot).catch((error) => {
     if (error?.code !== "ENOENT" && error?.code !== "ENOTEMPTY") {
       console.warn(`警告：无法删除空状态目录：${error.message}`);

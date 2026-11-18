@@ -3,7 +3,8 @@ import {promisify} from "node:util";
 import {readFile,writeFile,chmod,access,lstat,rename,unlink} from "node:fs/promises";
 import path from "node:path";
 import {projectRoot} from "./paths.mjs";
-import {buildSilentLauncherVbs, ensureAutoFollowDaemonRegistered} from "./auto-follow-task.mjs";
+import {buildSilentLauncherVbs, applyAutoFollowSetting} from "./auto-follow-task.mjs";
+import {readUserSettings, wantsDesktopShortcut} from "./user-settings.mjs";
 const exec=promisify(execFile);
 const marker="# antigravity-zhcn managed shortcut v1";
 export function shellQuote(value) { return "'"+value.replaceAll("'","'\"'\"'")+"'"; }
@@ -34,6 +35,8 @@ export async function writeMacShortcut(target,launcher,relative=false) {
 }
 export async function ensureAutoShortcuts(selectedClient) {
   const root=path.resolve(projectRoot,"../..");
+  const {settings}=await readUserSettings();
+  const desktop=wantsDesktopShortcut(settings);
   if(process.platform==="win32") {
     const winEntry=path.join(root,"win启动");
     const batLauncher=path.join(winEntry,"启动中文.bat");
@@ -44,11 +47,11 @@ export async function ensureAutoShortcuts(selectedClient) {
     if(existingVbs!==vbsContent) {
       await writeFile(silentVbs,vbsContent,"ascii");
     }
-    const {stdout}=await exec("powershell.exe",["-NoProfile","-ExecutionPolicy","Bypass","-File",path.join(projectRoot,"scripts/create-auto-shortcuts.ps1"),"-Launcher",silentVbs,"-ClientExe",path.join(selectedClient,"Antigravity.exe")],{encoding:"utf8",windowsHide:true,timeout:20000});
+    const {stdout}=await exec("powershell.exe",["-NoProfile","-ExecutionPolicy","Bypass","-File",path.join(projectRoot,"scripts/create-auto-shortcuts.ps1"),"-Launcher",silentVbs,"-ClientExe",path.join(selectedClient,"Antigravity.exe"),...(desktop?[]:["-NoDesktop"])],{encoding:"utf8",windowsHide:true,timeout:20000});
     if(stdout.trim())console.log(stdout.trim());
     const bundledNode=path.join(winEntry,"配套程序/node.exe");
     const nodeExePath=await access(bundledNode).then(()=>bundledNode).catch(()=>process.execPath);
-    await ensureAutoFollowDaemonRegistered({nodeExePath,coreRoot:projectRoot,languagePackDir:path.join(root,"语言包")}).catch(()=>{});
+    await applyAutoFollowSetting(settings,{nodeExePath,coreRoot:projectRoot,languagePackDir:path.join(root,"语言包")}).catch(()=>{});
     return;
   }
   if(process.platform!=="darwin")throw new Error("快捷方式仅支持 Windows 与 macOS。");
@@ -60,6 +63,14 @@ export async function ensureAutoShortcuts(selectedClient) {
     const {stdout}=await exec("/usr/bin/osascript",["-e","POSIX path of (path to desktop folder)"],{timeout:10000});
     if(stdout.trim())locations.push({folder:stdout.trim(),relative:false});
   } catch {console.log("无法获取桌面位置，将只创建 mac启动 文件夹内的快捷入口。");}
+  if(!desktop) {
+    // Keep only the in-folder entry; remove a desktop copy this tool created earlier.
+    for(const location of locations.splice(1)) {
+      const target=path.join(location.folder,"Antigravity自动汉化.command");
+      try {if((await readFile(target,"utf8")).split("\n")[1]===marker){await unlink(target);console.log(`已按设置移除桌面快捷入口：${target}`);}}
+      catch(error){if(error.code!=="ENOENT")console.log(`桌面快捷入口未能移除：${error.message}`);}
+    }
+  }
   for(const location of locations) {
     const target=path.join(location.folder,"Antigravity自动汉化.command");
     try {if(await writeMacShortcut(target,launcher,location.relative))console.log(`自更新快捷入口已就绪：${target}`);}

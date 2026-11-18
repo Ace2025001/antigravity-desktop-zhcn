@@ -1,4 +1,4 @@
-﻿param([Parameter(Mandatory=$true)][string]$Launcher, [Parameter(Mandatory=$true)][string]$ClientExe, [string]$DesktopDirectory)
+﻿param([Parameter(Mandatory=$true)][string]$Launcher, [Parameter(Mandatory=$true)][string]$ClientExe, [string]$DesktopDirectory, [switch]$NoDesktop)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 $marker = 'Antigravity ZhCN managed auto-update shortcut v1'
@@ -61,7 +61,23 @@ $Launcher = [AgShortcut]::NormalizePath($Launcher)
 $ClientExe = [AgShortcut]::NormalizePath($ClientExe)
 $desktop = if ($DesktopDirectory) { $DesktopDirectory } else { [Environment]::GetFolderPath('DesktopDirectory') }
 $entry = Split-Path -Parent $Launcher
-foreach ($directory in @($entry, $desktop) | Select-Object -Unique) {
+$targets = @($entry, $desktop)
+if ($NoDesktop) {
+    $targets = @($entry)
+    # Remove only the desktop shortcut this tool created (identified by its marker).
+    $desktopShortcut = if ($desktop) { Join-Path $desktop 'Antigravity自动汉化.lnk' } else { $null }
+    if ($desktopShortcut -and $desktop -ne $entry -and (Test-Path -LiteralPath $desktopShortcut)) {
+        $existing = [AgShortcut]::new($desktopShortcut)
+        try {
+            $managed = $existing.Description -eq $marker
+        } finally { $existing.Dispose() }
+        if ($managed) {
+            Remove-Item -LiteralPath $desktopShortcut -Force
+            Write-Host "已按设置移除桌面快捷方式：$desktopShortcut"
+        }
+    }
+}
+foreach ($directory in $targets | Select-Object -Unique) {
     $shortcut = $null
     $saved = $null
     try {

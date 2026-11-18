@@ -54,8 +54,29 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             if (process.platform === 'darwin') return path.join(os.homedir(), 'Library', 'Application Support', 'AntigravityZhcn', 'auto-learned-translations.json');
             return path.join(electron_1.app.getPath('userData'), 'auto-learned-translations.json');
         };
+        // User switches written by “汉化设置” (src/lib/user-settings.mjs), next to the learned dictionary.
+        const getZhcnSettings = async () => {
+            const now = Date.now();
+            if (globalThis.__agyZhcnSettingsCache && now - globalThis.__agyZhcnSettingsCache.at < 3000) {
+                return globalThis.__agyZhcnSettingsCache.value;
+            }
+            const value = { onlineTranslate: true, titleWriteBack: false };
+            try {
+                const raw = JSON.parse(await fsPromises.readFile(path.join(path.dirname(getAutoDictPath()), 'settings.json'), 'utf8'));
+                if (typeof raw.onlineTranslate === 'boolean') value.onlineTranslate = raw.onlineTranslate;
+                if (typeof raw.titleWriteBack === 'boolean') value.titleWriteBack = raw.titleWriteBack;
+            } catch (_settingsErr) {}
+            globalThis.__agyZhcnSettingsCache = { at: now, value };
+            return value;
+        };
         try {
             const reqUrl = new URL(request.url);
+            if (reqUrl.hostname === 'settings') {
+                return new Response(JSON.stringify(await getZhcnSettings()), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }
+                });
+            }
             if (reqUrl.hostname === 'auto-dict') {
                 const dictPath = getAutoDictPath();
                 if (request.method === 'POST') {
@@ -97,6 +118,10 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                 });
             }
             if (reqUrl.hostname === 'translate') {
+                // The only network exit for supplementary translation; honours the user's switch.
+                if (!(await getZhcnSettings()).onlineTranslate) {
+                    return new Response(JSON.stringify({ ok: false, disabled: true }), { status: 403, headers: { 'Content-Type': 'application/json; charset=utf-8' } });
+                }
                 const q = reqUrl.searchParams.get('q') || '';
                 if (!q.trim()) {
                     return new Response(JSON.stringify({ ok: false }), { status: 400, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' } });

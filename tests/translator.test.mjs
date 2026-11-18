@@ -2538,9 +2538,21 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     persistedAnnotations.push({ cid, proto, merge });
   };
 
+  // 默认（未开启“标题写回”）：只加入显示词库，不改对话记录
   sandbox.__AGY_ZHCN_BIND_TITLE_WATCHER__(fakeStore, fakeUpdateAnnotations);
   await new Promise((r) => setTimeout(r, 50));
+  assert.equal(dispatchedActions.length, 0, "默认不得写回对话记录");
+  assert.equal(persistedAnnotations.length, 0, "默认不得调用 updateConversationAnnotations");
+  assert.equal(sandbox.__AGY_ZHCN_LOOKUP__("Analyzing Doubao Video Script with Gemini"), "使用 Gemini 分析豆包视频脚本");
 
+  // 用户在“汉化设置”中开启“标题写回”后才写回 store 与 updateConversationAnnotations
+  const writeBackSandbox = { ...sandbox, fetch: async (url) => ({ ok: String(url) === "agy-zhcn://settings", json: async () => ({ onlineTranslate: true, titleWriteBack: true }) }) };
+  writeBackSandbox.globalThis = writeBackSandbox;
+  vm.runInNewContext(overlayCode, writeBackSandbox);
+  await writeBackSandbox.__AGY_ZHCN_LOAD_SETTINGS__();
+  const writeBackStore = { ...fakeStore, state: { trajectorySummaries: { summaries: { "conv-new-1": { summary: "Analyzing Doubao Video Script with Gemini", annotations: {} } } } } };
+  writeBackSandbox.__AGY_ZHCN_BIND_TITLE_WATCHER__(writeBackStore, fakeUpdateAnnotations);
+  await new Promise((r) => setTimeout(r, 50));
   assert.equal(dispatchedActions.length, 1);
   assert.equal(dispatchedActions[0].payload.annotations.title, "使用 Gemini 分析豆包视频脚本");
   assert.equal(persistedAnnotations.length, 1);
