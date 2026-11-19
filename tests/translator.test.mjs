@@ -2597,9 +2597,18 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     assert.equal(isObsoleteLearnedKey("Fixing bugs, 2 turns"), true);
     assert.equal(isObsoleteLearnedKey("Copied sign-in link to clipboard"), false);
     assert.equal(isObsoleteLearnedKey("Better Stack"), true, "品牌名的旧机翻要丢弃");
-    assert.equal(isObsoleteLearnedKey("Baizer Rigger"), true, "用户姓名旧机翻必须丢弃");
     assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Grafana Cloud", null, false, true), false, "品牌名不联网");
-    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Baizer Rigger", null, false, false), false, "用户姓名不联网");
+    // 账号卡片（头像 + 邮箱）里的姓名不联网；用虚构姓名测试，公开仓库不写真实个人信息
+    {
+      const card = {
+        nodeType: 1, parentElement: null, textContent: "Jane Example jane@example.com",
+        getAttribute: () => null,
+        closest(sel) { return sel.includes("div") ? this : null; },
+        querySelector: (sel) => (sel.includes("rounded-full") ? {} : null)
+      };
+      const nameEl = { nodeType: 1, parentElement: card, getAttribute: () => null, closest(sel) { return sel.includes("div") ? card : null; } };
+      assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Jane Example", nameEl, false, false), false, "账号卡片里的姓名不联网");
+    }
   }
 
   // 验证普通 UI 句子的四道防机翻翻译效果

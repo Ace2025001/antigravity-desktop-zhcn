@@ -1202,15 +1202,8 @@ export function createRuntimeOverlay(dictionary) {
 
   function __persistAutoLearnedEntry(enKey, zhVal) {
     exactTranslations.set(enKey, zhVal);
-    try {
-      if (typeof localStorage !== "undefined") {
-        const raw = localStorage.getItem(__LOCAL_STORAGE_DICT_KEY);
-        const cache = raw ? JSON.parse(raw) : {};
-        cache[enKey] = zhVal;
-        localStorage.setItem(__LOCAL_STORAGE_DICT_KEY, JSON.stringify(cache));
-      }
-    } catch (_) {}
-
+    // The on-disk dictionary (agy-zhcn://auto-dict) is the only store, so entries
+    // removed or filtered there cannot come back from a browser-side copy.
     __autoPersistQueue[enKey] = zhVal;
     if (!__autoPersistTimer) {
       __autoPersistTimer = setTimeout(async () => {
@@ -1234,7 +1227,6 @@ export function createRuntimeOverlay(dictionary) {
 
   // Keep in sync with OBSOLETE_LEARNED_KEY_PATTERNS in auto-learned-dict.mjs.
   const __OBSOLETE_LEARNED_KEY_PATTERNS = [
-    /^Baizer\\s+Rigger$/i,
     /^(?:Remove shortcut|Shortcut)\\s+\\S+\\s+for\\s+/,
     /^Install\\s+\\S/,
     /^Reset\\s+.+\\s+to\\s+default$/,
@@ -1250,19 +1242,9 @@ export function createRuntimeOverlay(dictionary) {
 
   async function __loadPersistedAutoDict() {
     let loadedAny = false;
+    // Older versions mirrored learned entries in localStorage; drop that copy.
     try {
-      if (typeof localStorage !== "undefined") {
-        const raw = localStorage.getItem(__LOCAL_STORAGE_DICT_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          for (const [k, v] of Object.entries(parsed || {})) {
-            if (typeof k === "string" && typeof v === "string" && !exactTranslations.has(k) && !__isObsoleteLearnedKey(k)) {
-              exactTranslations.set(k, v);
-              loadedAny = true;
-            }
-          }
-        }
-      }
+      if (typeof localStorage !== "undefined") localStorage.removeItem(__LOCAL_STORAGE_DICT_KEY);
     } catch (_) {}
 
     try {
