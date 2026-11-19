@@ -4,6 +4,32 @@ import path from "node:path";
 
 export const AUTO_LEARNED_DICT_FILENAME = "auto-learned-translations.json";
 
+// Learned entries that are now handled by built-in composite rules, or that
+// look like user content (file names, links, paths, inline code), are ignored
+// so earlier machine translations cannot shadow the curated rules.
+// Keep in sync with __isObsoleteLearnedKey in translator.mjs (runtime overlay).
+export const OBSOLETE_LEARNED_KEY_PATTERNS = [
+  /^(?:Remove shortcut|Shortcut)\s+\S+\s+for\s+/,
+  /^Install\s+\S/,
+  /^Reset\s+.+\s+to\s+default$/,
+  /,\s+\d+\s+turns?$/,
+  /[a-z][a-z0-9+.-]*:\/\/|`|(?:^|[\s(])(?:~|\.{1,2})?\/[\w.-]|[A-Za-z]:\\/i,
+  /[\w-]+\.(?:txt|md|log|json|ya?ml|toml|lock|vbs|bat|cmd|ps1|sh|py|js|mjs|cjs|ts|tsx|jsx|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\b/i
+];
+
+// Plugin marketplace / service names shown as-is: never machine-translated.
+export const KEEP_ORIGINAL_NAMES = [
+  "CrowdStrike Falcon", "Wispr Flow", "Grafana Cloud", "Better Stack", "Chrome DevTools", "Android CLI",
+  "Atlassian Teamwork Graph CLI", "PandaDoc", "Base44", "Intercom", "Mobbin", "Bigin", "Browserbase",
+  "Granola", "Stripe", "Wix", "Semrush", "Context7", "Cloudflare", "CodeRabbit", "Firebase", "WordPress",
+  "Gmail", "Gemini API", "monday.com", "Science", "Robotics"
+];
+const KEEP_ORIGINAL_SET = new Set(KEEP_ORIGINAL_NAMES);
+
+export function isObsoleteLearnedKey(key) {
+  return typeof key !== "string" || KEEP_ORIGINAL_SET.has(key) || OBSOLETE_LEARNED_KEY_PATTERNS.some((re) => re.test(key));
+}
+
 export function resolveCrossPlatformStateRoot() {
   if (process.env.AGY_ZHCN_STATE_DIR) {
     return path.resolve(process.env.AGY_ZHCN_STATE_DIR);
@@ -30,7 +56,7 @@ export async function readAutoLearnedDict() {
       const exact = parsed.exact && typeof parsed.exact === "object" ? parsed.exact : parsed;
       const clean = {};
       for (const [k, v] of Object.entries(exact)) {
-        if (typeof k === "string" && typeof v === "string" && k.trim() && v.trim()) {
+        if (typeof k === "string" && typeof v === "string" && k.trim() && v.trim() && !isObsoleteLearnedKey(k)) {
           clean[k] = v;
         }
       }

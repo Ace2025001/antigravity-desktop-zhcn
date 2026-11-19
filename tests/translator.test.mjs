@@ -2220,8 +2220,8 @@ test("Case 138: translate plugin overview markdown, table cells, V4 UI extension
 
   // 1. 词典深度录入核验
   assert.equal(current.exact["Your meetings in your workflow."], "会议融入你的工作流。");
-  assert.equal(current.exact["Swarm Plugin"], "Swarm 插件");
-  assert.equal(current.exact["Live view of the native swarm board, roster and @mention graph for the current conversation's swarm."], "实时查看当前会话 Swarm 智能体群组的原生消息看板、成员花名册与 @提及关系图。");
+  assert.equal(current.exact["Swarm Plugin"], "蜂群插件");
+  assert.equal(current.exact["Live view of the native swarm board, roster and @mention graph for the current conversation's swarm."], "实时查看当前对话所属蜂群的原生留言板、成员名单和 @提及关系图。");
   assert.ok(current.exact["Equip your agent with current SDK patterns, CLI workflows, model identifiers, and live documentation lookup for building with the Gemini API."].includes("为你的智能体配备最新的 SDK 规范"));
 
   // 2. 测试 V4 UI 扩展拦截与 ABc 弹窗本地化
@@ -2258,9 +2258,9 @@ test("Case 140: safe translate settings skills/rules without white screen, Googl
 
   // 5. 内置技能名称与官方描述
   assert.equal(translateDictionaryValue("mcp-app-development", current), "MCP 应用开发");
-  assert.equal(translateDictionaryValue("swarm", current), "Swarm 蜂群协作");
-  assert.equal(translateDictionaryValue("swarm_monitor", current), "Swarm 蜂群监视器");
-  assert.equal(translateDictionaryValue("swarm_narrator", current), "Swarm 协调叙述者");
+  assert.equal(translateDictionaryValue("swarm", current), "蜂群协作");
+  assert.equal(translateDictionaryValue("swarm_monitor", current), "蜂群监视者");
+  assert.equal(translateDictionaryValue("swarm_narrator", current), "蜂群旁白员");
 });
 
 test("Case 141: verify full patterns retention (chat history times, weekly limits, timers) and Looker overview", async () => {
@@ -2514,6 +2514,74 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
   };
   sandbox.globalThis = sandbox;
   vm.runInNewContext(overlayCode, sandbox);
+
+  // 联网补充翻译的排除规则：按标识的完整词判断，不按子串误伤设置行；输入框自身的占位符可补译
+  {
+    const makeEl = (tag, testid, parent = null, attrs = {}) => {
+      const el = {
+        nodeType: 1, tagName: tag.toUpperCase(), parentElement: parent,
+        getAttribute: (n) => (n === "data-testid" ? testid : (attrs[n] ?? null)),
+        closest(sel) {
+          const parts = sel.split(",").map((s) => s.trim());
+          for (let n = this; n; n = n.parentElement) {
+            for (const s of parts) {
+              if (s === n.tagName.toLowerCase()) return n;
+              if (s.startsWith(".") && (n.getAttribute("class") || "").split(" ").includes(s.slice(1))) return n;
+              const m = s.match(/^\[([\w-]+)(?:='([^']*)')?\]$/);
+              if (m && (m[2] === undefined ? n.getAttribute(m[1]) !== null : n.getAttribute(m[1]) === m[2])) return n;
+            }
+          }
+          return null;
+        }
+      };
+      return el;
+    };
+    const eligible = sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__;
+    const shortcutRow = makeEl("div", "shortcut-row-terminalSelectAll");
+    assert.equal(eligible("Terminal: Select All", makeEl("span", null, shortcutRow), false), true, "快捷键行不能因为标识含 terminal 被排除");
+    assert.equal(eligible("No terminals running yet", makeEl("p", "bottom-terminal-panel-empty"), false), true, "终端面板空状态属于界面文字");
+    assert.equal(eligible("Message the agent here", makeEl("span", null, makeEl("div", "settings-error-messages-card")), false), true);
+    const hostInput = makeEl("input", null, makeEl("div", "ssh-host-picker"));
+    assert.equal(eligible("Search Hosts...", hostInput, false, true), true, "输入框自身的占位符可补译");
+    assert.equal(eligible("Search Hosts...", hostInput, false, false), false, "输入框内的文字不补译");
+    for (const id of ["user-message-content", "live-transcript", "terminal-surface", "browser-subagent-thinking", "conversation-navigator-turn", "agent-response-message", "turn-12"]) {
+      assert.equal(eligible("Please refactor the build script", makeEl("span", null, makeEl("div", id)), false), false, id + " 内的内容不得联网");
+    }
+    assert.equal(eligible("Please refactor the build script", makeEl("span", null, makeEl("div", "x", null, { class: "xterm" })), false), false);
+    // 文件名、链接、路径、行内代码不论出现在句中何处都不联网
+    for (const s of ["Close package-usage.txt", "Opens external link: https://127.0", "`/Applications/Ant", "Open report in /tmp/out", "Edited silent-auto-follow.vbs"]) {
+      assert.equal(eligible(s, null, false, true), false, s + " 不得联网");
+    }
+  }
+
+  // 组合标签：变量部分查词库后套句式，旧的联网机翻结果不再覆盖
+  {
+    const overlay = createRuntimeOverlay({
+      exact: { "Toggle Terminal": "切换终端", "Open Settings": "打开设置", "Fixing bugs": "修复错误" },
+      patterns: []
+    });
+    const box = { document: { readyState: "loading", documentElement: { lang: "en" }, addEventListener() {} }, Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 }, MutationObserver: class { observe() {} }, setTimeout, clearTimeout };
+    box.globalThis = box;
+    vm.runInNewContext(overlay, box);
+    const tv = box.__AGY_ZHCN_TRANSLATE_VALUE__;
+    assert.equal(tv("Shortcut Ctrl+J for Toggle Terminal"), "“切换终端”的快捷键 Ctrl+J");
+    assert.equal(tv("Remove shortcut Ctrl+, for Open Settings"), "删除“打开设置”的快捷键 Ctrl+,");
+    assert.equal(tv("Shortcut Ctrl+J for Unknown Action"), null);
+    assert.equal(tv("Install Better Stack"), "安装 Better Stack");
+    assert.equal(tv("Install monday.com"), "安装 monday.com");
+    assert.equal(tv("Install the CLI to continue"), null);
+    assert.equal(tv("Fixing bugs, 14 turns"), "修复错误，14 轮对话");
+  }
+  {
+    const { isObsoleteLearnedKey } = await import("../src/lib/auto-learned-dict.mjs");
+    assert.equal(isObsoleteLearnedKey("Shortcut Ctrl+Shift+. for Next Side Panel Tab"), true);
+    assert.equal(isObsoleteLearnedKey("Install Stripe"), true);
+    assert.equal(isObsoleteLearnedKey("Close package-usage.txt"), true);
+    assert.equal(isObsoleteLearnedKey("Fixing bugs, 2 turns"), true);
+    assert.equal(isObsoleteLearnedKey("Copied sign-in link to clipboard"), false);
+    assert.equal(isObsoleteLearnedKey("Better Stack"), true, "品牌名的旧机翻要丢弃");
+    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Grafana Cloud", null, false, true), false, "品牌名不联网");
+  }
 
   // 验证普通 UI 句子的四道防机翻翻译效果
   const uiTranslated = await sandbox.__AGY_ZHCN_AUTO_TRANSLATE__(
