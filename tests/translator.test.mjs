@@ -2434,6 +2434,23 @@ test("Case 144: translate 2.32.2 Automations schedule editor, local/cloud descri
     !sourcePart.includes('编排器 ('),
     "Must preserve official model tier names Orchestrator (Carbon/Argon) without renaming to 编排器"
   );
+
+  assert.equal(
+    translateDictionaryValue("Your current account is not eligible for Antigravity. To use Antigravity you must be 18 years old or older. If you think you are receiving this message in error, please ensure you have verified your age and try to log in again.", current),
+    "你当前的账号暂无使用 Antigravity 的资格。若要使用 Antigravity，你必须年满 18 周岁。如果你认为此提示有误，请确保已验证年龄并尝试重新登录。"
+  );
+  assert.equal(
+    translateDictionaryValue("To use Antigravity you must be 18 years old or older.", current),
+    "若要使用 Antigravity，你必须年满 18 周岁。"
+  );
+  assert.equal(
+    translateDictionaryValue("If you think you are receiving this message in error, please ensure you have verified your age and try to log in again.", current),
+    "如果你认为此提示有误，请确保已验证年龄并尝试重新登录。"
+  );
+  assert.equal(
+    translateDictionaryValue("Learn more by visiting our FAQ.", current),
+    "访问我们的常见问题解答。"
+  );
 });
 
 test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned dict, conversation title writeback, and zero-console VBS launcher", async () => {
@@ -2580,7 +2597,9 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     assert.equal(isObsoleteLearnedKey("Fixing bugs, 2 turns"), true);
     assert.equal(isObsoleteLearnedKey("Copied sign-in link to clipboard"), false);
     assert.equal(isObsoleteLearnedKey("Better Stack"), true, "品牌名的旧机翻要丢弃");
+    assert.equal(isObsoleteLearnedKey("Baizer Rigger"), true, "用户姓名旧机翻必须丢弃");
     assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Grafana Cloud", null, false, true), false, "品牌名不联网");
+    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Baizer Rigger", null, false, false), false, "用户姓名不联网");
   }
 
   // 验证普通 UI 句子的四道防机翻翻译效果

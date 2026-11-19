@@ -12820,7 +12820,26 @@
     "A password or secure field is on screen.": "屏幕上有密码或安全输入框。",
     "An agent is using the built-in browser. Clearing its data signs the agent out of sites and may interrupt its task.": "有智能体正在使用内置浏览器。清除其数据会让智能体退出已登录的网站，并可能中断它的任务。",
     "All active Antigravity shortcuts and user keybinding overrides are managed directly by VS Code.": "所有生效的 Antigravity 快捷键和自定义按键绑定都直接由 VS Code 管理。",
-    "Authentication required for this GitHub host.": "此 GitHub 主机需要身份验证。"
+    "Authentication required for this GitHub host.": "此 GitHub 主机需要身份验证。",
+    "Your current account is not eligible for Antigravity. To use Antigravity you must be 18 years old or older. If you think you are receiving this message in error, please ensure you have verified your age and try to log in again.": "你当前的账号暂无使用 Antigravity 的资格。若要使用 Antigravity，你必须年满 18 周岁。如果你认为此提示有误，请确保已验证年龄并尝试重新登录。",
+    "Your current account is not eligible for Antigravity. To use Antigravity you must be 18 years old or older. If you think you are receiving this message in error, please ensure you have verified your age and try to log in again": "你当前的账号暂无使用 Antigravity 的资格。若要使用 Antigravity，你必须年满 18 周岁。如果你认为此提示有误，请确保已验证年龄并尝试重新登录。",
+    "Your current account is not eligible for Antigravity. To use Antigravity you must be 18 years old or older. If you think you are receiving this message in error, please ensure you have verified your age and try to log in again. Learn more by visiting our FAQ.": "你当前的账号暂无使用 Antigravity 的资格。若要使用 Antigravity，你必须年满 18 周岁。如果你认为此提示有误，请确保已验证年龄并尝试重新登录。访问我们的常见问题解答。",
+    "Your current account is not eligible for Antigravity. To use Antigravity you must be 18 years old or older. If you think you are receiving this message in error, please ensure you have verified your age and try to log in again. Learn more by visiting our FAQ": "你当前的账号暂无使用 Antigravity 的资格。若要使用 Antigravity，你必须年满 18 周岁。如果你认为此提示有误，请确保已验证年龄并尝试重新登录。访问我们的常见问题解答",
+    "To use Antigravity you must be 18 years old or older. If you think you are receiving this message in error, please ensure you have verified your age and try to log in again.": "若要使用 Antigravity，你必须年满 18 周岁。如果你认为此提示有误，请确保已验证年龄并尝试重新登录。",
+    "To use Antigravity you must be 18 years old or older. If you think you are receiving this message in error, please ensure you have verified your age and try to log in again": "若要使用 Antigravity，你必须年满 18 周岁。如果你认为此提示有误，请确保已验证年龄并尝试重新登录。",
+    "To use Antigravity you must be 18 years old or older.": "若要使用 Antigravity，你必须年满 18 周岁。",
+    "To use Antigravity you must be 18 years old or older": "若要使用 Antigravity，你必须年满 18 周岁",
+    "If you think you are receiving this message in error, please ensure you have verified your age and try to log in again.": "如果你认为此提示有误，请确保已验证年龄并尝试重新登录。",
+    "If you think you are receiving this message in error, please ensure you have verified your age and try to log in again": "如果你认为此提示有误，请确保已验证年龄并尝试重新登录。",
+    "Learn more by visiting our FAQ.": "访问我们的常见问题解答。",
+    "Learn more by visiting our FAQ": "访问我们的常见问题解答",
+    "Visit our FAQ.": "访问我们的常见问题解答。",
+    "Visit our FAQ": "访问我们的常见问题解答",
+    "visit our FAQ.": "访问我们的常见问题解答。",
+    "visit our FAQ": "访问我们的常见问题解答",
+    "Visit our": "访问我们的",
+    "visit our": "访问我们的",
+    "FAQ.": "常见问题解答。"
   },
   "patterns": [
     {
@@ -13834,12 +13853,12 @@
       "flags": "u"
     },
     {
-      "source": "^Your (?:current )?account is not eligible for (.+?)(?:,|，)?\\s+because it is not currently available in your (?:location|country|region|area)\\.?$",
+      "source": "^Your (?:current )?account is not eligible for ([^.\\n]+?)(?:,|，)?\\s+because it is not currently available in your (?:location|country|region|area)\\.?$",
       "target": "你当前的账号暂无使用 $1 的资格，因为该服务目前尚未在你所在的地区提供。",
       "flags": "u"
     },
     {
-      "source": "^(?:Sorry,\\s*)?[Tt]his account is (?:not eligible for|ineligible to use)\\s*(.+?)(?:,|，)?\\s+because it is not currently available in your (?:location|country|region|area)\\.?$",
+      "source": "^(?:Sorry,\\s*)?[Tt]his account is (?:not eligible for|ineligible to use)\\s*([^.\\n]+?)(?:,|，)?\\s+because it is not currently available in your (?:location|country|region|area)\\.?$",
       "target": "抱歉，该账号暂无使用 $1 的权限，因为该服务目前尚未在你所在的地区提供。",
       "flags": "u"
     },
@@ -13859,7 +13878,7 @@
       "flags": "u"
     },
     {
-      "source": "^Your (?:current )?account is not eligible for (.+?)\\.?$",
+      "source": "^Your (?:current )?account is not eligible for ([^.\\n]+?)\\.?$",
       "target": "你当前的账号暂无使用 $1 的资格。",
       "flags": "u"
     },
