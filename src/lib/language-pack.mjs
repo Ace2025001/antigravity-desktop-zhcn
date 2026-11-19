@@ -13,5 +13,8 @@ export async function localizationFingerprint(platform = process.platform) {
   const buffers = await Promise.all(files.map(file => readFile(path.join(projectRoot, file))));
   buffers.push(await readFile(languageFile("dom-translations.json")));
   if (platform === "darwin") buffers.push(await readFile(languageFile("macos-translations.json")));
-  return sha256Buffer(Buffer.concat(buffers));
+  // Line endings must not matter: a Windows checkout (CRLF) and the release package (LF)
+  // hold the same content and must yield the same fingerprint.
+  const normalized = buffers.map((buffer) => Buffer.from(buffer.toString("utf8").replace(/\r\n/g, "\n"), "utf8"));
+  return sha256Buffer(Buffer.concat(normalized));
 }
