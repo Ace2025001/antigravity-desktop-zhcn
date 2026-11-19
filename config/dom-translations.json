@@ -12839,7 +12839,12 @@
     "visit our FAQ": "访问我们的常见问题解答",
     "Visit our": "访问我们的",
     "visit our": "访问我们的",
-    "FAQ.": "常见问题解答。"
+    "FAQ.": "常见问题解答。",
+    "Add automation": "新建自动化",
+    "Add scheduled task": "新建定时任务",
+    "No scheduled tasks yet": "暂无定时任务",
+    "No automations matching your search": "未找到匹配搜索的自动化",
+    "No scheduled tasks matching your search": "未找到匹配搜索的定时任务"
   },
   "patterns": [
     {

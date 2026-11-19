@@ -1396,6 +1396,36 @@ export function createRuntimeOverlay(dictionary) {
     const parent = node.parentElement;
     if (!parent || isBlocked(parent)) return;
     const rawVal = node.nodeValue;
+
+    // 自动化与定时任务页面空状态及新建按钮靶向拦截
+    if (typeof parent.closest === "function") {
+      const sidecarEmpty = parent.closest("[data-testid='sidecar-list-empty']");
+      if (sidecarEmpty) {
+        const p = parent.tagName === "P" ? parent : parent.closest("p");
+        if (p) {
+          const txt = (p.textContent || "").trim();
+          if (txt === "No automations yet") {
+            p.textContent = "暂无自动化";
+            stats.translatedTextNodes += 1;
+            return;
+          }
+          if (txt === "No scheduled tasks yet") {
+            p.textContent = "暂无定时任务";
+            stats.translatedTextNodes += 1;
+            return;
+          }
+        }
+      }
+      const sidecarBtn = parent.closest("[data-testid='sidecar-new-button']");
+      if (sidecarBtn) {
+        if (rawVal && rawVal.trim() === "New") {
+          node.nodeValue = rawVal.replace("New", "新建");
+          stats.translatedTextNodes += 1;
+          return;
+        }
+      }
+    }
+
     const translated = translateValue(rawVal);
     if (translated !== null && translated !== rawVal) {
       node.nodeValue = translated;
@@ -2088,6 +2118,27 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = sourceText.replaceAll('Gb.trim()?`No matching ${C}`:`No remote ${C}`', 'Gb.trim()?`未找到匹配的${({"projects":"项目","workspaces":"工作区"}[C]||C)}`:`暂无远程${({"projects":"项目","workspaces":"工作区"}[C]||C)}`');
   sourceText = sourceText.replaceAll('title:"Create Project"', 'title:"创建项目"');
   sourceText = sourceText.replaceAll(',"New Workspace")', ',"新建工作区")');
+  // 自动化与定时任务界面原生静态汉化（通用正则兼容各版本构建）
+  sourceText = sourceText.replace(
+    /([A-Za-z_$][A-Za-z0-9_$]*)\.createElement\("p",\{className:"px-2\.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"\},"No ",([A-Za-z_$][A-Za-z0-9_$]*)\.emptyMessagePlural,\s*" match \\u201c",([A-Za-z_$][A-Za-z0-9_$]*),"\\u201d\."\)/g,
+    '$1.createElement("p",{className:"px-2.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"},"未找到匹配“",$3,"”的",({"automations":"自动化","scheduled tasks":"定时任务"}[$2.emptyMessagePlural]||$2.emptyMessagePlural),"。")'
+  );
+  sourceText = sourceText.replace(
+    /([A-Za-z_$][A-Za-z0-9_$]*)\.createElement\("p",\{className:"m-0 text-lg text-foreground"\},"No ",([A-Za-z_$][A-Za-z0-9_$]*)\.emptyMessagePlural," yet"\)/g,
+    '$1.createElement("p",{className:"m-0 text-lg text-foreground"},"暂无",({"automations":"自动化","scheduled tasks":"定时任务"}[$2.emptyMessagePlural]||$2.emptyMessagePlural))'
+  );
+  sourceText = sourceText.replace(
+    /"aria-label":`Add \${([A-Za-z_$][A-Za-z0-9_$]*)\.emptyMessageSingular\}`,"data-testid":"sidecar-new-button"/g,
+    '"aria-label":$1.emptyMessageSingular==="automation"?"新建自动化":"新建定时任务","data-testid":"sidecar-new-button"'
+  );
+  sourceText = sourceText.replace(
+    /"data-testid":"sidecar-new-button",paddingClassName:"pl-2\.5 pr-3",icon:([A-Za-z_$][A-Za-z0-9_$]*)\.createElement\(([A-Za-z_$][A-Za-z0-9_$]*),\{name:"add",size:14\}\)\},"New"\)\)\)/g,
+    '"data-testid":"sidecar-new-button",paddingClassName:"pl-2.5 pr-3",icon:$1.createElement($2,{name:"add",size:14})},"新建")))'
+  );
+  sourceText = sourceText.replace(
+    /emptyMessage:([A-Za-z_$][A-Za-z0-9_$]*)\?`No \${([A-Za-z_$][A-Za-z0-9_$]*)\.emptyMessagePlural\} matching your search`:`No \${\2\.emptyMessagePlural\} configured\.`/g,
+    'emptyMessage:$1?`未找到匹配搜索的${({"automations":"自动化","scheduled tasks":"定时任务"}[$2.emptyMessagePlural]||$2.emptyMessagePlural)}`:`未配置${({"automations":"自动化","scheduled tasks":"定时任务"}[$2.emptyMessagePlural]||$2.emptyMessagePlural)}。`'
+  );
   sourceText = sourceText.replaceAll('B.createElement("p",{className:"px-2.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"},"No ",t.emptyMessagePlural,\n" match \\u201c",P,"\\u201d.")', 'B.createElement("p",{className:"px-2.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"},"未找到匹配“",P,"”的",({"automations":"自动化","scheduled tasks":"定时任务"}[t.emptyMessagePlural]||t.emptyMessagePlural),"。")');
   sourceText = sourceText.replaceAll('B.createElement("p",{className:"m-0 text-lg text-foreground"},"No ",t.emptyMessagePlural," yet")', 'B.createElement("p",{className:"m-0 text-lg text-foreground"},"暂无",({"automations":"自动化","scheduled tasks":"定时任务"}[t.emptyMessagePlural]||t.emptyMessagePlural))');
   sourceText = sourceText.replaceAll('paddingClassName:"pl-2.5 pr-3",\nicon:B.createElement(dq,{name:"add",size:14})},"New")))', 'paddingClassName:"pl-2.5 pr-3",\nicon:B.createElement(dq,{name:"add",size:14})},"新建")))');

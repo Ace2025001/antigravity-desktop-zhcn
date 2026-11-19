@@ -2698,3 +2698,30 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     }
   }
 });
+
+test("Case 145: 自动化与定时任务界面空状态与新建按钮本地化", async () => {
+  const dictionary = await loadDomTranslations();
+
+  // 1. 词库精确命中
+  assert.equal(translateDictionaryValue("Add automation", dictionary), "新建自动化");
+  assert.equal(translateDictionaryValue("Add scheduled task", dictionary), "新建定时任务");
+  assert.equal(translateDictionaryValue("No automations configured.", dictionary), "未配置计划任务。");
+  assert.equal(translateDictionaryValue("No scheduled tasks configured.", dictionary), "未配置计划任务。");
+  assert.equal(translateDictionaryValue("No automations matching your search", dictionary), "未找到匹配搜索的自动化");
+  assert.equal(translateDictionaryValue("No scheduled tasks matching your search", dictionary), "未找到匹配搜索的定时任务");
+
+  // 2. 静态源码替换覆盖最新 React 结构
+  const sampleSource = [
+    'var sample = D.createElement("div",{className:"px-2.5 py-16","data-testid":"sidecar-list-empty"},D.createElement("p",{className:"m-0 text-lg text-foreground"},"No ",t.emptyMessagePlural," yet"));',
+    'var btn = D.createElement(Qz,{"aria-label":`Add ${t.emptyMessageSingular}`,"data-testid":"sidecar-new-button",paddingClassName:"pl-2.5 pr-3",icon:D.createElement(Nq,{name:"add",size:14})},"New")));',
+    'var emptyList = D.createElement(a5c,{sidecars:Q,emptyMessage:O?`No ${t.emptyMessagePlural} matching your search`:`No ${t.emptyMessagePlural} configured.`});'
+  ].join("\\n");
+
+  const localized = createLocalizedBundle(Buffer.from(sampleSource, "utf8"), dictionary, { skipCoverage: true }).buffer.toString("utf8");
+
+  assert.ok(localized.includes('D.createElement("p",{className:"m-0 text-lg text-foreground"},"暂无"'), "Empty state must be localized to '暂无'");
+  assert.ok(localized.includes('"data-testid":"sidecar-new-button",paddingClassName:"pl-2.5 pr-3",icon:D.createElement(Nq,{name:"add",size:14})},"新建")))'), "New button text must be localized to '新建'");
+  assert.ok(localized.includes('"aria-label":t.emptyMessageSingular==="automation"?"新建自动化":"新建定时任务"'), "Aria-label must be localized");
+  assert.ok(localized.includes('emptyMessage:O?`未找到匹配搜索的'), "List empty message must be localized");
+});
+
