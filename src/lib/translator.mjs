@@ -1030,7 +1030,10 @@ export function createRuntimeOverlay(dictionary) {
     "pre",
     "code",
     "[data-model-selector-list]",
-    "[data-testid='model-selector-item']"
+    "[data-testid='model-selector-item']",
+    "[data-testid*='account']",
+    "[data-testid*='profile']",
+    "[data-testid*='user']"
   ].join(",");
   // Editable fields: their typed text is never translated, but their own
   // placeholder / aria-label / title are UI and may be.
@@ -1057,6 +1060,12 @@ export function createRuntimeOverlay(dictionary) {
     if (el.closest(__CONTENT_CONTAINER_SELECTOR)) return true;
     if (!isAttribute && el.closest(__EDITABLE_SELECTOR)) return true;
     if (isAttribute && el.parentElement && typeof el.parentElement.closest === "function" && el.parentElement.closest("[contenteditable='true'],[data-lexical-editor='true']")) return true;
+    // Account and user profile cards: never send personal names / account info to online translator
+    const card = el.closest(".flex-col, button, [role='button'], div");
+    if (card && card.querySelector && card.querySelector(".rounded-full, [class*='avatar'], [data-tooltip-id*='account']")) {
+      const text = card.textContent || "";
+      if (/[^\s@]+@[^\s@]+\.[^\s@]+/.test(text)) return true;
+    }
     for (let node = el; node && node.nodeType === 1; node = node.parentElement) {
       const id = node.getAttribute && node.getAttribute("data-testid");
       if (id && __isContentTestId(id)) return true;
@@ -1225,6 +1234,7 @@ export function createRuntimeOverlay(dictionary) {
 
   // Keep in sync with OBSOLETE_LEARNED_KEY_PATTERNS in auto-learned-dict.mjs.
   const __OBSOLETE_LEARNED_KEY_PATTERNS = [
+    /^Baizer\\s+Rigger$/i,
     /^(?:Remove shortcut|Shortcut)\\s+\\S+\\s+for\\s+/,
     /^Install\\s+\\S/,
     /^Reset\\s+.+\\s+to\\s+default$/,

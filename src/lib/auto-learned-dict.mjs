@@ -9,6 +9,7 @@ export const AUTO_LEARNED_DICT_FILENAME = "auto-learned-translations.json";
 // so earlier machine translations cannot shadow the curated rules.
 // Keep in sync with __isObsoleteLearnedKey in translator.mjs (runtime overlay).
 export const OBSOLETE_LEARNED_KEY_PATTERNS = [
+  /^Baizer\s+Rigger$/i,
   /^(?:Remove shortcut|Shortcut)\s+\S+\s+for\s+/,
   /^Install\s+\S/,
   /^Reset\s+.+\s+to\s+default$/,
@@ -17,9 +18,9 @@ export const OBSOLETE_LEARNED_KEY_PATTERNS = [
   /[\w-]+\.(?:txt|md|log|json|ya?ml|toml|lock|vbs|bat|cmd|ps1|sh|py|js|mjs|cjs|ts|tsx|jsx|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\b/i
 ];
 
-// Plugin marketplace / service names shown as-is: never machine-translated.
+// Plugin marketplace / service names and user identities shown as-is: never machine-translated.
 export const KEEP_ORIGINAL_NAMES = [
-  "CrowdStrike Falcon", "Wispr Flow", "Grafana Cloud", "Better Stack", "Chrome DevTools", "Android CLI",
+  "Baizer Rigger", "CrowdStrike Falcon", "Wispr Flow", "Grafana Cloud", "Better Stack", "Chrome DevTools", "Android CLI",
   "Atlassian Teamwork Graph CLI", "PandaDoc", "Base44", "Intercom", "Mobbin", "Bigin", "Browserbase",
   "Granola", "Stripe", "Wix", "Semrush", "Context7", "Cloudflare", "CodeRabbit", "Firebase", "WordPress",
   "Gmail", "Gemini API", "monday.com", "Science", "Robotics"
