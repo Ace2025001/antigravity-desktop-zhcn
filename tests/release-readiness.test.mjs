@@ -60,5 +60,8 @@ test('启动器、进度或倒计时改动不触发重新汉化，词库和核�
   assert.equal(await localizationFingerprint('win32'),before);
   await writeFile(path.join(dir,'config/dom-translations.json'),'{"changed":true}');assert.notEqual(await localizationFingerprint('win32'),before);
   const next=await localizationFingerprint('win32');await writeFile(path.join(dir,'src/lib/patcher.mjs'),'new core');assert.notEqual(await localizationFingerprint('win32'),next);
+  // 换行不同（Windows 检出 CRLF、发布包 LF）但内容相同时，指纹必须一致
+  await writeFile(path.join(dir,'config/dom-translations.json'),'{\n  "a": "b"\n}\n');const lf=await localizationFingerprint('win32');
+  await writeFile(path.join(dir,'config/dom-translations.json'),'{\r\n  "a": "b"\r\n}\r\n');assert.equal(await localizationFingerprint('win32'),lf);
  }finally{if(saved===undefined)delete process.env.AGY_LANGUAGE_PACK;else process.env.AGY_LANGUAGE_PACK=saved;await rm(dir,{recursive:true,force:true})}
 });

@@ -28,3 +28,4 @@ untranslated-*.md
 
 .codex_backup/
 .DS_Store
+scripts/uncovered-ui.json
