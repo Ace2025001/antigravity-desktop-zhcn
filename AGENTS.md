@@ -52,6 +52,7 @@ Rules / 规则:
 
 - Node.js >= 22.12.0. Setup: `npm ci --ignore-scripts`.
 - Before committing: `npm test` and `npm run validate` must both pass.
+- Applying translation changes on the maintainer's machine (Windows): `npm run hot-update` regenerates the Chinese UI from the original UI embedded in the install directory and replaces it atomically, without closing the client; reload the window (View → Reload) to see it. Use `--dry-run` to check first. If the client version changed, the user runs `启动中文` instead. Never close or restart the client yourself. 修改词库后用 `npm run hot-update` 热更新，不关闭客户端。
 - Translations: `config/dom-translations.json` (exact + regex rules), `config/macos-translations.json`. Translation engine: `src/lib/translator.mjs`.
 - Windows flow: `src/cli.mjs`, `scripts/auto-follow-update.mjs`. macOS flow: `scripts/macos.mjs`, `src/lib/macos.mjs` (keeps the original app, builds a signed Chinese copy).
 - Release packaging: `.github/workflows/release.yml`, `scripts/assemble-universal.mjs`. See [docs/releasing.md](docs/releasing.md) and [docs/architecture.md](docs/architecture.md).

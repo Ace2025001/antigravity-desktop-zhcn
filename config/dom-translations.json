@@ -12815,7 +12815,12 @@
     "Response actions": "回复操作",
     "File Viewer header": "文件查看器标题栏",
     "Robotics skills for any robot: 3D perception, collision-free motion planning, visual servoing, robot bring-up, sim2real, agent iteration, MuJoCo simulation, SimReady 3D asset authoring and physics auditing, and a live MuJoCo Studio 3D web sidecar.": "适用于各类机器人的技能：3D 感知、无碰撞运动规划、视觉伺服、机器人调试上线、仿真到实机迁移（sim2real）、智能体迭代、MuJoCo 仿真、SimReady 3D 资产制作与物理审核，以及实时 MuJoCo Studio 3D 网页侧边面板。",
-    "Build, test, and debug Docusign integrations with developer skills for authentication, template-based signing, envelope status, and troubleshooting.": "借助开发者技能构建、测试和调试 Docusign 集成，涵盖身份验证、基于模板的签署、信封状态查询和故障排查。"
+    "Build, test, and debug Docusign integrations with developer skills for authentication, template-based signing, envelope status, and troubleshooting.": "借助开发者技能构建、测试和调试 Docusign 集成，涵盖身份验证、基于模板的签署、信封状态查询和故障排查。",
+    "A host can't contain spaces.": "主机名不能包含空格。",
+    "A password or secure field is on screen.": "屏幕上有密码或安全输入框。",
+    "An agent is using the built-in browser. Clearing its data signs the agent out of sites and may interrupt its task.": "有智能体正在使用内置浏览器。清除其数据会让智能体退出已登录的网站，并可能中断它的任务。",
+    "All active Antigravity shortcuts and user keybinding overrides are managed directly by VS Code.": "所有生效的 Antigravity 快捷键和自定义按键绑定都直接由 VS Code 管理。",
+    "Authentication required for this GitHub host.": "此 GitHub 主机需要身份验证。"
   },
   "patterns": [
     {
