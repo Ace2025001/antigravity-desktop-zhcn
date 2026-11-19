@@ -3,7 +3,7 @@ import path from "node:path";
 import { projectRoot } from "./paths.mjs";
 import { sha256Buffer } from "./hash.mjs";
 import { languageFile } from "./language-pack.mjs";
-import { readAutoLearnedDict } from "./auto-learned-dict.mjs";
+import { KEEP_ORIGINAL_NAMES, readAutoLearnedDict } from "./auto-learned-dict.mjs";
 
 export async function loadDomTranslations() {
   const filePath = languageFile("dom-translations.json");
@@ -18,7 +18,15 @@ export async function loadDomTranslations() {
   }
   const learnedExact = await readAutoLearnedDict();
   if (learnedExact && Object.keys(learnedExact).length > 0) {
-    data.exact = { ...learnedExact, ...data.exact };
+    // A curated pattern rule wins over an earlier machine translation.
+    const curatedPatterns = (Array.isArray(data.patterns) ? data.patterns : [])
+      .map((p) => { try { return new RegExp(p.source, p.flags); } catch { return null; } })
+      .filter(Boolean);
+    const usable = {};
+    for (const [k, v] of Object.entries(learnedExact)) {
+      if (!curatedPatterns.some((re) => { re.lastIndex = 0; return re.test(k); })) usable[k] = v;
+    }
+    data.exact = { ...usable, ...data.exact };
   }
   for (const pattern of data.patterns) {
     if (
@@ -930,6 +938,31 @@ export function createRuntimeOverlay(dictionary) {
     m = normalizedCore.match(/^Turns\\s+(\\d+)[\\u2013-](\\d+)$/i);
     if (m) return leading + "第 " + m[1] + "–" + m[2] + " 轮" + trailing;
 
+    // Composite labels built from a variable (key combo, plugin name, command
+    // label, conversation title): translate the variable via the dictionary
+    // and wrap it, instead of leaving the whole label to machine translation.
+    const __lookup = (s) => {
+      const v = exactTranslations.get(s);
+      return v !== undefined ? v : null;
+    };
+    m = normalizedCore.match(/^(Remove shortcut|Shortcut)\\s+(\\S+)\\s+for\\s+(.+)$/);
+    if (m) {
+      const action = __lookup(m[3]);
+      if (action !== null) return leading + (m[1] === "Shortcut" ? "“" + action + "”的快捷键 " + m[2] : "删除“" + action + "”的快捷键 " + m[2]) + trailing;
+    }
+    m = normalizedCore.match(/^Reset\\s+(.+?)\\s+to\\s+default$/);
+    if (m) {
+      const label = __lookup(m[1]);
+      if (label !== null) return leading + "将“" + label + "”恢复为默认值" + trailing;
+    }
+    m = normalizedCore.match(/^Install\\s+((?:[A-Z0-9][\\w.+-]*|[a-z0-9]+\\.[a-z]{2,})(?:\\s+[A-Z0-9][\\w.+-]*){0,4})$/);
+    if (m) return leading + "安装 " + m[1] + trailing;
+    m = normalizedCore.match(/^(.+),\\s+(\\d+)\\s+turns?$/);
+    if (m) {
+      const title = __lookup(m[1]);
+      if (title !== null) return leading + title + "，" + m[2] + " 轮对话" + trailing;
+    }
+
     for (const { regex, target } of patternTranslations) {
       regex.lastIndex = 0;
       if (regex.test(core)) {
@@ -960,10 +993,13 @@ export function createRuntimeOverlay(dictionary) {
     "Google Drive", "Google Calendar", "Gemini 4 Carbon", "Gemini 4 Argon", "Gemini 4 Hydrogen",
     "Gemini 3.8 Flash", "Claude Sonnet", "Claude Opus", "GPT-OSS", "Antigravity", "BigQuery",
     "Looker", "GitHub", "GitLab", "Bitbucket", "Linear", "Notion", "Figma", "Canva", "Vercel",
-    "Netlify", "Railway", "Dropbox", "Databricks", "Auth0", "Arize AX", "Arize", "Swarm",
+    "Netlify", "Railway", "Dropbox", "Databricks", "Auth0", "Arize AX", "Arize",
     "Orchestrator", "Gemini", "Claude", "Carbon", "Argon", "Hydrogen", "Tokens", "Token", "OAuth", "RBAC",
-    "MCP", "SSO", "PAT", "CLI", "IDE", "SDK", "API", "WSL", "SSH", "JSON", "YAML", "HTML", "CSS"
+    "MCP", "SSO", "PAT", "CLI", "IDE", "SDK", "API", "WSL", "SSH", "JSON", "YAML", "HTML", "CSS",
+    // Plugin marketplace / service names (src/lib/auto-learned-dict.mjs): keep as-is.
+    ...${JSON.stringify(KEEP_ORIGINAL_NAMES)}
   ];
+  const __PROTECTED_BRAND_SET = new Set(__PROTECTED_BRAND_PHRASES);
 
   const __PRE_ANCHOR_TERMS = [
     [/\\bglobal permissions\\b/gi, "全局权限"],
@@ -975,6 +1011,7 @@ export function createRuntimeOverlay(dictionary) {
     [/\\bprompts?\\b/gi, "提示词"],
     [/\\bhooks?\\b/gi, "钩子"],
     [/\\bworktrees?\\b/gi, "工作树"],
+    [/\\bswarms?\\b/gi, "蜂群"],
     [/\\bDoubao\\b/gi, "豆包"],
     [/\\bDouyin\\b/gi, "抖音"],
     [/\\bXiaohongshu\\b/gi, "小红书"],
@@ -983,24 +1020,49 @@ export function createRuntimeOverlay(dictionary) {
     [/\\bBilibili\\b/gi, "B站"]
   ];
 
-  const __CHAT_OR_CODE_CONTAINER_SELECTOR = [
-    "[data-testid*='turn']",
-    "[data-testid*='message']",
-    "[data-testid*='thinking']",
-    "[data-testid*='thought']",
-    "[data-testid*='terminal']",
-    "[data-testid*='live-transcript']",
+  // Containers whose text must never be sent for online translation.
+  // data-testid values are NOT matched as substrings: many ids carry a variable
+  // part (e.g. "shortcut-row-" + commandId gives "shortcut-row-terminalSelectAll"),
+  // and ids such as "bottom-terminal-panel-empty" are UI chrome, not content.
+  const __CONTENT_CONTAINER_SELECTOR = [
     ".xterm",
     ".monaco-editor",
     "pre",
     "code",
-    "textarea",
-    "input",
-    "[contenteditable='true']",
-    "[data-lexical-editor='true']",
     "[data-model-selector-list]",
     "[data-testid='model-selector-item']"
   ].join(",");
+  // Editable fields: their typed text is never translated, but their own
+  // placeholder / aria-label / title are UI and may be.
+  const __EDITABLE_SELECTOR = "textarea,input,[contenteditable='true'],[data-lexical-editor='true']";
+  // Known conversation / transcript / terminal-output containers (prefix match).
+  const __CONTENT_TESTID_EXPLICIT = /^(?:user-message(?!-actions)|live-transcript|live-agent-turn|live-user-turn|turn-cards-container|conversation-navigator-turn|transcript-line-text|transcript-work-line|voice-transcript-(?:card|summary)|pending-user-messages|queued-messages-card|webview-prompt-message|terminal(?:-tab)?-surface|standalone-terminal-view)/;
+  // Fallback for ids added by future client versions: a whole token must be a
+  // content word, and the id must not be a settings/shortcut scope or UI chrome.
+  const __CONTENT_TESTID_WORDS = new Set(["turn", "turns", "message", "messages", "thinking", "thought", "thoughts", "terminal", "terminals", "transcript", "transcripts"]);
+  const __CHROME_TESTID_FIRST = new Set(["shortcut", "shortcuts", "keybinding", "keybindings", "setting", "settings", "filter", "palette", "menu", "option", "nav", "navigation"]);
+  const __CHROME_TESTID_TOKENS = new Set(["empty", "menu", "title", "button", "btn", "toggle", "resize", "handle", "sidebar", "warning", "nux", "starting", "creating", "connecting", "actions", "action", "expand", "copy", "error", "errors", "dismiss", "allow", "kill", "split", "delete", "glyph", "row", "item", "group", "tab", "tabs", "active", "divider", "header", "label", "badge", "icon", "tooltip", "status", "toolbar", "speaker", "timestamp", "blocked", "password", "diff", "cwd", "new", "and", "tasks", "panel"]);
+
+  function __isContentTestId(id) {
+    if (typeof id !== "string" || !id) return false;
+    if (__CONTENT_TESTID_EXPLICIT.test(id)) return true;
+    const tokens = id.toLowerCase().split(/[-_.:\\s]+/).filter(Boolean);
+    if (!tokens.length || __CHROME_TESTID_FIRST.has(tokens[0])) return false;
+    if (!tokens.some((x) => __CONTENT_TESTID_WORDS.has(x))) return false;
+    return !tokens.some((x) => __CHROME_TESTID_TOKENS.has(x));
+  }
+
+  function __isInsideUserContent(el, isAttribute) {
+    if (!el || typeof el.closest !== "function") return false;
+    if (el.closest(__CONTENT_CONTAINER_SELECTOR)) return true;
+    if (!isAttribute && el.closest(__EDITABLE_SELECTOR)) return true;
+    if (isAttribute && el.parentElement && typeof el.parentElement.closest === "function" && el.parentElement.closest("[contenteditable='true'],[data-lexical-editor='true']")) return true;
+    for (let node = el; node && node.nodeType === 1; node = node.parentElement) {
+      const id = node.getAttribute && node.getAttribute("data-testid");
+      if (id && __isContentTestId(id)) return true;
+    }
+    return false;
+  }
 
   // User switches from “汉化设置”, served by the patched main process. Until
   // they are known (or if they cannot be read) online translation stays off.
@@ -1024,7 +1086,7 @@ export function createRuntimeOverlay(dictionary) {
     return proto === "https:" || proto === "http:" || proto === "agy-zhcn:" || proto === "file:";
   }
 
-  function __isEligibleForAutoTranslate(core, parentEl, isTitle) {
+  function __isEligibleForAutoTranslate(core, parentEl, isTitle, isAttribute = false) {
     if (typeof core !== "string") return false;
     const t = core.trim();
     if (isTitle ? (t.length < 3 || t.length > 160) : (t.length < 6 || t.length > 600)) return false;
@@ -1041,10 +1103,13 @@ export function createRuntimeOverlay(dictionary) {
     if (/\\.(?:exe|dll|asar|js|mjs|cjs|json|md|py|sh|ps1|log|png|jpg|jpeg|svg|css|html|ts|tsx|db|pbtxt)$/i.test(t)) return false;
     if (/=>|\\bfunction\\s*\\(|[{}[\\]|\\\\<>=]|===|!==/.test(t)) return false;
     if (/^[0-9a-fA-F-]{16,64}$/.test(t)) return false;
+    if (__PROTECTED_BRAND_SET.has(t)) return false;
+    // Anything carrying a file name, link, path or inline code is (or quotes)
+    // user content: never send it, wherever it appears in the string.
+    if (/[a-z][a-z0-9+.-]*:\\/\\/|\\x60|(?:^|[\\s(])(?:~|\\.{1,2})?\\/[\\w.-]|[A-Za-z]:\\\\/i.test(t)) return false;
+    if (/[\\w-]+\\.(?:[a-z]{1,4}\\d?|json|yaml|toml|lock|tsx|jsx|mjs|cjs|vbs|bat|cmd|ps1|txt|md|log|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\\b(?![\\w-])/.test(t) && !/\\b(?:e\\.g|i\\.e|etc|vs)\\./i.test(t)) return false;
     if (/^(?:Gemini|Claude|GPT-OSS|Google|Antigravity|Orchestrator)\\s+[0-9A-Za-z.\\s()-]+$/i.test(t) && t.split(/\\s+/).length <= 4) return false;
-    if (parentEl && typeof parentEl.closest === "function") {
-      if (parentEl.closest(__CHAT_OR_CODE_CONTAINER_SELECTOR)) return false;
-    }
+    if (parentEl && __isInsideUserContent(parentEl, isAttribute)) return false;
     return true;
   }
 
@@ -1083,6 +1148,7 @@ export function createRuntimeOverlay(dictionary) {
     if (/⟦\\s*\\d+\\s*⟧/.test(out)) return null;
 
     out = out
+      .replace(/[\\u200b-\\u200d\\ufeff]/g, "")
       .replace(/您的/g, "你的")
       .replace(/您/g, "你")
       .replace(/工作空间/g, "工作区")
@@ -1092,6 +1158,11 @@ export function createRuntimeOverlay(dictionary) {
       .replace(/([A-Za-z0-9])([\\u4e00-\\u9fff])/g, "$1 $2")
       .replace(/\\s{2,}/g, " ")
       .trim();
+
+    const turnSuffix = originalCore.trim().match(/,\\s+(\\d+)\\s+turns?$/);
+    if (turnSuffix) {
+      out = out.replace(/[，,]?\\s*\\d+\\s*(?:个)?(?:回合|轮(?:对话)?|转|圈|次|轮次)$/, "") + "，" + turnSuffix[1] + " 轮对话";
+    }
 
     if (isTitle || !/[.!?]$/.test(originalCore.trim())) {
       out = out.replace(/[。.]+$/, "").trim();
@@ -1152,6 +1223,21 @@ export function createRuntimeOverlay(dictionary) {
     }
   }
 
+  // Keep in sync with OBSOLETE_LEARNED_KEY_PATTERNS in auto-learned-dict.mjs.
+  const __OBSOLETE_LEARNED_KEY_PATTERNS = [
+    /^(?:Remove shortcut|Shortcut)\\s+\\S+\\s+for\\s+/,
+    /^Install\\s+\\S/,
+    /^Reset\\s+.+\\s+to\\s+default$/,
+    /,\\s+\\d+\\s+turns?$/,
+    /[a-z][a-z0-9+.-]*:\\/\\/|\\x60|(?:^|[\\s(])(?:~|\\.{1,2})?\\/[\\w.-]|[A-Za-z]:\\\\/i,
+    /[\\w-]+\\.(?:txt|md|log|json|ya?ml|toml|lock|vbs|bat|cmd|ps1|sh|py|js|mjs|cjs|ts|tsx|jsx|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\\b/i
+  ];
+  function __isObsoleteLearnedKey(k) {
+    if (typeof k !== "string" || __PROTECTED_BRAND_SET.has(k) || __OBSOLETE_LEARNED_KEY_PATTERNS.some((re) => re.test(k))) return true;
+    // A curated pattern rule wins over an earlier machine translation.
+    return patternTranslations.some(({ regex }) => { regex.lastIndex = 0; return regex.test(k); });
+  }
+
   async function __loadPersistedAutoDict() {
     let loadedAny = false;
     try {
@@ -1160,7 +1246,7 @@ export function createRuntimeOverlay(dictionary) {
         if (raw) {
           const parsed = JSON.parse(raw);
           for (const [k, v] of Object.entries(parsed || {})) {
-            if (typeof k === "string" && typeof v === "string" && !exactTranslations.has(k)) {
+            if (typeof k === "string" && typeof v === "string" && !exactTranslations.has(k) && !__isObsoleteLearnedKey(k)) {
               exactTranslations.set(k, v);
               loadedAny = true;
             }
@@ -1176,7 +1262,7 @@ export function createRuntimeOverlay(dictionary) {
           const data = await resp.json().catch(() => null);
           if (data && data.exact && typeof data.exact === "object") {
             for (const [k, v] of Object.entries(data.exact)) {
-              if (typeof k === "string" && typeof v === "string" && !exactTranslations.has(k)) {
+              if (typeof k === "string" && typeof v === "string" && !exactTranslations.has(k) && !__isObsoleteLearnedKey(k)) {
                 exactTranslations.set(k, v);
                 loadedAny = true;
               }
@@ -1234,6 +1320,8 @@ export function createRuntimeOverlay(dictionary) {
 
   globalThis.__AGY_ZHCN_AUTO_TRANSLATE__ = __translateAndLearnAsync;
   globalThis.__AGY_ZHCN_LOAD_SETTINGS__ = __loadZhcnSettings;
+  globalThis.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__ = __isEligibleForAutoTranslate;
+  globalThis.__AGY_ZHCN_TRANSLATE_VALUE__ = translateValue;
   globalThis.__AGY_ZHCN_LOOKUP__ = (text) => exactTranslations.get(text);
   globalThis.__AGY_ZHCN_PREPARE_ANTI_MT__ = __prepareAntiMtPayload;
   globalThis.__AGY_ZHCN_POLISH_ZH__ = __polishTranslatedZh;
@@ -1361,7 +1449,7 @@ export function createRuntimeOverlay(dictionary) {
             attributeName: attribute
           });
         }
-        if (__canAutoTranslateRuntime() && __isEligibleForAutoTranslate(current, element, false)) {
+        if (__canAutoTranslateRuntime() && __isEligibleForAutoTranslate(current, element, false, true)) {
           __translateAndLearnAsync(current, { isTitle: false }).then((zh) => {
             if (zh && element.getAttribute(attribute) === current) {
               element.setAttribute(attribute, zh);

@@ -46,7 +46,7 @@ Rules / 规则:
 2. **Page code never calls the network directly.** Supplementary translation goes only through the `agy-zhcn://translate` proxy in `src/lib/patcher.mjs`, which checks `onlineTranslate` first. Do not reintroduce direct `fetch("https://…")` or local translator ports in `createRuntimeOverlay`. 页面代码不得直接联网。
 3. **Translation rules never shrink by accident.** `npm run validate` fails if the exact or pattern count drops below `config/translation-baseline.json`. Raise the baseline after adding rules; never lower it to make validation pass. 词条数量只增不减。
 4. **Behaviour changes update the docs in the same commit**: README, `docs/ai-install.md`, the FAQ page and this file. 行为变化必须同步更新说明。
-5. **Releases are batched**: one release per client version or per week at most, not one per commit. 合并发版，不要一次提交发一个版本。
+5. **Each change set is released on its own**: after `npm test` and `npm run validate` pass, bump `package.json`, update `src/lib/release-notes.mjs` and `docs/changelog/`, then push a `v*` tag. 每批修改单独发版。
 
 ### Workflow
 
