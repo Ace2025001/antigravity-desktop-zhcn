@@ -323,7 +323,7 @@ export function createRuntimeOverlay(dictionary) {
     var trimmed = name.trim();
     if (__planNameMap[trimmed]) return __planNameMap[trimmed];
     var dictHit = exactTranslations.get(trimmed);
-    if (dictHit !== undefined && !/Pro\s+配额|Ultra\s+配额|限额/.test(dictHit)) return dictHit;
+    if (dictHit !== undefined && !/Pro\\s+配额|Ultra\\s+配额|限额/.test(dictHit)) return dictHit;
     return trimmed
       .replace(/\\bStarter Quota\\b/gi, "入门版配额")
       .replace(/\\bPro Quota\\b/gi, "专业版配额")
@@ -1424,9 +1424,10 @@ export function createRuntimeOverlay(dictionary) {
           return;
         }
       }
-      const effortOption = parent.closest("[data-testid='model-selector-effort-option'], [data-effort]");
-      if (effortOption) {
-        const effortMap = { Low: "低", Medium: "中", High: "高", Extra: "特高", Max: "极高", low: "低", medium: "中", high: "高" };
+      const effortTarget = parent.closest("[data-testid='model-selector-effort-option'], [data-effort], [data-testid='model-selector-trigger'], [data-testid='model-selector-effort-group']");
+      const isEffortBadge = !effortTarget && (parent.classList?.contains?.("opacity-70") && parent.parentElement?.closest?.("[data-testid='model-selector-trigger'], [data-testid='model-selector-item'], div[role='menuitem']"));
+      if (effortTarget || isEffortBadge) {
+        const effortMap = { Low: "低", Medium: "中", High: "高", Extra: "特高", Max: "极高", low: "低", medium: "中", high: "高", extra: "特高", max: "极高" };
         const trimmed = (rawVal || "").trim();
         if (effortMap[trimmed]) {
           node.nodeValue = rawVal.replace(trimmed, effortMap[trimmed]);

@@ -12844,9 +12844,19 @@
     "No scheduled tasks matching your search": "未找到匹配搜索的定时任务",
     "Thinking effort": "思考程度",
     "Thinking Effort": "思考程度",
-    "Controls how much time and quota the model spends reasoning before responding. Higher effort improves accuracy on hard problems, at the cost of slower responses and higher quota use.": "控制模型在回复前用于思考推理的时间与配额。提高思考程度可提升复杂问题的解答准确率，但会增加回复耗时并消耗更多配额。"
+    "Controls how much time and quota the model spends reasoning before responding. Higher effort improves accuracy on hard problems, at the cost of slower responses and higher quota use.": "控制模型在回复前用于思考推理的时间与配额。提高思考程度可提升复杂问题的解答准确率，但会增加回复耗时并消耗更多配额。",
+    "You are logged in using environment credentials and cannot sign out from the application.": "你使用的是环境凭据登录，无法从应用程序中退出。",
+    "Managed by organization": "由组织管理",
+    "Failed to parse quota metadata": "无法解析配额元数据",
+    "Rate limited": "已受配额限制",
+    "Antigravity does not support higher rate limits on this Google plan. Consider paid Pro and Ultra plans for higher limits.": "Antigravity 不支持在此 Google 方案下提升配额。请考虑购买付费 Pro 或 Ultra 方案以获取更高配额。"
   },
   "patterns": [
+    {
+      "source": "^Your plan's baseline quota will refresh on\\s+([0-9/: -]+(?:\\s+[AP]M)?)\\.\\s*You can upgrade to (?:a |an )?(.+?)(?:\\s+(or above|or higher))?\\s*(?:plans?\\s*)?(?:for|to (?:receive|get|unlock|access|enjoy))\\s+(?:higher|priority|expanded|increased|more)\\s+(?:rate\\s+)?(?:limits|quota)\\.\\s*(?:See|View) plans?\\.?$",
+      "target": "你的方案基线配额将于 $1 刷新。你可以升级至 $2 方案以获取更高配额。查看方案。",
+      "flags": "u"
+    },
     {
       "source": "^Select model with ([A-Za-z0-9+\\- /]{1,32})$",
       "flags": "u",
