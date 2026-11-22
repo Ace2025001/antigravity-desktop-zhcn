@@ -212,9 +212,7 @@ export function createRuntimeOverlay(dictionary) {
     ".monaco-editor",
     "[data-model-selector-badge]",
     "[data-model-selector-list]",
-    "[data-testid='model-selector-item']",
-    "[data-testid='model-selector-effort-group']",
-    "[data-testid='model-selector-effort-option']"
+    "[data-testid='model-selector-item']"
   ].join(",");
   const blockedAttributeSelector = [
     "script",
@@ -996,6 +994,7 @@ export function createRuntimeOverlay(dictionary) {
     "Netlify", "Railway", "Dropbox", "Databricks", "Auth0", "Arize AX", "Arize",
     "Orchestrator", "Gemini", "Claude", "Carbon", "Argon", "Hydrogen", "Tokens", "Token", "OAuth", "RBAC",
     "MCP", "SSO", "PAT", "CLI", "IDE", "SDK", "API", "WSL", "SSH", "JSON", "YAML", "HTML", "CSS",
+    "Google AI Pro", "Google AI Ultra", "Google AI Free", "Thinking effort",
     // Plugin marketplace / service names (src/lib/auto-learned-dict.mjs): keep as-is.
     ...${JSON.stringify(KEEP_ORIGINAL_NAMES)}
   ];
@@ -1227,6 +1226,7 @@ export function createRuntimeOverlay(dictionary) {
 
   // Keep in sync with OBSOLETE_LEARNED_KEY_PATTERNS in auto-learned-dict.mjs.
   const __OBSOLETE_LEARNED_KEY_PATTERNS = [
+    /^Thinking\\s+effort$/i,
     /^(?:Remove shortcut|Shortcut)\\s+\\S+\\s+for\\s+/,
     /^Install\\s+\\S/,
     /^Reset\\s+.+\\s+to\\s+default$/,
@@ -1420,6 +1420,25 @@ export function createRuntimeOverlay(dictionary) {
       if (sidecarBtn) {
         if (rawVal && rawVal.trim() === "New") {
           node.nodeValue = rawVal.replace("New", "新建");
+          stats.translatedTextNodes += 1;
+          return;
+        }
+      }
+      const effortOption = parent.closest("[data-testid='model-selector-effort-option'], [data-effort]");
+      if (effortOption) {
+        const effortMap = { Low: "低", Medium: "中", High: "高", Extra: "特高", Max: "极高", low: "低", medium: "中", high: "高" };
+        const trimmed = (rawVal || "").trim();
+        if (effortMap[trimmed]) {
+          node.nodeValue = rawVal.replace(trimmed, effortMap[trimmed]);
+          stats.translatedTextNodes += 1;
+          return;
+        }
+      }
+      const effortHeader = parent.closest("[data-testid='model-selector-effort-header']");
+      if (effortHeader) {
+        const trimmed = (rawVal || "").trim();
+        if (trimmed === "Thinking effort") {
+          node.nodeValue = rawVal.replace("Thinking effort", "思考程度");
           stats.translatedTextNodes += 1;
           return;
         }
@@ -2067,6 +2086,20 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /var ([a-zA-Z0-9_$]+)=\(\{option:a,iconOnly:b=!1\}\)\s*=>\s*\{var c=([a-zA-Z0-9_$]+)\(\);return a\.tagTitle&&a\.tagDescription\?B\.createElement\(B\.Fragment,null,B\.createElement\("div",\{"data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1\.5 text-sm\${b\?" h-4 flex-none":""}`\},!b&&B\.createElement\("span",null,a\.tagTitle\),B\.createElement\(([a-zA-Z0-9_$]+),\{name:"info",className:"h-3 w-3 flex-none"\}\)\),B\.createElement\(([a-zA-Z0-9_$]+),\{id:c\},B\.createElement\("div",\{className:"max-w-\[200px\]"\},a\.tagDescription\)\)\):a\.tagTitle\?B\.createElement\("div",\s*\{className:"bg-secondary rounded-full px-1\.5 text-sm"\},a\.tagTitle\):null\};/g,
     'var $1=({option:a,iconOnly:b=!1})=>{var c=$2(),tT=({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription));return a.tagTitle&&a.tagDescription?B.createElement(B.Fragment,null,B.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-sm${b?" h-4 flex-none":""}`},!b&&B.createElement("span",{"data-model-selector-badge":"true"},tT),B.createElement($3,{name:"info",className:"h-3 w-3 flex-none"})),B.createElement($4,{id:c},B.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?B.createElement("div",\n{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-sm"},tT):null};'
   );
+  // 模型思考程度二级菜单标题、说明与选项原生汉化
+  sourceText = sourceText.replace(
+    'function iW(a,b,c){if(b=cW.get(b))if(c=(c=fW(b,c))?b.groupsByKey.get(c.groupKey)?.labels.get(a):void 0)return c;return(Object.hasOwn(aW,a)?aW[a]:void 0)??a}',
+    'function iW(a,b,c){var _r;if(b=cW.get(b))if(c=(c=fW(b,c))?b.groupsByKey.get(c.groupKey)?.labels.get(a):void 0)_r=c;if(_r===void 0)_r=(Object.hasOwn(aW,a)?aW[a]:void 0)??a;return ({low:"低",medium:"中",high:"高",xhigh:"特高",max:"极高",Low:"低",Medium:"中",High:"高",Extra:"特高",Max:"极高"}[_r]||_r)}'
+  );
+  sourceText = sourceText.replaceAll(
+    'E.createElement("span",{className:"whitespace-nowrap"},"Thinking effort")',
+    'E.createElement("span",{className:"whitespace-nowrap"},"思考程度")'
+  );
+  sourceText = sourceText.replaceAll(
+    '"Controls how much time and quota the model spends reasoning before responding. Higher effort improves accuracy on hard problems, at the cost of slower responses and higher quota use."',
+    '"控制模型在回复前用于思考推理的时间与配额。提高思考程度可提升复杂问题的解答准确率，但会增加回复耗时并消耗更多配额。"'
+  );
+
   sourceText = sourceText.replaceAll('function S2b(a){switch(a){case "system":return"System UI";case "inter":return"Inter";case "google-sans":return"Google Sans"}}', 'function S2b(a){switch(a){case "system":return"系统默认";case "inter":return"Inter";case "google-sans":return"Google Sans"}}');
   sourceText = sourceText.replaceAll('label:"Screen Reader Mode",description:"Optimize the interface and terminal output for screen readers."', 'label:"屏幕阅读器模式",description:"针对屏幕阅读器优化界面和终端输出。"');
   sourceText = sourceText.replaceAll('label:"Conversation Width",description:"Configure the maximum width of the conversation panel."', 'label:"对话宽度",description:"配置对话面板的最大显示宽度。"');

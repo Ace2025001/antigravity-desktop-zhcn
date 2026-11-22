@@ -12503,9 +12503,6 @@
     "Account connection was not completed.": "账户连接未完成。",
     "Render display math in leqno style (left-justified tags).": "以 leqno 风格渲染独立公式（公式编号左对齐）。",
     "Trust the input, enabling all HTML features such as \\url.": "信任输入内容，启用所有 HTML 特性（例如 \\url）。",
-    "Google AI Pro": "Google AI 专业版",
-    "Google AI Ultra": "Google AI 旗舰版",
-    "Google AI Free": "Google AI 免费版",
     "Fixing localization and UI bugs": "修复本地化与界面问题",
     "1 update": "1 条进度更新",
     "2 updates": "2 条进度更新",
@@ -12844,7 +12841,10 @@
     "Add scheduled task": "新建定时任务",
     "No scheduled tasks yet": "暂无定时任务",
     "No automations matching your search": "未找到匹配搜索的自动化",
-    "No scheduled tasks matching your search": "未找到匹配搜索的定时任务"
+    "No scheduled tasks matching your search": "未找到匹配搜索的定时任务",
+    "Thinking effort": "思考程度",
+    "Thinking Effort": "思考程度",
+    "Controls how much time and quota the model spends reasoning before responding. Higher effort improves accuracy on hard problems, at the cost of slower responses and higher quota use.": "控制模型在回复前用于思考推理的时间与配额。提高思考程度可提升复杂问题的解答准确率，但会增加回复耗时并消耗更多配额。"
   },
   "patterns": [
     {
