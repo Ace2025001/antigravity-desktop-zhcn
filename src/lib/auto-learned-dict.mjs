@@ -13,6 +13,8 @@ export const OBSOLETE_LEARNED_KEY_PATTERNS = [
   /^Install\s+\S/,
   /^Reset\s+.+\s+to\s+default$/,
   /,\s+\d+\s+turns?$/,
+  /^Thinking\s+effort$/i,
+  /^GitHub\s+Release\s+/i,
   /[a-z][a-z0-9+.-]*:\/\/|`|(?:^|[\s(])(?:~|\.{1,2})?\/[\w.-]|[A-Za-z]:\\/i,
   /[\w-]+\.(?:txt|md|log|json|ya?ml|toml|lock|vbs|bat|cmd|ps1|sh|py|js|mjs|cjs|ts|tsx|jsx|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\b/i
 ];
@@ -24,7 +26,8 @@ export const KEEP_ORIGINAL_NAMES = [
   "CrowdStrike Falcon", "Wispr Flow", "Grafana Cloud", "Better Stack", "Chrome DevTools", "Android CLI",
   "Atlassian Teamwork Graph CLI", "PandaDoc", "Base44", "Intercom", "Mobbin", "Bigin", "Browserbase",
   "Granola", "Stripe", "Wix", "Semrush", "Context7", "Cloudflare", "CodeRabbit", "Firebase", "WordPress",
-  "Gmail", "Gemini API", "monday.com", "Science", "Robotics"
+  "Gmail", "Gemini API", "monday.com", "Science", "Robotics",
+  "Google AI Pro", "Google AI Ultra", "Google AI Free", "Thinking effort"
 ];
 const KEEP_ORIGINAL_SET = new Set(KEEP_ORIGINAL_NAMES);
 

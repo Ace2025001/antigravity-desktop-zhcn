@@ -2135,7 +2135,9 @@ test("v2.3.11: comprehensive audit for deep menus, variables, timeline and marke
   // 2. 账户与方案名称
   assert.equal(current.exact["Your Plan:"], "你的方案：");
   assert.equal(current.exact["Antigravity Starter Quota"], "Antigravity 入门版配额");
-  assert.equal(current.exact["Google AI Pro"], "Google AI 专业版");
+  assert.equal(current.exact["Google AI Pro"], undefined);
+  assert.equal(current.exact["Thinking effort"], "思考程度");
+  assert.equal(current.exact["Controls how much time and quota the model spends reasoning before responding. Higher effort improves accuracy on hard problems, at the cost of slower responses and higher quota use."], "控制模型在回复前用于思考推理的时间与配额。提高思考程度可提升复杂问题的解答准确率，但会增加回复耗时并消耗更多配额。");
 
   // 3. 首次启动弹窗与欢迎登录页
   assert.equal(current.exact["Welcome to Antigravity!"], "欢迎使用 Antigravity！");
@@ -2723,5 +2725,43 @@ test("Case 145: 自动化与定时任务界面空状态与新建按钮本地化"
   assert.ok(localized.includes('"data-testid":"sidecar-new-button",paddingClassName:"pl-2.5 pr-3",icon:D.createElement(Nq,{name:"add",size:14})},"新建")))'), "New button text must be localized to '新建'");
   assert.ok(localized.includes('"aria-label":t.emptyMessageSingular==="automation"?"新建自动化":"新建定时任务"'), "Aria-label must be localized");
   assert.ok(localized.includes('emptyMessage:O?`未找到匹配搜索的'), "List empty message must be localized");
+});
+
+test("Case 146: 模型思考程度选项、说明与方案名称 Google AI Pro 本地化规范", async () => {
+  const dictionary = await loadDomTranslations();
+
+  // 1. 词典精确命中与品牌保护验证
+  assert.equal(translateDictionaryValue("Thinking effort", dictionary), "思考程度");
+  assert.equal(translateDictionaryValue("Thinking Effort", dictionary), "思考程度");
+  assert.equal(
+    translateDictionaryValue(
+      "Controls how much time and quota the model spends reasoning before responding. Higher effort improves accuracy on hard problems, at the cost of slower responses and higher quota use.",
+      dictionary
+    ),
+    "控制模型在回复前用于思考推理的时间与配额。提高思考程度可提升复杂问题的解答准确率，但会增加回复耗时并消耗更多配额。"
+  );
+  // Google AI Pro 保持品牌原文，不被误译为专业版
+  assert.equal(translateDictionaryValue("Google AI Pro", dictionary), null);
+
+  // 2. 静态 bundle 替换验证
+  const sampleSource = [
+    'function iW(a,b,c){if(b=cW.get(b))if(c=(c=fW(b,c))?b.groupsByKey.get(c.groupKey)?.labels.get(a):void 0)return c;return(Object.hasOwn(aW,a)?aW[a]:void 0)??a}',
+    'E.createElement("span",{className:"whitespace-nowrap"},"Thinking effort")',
+    'E.createElement(zI,{id:y},"Controls how much time and quota the model spends reasoning before responding. Higher effort improves accuracy on hard problems, at the cost of slower responses and higher quota use.")'
+  ].join("\n");
+
+  const localized = createLocalizedBundle(Buffer.from(sampleSource, "utf8"), dictionary, { skipCoverage: true }).buffer.toString("utf8");
+
+  assert.ok(localized.includes('low:"低",medium:"中",high:"高"'), "iW mapping must localize low, medium, high to Chinese");
+  assert.ok(localized.includes('E.createElement("span",{className:"whitespace-nowrap"},"思考程度")'), "Thinking effort must be localized to 思考程度");
+  assert.ok(localized.includes("控制模型在回复前用于思考推理的时间与配额。提高思考程度可提升复杂问题的解答准确率，但会增加回复耗时并消耗更多配额。"), "Tooltip text must be localized");
+
+  // 3. 运行时 DOM 覆盖层验证
+  const overlayScript = createRuntimeOverlay(dictionary);
+  const blockedMatch = overlayScript.match(/const blockedSelector = \[([\s\S]*?)\]\.join/);
+  assert.ok(blockedMatch, "blockedSelector definition found");
+  assert.ok(!blockedMatch[1].includes("model-selector-effort-group"), "Effort group should not be in blockedSelector");
+  assert.ok(!blockedMatch[1].includes("model-selector-effort-option"), "Effort option should not be in blockedSelector");
+  assert.ok(overlayScript.includes("model-selector-effort-option"), "DOM overlay must target effort options");
 });
 
