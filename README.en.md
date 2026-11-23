@@ -9,7 +9,9 @@ A **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google 
 
 [中文说明](README.md) · [Setup guides (Chinese)](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [Guide for AI agents](docs/ai-install.md)
 
-![Antigravity Desktop in Simplified Chinese](docs/images/antigravity-zhcn-preview.png)
+| Sign-in | Agent run | Settings |
+|---|---|---|
+| ![Antigravity sign-in page in Simplified Chinese](docs/images/zhcn-login.jpg) | ![Antigravity agent run steps in Simplified Chinese](docs/images/zhcn-agent-run.jpg) | ![Antigravity general settings in Simplified Chinese](docs/images/zhcn-settings-general.jpg) |
 
 ## Download and use
 
@@ -47,7 +49,7 @@ The first run asks two questions; press Enter to accept the recommended values. 
 
 | Item | Notes |
 |---|---|
-| Windows x64 | Tested on Antigravity Desktop 2.32.2 and 2.33.0; follows client updates automatically |
+| Windows x64 | Tested on Antigravity Desktop 2.32.2, 2.33.0 and 2.34.0; follows client updates automatically |
 | Apple Silicon macOS | Keeps the official app and builds a locally signed Chinese copy; Intel Macs not verified |
 | Scope | Antigravity Desktop client only — **not** the Antigravity IDE extension |
 | Compatibility | The client's file structure is checked before every run; new versions are adapted automatically when possible, otherwise it stops with a message instead of forcing changes |
