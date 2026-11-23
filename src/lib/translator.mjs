@@ -1789,7 +1789,8 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   );
   sourceText = sourceText.replace(
     'return c>0?c+d===1?"file":"files":d>0?d===1?"artifact":"artifacts":""',
-    'return c>0?"个文件":d>0?"个工件":""'
+    // No count is rendered next to this noun ("Edited files"), so no measure word.
+    'return c>0?"文件":d>0?"工件":""'
   );
   sourceText = sourceText.replace(
     'return a?/^running\\b/i.test(a)?a.replace(/^running\\b/i,"Running"):`Running ${dea(a)}`:"Running command"}',

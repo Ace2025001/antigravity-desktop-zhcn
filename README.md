@@ -4,16 +4,21 @@
 [![下载量](https://img.shields.io/github/downloads/Ace2025001/antigravity-desktop-zhcn/total?label=%E4%B8%8B%E8%BD%BD%E9%87%8F)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases)
 [![平台](https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%20x64%20%7C%20macOS%20Apple%20%E8%8A%AF%E7%89%87-blue)](#支持哪些系统和版本)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![已适配客户端](https://img.shields.io/badge/%E5%B7%B2%E9%80%82%E9%85%8D%E5%AE%A2%E6%88%B7%E7%AB%AF-2.34.0-brightgreen)](#支持范围)
 
 Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉化包（Antigravity 中文语言包）。Windows 和 Apple 芯片 Mac 通用，解压即用，在客户端里点更新后自动跟着重新汉化，随时可以一键恢复英文。
 
 [安装教程](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [常见问题](https://ace2025001.github.io/antigravity-desktop-zhcn/faq/) · [更新日志](https://ace2025001.github.io/antigravity-desktop-zhcn/changelog/) · [AI 助手安装指南](docs/ai-install.md) · [English](README.en.md)
 
-![Antigravity Desktop 简体中文界面汉化效果预览](docs/images/antigravity-zhcn-preview.png)
+| 登录页 | 智能体执行过程 | 设置 |
+|---|---|---|
+| ![Antigravity 汉化后的登录页：欢迎使用 Antigravity、通过 Google 继续](docs/images/zhcn-login.jpg) | ![Antigravity 汉化后的智能体执行过程：任务清单、运行测试、编辑文件](docs/images/zhcn-agent-run.jpg) | ![Antigravity 汉化后的通用设置：界面布局、全局权限、输入框](docs/images/zhcn-settings-general.jpg) |
 
 ## 下载与使用
 
 ### [⬇ 下载完整汉化包（Windows + Mac）](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip)
+
+> 觉得好用的话，请点右上角 ⭐ **Star**。星越多，越容易被搜到，也能让更多人用上中文版。
 
 1. 下载后右键“全部解压缩”，不要在压缩包里直接运行。
 2. Windows 打开 `win启动`，Mac 打开 `mac启动`。
@@ -89,7 +94,7 @@ antigravity汉化包/
 
 | 项目 | 说明 |
 |---|---|
-| Windows x64 | 已在 Antigravity Desktop 2.32.2、2.33.0 实测，支持更新后自动汉化 |
+| Windows x64 | 已在 Antigravity Desktop 2.32.2、2.33.0、2.34.0 实测，支持更新后自动汉化 |
 | Apple 芯片 Mac | 保留官方原版，另建一份本地签名的中文副本；Intel Mac 未验证 |
 | 适用对象 | 只适用于 Antigravity Desktop 桌面客户端，**不是** Antigravity IDE 扩展 |
 | 兼容方式 | 每次汉化前都会检查客户端文件结构；新版本会先尝试自动适配，结构对不上就停下并提示，不会硬改 |
@@ -114,7 +119,7 @@ antigravity汉化包/
 
 ### 支持哪些系统和版本？
 
-Windows x64（已在 Antigravity Desktop 2.32.2、2.33.0 实测）和 Apple 芯片 Mac，Intel Mac 未验证。只适用于 Antigravity Desktop 桌面客户端，不是 Antigravity IDE 扩展。
+Windows x64（已在 Antigravity Desktop 2.32.2、2.33.0、2.34.0 实测）和 Apple 芯片 Mac，Intel Mac 未验证。只适用于 Antigravity Desktop 桌面客户端，不是 Antigravity IDE 扩展。
 
 ### 怎么更新语言包？
 

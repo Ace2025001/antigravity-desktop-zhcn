@@ -2765,3 +2765,9 @@ test("Case 146: 模型思考程度选项、说明与方案名称 Google AI Pro �
   assert.ok(overlayScript.includes("model-selector-effort-option"), "DOM overlay must target effort options");
 });
 
+test("文件编辑分组标题不带量词：原文没有数字，不能出现“已编辑 个文件”", () => {
+  const source = 'function h1b(a,b){var c=1,d=0;return c>0?c+d===1?"file":"files":d>0?d===1?"artifact":"artifacts":""}';
+  const out = createLocalizedBundle(Buffer.from(source, "utf8"), { exact: {}, patterns: [], fragments: [] }).buffer.toString("utf8");
+  assert.ok(out.includes('return c>0?"文件":d>0?"工件":""'), out);
+  assert.ok(!out.includes("个文件") && !out.includes("个工件"));
+});
