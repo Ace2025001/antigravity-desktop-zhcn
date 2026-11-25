@@ -13097,7 +13097,7 @@
       "flags": "u"
     },
     {
-      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(.+)$",
+      "source": "^(.+?)[,，]\\s*[Rr]esets in\\s*(.+?)\\.?$",
       "target": "$1，将在 $2 后重置",
       "flags": "u"
     },
@@ -13142,7 +13142,7 @@
       "flags": "u"
     },
     {
-      "source": "^[Rr]esets in\\s*(.+)$",
+      "source": "^[Rr]esets in\\s*(.+?)\\.?$",
       "target": "将在 $1 后重置",
       "flags": "u"
     },
@@ -28522,7 +28522,7 @@
       "flags": "u"
     },
     {
-      "source": "^Individual quota reached\\. Please upgrade your subscription to increase your limits\\. Resets in\\s+(.+)$",
+      "source": "^Individual quota reached\\. Please upgrade your subscription to increase your limits\\. Resets in\\s+(.+?)\\.?$",
       "target": "已达到个人配额上限。请升级订阅以提高配额。配额将于 $1 后重置。",
       "flags": "u"
     },

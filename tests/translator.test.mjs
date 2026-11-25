@@ -2996,3 +2996,294 @@ test("Case 151: 打开 SSH 主机弹窗全量源码级汉化与空列表自然�
     else process.env.AGY_LANGUAGE_PACK = savedPack;
   }
 });
+
+test("Case 152: 2.35.1 React 压缩名变体 (E.useEffect) 仍可挂载对话标题自动翻译监听器", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+    const sample2351 =
+      'var sjc=()=>{var a=TQ(),b=tl(),c=aS(),d=BS(),{updateConversationAnnotations:f}=wA(),g=vE(),h=AS();(0,E.useEffect)(()=>qjc({subscribeToRoute:k=>a.subscribe("onResolved",k),getCascadeIdParam:c,getBattleIdParam:d,dispatch:b.dispatch,deps:{updateConversationAnnotations:f,recordError:g,getStartingConversationIds:()=>Uwa(b.getState())}}),[a,b,c,d,f,g]);return h?E.createElement(rjc,{battleId:h}):null};';
+    const localized = createLocalizedBundle(Buffer.from(sample2351, "utf8"), current, { skipCoverage: true }).buffer.toString("utf8");
+    assert.ok(localized.includes("globalThis.__AGY_ZHCN_BIND_TITLE_WATCHER__?.(b,f);return h?"));
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});
+
+test("Case 153: 配额重置连写时长格式修复与全端本地命名/原始标识全面保护", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+
+    // 1. 配额提示连写时长与多余英文句号彻底修复（Node 侧与运行时沙箱侧）
+    assert.equal(
+      translateDictionaryValue("Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 1h23m29s.", current),
+      "已达到个人配额上限。请升级订阅以提高配额。配额将于 1 小时 23 分钟 29 秒后重置。"
+    );
+    assert.equal(
+      translateDictionaryValue("Individual quota reached. Please upgrade your subscription to increase your limits. Resets in <1m.", current),
+      "已达到个人配额上限。请升级订阅以提高配额。配额将于 1 分钟内重置。"
+    );
+    assert.equal(translateDictionaryValue("Resets in 1h23m29s.", current), "将在 1 小时 23 分钟 29 秒后重置");
+    assert.equal(translateDictionaryValue("Weekly limit, resets in 3d18h.", current), "每周配额，将在 3 天 18 小时后重置");
+    assert.equal(translateDictionaryValue("Model unavailable, retrying in 1m30s...", current), "模型暂不可用，将在 1 分钟 30 秒后重试...");
+    assert.equal(translateDictionaryValue("Select project, current: InteractiveSurface-Assets", current), "选择项目，当前：InteractiveSurface-Assets");
+    assert.equal(translateDictionaryValue("Select project, current: No Project", current), "选择项目，当前：未选择项目");
+
+    // 2. 历史误学词条自动失效清洗
+    const { isObsoleteLearnedKey } = await import("../src/lib/auto-learned-dict.mjs");
+    assert.equal(isObsoleteLearnedKey("InteractiveSurface-Assets"), true);
+    assert.equal(isObsoleteLearnedKey("--text-muted"), true);
+    assert.equal(isObsoleteLearnedKey("\".mode-tab\""), true);
+    assert.equal(isObsoleteLearnedKey("Ace2025001/antigravity-desktop-zhcn#28 (Unknown)"), true);
+    assert.equal(isObsoleteLearnedKey('Searching "openai/codex" custom model provider'), true);
+
+    // 3. 运行时沙箱全面保护守卫校验
+    const overlay = createRuntimeOverlay(current);
+    const sandbox = {
+      globalThis: {},
+      window: { location: { protocol: "https:" } },
+      document: {
+        readyState: "loading",
+        documentElement: { lang: "en" },
+        addEventListener: () => {},
+      },
+      Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 },
+      MutationObserver: class { observe() {} },
+      fetch: () => Promise.resolve({ ok: false }),
+      setTimeout,
+      clearTimeout,
+      Set,
+      Map,
+      WeakMap,
+      RegExp,
+      Object,
+      Array,
+      String,
+      Number,
+      Boolean,
+      Math,
+      Date,
+    };
+    sandbox.globalThis = sandbox;
+    new vm.Script(overlay).runInContext(vm.createContext(sandbox));
+
+    assert.equal(
+      sandbox.__AGY_ZHCN_TRANSLATE_VALUE__("Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 1h23m10s."),
+      "已达到个人配额上限。请升级订阅以提高配额。配额将于 1 小时 23 分钟 10 秒后重置。"
+    );
+    assert.equal(sandbox.__AGY_ZHCN_TRANSLATE_DUR__("1h23m29s."), "1 小时 23 分钟 29 秒");
+    assert.equal(sandbox.__AGY_ZHCN_TRANSLATE_DUR__("500ms"), "500 毫秒");
+
+    const isProtected = sandbox.__AGY_ZHCN_IS_PROTECTED_ELEMENT__;
+    const isEligible = sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__;
+    const mkEl = (testids, extra = {}) => ({
+      nodeType: 1,
+      textContent: extra.textContent ?? "",
+      parentElement: extra.parentElement ?? null,
+      previousElementSibling: extra.previousElementSibling ?? null,
+      getAttribute: (name) => (name === "data-testid" ? testids[0] ?? null : extra.attrs?.[name] ?? null),
+      closest: (sel) => {
+        for (const id of testids) {
+          if (sel.includes(`[data-testid='${id}']`)) return {};
+        }
+        if (extra.classes) {
+          for (const cls of extra.classes) {
+            if (sel.includes(cls)) return {};
+          }
+        }
+        if (extra.tag && sel.split(",").some((s) => s.trim() === extra.tag || s.trim().endsWith(` ${extra.tag}`))) {
+          return {};
+        }
+        if (sel.includes("[data-testid^='settings-nav-item-']") && testids.some((id) => id.startsWith("settings-nav-item-"))) {
+          return { parentElement: extra.navRowWrap ?? null };
+        }
+        if (sel.includes("[data-testid='project-customizations-workspace-filter'] option") && extra.wsValue !== undefined) {
+          return { value: extra.wsValue, getAttribute: () => extra.wsValue };
+        }
+        return null;
+      },
+    });
+
+    // 项目名保护 vs 固定 UI 按钮放行
+    const projHeader = mkEl(["project-header"]);
+    const projItem = mkEl(["project-selector-item"]);
+    const projItemSettings = mkEl(["project-selector-item", "project-selector-item-settings"]);
+    const projTriggerSelected = mkEl(["project-selector-trigger"], { textContent: "InteractiveSurface-Assets" });
+    const projTriggerPlaceholder = mkEl(["project-selector-trigger"], { textContent: "No project selected" });
+    assert.equal(isProtected(projHeader, false, "Docs"), true);
+    assert.equal(isProtected(projItem, false, "Tools"), true);
+    assert.equal(isProtected(projItemSettings, false, "Project Settings"), false);
+    assert.equal(isProtected(projTriggerSelected, false, "InteractiveSurface-Assets"), true);
+    assert.equal(isProtected(projTriggerPlaceholder, false, "No project selected"), false);
+    assert.equal(isEligible("InteractiveSurface-Assets", projHeader, false), false);
+
+    // 设置左侧栏 Projects 分组保护 vs 常规设置放行
+    const navInProjects = mkEl(["settings-nav-item-Assets"], {
+      navRowWrap: { parentElement: { previousElementSibling: { textContent: "Projects" } } },
+    });
+    const navInSettings = mkEl(["settings-nav-item-Account"], {
+      navRowWrap: { parentElement: { previousElementSibling: { textContent: "Settings" } } },
+    });
+    assert.equal(isProtected(navInProjects, false, "Assets"), true);
+    assert.equal(isProtected(navInSettings, false, "Account"), false);
+
+    // 工作区筛选仅保护真实工作区项，放行 All Workspaces
+    assert.equal(isProtected(mkEl([], { wsValue: "MyWorkspace" }), false, "MyWorkspace"), true);
+    assert.equal(isProtected(mkEl([], { wsValue: "all" }), false, "All Workspaces"), false);
+
+    // 文件树真实节点受保护，工作区折叠标题放行
+    const fileTreeNode = mkEl([], { previousElementSibling: { getAttribute: (k) => (k === "data-testid" ? "file-tree-node-icon" : null) } });
+    const fileTreeHeader = mkEl(["tab-file-tree-sidebar"]);
+    assert.equal(isProtected(fileTreeNode, false, "Scripts"), true);
+    assert.equal(isProtected(fileTreeHeader, false, "Workspaces"), false);
+
+    // 插件详情标题、MCP 服务器名、分支名、文件名与引用芯片保护，MCP 操作按钮放行
+    assert.equal(isProtected(mkEl(["plugin-detail"], { tag: "h1" }), false, "Linear"), true);
+    assert.equal(isProtected(mkEl(["mcp-server-row"], { classes: [".font-medium"] }), false, "Tools"), true);
+    assert.equal(isProtected(mkEl(["mcp-server-row"], { tag: "button" }), false, "Configure"), false);
+    assert.equal(isProtected(mkEl(["branch-pill-label"]), false, "main"), true);
+    assert.equal(isProtected(mkEl(["file-title-name"]), false, "README.md"), true);
+
+    // 回复气泡、产物面板与搜索查询禁止在线翻译
+    assert.equal(isEligible("Summary of recent edits and tool results.", mkEl(["agent-response"]), false), false);
+    assert.equal(isEligible("Implementation plan overview for the project.", mkEl(["artifact-view"]), false), false);
+    assert.equal(isEligible('Searching "openai/codex" custom model provider', null, false), false);
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});
+
+test("Case 154: 手动重命名对话永久保英文，且支持独立关闭 autoTranslateTitles 开关", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+
+    // 1. handleRename 源码挂载点验证
+    const sampleHandleRename =
+      'aa=(0,E.useCallback)(Z=>{Z?.stopPropagation();R({pinned:!1},"unpin")},[R,r]),Y=(0,E.useCallback)(async Z=>{var ba=e,oa=e;try{let qa=oa(await ba(v({cascadeId:a,annotations:{title:Z},onError:{reportedByCaller:!0}})));if(!qa.ok)throw c(qa.error)}finally{ba()}},[a,v,n,c]);';
+    const localized = createLocalizedBundle(Buffer.from(sampleHandleRename, "utf8"), current, { skipCoverage: true }).buffer.toString("utf8");
+    assert.ok(localized.includes("globalThis.__AGY_ZHCN_RECORD_MANUAL_TITLE__?.(a,Z);var ba=e"));
+
+    const overlay = createRuntimeOverlay(current);
+
+    // 2. 场景 A：autoTranslateTitles=true，但 conv-1 被手动改名为 "API Refactor"，不应被翻译；conv-2 正常翻译
+    const makeSandbox = async (settingsPayload) => {
+      const sentQueries = [];
+      const postedManual = [];
+      const sb = {
+        globalThis: {},
+        window: { location: { protocol: "https:" } },
+        document: { readyState: "loading", documentElement: { lang: "en" }, addEventListener: () => {} },
+        Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 },
+        MutationObserver: class { observe() {} },
+        fetch: async (url, opts) => {
+          const u = String(url);
+          if (u === "agy-zhcn://settings") return { ok: true, json: async () => settingsPayload };
+          if (u === "agy-zhcn://manual-titles") {
+            if (opts?.method === "POST") postedManual.push(JSON.parse(opts.body));
+            return { ok: true, json: async () => ({ ok: true, ids: [], titles: [] }) };
+          }
+          if (u.startsWith("agy-zhcn://translate?q=")) {
+            const q = decodeURIComponent(u.slice("agy-zhcn://translate?q=".length));
+            sentQueries.push(q);
+            return { ok: true, json: async () => ({ ok: true, translated: `译_${q}` }) };
+          }
+          return { ok: false };
+        },
+        setTimeout,
+        clearTimeout,
+        Set,
+        Map,
+        WeakMap,
+        RegExp,
+        Object,
+        Array,
+        String,
+        Number,
+        Boolean,
+        Math,
+        Date,
+        Promise,
+      };
+      sb.globalThis = sb;
+      new vm.Script(overlay).runInContext(vm.createContext(sb));
+      await sb.__AGY_ZHCN_LOAD_SETTINGS__();
+      return { sb, sentQueries, postedManual };
+    };
+
+    const { sb: sbA, sentQueries: sentA, postedManual } = await makeSandbox({
+      onlineTranslate: true,
+      autoTranslateTitles: true,
+      titleWriteBack: false,
+    });
+    sbA.__AGY_ZHCN_RECORD_MANUAL_TITLE__("conv-1", "API Refactor");
+    assert.deepEqual(postedManual, [{ cascadeId: "conv-1", title: "API Refactor" }]);
+
+    const storeA = {
+      getState: () => ({
+        trajectorySummaries: {
+          summaries: {
+            "conv-1": { annotations: { title: "API Refactor" } },
+            "conv-2": { annotations: { title: "Deploy Production" } },
+          },
+        },
+      }),
+      subscribe: () => () => {},
+    };
+    sbA.__AGY_ZHCN_BIND_TITLE_WATCHER__(storeA, null);
+    await new Promise((r) => setTimeout(r, 20));
+    assert.equal(sentA.includes("API Refactor"), false, "手动重命名的英文标题绝不自动翻译");
+    assert.equal(sentA.includes("Deploy Production"), true, "AI 自动生成的英文标题仍正常自动汉化");
+
+    const mkConvRowTitle = (cid) => ({
+      nodeType: 1,
+      textContent: "API Refactor",
+      getAttribute: () => null,
+      closest: (sel) => {
+        if (sel.includes("[data-testid^='conversation-row-'][data-cascade-id]")) {
+          return { getAttribute: (k) => (k === "data-cascade-id" ? cid : null) };
+        }
+        if (sel.includes(".truncate")) return {};
+        return null;
+      },
+    });
+    assert.equal(sbA.__AGY_ZHCN_IS_PROTECTED_ELEMENT__(mkConvRowTitle("conv-1"), false, "API Refactor"), true);
+
+    // 3. 场景 B：关闭 autoTranslateTitles=false 后，连普通新英文对话也不自动翻译且 DOM 受保护
+    const { sb: sbB, sentQueries: sentB } = await makeSandbox({
+      onlineTranslate: true,
+      autoTranslateTitles: false,
+      titleWriteBack: false,
+    });
+    const storeB = {
+      getState: () => ({
+        trajectorySummaries: {
+          summaries: {
+            "conv-3": { summary: "Fix Payment Bug" },
+          },
+        },
+      }),
+      subscribe: () => () => {},
+    };
+    sbB.__AGY_ZHCN_BIND_TITLE_WATCHER__(storeB, null);
+    await new Promise((r) => setTimeout(r, 20));
+    assert.equal(sentB.length, 0, "关闭标题汉化开关后不再发送任何标题去翻译");
+    const breadcrumbEl = {
+      nodeType: 1,
+      textContent: "Fix Payment Bug",
+      getAttribute: () => null,
+      closest: (sel) => (sel.includes("breadcrumb-segment") ? {} : null),
+    };
+    assert.equal(sbB.__AGY_ZHCN_IS_PROTECTED_ELEMENT__(breadcrumbEl, false, "Fix Payment Bug"), true);
+    assert.equal(sbB.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Manage workspace rules", null, false), true, "界面其他补译仍正常开启");
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});

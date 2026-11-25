@@ -60,10 +60,11 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             if (globalThis.__agyZhcnSettingsCache && now - globalThis.__agyZhcnSettingsCache.at < 3000) {
                 return globalThis.__agyZhcnSettingsCache.value;
             }
-            const value = { onlineTranslate: true, titleWriteBack: false };
+            const value = { onlineTranslate: true, autoTranslateTitles: true, titleWriteBack: false };
             try {
                 const raw = JSON.parse(await fsPromises.readFile(path.join(path.dirname(getAutoDictPath()), 'settings.json'), 'utf8'));
                 if (typeof raw.onlineTranslate === 'boolean') value.onlineTranslate = raw.onlineTranslate;
+                if (typeof raw.autoTranslateTitles === 'boolean') value.autoTranslateTitles = raw.autoTranslateTitles;
                 if (typeof raw.titleWriteBack === 'boolean') value.titleWriteBack = raw.titleWriteBack;
             } catch (_settingsErr) {}
             globalThis.__agyZhcnSettingsCache = { at: now, value };
@@ -75,6 +76,39 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                 return new Response(JSON.stringify(await getZhcnSettings()), {
                     status: 200,
                     headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }
+                });
+            }
+            if (reqUrl.hostname === 'manual-titles') {
+                const manualPath = path.join(path.dirname(getAutoDictPath()), 'manual-titles.json');
+                let state = { ids: [], titles: [] };
+                try {
+                    const raw = JSON.parse(await fsPromises.readFile(manualPath, 'utf8'));
+                    if (Array.isArray(raw.ids)) state.ids = raw.ids.filter((x) => typeof x === 'string' && x.trim());
+                    if (Array.isArray(raw.titles)) state.titles = raw.titles.filter((x) => typeof x === 'string' && x.trim());
+                } catch (_mErr) {}
+                if (request.method === 'POST') {
+                    const body = await request.json().catch(() => ({}));
+                    const cid = typeof body.cascadeId === 'string' ? body.cascadeId.trim() : '';
+                    const title = typeof body.title === 'string' ? body.title.trim() : '';
+                    let changed = false;
+                    if (cid && !state.ids.includes(cid)) { state.ids.push(cid); changed = true; }
+                    if (title && !state.titles.includes(title)) { state.titles.push(title); changed = true; }
+                    if (state.ids.length > 2000) state.ids = state.ids.slice(-2000);
+                    if (state.titles.length > 2000) state.titles = state.titles.slice(-2000);
+                    if (changed) {
+                        await fsPromises.mkdir(path.dirname(manualPath), { recursive: true });
+                        const tmp = manualPath + '.' + process.pid + '.' + Date.now() + '.tmp';
+                        await fsPromises.writeFile(tmp, JSON.stringify({ schemaVersion: 1, updatedAt: new Date().toISOString(), ids: state.ids, titles: state.titles }, null, 2) + '\\n', 'utf8');
+                        await fsPromises.rename(tmp, manualPath);
+                    }
+                    return new Response(JSON.stringify({ ok: true, ids: state.ids, titles: state.titles }), {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
+                    });
+                }
+                return new Response(JSON.stringify({ ok: true, ids: state.ids, titles: state.titles }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
                 });
             }
             if (reqUrl.hostname === 'auto-dict') {

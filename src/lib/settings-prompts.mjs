@@ -6,6 +6,7 @@ import { SYMBOLS, banner, color } from "./console-ui.mjs";
 import { applyAutoFollowSetting } from "./auto-follow-task.mjs";
 import {
   AUTO_FOLLOW_QUESTION,
+  AUTO_TRANSLATE_TITLES_QUESTION,
   ONLINE_TRANSLATE_QUESTION,
   describeSettings,
   parseChoice,
@@ -77,7 +78,9 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
       describeSettings(settings, platform).forEach((line, index) => console.log(`  ${color.cyan(String(index + 1))}  ${line}`));
       console.log(`  ${color.cyan("0")}  保存并退出`);
       console.log("");
-      const options = platform === "win32" ? ["autoFollow", "onlineTranslate"] : ["onlineTranslate"];
+      const options = platform === "win32"
+        ? ["autoFollow", "onlineTranslate", "autoTranslateTitles"]
+        : ["onlineTranslate", "autoTranslateTitles"];
       const pick = (await rl.question("  请输入要修改的序号，直接回车保存并退出：")).trim();
       if (pick === "0" || pick === "") break;
       const key = options[Number(pick) - 1];
@@ -86,6 +89,8 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
         settings.autoFollow = await ask(rl, AUTO_FOLLOW_QUESTION, "请输入 1、2 或 3：", AUTO_FOLLOW_CHOICES, settings.autoFollow);
       } else if (key === "onlineTranslate") {
         settings.onlineTranslate = await ask(rl, ONLINE_TRANSLATE_QUESTION, "请输入 1 或 2：", YES_NO, settings.onlineTranslate);
+      } else if (key === "autoTranslateTitles") {
+        settings.autoTranslateTitles = await ask(rl, AUTO_TRANSLATE_TITLES_QUESTION, "请输入 1 或 2：", YES_NO, settings.autoTranslateTitles);
       }
       changed = true;
     }
@@ -99,6 +104,6 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
     const result = await applyAutoFollowSetting(settings).catch((error) => ({ registered: false, reason: error.message }));
     console.log(settings.autoFollow === "off" ? "已关闭更新后自动汉化。" : result.registered ? "更新后自动汉化已按新设置生效。" : `更新后自动汉化未能设置：${result.reason}`);
   }
-  console.log("联网补充翻译的改动会在重新打开 Antigravity 后生效，无需重新汉化。");
+  console.log("联网补充翻译与对话标题自动汉化的改动会在重新打开 Antigravity 后生效，无需重新汉化。");
   return 0;
 }

@@ -26,6 +26,13 @@ export const OBSOLETE_LEARNED_KEY_PATTERNS = [
   /^Paid\s+(?:Plus|Pro|Ultra)$/i,
   /^Toggle\s+Swarm$/i,
   /(?:^@[a-z0-9_.-]+\/[a-z0-9_.-]+$|^[a-z0-9]+(?:[-_][a-z0-9]+)+$)/,
+  /^[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*-[A-Za-z0-9-]+$/,
+  /^--[a-z0-9-]+$/i,
+  /^[.#][A-Za-z0-9_-]+(?:\s+[.#]?[A-Za-z0-9_-]+)*$/,
+  /^["'`].*["'`]$/,
+  /[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+#\d+/,
+  /^Searching\s+(?:marketplace\s+for\s+|github\s+|["'`])/i,
+  /^Searching\s+.*(?:"|\bOR\b)/i,
   /[a-z][a-z0-9+.-]*:\/\/|`|(?:^|[\s(])(?:~|\.{1,2})?\/[\w.-]|[A-Za-z]:\\/i,
   /[\w-]+\.(?:txt|md|log|json|ya?ml|toml|lock|vbs|bat|cmd|ps1|sh|py|js|mjs|cjs|ts|tsx|jsx|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\b/i
 ];

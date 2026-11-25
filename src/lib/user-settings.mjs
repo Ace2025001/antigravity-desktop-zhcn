@@ -9,6 +9,7 @@ export const AUTO_FOLLOW_MODES = Object.freeze(["auto", "ask", "off"]);
 export const DEFAULT_SETTINGS = Object.freeze({
   autoFollow: "auto",
   onlineTranslate: true,
+  autoTranslateTitles: true,
   titleWriteBack: false,
 });
 const SETTINGS_FILE = "settings.json";
@@ -41,6 +42,8 @@ export function normalizeSettings(raw = {}) {
   if (AUTO_FOLLOW_MODES.includes(raw.autoFollow)) settings.autoFollow = raw.autoFollow;
   const online = parseBoolean(raw.onlineTranslate);
   if (online !== undefined) settings.onlineTranslate = online;
+  const autoTitles = parseBoolean(raw.autoTranslateTitles);
+  if (autoTitles !== undefined) settings.autoTranslateTitles = autoTitles;
   const writeBack = parseBoolean(raw.titleWriteBack);
   if (writeBack !== undefined) settings.titleWriteBack = writeBack;
   return settings;
@@ -53,6 +56,8 @@ export function settingsFromEnv(env = process.env) {
   if (AUTO_FOLLOW_MODES.includes(mode)) overrides.autoFollow = mode;
   const online = parseBoolean(env.AGY_ONLINE_TRANSLATE);
   if (online !== undefined) overrides.onlineTranslate = online;
+  const autoTitles = parseBoolean(env.AGY_AUTO_TRANSLATE_TITLES);
+  if (autoTitles !== undefined) overrides.autoTranslateTitles = autoTitles;
   return overrides;
 }
 
@@ -82,6 +87,7 @@ export function describeSettings(settings, platform = process.platform) {
   const lines = [];
   if (platform === "win32") lines.push(`客户端更新后：${follow}`);
   lines.push(`联网补充翻译：${settings.onlineTranslate ? "开启" : "关闭"}`);
+  lines.push(`对话标题自动汉化：${settings.autoTranslateTitles ? "开启" : "关闭"}`);
   return lines;
 }
 
@@ -96,9 +102,18 @@ export const AUTO_FOLLOW_QUESTION = [
 export const ONLINE_TRANSLATE_QUESTION = [
   "【设置】是否联网补充翻译？",
   "  汉化包已收录 1.6 万条译文，但客户端更新后可能出现新的英文。",
-  "  开启后，遇到还没收录的英文会联网用谷歌翻译成中文，界面更完整。",
+  "  开启后，遇到还没收录的英文会联网用谷歌翻译成中文，并默认将纯英文对话标题一并译为中文。",
   "  只会发送界面上的文字和对话标题；对话内容、代码、文件和你输入的内容都不会发送。",
+  "  若想保留界面补译、仅关闭对话标题自动翻译，可在“汉化设置”中单独关闭“对话标题自动汉化”；手动重命名的对话也会自动保留原名。",
   "  机器翻译遇到拆分句子时可能显得生硬或局部中英混杂；想只看纯人工译文可选 2 关闭。",
+  "  1. 开启（推荐）   2. 关闭",
+];
+
+export const AUTO_TRANSLATE_TITLES_QUESTION = [
+  "【设置】是否自动汉化英文对话标题？",
+  "  依赖“联网补充翻译”：开启后，新对话或纯英文标题会在界面中自动译为中文。",
+  "  你在客户端内手动重命名过的对话会自动记住并保留原名，不会被再次覆盖。",
+  "  如果希望全部纯英文对话标题都保持英文，可选择 2 关闭（界面其余补译不受影响）。",
   "  1. 开启（推荐）   2. 关闭",
 ];
 

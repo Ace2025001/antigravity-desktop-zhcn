@@ -142,6 +142,89 @@ export function formatEnglishDateToChinese(str) {
   return formatPlanTermsToChinese(result);
 }
 
+export function formatDurationToChinese(dur) {
+  if (typeof dur !== "string") return String(dur ?? "");
+  var s = dur.trim().replace(/[。.]+$/, "").trim();
+  if (/^<\s*1\s*m(?:ins?|inutes?)?$/i.test(s)) return "1 分钟内";
+  if (/^<\s*1\s*s(?:ecs?|econds?)?$/i.test(s)) return "1 秒内";
+  return s
+    .replace(/(?<![A-Za-z])(\d+(?:\.\d+)?)\s*ms(?![A-Za-z])/gi, "$1 毫秒")
+    .replace(/(?<![A-Za-z])(\d+(?:\.\d+)?)\s*mo(?:nths?)?(?![A-Za-z])/gi, "$1 个月")
+    .replace(/(?<![A-Za-z])(\d+(?:\.\d+)?)\s*y(?:(?:ea)?rs?)?(?![A-Za-z])/gi, "$1 年")
+    .replace(/(?<![A-Za-z])(\d+(?:\.\d+)?)\s*w(?:(?:ee)?ks?)?(?![A-Za-z])/gi, "$1 周")
+    .replace(/(?<![A-Za-z])(\d+(?:\.\d+)?)\s*d(?:ays?)?(?![A-Za-z])/gi, "$1 天")
+    .replace(/(?<![A-Za-z])(\d+(?:\.\d+)?)\s*h(?:(?:ou)?rs?)?(?![A-Za-z])/gi, "$1 小时")
+    .replace(/(?<![A-Za-z])(\d+(?:\.\d+)?)\s*m(?:ins?|inutes?)?(?![A-Za-z])/gi, "$1 分钟")
+    .replace(/(?<![A-Za-z])(\d+(?:\.\d+)?)\s*s(?:ecs?|econds?)?(?![A-Za-z])/gi, "$1 秒")
+    .replace(/(\d+)(毫秒|个月|年|周|天|小时|分钟|秒)/g, "$1 $2")
+    .replace(/(毫秒|个月|年|周|天|小时|分钟|秒)(?:[,，]\s*|\s*)(?=\d)/g, "$1 ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function translateDynamicDurationText(normalizedCore, lookupFn) {
+  var lookup = typeof lookupFn === "function" ? lookupFn : function () { return null; };
+  var m = normalizedCore.match(/^Individual quota reached\.\s+Please upgrade your subscription to increase your limits\.\s+Resets in\s+(.+?)\.?$/i);
+  if (m) {
+    var d1 = formatDurationToChinese(m[1]);
+    return "已达到个人配额上限。请升级订阅以提高配额。配额将于 " + d1 + (d1.endsWith("内") ? "重置。" : "后重置。");
+  }
+  m = normalizedCore.match(/^You have used (some|all) of your (.+?) limit, it will fully refresh in\s+(.+?)\.?$/i);
+  if (m) {
+    var d2 = formatDurationToChinese(m[3]);
+    var kindRaw = m[2].trim();
+    var kind = /^weekly$/i.test(kindRaw)
+      ? "每周"
+      : " " + kindRaw.replace(/^(\d+)-hour$/i, "$1 小时");
+    var verb = m[1].toLowerCase() === "all" ? "你已用尽所有" : "你已使用部分";
+    return (verb + kind + "配额，将在 " + d2 + (d2.endsWith("内") ? "完全恢复。" : "后完全恢复。")).replace(/\s{2,}/g, " ");
+  }
+  m = normalizedCore.match(/^(?:Worked for|工作耗时)\s+(.+?)\s*(?:\u00b7|·)\s*(\d+)\s*(?:updates?|条(?:进度)?更新)$/i);
+  if (m) return "工作耗时 " + formatDurationToChinese(m[1]) + " · " + m[2] + " 条进度更新";
+  m = normalizedCore.match(/^(?:Stopped after|耗时后停止)\s+(.+?)\s*(?:\u00b7|·)\s*(\d+)\s*(?:updates?|条(?:进度)?更新)$/i);
+  if (m) return "耗时 " + formatDurationToChinese(m[1]) + "后停止 · " + m[2] + " 条进度更新";
+  m = normalizedCore.match(/^Worked for\s+(.+)$/i);
+  if (m) return "工作耗时 " + formatDurationToChinese(m[1]);
+  m = normalizedCore.match(/^Stopped after\s+(.+)$/i);
+  if (m) return "耗时 " + formatDurationToChinese(m[1]) + "后停止";
+  m = normalizedCore.match(/^Model unavailable, retrying in\s+(.+?)(\.{3}|…)?$/i);
+  if (m && /(?:\d|<)/.test(m[1])) {
+    var d3 = formatDurationToChinese(m[1]);
+    return "模型暂不可用，将在 " + d3 + (d3.endsWith("内") ? "重试" : "后重试") + (m[2] || "");
+  }
+  m = normalizedCore.match(/^(.+?)[,，]\s*[Rr]esets in\s*(.+?)\.?$/);
+  if (m && /(?:\d|<)/.test(m[2])) {
+    var prefixZh = lookup(m[1].trim());
+    var prefix = prefixZh !== null ? prefixZh : m[1].trim();
+    var d4 = formatDurationToChinese(m[2]);
+    return prefix + "，将在 " + d4 + (d4.endsWith("内") ? "重置" : "后重置");
+  }
+  m = normalizedCore.match(/^[Rr]esets in\s*(.+?)\.?$/);
+  if (m && /(?:\d|<)/.test(m[1])) {
+    var d5 = formatDurationToChinese(m[1]);
+    return "将在 " + d5 + (d5.endsWith("内") ? "重置" : "后重置");
+  }
+  m = normalizedCore.match(/^(Fully\s+)?[Rr]efreshes in\s+(.+?)\.?$/);
+  if (m && /(?:\d|<)/.test(m[2])) {
+    var d6 = formatDurationToChinese(m[2]);
+    return "将在 " + d6 + (d6.endsWith("内") ? "" : "后") + (m[1] ? "完全恢复" : "刷新");
+  }
+  m = normalizedCore.match(/^Expires\s+in\s+(.+?)\.?$/i);
+  if (m && /(?:\d|<)/.test(m[1])) {
+    var d7 = formatDurationToChinese(m[1]);
+    return d7 + (d7.endsWith("内") ? "过期" : "后过期");
+  }
+  m = normalizedCore.match(/^Select (project|model), current:\s*(.+)$/);
+  if (m) {
+    var cur = m[2];
+    var curZh = lookup(cur);
+    if (curZh === null && (cur === "No Project" || cur === "No project selected")) curZh = "未选择项目";
+    var label = m[1] === "project" ? "选择项目，当前：" : "选择模型，当前：";
+    return label + (curZh !== null ? curZh : cur);
+  }
+  return null;
+}
+
 export function translateDictionaryValue(value, dictionary) {
   if (typeof value !== "string" || value.length === 0) return null;
   const leading = value.match(/^\s*/u)?.[0] ?? "";
@@ -156,6 +239,12 @@ export function translateDictionaryValue(value, dictionary) {
     exact = dictionary?.exact?.[normalizedCore];
     if (exact !== undefined) return leading + exact + trailing;
   }
+
+  const durHit = translateDynamicDurationText(normalizedCore, (k) => {
+    const v = dictionary?.exact?.[k];
+    return v !== undefined ? v : null;
+  });
+  if (durHit !== null) return leading + durHit + trailing;
 
   for (const { regex, target } of compilePatternTranslations(dictionary)) {
     regex.lastIndex = 0;
@@ -283,17 +372,9 @@ export function createRuntimeOverlay(dictionary) {
       .replace(/\\bor higher\\b/gi, "或更高方案");
   }
 
-  function __fmtDurToZh(dur) {
-    if (typeof dur !== "string") return String(dur ?? "");
-    return dur.trim()
-      .replace(/(\\d+)\\s*d(?:ays?)?\\b/gi, "$1 天")
-      .replace(/(\\d+)\\s*h(?:(?:ou)?rs?)?\\b/gi, "$1 小时")
-      .replace(/(\\d+)\\s*m(?:ins?|inutes?)?\\b/gi, "$1 分钟")
-      .replace(/(\\d+)\\s*s(?:ecs?|econds?)?\\b/gi, "$1 秒")
-      .replace(/(\\d+)(天|小时|分钟|秒)/g, "$1 $2")
-      .replace(/\\s+/g, " ")
-      .trim();
-  }
+  ${formatDurationToChinese.toString()}
+  ${translateDynamicDurationText.toString()}
+  const __fmtDurToZh = formatDurationToChinese;
 
   const __planNameMap = {
     "Antigravity Starter Quota": "Antigravity 入门版配额",
@@ -927,14 +1008,12 @@ export function createRuntimeOverlay(dictionary) {
     if (m) return leading + "你的方案：" + __translatePlanName(m[1]) + trailing;
     m = normalizedCore.match(/^Available AI Credits:\\s*(.+)$/i);
     if (m) return leading + "可用 AI 点数：" + m[1] + trailing;
-    m = normalizedCore.match(/^(?:Worked for|工作耗时)\\s+(.+?)\\s*(?:\\u00b7|·)\\s*(\\d+)\\s*(?:updates?|条(?:进度)?更新)$/i);
-    if (m) return leading + "工作耗时 " + __fmtDurToZh(m[1]) + " · " + m[2] + " 条进度更新" + trailing;
-    m = normalizedCore.match(/^(?:Stopped after|耗时后停止)\\s+(.+?)\\s*(?:\\u00b7|·)\\s*(\\d+)\\s*(?:updates?|条(?:进度)?更新)$/i);
-    if (m) return leading + "耗时后停止 " + __fmtDurToZh(m[1]) + " · " + m[2] + " 条进度更新" + trailing;
-    m = normalizedCore.match(/^Worked for\\s+(.+)$/i);
-    if (m) return leading + "工作耗时 " + __fmtDurToZh(m[1]) + trailing;
-    m = normalizedCore.match(/^Stopped after\\s+(.+)$/i);
-    if (m) return leading + "耗时后停止 " + __fmtDurToZh(m[1]) + trailing;
+    const __durLookup = (s) => {
+      const v = exactTranslations.get(s);
+      return v !== undefined ? v : null;
+    };
+    const __durTranslated = translateDynamicDurationText(normalizedCore, __durLookup);
+    if (__durTranslated !== null) return leading + __durTranslated + trailing;
     m = normalizedCore.match(/^(\\d+)\\s*updates?$/i);
     if (m) return leading + m[1] + " 条进度更新" + trailing;
     m = normalizedCore.match(/^(\\d+)\\s*turns?$/i);
@@ -1040,7 +1119,23 @@ export function createRuntimeOverlay(dictionary) {
     "[data-testid='model-selector-item']",
     "[data-testid*='account']",
     "[data-testid*='profile']",
-    "[data-testid*='user']"
+    "[data-testid*='user']",
+    "[data-testid='agent-response']",
+    "[data-testid='artifact-view']",
+    "[data-testid='side-question-answer']",
+    "[data-testid='side-question-question']",
+    "[data-testid='side-question-followup-user']",
+    "[data-testid='subagent-tab-conversation']",
+    "[data-testid='side-question-tab-conversation']",
+    "[data-testid='comment-card-text']",
+    "[data-testid='pill-comment-anchor-text']",
+    "[data-testid='markdown-frontmatter']",
+    "[data-testid='automation-instructions-markdown']",
+    "[data-testid='background-task-command']",
+    "[data-testid='setup-script-output']",
+    "[data-testid='mcp-tool-step']",
+    "[data-testid='vcs-commit-message']",
+    "[data-testid='step-plan-item']"
   ].join(",");
   // Editable fields: their typed text is never translated, but their own
   // placeholder / aria-label / title are UI and may be.
@@ -1067,6 +1162,7 @@ export function createRuntimeOverlay(dictionary) {
     if (el.closest(__CONTENT_CONTAINER_SELECTOR)) return true;
     if (!isAttribute && el.closest(__EDITABLE_SELECTOR)) return true;
     if (isAttribute && el.parentElement && typeof el.parentElement.closest === "function" && el.parentElement.closest("[contenteditable='true'],[data-lexical-editor='true']")) return true;
+    if (el.closest("[data-testid='changed-files-card']") && !el.closest("[data-testid='changed-files-card-header']")) return true;
     // Account and user profile cards: never send personal names / account info to online translator
     const card = el.closest(".flex-col, button, [role='button'], div");
     if (card && card.querySelector && card.querySelector(".rounded-full, [class*='avatar'], [data-tooltip-id*='account']")) {
@@ -1080,24 +1176,172 @@ export function createRuntimeOverlay(dictionary) {
     return false;
   }
 
-  function __isProtectedPluginCardName(el) {
+  const __PROJECT_SELECTOR_PLACEHOLDERS = new Set([
+    "Select Project", "Select Workspace", "No project selected", "No Project",
+    "选择项目", "选择工作区", "未选择项目", "无项目", "新建工作区"
+  ]);
+  const __SIDECAR_PROJECT_PLACEHOLDERS = new Set([
+    "Project", "项目", "No projects created", "尚未创建项目",
+    "Create a project first.", "请先创建一个项目。",
+    "Select workspace", "Select Workspace", "Select project", "Select Project",
+    "选择工作区", "选择项目"
+  ]);
+  const __LOCATION_PLACEHOLDERS = new Set([
+    "This Computer", "Remote", "Local", "此计算机", "这台电脑", "本机", "远程", "本地"
+  ]);
+  const __PROTECTED_NATIVE_SELECTOR = [
+    "[data-testid='project-header']",
+    "[data-testid='project-selector-item']",
+    "[data-testid='project-selector-github-repo-item']",
+    "[data-testid='sidecar-project-link']",
+    "[data-testid='jj-worktree-selector-label']",
+    "[data-testid='jj-previous-worktree-option']",
+    "[data-testid='declared-permissions-arg-folder']",
+    "[data-testid='gcp-project-combobox-trigger']",
+    "[data-testid='gcp-project-combobox-list']",
+    "[data-testid='plugin-detail'] h1",
+    "[data-testid='bundle-detail'] h1",
+    "[data-testid='plugin-view-title-bar-title']",
+    "[data-testid='mobile-plugin-view-title']",
+    "[data-testid='plugin-detail-footer-author']",
+    "[data-testid='plugin-detail-footer-version']",
+    "[data-testid='plugins-submenu-item']",
+    "[data-testid='plugins-submenu-mcp-app-item']",
+    "[data-testid='mcp-config-variable'] label",
+    "[data-testid='automation-name']",
+    "[data-testid='coordinator-card-title']",
+    "[data-testid='coordinator-hover-card-title']",
+    "[data-testid='voice-picker-name']",
+    "[data-testid='file-title-name']",
+    "[data-testid='webview-download-filename']",
+    "[data-testid='builtin-browser-download-dir-value']",
+    "[data-testid='entity-pill']",
+    "[data-testid='attached-context-pill']",
+    "[data-testid='branch-pill-label']",
+    "[data-testid='branch-option']",
+    "[data-testid='branch-repo-label']",
+    "[data-testid='permission-trigger-command'] .font-mono",
+    "[data-testid='declared-permissions-arg'] label",
+    "[data-testid='external-link-confirm-uri']",
+    "[data-testid='url-security-host']",
+    "[data-testid='browser-url-bar']",
+    "[data-testid='browser-url-display']",
+    "[data-testid='browser-site-data-site']",
+    "[data-testid='webview-prompt-origin']",
+    "[data-testid='ssh-host-label']",
+    "[data-testid='ssh-connect-host-option']",
+    "[data-testid='ssh-host-project-item']",
+    "[data-testid='sidebar-wsl-label']",
+    "[data-testid='side-question-origin']"
+  ].join(",");
+
+  function __hasPrevSiblingTestId(el, id) {
+    for (let node = el; node && node.nodeType === 1; node = node.parentElement) {
+      const prev = node.previousElementSibling;
+      if (prev && prev.getAttribute && prev.getAttribute("data-testid") === id) return true;
+      if (node.getAttribute && node.getAttribute("data-testid") === "tab-file-tree-sidebar") break;
+    }
+    return false;
+  }
+
+  // Regions displaying local folder/file names, repos, branches, third-party
+  // plugin/MCP names, commands, hosts or URLs: never translate via dictionary OR online MT.
+  function __isProtectedNativeIdentifier(el, isAttribute = false, rawValue = "") {
     if (!el || typeof el.closest !== "function") return false;
+    if (el.closest("[data-testid='project-selector-item-settings'], [data-testid='attached-context-pill-remove'], [data-testid='input-attachment-remove']")) {
+      return false;
+    }
+    if (el.closest(__PROTECTED_NATIVE_SELECTOR)) return true;
+    if (__hasPrevSiblingTestId(el, "file-tree-node-icon")) return true;
+
     const card = el.closest("[data-testid='customization-card']");
-    if (!card) return false;
-    return Boolean(el.closest(".font-medium")) && !el.closest(".text-muted-foreground");
+    if (card && Boolean(el.closest(".font-medium")) && !el.closest(".text-muted-foreground")) return true;
+
+    const mcpRow = el.closest("[data-testid='mcp-server-row']");
+    if (mcpRow && Boolean(el.closest(".font-medium")) && !el.closest("button, [role='button']")) return true;
+
+    const sidecarRow = el.closest("[data-testid='sidecar-row']");
+    if (sidecarRow && Boolean(el.closest("span.text-foreground"))) return true;
+
+    const settingsNav = el.closest("[data-testid^='settings-nav-item-']");
+    if (settingsNav) {
+      const rowWrap = settingsNav.parentElement;
+      const listWrap = rowWrap && rowWrap.parentElement;
+      const prevBlock = listWrap && listWrap.previousElementSibling;
+      const heading = prevBlock && (prevBlock.textContent || "").trim();
+      if (heading === "Projects" || heading === "项目") return true;
+    }
+
+    const wsOpt = el.closest("[data-testid='project-customizations-workspace-filter'] option");
+    if (wsOpt && (typeof wsOpt.getAttribute !== "function" ? wsOpt.value : wsOpt.getAttribute("value")) !== "all") return true;
+
+    const textSample = (typeof rawValue === "string" && rawValue.trim() ? rawValue : (el.textContent || "")).trim();
+    if (!isAttribute && el.closest("[data-testid='project-selector-trigger']")) {
+      return Boolean(textSample) && !__PROJECT_SELECTOR_PLACEHOLDERS.has(textSample);
+    }
+    if (!isAttribute && el.closest("[data-testid='new-sidecar-project']")) {
+      return Boolean(textSample) && !__SIDECAR_PROJECT_PLACEHOLDERS.has(textSample);
+    }
+    if (el.closest("[data-testid='input-attachment']")) {
+      return !isAttribute || !el.closest("[data-testid='input-attachment-open']");
+    }
+    if (el.closest("[data-testid='voice-settings-name']")) {
+      return Boolean(textSample) && textSample !== "Not set" && textSample !== "未设置";
+    }
+    if (el.closest("[data-testid='ssh-config-file-name']")) {
+      return Boolean(textSample) && textSample !== "~/.ssh/config (default)" && textSample !== "~/.ssh/config（默认）";
+    }
+    if (el.closest("[data-testid='location-selector-trigger']") || (el.closest("[data-testid='location-local']") && !el.closest("span.block"))) {
+      return Boolean(textSample) && !__LOCATION_PLACEHOLDERS.has(textSample);
+    }
+    const convRow = el.closest("[data-testid^='conversation-row-'][data-cascade-id]");
+    if (convRow && textSample && !el.closest(".agy-row-actions, .agy-row-status, [data-testid='conversation-row-status'], button")) {
+      const cid = typeof convRow.getAttribute === "function" ? convRow.getAttribute("data-cascade-id") : "";
+      const isRowTitle = Boolean(el.closest(".truncate") || (isAttribute && el.tagName === "A"));
+      if (isRowTitle && ((cid && __manualTitleIds.has(cid)) || __manualTitleTexts.has(textSample) || (__zhcnSettings?.autoTranslateTitles === false && __observedNonTranslatedTitles.has(textSample)))) {
+        return true;
+      }
+    }
+    if (textSample && (el.closest("[data-testid='breadcrumb-segment'], [data-testid='fast-pick-viewport']"))) {
+      if (__manualTitleTexts.has(textSample) || (__zhcnSettings?.autoTranslateTitles === false && __observedNonTranslatedTitles.has(textSample))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // User switches from “汉化设置”, served by the patched main process. Until
   // they are known (or if they cannot be read) online translation stays off.
   let __zhcnSettings = null;
+  let __rescanConvTitlesFn = null;
+  const __manualTitleIds = new Set();
+  const __manualTitleTexts = new Set();
+  const __observedNonTranslatedTitles = new Set();
   async function __loadZhcnSettings() {
     try {
       if (typeof fetch === "function") {
-        const resp = await fetch("agy-zhcn://settings");
-        if (resp && resp.ok) __zhcnSettings = await resp.json();
+        const [resp, manualResp] = await Promise.all([
+          fetch("agy-zhcn://settings").catch(() => null),
+          fetch("agy-zhcn://manual-titles").catch(() => null)
+        ]);
+        if (resp && resp.ok) __zhcnSettings = await resp.json().catch(() => null);
+        if (manualResp && manualResp.ok) {
+          const manualData = await manualResp.json().catch(() => null);
+          if (manualData && Array.isArray(manualData.ids)) {
+            for (const id of manualData.ids) if (typeof id === "string" && id.trim()) __manualTitleIds.add(id.trim());
+          }
+          if (manualData && Array.isArray(manualData.titles)) {
+            for (const t of manualData.titles) if (typeof t === "string" && t.trim()) __manualTitleTexts.add(t.trim());
+          }
+        }
       }
     } catch (_) {}
-    if (!__zhcnSettings || typeof __zhcnSettings !== "object") __zhcnSettings = { onlineTranslate: false, titleWriteBack: false };
+    if (!__zhcnSettings || typeof __zhcnSettings !== "object") {
+      __zhcnSettings = { onlineTranslate: false, autoTranslateTitles: true, titleWriteBack: false };
+    }
+    if (__zhcnSettings.onlineTranslate === true && __zhcnSettings.autoTranslateTitles !== false && typeof __rescanConvTitlesFn === "function") {
+      try { __rescanConvTitlesFn(); } catch (_) {}
+    }
     return __zhcnSettings;
   }
   function __canAutoTranslateRuntime() {
@@ -1107,6 +1351,10 @@ export function createRuntimeOverlay(dictionary) {
     if (typeof window === "undefined" || typeof fetch !== "function") return false;
     const proto = window.location?.protocol || "";
     return proto === "https:" || proto === "http:" || proto === "agy-zhcn:" || proto === "file:";
+  }
+  function __canAutoTranslateTitlesRuntime() {
+    if (!__canAutoTranslateRuntime()) return false;
+    return !__zhcnSettings || __zhcnSettings.autoTranslateTitles !== false;
   }
 
   function __isEligibleForAutoTranslate(core, parentEl, isTitle, isAttribute = false) {
@@ -1127,13 +1375,17 @@ export function createRuntimeOverlay(dictionary) {
     if (/=>|\\bfunction\\s*\\(|[{}[\\]|\\\\<>=]|===|!==/.test(t)) return false;
     if (/^[0-9a-fA-F-]{16,64}$/.test(t)) return false;
     if (/(?:^@[a-z0-9_.-]+[/][a-z0-9_.-]+$|^[a-z0-9]+(?:[-_][a-z0-9]+)+$)/.test(t)) return false;
+    if (/^[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*-[A-Za-z0-9-]+$/.test(t)) return false;
+    if (/^--[a-z0-9-]+$/i.test(t) || /^[.#][A-Za-z0-9_-]+(?:\\s+[.#]?[A-Za-z0-9_-]+)*$/.test(t) || /^["'].*["']$/.test(t)) return false;
+    if (/[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+#\\d+/.test(t)) return false;
+    if (/^Searching\\s+(?:marketplace\\s+for\\s+|github\\s+|["'\\x60])/i.test(t) || /^Searching\\s+.*(?:"|\\bOR\\b)/i.test(t)) return false;
     if (__PROTECTED_BRAND_SET.has(t)) return false;
     // Anything carrying a file name, link, path or inline code is (or quotes)
     // user content: never send it, wherever it appears in the string.
     if (/[a-z][a-z0-9+.-]*:\\/\\/|\\x60|(?:^|[\\s(])(?:~|\\.{1,2})?\\/[\\w.-]|[A-Za-z]:\\\\/i.test(t)) return false;
     if (/[\\w-]+\\.(?:[a-z]{1,4}\\d?|json|yaml|toml|lock|tsx|jsx|mjs|cjs|vbs|bat|cmd|ps1|txt|md|log|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\\b(?![\\w-])/.test(t) && !/\\b(?:e\\.g|i\\.e|etc|vs)\\./i.test(t)) return false;
     if (/^(?:Gemini|Claude|GPT-OSS|Google|Antigravity|Orchestrator)\\s+[0-9A-Za-z.\\s()-]+$/i.test(t) && t.split(/\\s+/).length <= 4) return false;
-    if (parentEl && (__isInsideUserContent(parentEl, isAttribute) || __isProtectedPluginCardName(parentEl))) return false;
+    if (parentEl && (__isInsideUserContent(parentEl, isAttribute) || __isProtectedNativeIdentifier(parentEl, isAttribute, t))) return false;
     return true;
   }
 
@@ -1255,6 +1507,13 @@ export function createRuntimeOverlay(dictionary) {
     /^Paid\\s+(?:Plus|Pro|Ultra)$/i,
     /^Toggle\\s+Swarm$/i,
     /(?:^@[a-z0-9_.-]+[/][a-z0-9_.-]+$|^[a-z0-9]+(?:[-_][a-z0-9]+)+$)/,
+    /^[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*-[A-Za-z0-9-]+$/,
+    /^--[a-z0-9-]+$/i,
+    /^[.#][A-Za-z0-9_-]+(?:\\s+[.#]?[A-Za-z0-9_-]+)*$/,
+    /^["'\\x60].*["'\\x60]$/,
+    /[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+#\\d+/,
+    /^Searching\\s+(?:marketplace\\s+for\\s+|github\\s+|["'\\x60])/i,
+    /^Searching\\s+.*(?:"|\\bOR\\b)/i,
     /^(?:Remove shortcut|Shortcut)\\s+\\S+\\s+for\\s+/,
     /^Install\\s+\\S/,
     /^Reset\\s+.+\\s+to\\s+default$/,
@@ -1341,6 +1600,7 @@ export function createRuntimeOverlay(dictionary) {
   globalThis.__AGY_ZHCN_AUTO_TRANSLATE__ = __translateAndLearnAsync;
   globalThis.__AGY_ZHCN_LOAD_SETTINGS__ = __loadZhcnSettings;
   globalThis.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__ = __isEligibleForAutoTranslate;
+  globalThis.__AGY_ZHCN_IS_PROTECTED_ELEMENT__ = __isProtectedNativeIdentifier;
   globalThis.__AGY_ZHCN_TRANSLATE_VALUE__ = translateValue;
   globalThis.__AGY_ZHCN_LOOKUP__ = (text) => exactTranslations.get(text);
   globalThis.__AGY_ZHCN_PREPARE_ANTI_MT__ = __prepareAntiMtPayload;
@@ -1358,6 +1618,27 @@ export function createRuntimeOverlay(dictionary) {
       } catch (_) {}
     }, 200);
   }
+  globalThis.__AGY_ZHCN_RECORD_MANUAL_TITLE__ = function(cascadeId, title) {
+    const cid = typeof cascadeId === "string" ? cascadeId.trim() : "";
+    const txt = typeof title === "string" ? title.trim() : "";
+    if (cid) __manualTitleIds.add(cid);
+    if (txt) {
+      __manualTitleTexts.add(txt);
+      __observedNonTranslatedTitles.add(txt);
+      if (exactTranslations.has(txt)) exactTranslations.delete(txt);
+    }
+    if (cid || txt) {
+      try {
+        if (typeof fetch === "function" && typeof window !== "undefined") {
+          fetch("agy-zhcn://manual-titles", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cascadeId: cid, title: txt })
+          }).catch(() => {});
+        }
+      } catch (_) {}
+    }
+  };
   globalThis.__AGY_ZHCN_BIND_TITLE_WATCHER__ = function(store, updateAnnotationsFn) {
     if (!store || typeof store.getState !== "function" || typeof store.subscribe !== "function") return;
     if (__titleWatcherBoundStore === store) return;
@@ -1372,13 +1653,17 @@ export function createRuntimeOverlay(dictionary) {
           if (!item) continue;
           const rawTitle = (item.annotations?.title?.trim() || item.summary?.trim() || "");
           if (!rawTitle || /[\\u4e00-\\u9fff]/.test(rawTitle)) continue;
+          if (__manualTitleIds.has(cascadeId) || __zhcnSettings?.autoTranslateTitles === false) {
+            __observedNonTranslatedTitles.add(rawTitle);
+            continue;
+          }
           if (__processedConvTitleMap.get(cascadeId) === rawTitle) continue;
           if (!__isEligibleForAutoTranslate(rawTitle, null, true)) continue;
 
-          __processedConvTitleMap.set(cascadeId, rawTitle);
           const localTry = exactTranslations.get(rawTitle) || __translateChapterTitle(rawTitle);
           const applyTitle = (zhTitle) => {
             if (!zhTitle || !/[\\u4e00-\\u9fff]/.test(zhTitle) || zhTitle === rawTitle) return;
+            if (__manualTitleIds.has(cascadeId) || __zhcnSettings?.autoTranslateTitles === false) return;
             __processedConvTitleMap.set(cascadeId, zhTitle);
             if (!__zhcnSettings || __zhcnSettings.titleWriteBack !== true) {
               // Default: display only. The stored conversation title is untouched,
@@ -1399,8 +1684,10 @@ export function createRuntimeOverlay(dictionary) {
           };
 
           if (localTry && localTry !== rawTitle && !/[A-Za-z]{4,}/.test(localTry.replace(/\\b(?:Chrome|Google|Gemini|Claude|Antigravity|GitHub|Swarm|MCP|Remotion|CAD|PPT|YouTube|AI|UI|CLI|IDE)\\b/gi, ""))) {
+            __processedConvTitleMap.set(cascadeId, rawTitle);
             applyTitle(localTry);
-          } else {
+          } else if (__canAutoTranslateTitlesRuntime()) {
+            __processedConvTitleMap.set(cascadeId, rawTitle);
             __translateAndLearnAsync(rawTitle, { isTitle: true }).then((zhTitle) => {
               if (zhTitle) applyTitle(zhTitle);
             });
@@ -1409,6 +1696,7 @@ export function createRuntimeOverlay(dictionary) {
       } catch (_) {}
     };
 
+    __rescanConvTitlesFn = scanSummaries;
     scanSummaries();
     let debounceTimer = null;
     store.subscribe(() => {
@@ -1483,6 +1771,8 @@ export function createRuntimeOverlay(dictionary) {
       }
     }
 
+    if (__isProtectedNativeIdentifier(parent, false, rawVal)) return;
+
     const translated = translateValue(rawVal);
     if (translated !== null && translated !== rawVal) {
       node.nodeValue = translated;
@@ -1515,6 +1805,12 @@ export function createRuntimeOverlay(dictionary) {
     for (const attribute of translatedAttributes) {
       if (!element.hasAttribute(attribute)) continue;
       const current = element.getAttribute(attribute);
+      if (
+        __isProtectedNativeIdentifier(element, true, current) &&
+        !(attribute === "aria-label" && /^(?:Select project|Select model), current:\\s*.+$/i.test((current || "").trim()))
+      ) {
+        continue;
+      }
       const translated = translateValue(current);
       if (translated !== null && translated !== current) {
         element.setAttribute(attribute, translated);
@@ -3792,8 +4088,12 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     '$1globalThis.__AGY_ZHCN_ANNOT_HELPERS__={localAction:(p)=>$2(p),makeProto:(o)=>$3($4.ConversationAnnotationsSchema,o)};'
   );
   sourceText = sourceText.replace(
-    /(\{updateConversationAnnotations:([a-zA-Z0-9_$]+)\}=[a-zA-Z0-9_$]+\(\),([a-zA-Z0-9_$]+)=[a-zA-Z0-9_$]+\(\),([a-zA-Z0-9_$]+)=[a-zA-Z0-9_$]+\(\);\s*\(0,B\.useEffect\)\(\(\)=>[a-zA-Z0-9_$]+\(\{subscribeToRoute:[a-zA-Z0-9_$]+=>[a-zA-Z0-9_$]+\.subscribe\("onResolved",[a-zA-Z0-9_$]+\),getCascadeIdParam:[a-zA-Z0-9_$]+,getBattleIdParam:[a-zA-Z0-9_$]+,dispatch:([a-zA-Z0-9_$]+)\.dispatch,deps:\{updateConversationAnnotations:\2,recordError:\3,getStartingConversationIds:\(\)=>[a-zA-Z0-9_$]+\(\5\.getState\(\)\)\}\}\),\[[^\]]+\]\);)(return \4\?)/g,
+    /(\{updateConversationAnnotations:([a-zA-Z0-9_$]+)\}=[a-zA-Z0-9_$]+\(\),([a-zA-Z0-9_$]+)=[a-zA-Z0-9_$]+\(\),([a-zA-Z0-9_$]+)=[a-zA-Z0-9_$]+\(\);\s*\(0,[a-zA-Z0-9_$]+\.useEffect\)\(\(\)=>[a-zA-Z0-9_$]+\(\{subscribeToRoute:[a-zA-Z0-9_$]+=>[a-zA-Z0-9_$]+\.subscribe\("onResolved",[a-zA-Z0-9_$]+\),getCascadeIdParam:[a-zA-Z0-9_$]+,getBattleIdParam:[a-zA-Z0-9_$]+,dispatch:([a-zA-Z0-9_$]+)\.dispatch,deps:\{updateConversationAnnotations:\2,recordError:\3,getStartingConversationIds:\(\)=>[a-zA-Z0-9_$]+\(\5\.getState\(\)\)\}\}\),\[[^\]]+\]\);)(return \4\?)/g,
     '$1globalThis.__AGY_ZHCN_BIND_TITLE_WATCHER__?.($5,$2);$6'
+  );
+  sourceText = sourceText.replace(
+    /([a-zA-Z0-9_$]+=\(0,[a-zA-Z0-9_$]+\.useCallback\)\(async ([a-zA-Z0-9_$]+)=>\{)(var ([a-zA-Z0-9_$]+)=[a-zA-Z0-9_$]+,[a-zA-Z0-9_$]+=[a-zA-Z0-9_$]+;try\{let [a-zA-Z0-9_$]+=[a-zA-Z0-9_$]+\(await \4\([a-zA-Z0-9_$]+\(\{cascadeId:([a-zA-Z0-9_$]+),annotations:\{title:\2\},onError:\{reportedByCaller:!0\}\}\)\)\);)/g,
+    '$1globalThis.__AGY_ZHCN_RECORD_MANUAL_TITLE__?.($5,$2);$3'
   );
 
   // =========================================================================
