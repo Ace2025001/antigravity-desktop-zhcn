@@ -142,6 +142,6 @@ export async function runSettingsMenu({ platform = process.platform } = {}) {
     const result = await applyAutoFollowSetting(settings).catch((error) => ({ registered: false, reason: error.message }));
     console.log(settings.autoFollow === "off" ? "已关闭更新后自动汉化。" : result.registered ? "更新后自动汉化已按新设置生效。" : `更新后自动汉化未能设置：${result.reason}`);
   }
-  console.log("汉化包自动更新、界面联网补充翻译与标题自动翻译的改动会在下次启动或重新加载客户端时生效，无需重新汉化。");
+  console.log("汉化包自动更新、界面联网补充翻译与标题自动翻译的改动会在刷新客户端窗口（Windows 按 Ctrl+R）或重新打开客户端后生效，无需重新汉化。");
   return 0;
 }

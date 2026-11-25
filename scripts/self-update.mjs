@@ -139,7 +139,7 @@ async function main() {
       pendingMainUpdate: { version: result.latestVersion, at: new Date().toISOString() },
     }, getStateRoot()).catch(() => {});
     if (hotCode === 0) {
-      log("已无感热更新中文界面（“查看 → 重新加载”后立即可见）；主进程补丁已预约在下次退出客户端时后台自动完成。");
+      log("已无感热更新中文界面（在客户端按 Ctrl+R 刷新后立即可见）；主进程补丁已预约在下次退出客户端时后台自动完成。");
     } else {
       log("当前未能热更新（可能客户端刚升级了大版本）；已预约在下次退出客户端时自动全量升级，或手动双击“启动中文”。");
     }
