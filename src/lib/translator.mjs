@@ -2143,6 +2143,28 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /("data-testid":"step-plan-chip"[\s\S]{0,60}?"aria-label":`\$\{([A-Za-z0-9_$]+)\}\. )\$\{([A-Za-z0-9_$]+)\?"Hide":"Show"\} plan`/g,
     '$1${$3?"收起":"展开"}计划`'
   );
+  // 代码块头部与文件预览视图切换器（Preview / Raw -> 预览 / 源码）
+  sourceText = sourceText.replaceAll('"aria-label":"Markdown view mode"', '"aria-label":"Markdown 视图模式"');
+  sourceText = sourceText.replace(
+    /(value:"preview","data-testid":"code-block-preview-button"\s*\},\s*)"Preview"/g,
+    '$1"预览"'
+  );
+  sourceText = sourceText.replace(
+    /(value:"raw","data-testid":"code-block-raw-button"\s*\},\s*)"Raw"/g,
+    '$1"源码"'
+  );
+  sourceText = sourceText.replace(
+    /(previewMode:"preview"\s*\}\s*\}\s*,\s*[A-Za-z0-9_$]+\s*\)\s*\}\s*\}\s*,\s*)"Preview"/g,
+    '$1"预览"'
+  );
+  sourceText = sourceText.replace(
+    /(previewMode:"raw"\s*\}\s*\}\s*,\s*[A-Za-z0-9_$]+\s*\)\s*\}\s*\}\s*,\s*)"Raw"/g,
+    '$1"源码"'
+  );
+  sourceText = sourceText.replace(
+    /`Preview unavailable (?:\\u2014|—) \$\{([A-Za-z0-9_$]+)\}`/g,
+    '`无法预览 — ${$1}`'
+  );
   sourceText = sourceText.replaceAll(
     '"Controls how much time and quota the model spends reasoning before responding. Higher effort improves accuracy on hard problems, at the cost of slower responses and higher quota use."',
     '"控制模型在回复前用于思考推理的时间与配额。提高思考程度可提升复杂问题的解答准确率，但会增加回复耗时并消耗更多配额。"'

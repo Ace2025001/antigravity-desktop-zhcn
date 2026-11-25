@@ -2889,3 +2889,29 @@ test("Case 148: Paid Pro 模型徽章汉化为“付费 Pro”与第三方插件
     else process.env.AGY_LANGUAGE_PACK = savedPack;
   }
 });
+
+test("Case 149: 代码块与文件预览头部 Preview / Raw 切换器汉化为 预览 / 源码", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+    assert.equal(translateDictionaryValue("Markdown view mode", current), "Markdown 视图模式");
+    assert.equal(translateDictionaryValue("Preview unavailable — binary file", current), "无法预览 — binary file");
+
+    const sampleCodeBlockAndFileView = [
+      'E.createElement(KV,{size:"xs","aria-label":"Markdown view mode","data-testid":"code-block-preview-toggle",value:f,onValueChange:w=>{w!=="preview"&&w!=="raw"||g(w)}},E.createElement(KV.Item,{value:"preview","data-testid":"code-block-preview-button"},"Preview"),E.createElement(KV.Item,{value:"raw","data-testid":"code-block-raw-button"},"Raw"))',
+      'E.createElement("div",{onClick:()=>{x||d({type:"fileView",fileView:{...c,previewMode:"preview"}},b)}},"Preview"),E.createElement("div",{onClick:()=>{d({type:"fileView",fileView:{...c,previewMode:"raw"}},b)}},"Raw"),h!=null&&E.createElement(jJ,{id:m,place:"bottom"},`Preview unavailable \\u2014 ${h}`)'
+    ].join("\n");
+
+    const localized = createLocalizedBundle(Buffer.from(sampleCodeBlockAndFileView, "utf8"), current, { skipCoverage: true }).buffer.toString("utf8");
+    assert.ok(localized.includes('"aria-label":"Markdown 视图模式"'));
+    assert.ok(localized.includes('"data-testid":"code-block-preview-button"},"预览"'));
+    assert.ok(localized.includes('"data-testid":"code-block-raw-button"},"源码"'));
+    assert.ok(localized.includes('previewMode:"preview"}},b)}},"预览"'));
+    assert.ok(localized.includes('previewMode:"raw"}},b)}},"源码"'));
+    assert.ok(localized.includes('`无法预览 — ${h}`'));
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});

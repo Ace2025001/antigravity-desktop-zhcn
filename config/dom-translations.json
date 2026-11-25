@@ -12867,9 +12867,16 @@
     "Hide plan": "收起计划",
     "Paid Pro": "付费 Pro",
     "Paid Plus": "付费 Plus",
-    "Paid Ultra": "付费 Ultra"
+    "Paid Ultra": "付费 Ultra",
+    "Markdown view mode": "Markdown 视图模式",
+    "Markdown View Mode": "Markdown 视图模式"
   },
   "patterns": [
+    {
+      "source": "^Preview\\s+unavailable\\s*[—–-]\\s*(.+)$",
+      "target": "无法预览 — $1",
+      "flags": "u"
+    },
     {
       "source": "^Paid\\s+(Plus|Pro|Ultra|Max|Enterprise)$",
       "target": "付费 $1",
