@@ -3324,3 +3324,255 @@ test("Case 154: 手动重命名对话永久保英文，且支持独立关闭 aut
     else process.env.AGY_LANGUAGE_PACK = savedPack;
   }
 });
+
+test("Case 155: 多词句大小写无关回退与 2.35.1 设置页/权限/引导弹窗全场景兼容", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+
+    // 1. 多词句大小写无关回退（Sentence Case 命中，全大写常量与全小写命令行不误翻）
+    const syntheticDict = {
+      schemaVersion: 2,
+      exact: {
+        "Tool Permissions": "工具权限",
+        "Permission Preset": "权限预设",
+        AUTO: "自动",
+      },
+      patterns: [],
+    };
+    assert.equal(translateDictionaryValue("Tool permissions", syntheticDict), "工具权限");
+    assert.equal(translateDictionaryValue("Permission preset", syntheticDict), "权限预设");
+    assert.equal(translateDictionaryValue("TOOL PERMISSIONS", syntheticDict), null);
+    assert.equal(translateDictionaryValue("tool permissions", syntheticDict), null);
+    assert.equal(translateDictionaryValue("auto", syntheticDict), null);
+
+    // 运行时 overlay 同等遵守大小写回退与护栏
+    const overlay = createRuntimeOverlay(current);
+    const sb = {
+      globalThis: {},
+      window: { location: { protocol: "https:" } },
+      document: { readyState: "loading", documentElement: { lang: "en" }, addEventListener: () => {} },
+      Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 },
+      MutationObserver: class { observe() {} },
+      fetch: async () => ({ ok: false }),
+      setTimeout,
+      clearTimeout,
+      Set,
+      Map,
+      WeakMap,
+      RegExp,
+      Object,
+      Array,
+      String,
+      Number,
+      Boolean,
+      Math,
+      Date,
+      Promise,
+    };
+    sb.globalThis = sb;
+    new vm.Script(overlay).runInContext(vm.createContext(sb));
+    assert.equal(sb.__AGY_ZHCN_TRANSLATE__("Tool permissions"), "工具权限");
+    assert.equal(sb.__AGY_ZHCN_TRANSLATE__("Permission preset"), "权限预设");
+    assert.equal(sb.__AGY_ZHCN_TRANSLATE__("Network access rules"), "网络访问规则");
+    assert.equal(sb.__AGY_ZHCN_TRANSLATE__("Queued messages"), "排队中的消息");
+    assert.equal(sb.__AGY_ZHCN_TRANSLATE__("TOOL PERMISSIONS"), null);
+    assert.equal(sb.__AGY_ZHCN_TRANSLATE__("git status"), null);
+
+    // 2. 模拟 2.35.1 客户端压缩片段（含 E/G 标识符重命名、换行符、新字段与引导弹窗）
+    const snippet2351 = `
+      var Aa=[{id:"local",label:"This Computer"},{id:"cloud",label:"Remote"}];
+      var TOb=new Map([["Appearance",{sections:[{title:"Chat",settings:["verboseConversationSteps"]},{title:"Chat Layout",advanced:!0,settings:["conversationWidth","artifactWidth","contextUsageIndicatorEnabled"]},{title:"Terminal",advanced:!0,settings:["terminalPlacement"]},{title:"Accessibility",advanced:!0,settings:["customContextMenusEnabled","screenReaderMode"]}]}],["General",{sections:[{title:"Input Box",settings:["queuedMessageDeliveryStrategy","sendMessageShortcut","enterToSendOnMobile"]},{title:"Terminal",\nadvanced:!0,settings:["shellSetupScript"]},{title:"Workspaces",id:"workspace-creation",advanced:!0,settings:["magicWorkspaceVcs","magicWorkspaceCogRepo","magicWorkspaceCogBranch","syncJjWorkspaceToHead"]},{title:"Best of N",id:"best-of-n",advanced:!0,settings:["bestOfNFullVcsClone","bestOfNGitFullClone"]},{title:"Labs",id:"labs",advanced:!0,settings:[]}]}],["Browser",{sections:[{title:"Built-in Browser",id:"defaultLinkOpenTarget",settings:["defaultLinkOpenTarget","builtinBrowserDownloadDir"]},{title:"Browser Subagent",\nid:"browser-subagent",settings:["agentBrowserTools","browserJsExecutionPolicy"]}]}],["Account",{sections:[{title:"General",settings:["disableCodeSnippetTelemetry"]}]}],["Models",{sections:[{title:"Model Credits",settings:["useAICredits"]}]}],["Customizations",{sections:[{title:"Default Customizations",settings:["includeJetskiDefaultCustomizations"]},{title:"Customize Global Skills",settings:["antigravity.customization.skills"]},{title:"Custom Agents",settings:["antigravity.customization.customAgents"]},\n{title:"MCP Servers",settings:["antigravity.customization.mcp"]}]}],["Notifications",{sections:[{title:"General",settings:["enableNotificationsForSpecialEvents"]},{title:"Sound",id:"notifications-sound",settings:["enableSoundsForSpecialEvents","agentSoundVolume"]}]}],["App",{sections:[{title:"General",settings:["keepComputerAwake","runInBackground"]},{advanced:!0,settings:["autoCheckForUpdates"]}]}]]);
+      var u=["queuedMessageDeliveryStrategy",{isProviderSetting:!0,screen:"General",label:"Queued messages",description:"Configure when follow-up messages are sent.",options:[K.MessageDeliveryStrategy.WHEN_IDLE,K.MessageDeliveryStrategy.NEXT_INVOCATION],resolveSelectedOption:g=>g,resolveOptionToString:g=>{switch(g){case K.MessageDeliveryStrategy.NEXT_INVOCATION:return"Send Immediately";\ndefault:return"Queue"}},resolveOptionToDescription:g=>{switch(g){case K.MessageDeliveryStrategy.NEXT_INVOCATION:return"Interrupt the agent and send immediately.";default:return"Queue until after the current turn."}}}];
+      var s=["sendMessageShortcut",{isProviderSetting:!0,screen:"General",label:"Send message",description:"Choose which key sends a message in the chat composer.",options:["enter","modEnter"],resolveSelectedOption:g=>g,resolveOptionToString:g=>{switch(g){case "modEnter":return a?.isMac?"Cmd+Enter":"Ctrl+Enter";default:return"Enter"}},resolveOptionToDescription:g=>{switch(g){case "modEnter":return a?.isMac?"Press Cmd+Enter to send, Enter for a new line.":"Press Ctrl+Enter to send, Enter for a new line.";default:return"Press Enter to send, Shift+Enter for a new line."}}}];
+      var w=E.createElement(YU,{title:"General",description:"Configure agent execution, queued message delivery, and permissions."},E.createElement(bV,{title:"Interface Layout"}));
+      var p=E.createElement(PV,{action:"command",label:"Terminal commands",\ndescription:"Allow/deny specific terminal commands."});
+      var m=E.createElement(PV,{action:"mcp",label:"MCP tools",description:"External tools the agent can call via Model Context Protocol.",placeholder:"Enter tool name or server..."});
+      var ue=E.createElement(aV,{label:"File access rules",badge:pb>0?pb:void 0,description:"Configure allowed and denied paths for file reads and writes.",rightElement:E.createElement(lJ,{variant:"secondary",size:"sm",\nonClick:()=>{nb("file")}},"Open")});
+      var vc=E.createElement(aV,{"data-testid":"tool-permissions-row",label:"Tool permissions",badge:ed>0?ed:void 0,description:Vc,rightElement:E.createElement(lJ,{variant:"secondary",size:"md",onClick:()=>{nb("tools")}},"Open")});
+      var acc=E.createElement(YU,{title:"Account",description:"Manage your plan, credentials, and general preferences."},E.createElement(bV,{title:"General"},E.createElement($U,null,E.createElement(dPb,{label:"Enable telemetry",\ndescription:\`When toggled on, \${f.product.nameShort} collects usage data to help Google enhance performance and features.\`}),E.createElement(aV,{label:"Google One referral",description:"Share your referral link with friends",rightElement:E.createElement(lJ,{variant:"secondary",size:"sm","data-testid":"g1-referral-invite-button",onClick:()=>{u(H)}},"Invite a Friend")}))));
+      var mod=E.createElement(YU,{title:E.createElement("div",{className:"flex items-center gap-1.5"},E.createElement("span",null,"Models & Usage"),E.createElement(lJ,{variant:"ghost",size:"icon-lg",onClick:x,disabled:y===void 0,title:"Refresh quota and credits data","aria-label":"Refresh quota and credits data"},E.createElement(sx,{name:"refresh",size:20,className:y===void 0?"animate-spin":""}))),description:"Manage your model quota and credits."});
+      var mc=E.createElement(bV,{title:"Model Credits"},\nE.createElement($U,null,E.createElement(UVb,{label:"Enable AI credit overages",description:\`When toggled on, \${g} will use your AI credits to fulfill model requests once you're out of model quota. \${g} will always use your model quota first before using AI credits.\`})));
+      var br=E.createElement(YU,{title:"Browser",description:"Configure built-in browser, link opening, and browser subagent preferences."},E.createElement(aV,{label:"Browser actuation rules",description:l?"Configure allowed and denied URLs for the browser subagent. It runs in the built-in browser, so no separate browser install is needed.":E.createElement(E.Fragment,\nnull,"Configure allowed and denied URLs for the browser subagent (invoked with /browser). Requires"," ",E.createElement("a",{href:"https://www.google.com/chrome/",target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline"},"Google Chrome"),"."),rightElement:E.createElement(lJ,{variant:"secondary",size:"sm",onClick:()=>{y(!0)}},"Edit")}));
+      var pp=E.createElement("div",null,E.createElement(b_b,null,"Allowed by you"),f.length===0?E.createElement("div",{className:"px-1 text-sm text-muted-foreground"},\n"Nothing is always allowed. You'll be asked before this plugin makes changes."):null,E.createElement(b_b,null,"Included with plugin"),\nE.createElement("div",{className:"px-1 text-xs text-muted-foreground"},"These come with the plugin and can't be revoked."),E.createElement(lJ,{variant:"ghost",size:"xs",disabled:k,"aria-label":\`Revoke all: \${a}\`,onClick:()=>\n{h(!0)}},"Revoke all"));
+      var ob=E.createElement("div",null,E.createElement("h2",{className:p},"One last thing before getting started\\u2026"),E.createElement("p",{className:m?"text-secondary-foreground mt-1":"text-secondary-foreground mt-1 text-center"},"A few things to know, and a couple settings to review."),E.createElement(VBc,{title:"Optimized for you"},"Customize your experience across the agent, plugins, and product from the settings and marketplace. We won\\u2019t show you ads or let advertisers influence what ",\na," says."),E.createElement(VBc,{title:"Built to help, not hurt"},"Automated safeguards help to protect your conversations from insecure or unsafe content. That being said, users should be aware of potential agentic risks, including data exfiltration."),E.createElement(VBc,{title:"You are in control"},a,"\\u2019s agents are powerful and will help you get a lot done better and faster than before, but still make sure to verify the actions taken by the agent."),h?E.createElement("p",{className:"text-sm text-muted-foreground leading-normal"},"Telemetry is turned off for your account. ",a," does not collect any of your prompts, content, or model responses but will still collect general usage patterns (e.g., feature adoption, active user counts)."):E.createElement("div",null,E.createElement(JJ,{checked:b,onChange:c,disabled:g,alignTop:!0,label:E.createElement(WBc,{title:\`Help us improve \${a}.\`},\n"Allow Google to collect and use your Interactions data, subject to the"," ",E.createElement("a",{href:"https://antigravity.google/terms",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"},"Google ",a," Terms of Service")," ","and"," ",E.createElement("a",{href:"https://policies.google.com/privacy",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"},"Google Privacy Policy"),". You can control this from your settings at any point.")}),E.createElement(JJ,{checked:d,onChange:f,disabled:g,alignTop:!0,label:E.createElement(WBc,{title:"Stay up to date."},"Sign up for newsletters, tips and tricks, and other notifications about ",a,".")})));
+    `;
+
+    const bundled = createLocalizedBundle(Buffer.from(snippet2351, "utf8"), current, { skipCoverage: true })
+      .buffer.toString("utf8");
+
+    // 验证输出仍然是合法 JavaScript，无语法错误
+    assert.doesNotThrow(() => new vm.Script(bundled));
+
+    const overlayMarker = bundled.indexOf("\n;");
+    const mainBundled = overlayMarker > 0 ? bundled.slice(0, overlayMarker) : bundled;
+
+    for (const expected of [
+      'label:"本机"',
+      'title:"输入框"',
+      'label:"排队中的消息"',
+      'return"立即发送"',
+      'return"排队发送"',
+      'label:"发送消息"',
+      'return"回车"',
+      'title:"通用",description:"配置智能体执行、消息排队发送和权限。"',
+      'title:"界面布局"',
+      'label:"终端命令",description:"允许或拒绝执行指定的终端命令。"',
+      'label:"MCP 工具",description:"智能体可通过模型上下文协议 (MCP) 调用的外部工具。"',
+      'placeholder:"输入工具或服务器名称..."',
+      'label:"文件访问规则"',
+      'label:"工具权限"',
+      '"打开"',
+      'title:"账户",description:"管理你的订阅方案、凭据与常规偏好设置。"',
+      'label:"启用遥测"',
+      'label:"Google One 好友推荐"',
+      '"邀请好友"',
+      '"模型与用量"',
+      'title:"模型点数"',
+      'label:"启用 AI 点数超额使用"',
+      'title:"浏览器",description:"配置内置浏览器、链接打开方式以及浏览器子智能体偏好设置。"',
+      'label:"浏览器操作规则"',
+      '"编辑"',
+      '"你已允许"',
+      '"插件自带"',
+      '"全部撤销"',
+      '"开始使用前，还有最后几项确认…"',
+      'title:"专属定制优化"',
+      'title:"秉持安全设计，赋能开发"',
+      'title:"一切由你掌控"',
+      '"你的账号已关闭遥测数据收集。"',
+      'title:`帮助改进 ${a}。`',
+      'title:"订阅最新资讯。"',
+    ]) {
+      assert.ok(mainBundled.includes(expected), `应包含中文片段: ${expected}`);
+    }
+    assert.equal(mainBundled.includes("Customize your experience across"), false);
+    assert.equal(mainBundled.includes("You can control this from your settings at any point"), false);
+
+    // 3. 验证 9.15 全客户端深度补全（项目设置副标题、Token 明细展开、快捷键方案、侧栏定制菜单、自动化频率与全局确认弹窗）
+    const extra2351 = `
+      var sub1=Ia?\`Manage \${A.lowercase} \${Ea?"resources":"folders"}, agent settings, and permissions.\`:\`Manage \${A.lowercase} \${Ea?"resources":"folders"} and settings.\`;
+      var tb=[E.createElement(lJ,{variant:"link",onClick:()=>{}},B?"Hide breakdown":\`Show \${A.length} breakdown\${A.length===1?"":"s"}\`),p.toLocaleString()," / ",c.toLocaleString()," tokens (",(c>0?p/c*100:0).toFixed(1),"%)","(",u.tokens.toLocaleString()," tokens)"];
+      const FXb=[{value:"vscode",label:"VS Code Default",recommended:!0,description:a=>\`Honors standard VS Code shortcuts without collisions (e.g. \${a?"\\u2318L Focus Input, \\u2318\\u21e7L New Conversation, \\u2318\\u21e7A Picker, \\u2318\\u21e7, Settings":"Ctrl+L Focus Input, Ctrl+Shift+L New Conversation, Ctrl+Shift+A Picker, Ctrl+Shift+, Settings"}).\`},{value:"agy",label:"Antigravity (AGY) Style",description:a=>\`Uses standalone Antigravity chords (e.g. \${a?"\\u2318I Focus Input, \\u2318\\u21e7O New Conversation, \\u2318K Picker in chat, \\u2318, Settings, \\u2318[/] History). Replaces Go to Symbol (\\u2318\\u21e7O) and Trigger Suggest (\\u2318I), and rebinds VS Code Settings to \\u2318\\u2325,.":"Ctrl+I Focus Input, Ctrl+Shift+O New Conversation, Ctrl+K Picker in chat, Ctrl+, Settings, Ctrl+[/] History). Replaces Go to Symbol (Ctrl+Shift+O) and Trigger Suggest (Ctrl+I), and rebinds VS Code Settings to Ctrl+Alt+,."}\`}];
+      var sc=E.createElement(YU,{title:"Shortcuts",description:"Manage your keybinding scheme and customize shortcuts in VS Code."},E.createElement(bV,{title:"Keybinding Scheme",subtitle:"Choose between non-colliding VS Code defaults or standalone Antigravity chords."},p.recommended&&E.createElement("span",{className:"text-[10px] font-semibold leading-none bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-full border border-border"},"Recommended")));
+      var sbMenus=[{value:0,label:"Never"},{value:3,label:"3 days"},{value:7,label:"7 days"},{value:14,label:"14 days"}],csd=[{value:"any",label:"Any time"},{value:7,label:"7 days"},{value:14,label:"14 days"},{value:21,label:"21 days"}],dsd=[{value:"last_updated",label:"Last Updated"},{value:"last_user_prompt",label:"Last Prompt"},{value:"custom",label:"Manual Order"}];
+      var bd=E.createElement(aV,{"data-testid":"browsing-data-row",label:"Browsing data",description:"Clear history, cookies and site data from the built-in browser, or manage cookies for each site.",rightElement:E.createElement("div",null,"Manage")});
+      var orch=H=x?"Default (Gemini Pro)":F?tVb(F,k):"The Orchestrator's own planner";
+      var rev=E.createElement("div",null,E.createElement(lJ,{onClick:()=>{}},"Cancel"),E.createElement(lJ,{"data-testid":"confirm-revoke-all",onClick:m},"Revoke all"));
+    `;
+    const extraBundled = createLocalizedBundle(Buffer.from(extra2351, "utf8"), current, { skipCoverage: true })
+      .buffer.toString("utf8");
+    assert.doesNotThrow(() => new vm.Script(extraBundled));
+    const extraOverlayMarker = extraBundled.indexOf("\n;");
+    const extraMain = extraOverlayMarker > 0 ? extraBundled.slice(0, extraOverlayMarker) : extraBundled;
+    for (const expected of [
+      "智能体设置与权限。",
+      '?"收起明细":`显示 ${A.length} 项明细`',
+      '" Token ("',
+      '" Token)"',
+      'label:"VS Code 默认"',
+      'title:"快捷键",description:"管理你的快捷键方案并在 VS Code 中自定义快捷键。"',
+      'title:"快捷键方案"',
+      '"推荐"',
+      'label:"从不"',
+      'label:"手动排序"',
+      'label:"浏览数据"',
+      ',"管理")',
+      '?"默认 (Gemini Pro)"',
+      '"Orchestrator 默认规划器"',
+      '"全部撤销"',
+    ]) {
+      assert.ok(extraMain.includes(expected), `9.15 应包含中文片段: ${expected}`);
+    }
+    assert.equal(extraMain.includes("Manage ${A.lowercase}"), false);
+    assert.equal(extraMain.includes("Show ${A.length} breakdown"), false);
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});
+
+test("Case 156: 插件市场全量目录/截断/Gemini 2.9.0 与 chrome-devtools 技能防半译回归", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+    const overlay = createRuntimeOverlay(current);
+    const sb = {
+      globalThis: {},
+      window: { location: { protocol: "https:" } },
+      document: { readyState: "loading", documentElement: { lang: "en" }, addEventListener: () => {} },
+      Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 },
+      MutationObserver: class { observe() {} },
+      fetch: async () => ({ ok: false }),
+      setTimeout,
+      clearTimeout,
+      Set,
+      Map,
+      WeakMap,
+      RegExp,
+      Object,
+      Array,
+      String,
+      Number,
+      Boolean,
+      Math,
+      Date,
+      Promise,
+    };
+    sb.globalThis = sb;
+    new vm.Script(overlay).runInContext(vm.createContext(sb));
+
+    // 1. 前缀正则收紧与优先级修复：短按钮保留，长英文句子严禁被 ^Connect (.+) / ^Add (.+) 拆成半中半英
+    assert.equal(translateDictionaryValue("Connect GitHub", current), "连接 GitHub");
+    assert.equal(translateDictionaryValue("Adding plugins from GitHub", current), "正在添加来自 GitHub 的插件");
+    assert.equal(translateDictionaryValue("Add 3 plugins from GitHub", current), "从 GitHub 添加 3 个插件");
+    assert.equal(translateDictionaryValue("Add MyTool", current), "添加 MyTool");
+    assert.equal(
+      translateDictionaryValue("Connect Antigravity to some future workspace — manage tasks without switching.", current),
+      null
+    );
+    assert.equal(
+      translateDictionaryValue("Add a platform and period if you want, for example last 7 days.", current),
+      null
+    );
+
+    // 2. ClickUp 与全部 28 个新增/改版插件市场卡片（全文与截断态）均完整汉化
+    const clickUpFull = "Connect Antigravity to your ClickUp workspace — manage tasks, track time, and collaborate with your team without switching context.";
+    assert.ok(translateDictionaryValue(clickUpFull, current)?.startsWith("将 Antigravity 连接到你的 ClickUp 工作区"));
+    assert.ok(sb.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__("Connect Antigravity to your ClickUp workspace — manage tasks, track time...").includes("ClickUp 工作区"));
+    for (const [cardDesc, expectedSnippet] of [
+      ["Antigravity for science highlights, and an overview of the main science plugins.", "科研能力亮点"],
+      ["Antigravity for science highlights, and an over...", "科研能力亮点"],
+      ["AlphaGenome and major genetics databases t…", "AlphaGenome"],
+      ["Salaries, jobs & career advice. Levels.fyi is you...", "Levels.fyi"],
+      ["Generate images and V4 videos with Kling AI. Supports multimodal references, reusable subjects, motion control, and task tracking through secure OAuth.", "可灵 AI"],
+      ["Read-only marketing analytics: report spend, conversions, CPA and ROAS across ad platforms, GA4 and Search Console. It never changes your accounts.", "只读营销数据分析"],
+      ["Build applications and shell workflows with the Gemini Interactions API, Decisions API, Live API, Genie 4 interactive worlds, and Gemini API CLI, including text, image, video, speech, and music generation, managed agents, and real-time multimodal streaming.", "Genie 4 交互世界"],
+    ]) {
+      const translated = sb.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(cardDesc);
+      assert.ok(translated && translated.includes(expectedSnippet), `插件卡片未命中预期中文: ${cardDesc} => ${translated}`);
+    }
+
+    // 3. Gemini API 2.9.0 表格单元格（含 Decisions API / Voice Remixing / Genie 4 / CLI）支持 Markdown 整段与单格翻译
+    const geminiDevCell = "Build applications with the [Interactions API](https://aistudio.google.com/docs/interactions-overview) and [Decisions API](https://aistudio.google.com/docs/decisions-api). Covers text generation, stateful multi-turn chat, streaming, function calling, structured output, calibrated decisions (`gemini-decision-1`), image generation, speech generation (TTS), Voice Design, Voice Replication, Voice Remixing, music generation, managed agents, Deep Research, and migrations from `generateContent`.";
+    const mdCellResult = sb.__AGY_ZHCN_TRANSLATE_MD__(`| \`gemini-api-dev\` | ${geminiDevCell} |`);
+    assert.ok(mdCellResult.includes("语音重混"), `Gemini 2.9.0 单元格应完整汉化: ${mdCellResult}`);
+
+    // 4. chrome-devtools-plugin 技能标题在技能列表内汉化为中文
+    for (const [skillId, zhName] of [
+      ["a11y-debugging", "无障碍调试"],
+      ["chrome-devtools", "Chrome 开发者工具"],
+      ["cookie-debugging", "Cookie 调试"],
+      ["debug-optimize-lcp", "LCP 性能调优"],
+      ["memory-leak-debugging", "内存泄漏排查"],
+      ["troubleshooting", "连接与故障排查"],
+    ]) {
+      assert.equal(sb.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(skillId), zhName);
+    }
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});
