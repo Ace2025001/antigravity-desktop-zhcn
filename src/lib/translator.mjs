@@ -2121,7 +2121,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     'function $1(a,b,c){var _r;if(b=$2.get(b))if(c=(c=$3(b,c))?b.groupsByKey.get(c.groupKey)?.labels.get(a):void 0)_r=c;if(_r===void 0)_r=(Object.hasOwn($4,a)?$4[a]:void 0)??a;return ({low:"低",medium:"中",high:"高",xhigh:"超高",max:"极高",Low:"低",Medium:"中",High:"高",Extra:"超高","Extra High":"超高",Max:"极高"}[_r]||_r)}'
   );
   sourceText = sourceText.replace(
-    /([A-Za-z0-9_$]+)\.createElement\("span",\{className:"whitespace-nowrap"\},"Thinking effort"\)/g,
+    /([A-Za-z0-9_$]+)\.createElement\("span",\{className:"whitespace-nowrap"\},\s*"Thinking effort"\)/g,
     '$1.createElement("span",{className:"whitespace-nowrap"},"思考程度")'
   );
   // 对话步骤进度胶囊（例如 0/4 steps, 6/6 steps）跨版本原生汉化
