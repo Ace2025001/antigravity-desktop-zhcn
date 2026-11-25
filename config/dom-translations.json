@@ -12864,9 +12864,17 @@
     "Extra High": "超高",
     "Extra high": "超高",
     "Show plan": "展开计划",
-    "Hide plan": "收起计划"
+    "Hide plan": "收起计划",
+    "Paid Pro": "付费 Pro",
+    "Paid Plus": "付费 Plus",
+    "Paid Ultra": "付费 Ultra"
   },
   "patterns": [
+    {
+      "source": "^Paid\\s+(Plus|Pro|Ultra|Max|Enterprise)$",
+      "target": "付费 $1",
+      "flags": "u"
+    },
     {
       "source": "^(\\d+)\\/(\\d+)\\s+steps?\\s*·\\s*(\\d+)\\s+failed\\s*·\\s*(\\d+)\\s+skipped$",
       "target": "$1/$2 步骤 · $3 项失败 · $4 项已跳过",

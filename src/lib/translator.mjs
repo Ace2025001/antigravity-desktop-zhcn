@@ -1002,7 +1002,7 @@ export function createRuntimeOverlay(dictionary) {
     "Netlify", "Railway", "Dropbox", "Databricks", "Auth0", "Arize AX", "Arize",
     "Orchestrator", "Gemini", "Claude", "Carbon", "Argon", "Hydrogen", "Tokens", "Token", "OAuth", "RBAC",
     "MCP", "SSO", "PAT", "CLI", "IDE", "SDK", "API", "WSL", "SSH", "JSON", "YAML", "HTML", "CSS",
-    "Google AI Pro", "Google AI Plus", "Google AI Ultra", "Google AI Free", "Paid Pro", "Paid Ultra", "Thinking effort",
+    "Google AI Pro", "Google AI Plus", "Google AI Ultra", "Google AI Free", "Thinking effort",
     // Plugin marketplace / service names (src/lib/auto-learned-dict.mjs): keep as-is.
     ...${JSON.stringify(KEEP_ORIGINAL_NAMES)}
   ];
@@ -1080,6 +1080,13 @@ export function createRuntimeOverlay(dictionary) {
     return false;
   }
 
+  function __isProtectedPluginCardName(el) {
+    if (!el || typeof el.closest !== "function") return false;
+    const card = el.closest("[data-testid='customization-card']");
+    if (!card) return false;
+    return Boolean(el.closest(".font-medium")) && !el.closest(".text-muted-foreground");
+  }
+
   // User switches from “汉化设置”, served by the patched main process. Until
   // they are known (or if they cannot be read) online translation stays off.
   let __zhcnSettings = null;
@@ -1119,13 +1126,14 @@ export function createRuntimeOverlay(dictionary) {
     if (/\\.(?:exe|dll|asar|js|mjs|cjs|json|md|py|sh|ps1|log|png|jpg|jpeg|svg|css|html|ts|tsx|db|pbtxt)$/i.test(t)) return false;
     if (/=>|\\bfunction\\s*\\(|[{}[\\]|\\\\<>=]|===|!==/.test(t)) return false;
     if (/^[0-9a-fA-F-]{16,64}$/.test(t)) return false;
+    if (/(?:^@[a-z0-9_.-]+[/][a-z0-9_.-]+$|^[a-z0-9]+(?:[-_][a-z0-9]+)+$)/.test(t)) return false;
     if (__PROTECTED_BRAND_SET.has(t)) return false;
     // Anything carrying a file name, link, path or inline code is (or quotes)
     // user content: never send it, wherever it appears in the string.
     if (/[a-z][a-z0-9+.-]*:\\/\\/|\\x60|(?:^|[\\s(])(?:~|\\.{1,2})?\\/[\\w.-]|[A-Za-z]:\\\\/i.test(t)) return false;
     if (/[\\w-]+\\.(?:[a-z]{1,4}\\d?|json|yaml|toml|lock|tsx|jsx|mjs|cjs|vbs|bat|cmd|ps1|txt|md|log|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\\b(?![\\w-])/.test(t) && !/\\b(?:e\\.g|i\\.e|etc|vs)\\./i.test(t)) return false;
     if (/^(?:Gemini|Claude|GPT-OSS|Google|Antigravity|Orchestrator)\\s+[0-9A-Za-z.\\s()-]+$/i.test(t) && t.split(/\\s+/).length <= 4) return false;
-    if (parentEl && __isInsideUserContent(parentEl, isAttribute)) return false;
+    if (parentEl && (__isInsideUserContent(parentEl, isAttribute) || __isProtectedPluginCardName(parentEl))) return false;
     return true;
   }
 
@@ -1244,7 +1252,9 @@ export function createRuntimeOverlay(dictionary) {
     /^Model:.*Model cannot be changed/i,
     /^Extra\\s+High$/i,
     /^Available on paid\\b/i,
+    /^Paid\\s+(?:Plus|Pro|Ultra)$/i,
     /^Toggle\\s+Swarm$/i,
+    /(?:^@[a-z0-9_.-]+[/][a-z0-9_.-]+$|^[a-z0-9]+(?:[-_][a-z0-9]+)+$)/,
     /^(?:Remove shortcut|Shortcut)\\s+\\S+\\s+for\\s+/,
     /^Install\\s+\\S/,
     /^Reset\\s+.+\\s+to\\s+default$/,
@@ -2113,7 +2123,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   );
   sourceText = sourceText.replace(
     /var ([a-zA-Z0-9_$]+)=\(\{option:a,iconOnly:b=!1\}\)\s*=>\s*\{var c=([a-zA-Z0-9_$]+)\(\);return a\.tagTitle&&a\.tagDescription\?([A-Za-z0-9_$]+)\.createElement\(\3\.Fragment,null,\3\.createElement\("div",\{"data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1\.5 text-sm\${b\?" h-4 flex-none":""}`\},!b&&\3\.createElement\("span",null,a\.tagTitle\),\3\.createElement\(([a-zA-Z0-9_$]+),\{name:"info",className:"h-3 w-3 flex-none"\}\)\),\3\.createElement\(([a-zA-Z0-9_$]+),\{id:c\},\3\.createElement\("div",\{className:"max-w-\[200px\]"\},a\.tagDescription\)\)\):a\.tagTitle\?\3\.createElement\("div",\s*\{className:"bg-secondary rounded-full px-1\.5 text-sm"\},a\.tagTitle\):null\};/g,
-    'var $1=({option:a,iconOnly:b=!1})=>{var c=$2(),tT=({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认","Leaving Soon":"即将下线","Leaving soon":"即将下线"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription));return a.tagTitle&&a.tagDescription?$3.createElement($3.Fragment,null,$3.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-sm${b?" h-4 flex-none":""}`},!b&&$3.createElement("span",{"data-model-selector-badge":"true"},tT),$3.createElement($4,{name:"info",className:"h-3 w-3 flex-none"})),$3.createElement($5,{id:c},$3.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?$3.createElement("div",\n{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-sm"},tT):null};'
+    'var $1=({option:a,iconOnly:b=!1})=>{var c=$2(),tT=({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认","Leaving Soon":"即将下线","Leaving soon":"即将下线","Paid Pro":"付费 Pro","Paid Plus":"付费 Plus","Paid Ultra":"付费 Ultra"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tD=a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription));return a.tagTitle&&a.tagDescription?$3.createElement($3.Fragment,null,$3.createElement("div",{"data-model-selector-badge":"true","data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-sm${b?" h-4 flex-none":""}`},!b&&$3.createElement("span",{"data-model-selector-badge":"true"},tT),$3.createElement($4,{name:"info",className:"h-3 w-3 flex-none"})),$3.createElement($5,{id:c},$3.createElement("div",{className:"max-w-[200px]"},tD))):a.tagTitle?$3.createElement("div",\n{"data-model-selector-badge":"true",className:"bg-secondary rounded-full px-1.5 text-sm"},tT):null};'
   );
   // 模型思考程度二级菜单标题、说明与选项原生汉化（跨版本正则通配混淆名）
   sourceText = sourceText.replace(
@@ -2489,13 +2499,13 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     sourceText,
     '=a=>a.modelOrAlias?{label:a.label',
     /([a-zA-Z0-9_$]+)=a=>a\.modelOrAlias\?\{label:a\.label,value:a\.modelOrAlias\.choice\.case==="model"\?a\.modelOrAlias\.choice\.value:([A-Za-z0-9_$]+)\.Model\.UNSPECIFIED,modelAlias:a\.modelOrAlias\.choice\.case==="alias"\?a\.modelOrAlias\.choice\.value:void 0,disabled:a\.disabled,supportedMimeTypes:new Map\(Object\.entries\(a\.supportedMimeTypes\)\),quotaInfo:a\.quotaInfo,tagTitle:a\.tagTitle,tagDescription:a\.tagDescription,/,
-    '$1=a=>a.modelOrAlias?{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$2.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认","Leaving Soon":"即将下线","Leaving soon":"即将下线"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
+    '$1=a=>a.modelOrAlias?{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$2.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认","Leaving Soon":"即将下线","Leaving soon":"即将下线","Paid Pro":"付费 Pro","Paid Plus":"付费 Plus","Paid Ultra":"付费 Ultra"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
   );
 
   // 兜底支持已解构参数的适配层
   sourceText = sourceText.replace(
     /\{label:a\.label,value:a\.modelOrAlias\.choice\.case==="model"\?a\.modelOrAlias\.choice\.value:([A-Za-z0-9_$]+)\.Model\.UNSPECIFIED,modelAlias:a\.modelOrAlias\.choice\.case==="alias"\?a\.modelOrAlias\.choice\.value:void 0,disabled:a\.disabled,supportedMimeTypes:new Map\(Object\.entries\(a\.supportedMimeTypes\)\),quotaInfo:a\.quotaInfo,tagTitle:a\.tagTitle,tagDescription:a\.tagDescription,/,
-    '{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$1.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认","Leaving Soon":"即将下线","Leaving soon":"即将下线"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
+    '{label:(a.label==="GPT-OSS 120B (Medium)"?"GPT-OSS 120B (中)":typeof a.label==="string"?a.label.replace(/\\s*\\(Thinking\\)/gi," (思考)"):a.label),value:a.modelOrAlias.choice.case==="model"?a.modelOrAlias.choice.value:$1.Model.UNSPECIFIED,modelAlias:a.modelOrAlias.choice.case==="alias"?a.modelOrAlias.choice.value:void 0,disabled:a.disabled,supportedMimeTypes:new Map(Object.entries(a.supportedMimeTypes)),quotaInfo:a.quotaInfo,tagTitle:({"Notice":"提示","Unavailable":"不可用","New":"新","Fast":"快速","Default":"默认","Leaving Soon":"即将下线","Leaving soon":"即将下线","Paid Pro":"付费 Pro","Paid Plus":"付费 Plus","Paid Ultra":"付费 Ultra"}[a.tagTitle]||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagTitle)||a.tagTitle),tagDescription:a.tagDescription==="GPT-OSS will be removed from Antigravity on November 2, 2026."?"GPT-OSS 将于 2026 年 11 月 2 日从 Antigravity 中移除。":(a.tagDescription&&(globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__?.(a.tagDescription)||globalThis.__AGY_ZHCN_TRANSLATE__?.(a.tagDescription)||a.tagDescription)),'
   );
 
   // 模型选择器标签徽章组件汉化（Notice -> 提示，Unavailable -> 不可用，兼容多版本混淆名）

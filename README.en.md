@@ -49,7 +49,7 @@ The first run asks two questions; press Enter to accept the recommended values. 
 
 | Item | Notes |
 |---|---|
-| Windows x64 | Tested on Antigravity Desktop 2.32.2, 2.33.0 and 2.34.0; follows client updates automatically |
+| Windows x64 | Tested on Antigravity Desktop 2.32.2, 2.33.0, 2.34.0 and 2.35.1; follows client updates automatically |
 | Apple Silicon macOS | Keeps the official app and builds a locally signed Chinese copy; Intel Macs not verified |
 | Scope | Antigravity Desktop client only — **not** the Antigravity IDE extension |
 | Compatibility | The client's file structure is checked before every run; new versions are adapted automatically when possible, otherwise it stops with a message instead of forcing changes |

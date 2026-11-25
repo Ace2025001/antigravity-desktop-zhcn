@@ -23,7 +23,9 @@ export const OBSOLETE_LEARNED_KEY_PATTERNS = [
   /^Model:.*Model cannot be changed/i,
   /^Extra\s+High$/i,
   /^Available on paid\b/i,
+  /^Paid\s+(?:Plus|Pro|Ultra)$/i,
   /^Toggle\s+Swarm$/i,
+  /(?:^@[a-z0-9_.-]+\/[a-z0-9_.-]+$|^[a-z0-9]+(?:[-_][a-z0-9]+)+$)/,
   /[a-z][a-z0-9+.-]*:\/\/|`|(?:^|[\s(])(?:~|\.{1,2})?\/[\w.-]|[A-Za-z]:\\/i,
   /[\w-]+\.(?:txt|md|log|json|ya?ml|toml|lock|vbs|bat|cmd|ps1|sh|py|js|mjs|cjs|ts|tsx|jsx|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\b/i
 ];
@@ -36,7 +38,7 @@ export const KEEP_ORIGINAL_NAMES = [
   "Atlassian Teamwork Graph CLI", "PandaDoc", "Base44", "Intercom", "Mobbin", "Bigin", "Browserbase",
   "Granola", "Stripe", "Wix", "Semrush", "Context7", "Cloudflare", "CodeRabbit", "Firebase", "WordPress",
   "Gmail", "Gemini API", "monday.com", "Science", "Robotics",
-  "Google AI Pro", "Google AI Plus", "Google AI Ultra", "Google AI Free", "Paid Pro", "Paid Ultra", "Thinking effort"
+  "Google AI Pro", "Google AI Plus", "Google AI Ultra", "Google AI Free", "Thinking effort"
 ];
 const KEEP_ORIGINAL_SET = new Set(KEEP_ORIGINAL_NAMES);
 

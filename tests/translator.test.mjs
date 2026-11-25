@@ -2822,3 +2822,70 @@ test("Case 147: 2.35.1 跨版本模型标签、下线机翻纠偏、swarm_pane �
     else process.env.AGY_LANGUAGE_PACK = savedPack;
   }
 });
+
+test("Case 148: Paid Pro 模型徽章汉化为“付费 Pro”与第三方插件名（Git包名/卡片标题）免翻保护", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+    const { isObsoleteLearnedKey } = await import("../src/lib/auto-learned-dict.mjs");
+
+    // 1. Paid Pro / Ultra / Plus 标签规则验证
+    assert.equal(translateDictionaryValue("Paid Pro", current), "付费 Pro");
+    assert.equal(translateDictionaryValue("Paid Ultra", current), "付费 Ultra");
+    assert.equal(translateDictionaryValue("Paid Plus", current), "付费 Plus");
+
+    const sampleG5 = 'var G5=({option:a,iconOnly:b=!1})=>{var c=NL();return a.tagTitle&&a.tagDescription?E.createElement(E.Fragment,null,E.createElement("div",{"data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-sm${b?" h-4 flex-none":""}`},!b&&E.createElement("span",null,a.tagTitle),E.createElement(sx,{name:"info",className:"h-3 w-3 flex-none"})),E.createElement(jJ,{id:c},E.createElement("div",{className:"max-w-[200px]"},a.tagDescription))):a.tagTitle?E.createElement("div",{className:"bg-secondary rounded-full px-1.5 text-sm"},a.tagTitle):null};';
+    const localized = createLocalizedBundle(Buffer.from(sampleG5, "utf8"), current, { skipCoverage: true }).buffer.toString("utf8");
+    assert.ok(localized.includes('"Paid Pro":"付费 Pro"'), "G5 component must localize Paid Pro");
+
+    // 2. 第三方包名/Git 项目名隔离与已学条目清理（Issue #30）
+    assert.equal(isObsoleteLearnedKey("agy-fast"), true);
+    assert.equal(isObsoleteLearnedKey("agy-capsule"), true);
+    assert.equal(isObsoleteLearnedKey("@scope/my-plugin"), true);
+
+    const overlay = createRuntimeOverlay(current);
+    const sandbox = {
+      globalThis: {},
+      window: { location: { protocol: "https:" } },
+      document: {
+        readyState: "loading",
+        documentElement: { lang: "en" },
+        addEventListener: () => {},
+      },
+      Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 },
+      MutationObserver: class { observe() {} },
+      fetch: () => Promise.resolve({ ok: false }),
+      setTimeout,
+      clearTimeout,
+      Set,
+      Map,
+      WeakMap,
+      RegExp,
+      Object,
+      Array,
+      String,
+      Number,
+      Boolean,
+      Math,
+      Date,
+    };
+    sandbox.globalThis = sandbox;
+    new vm.Script(overlay).runInContext(vm.createContext(sandbox));
+    const isEligible = sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__;
+
+    // 连字符开源项目名/作用域包名不允许送去联网
+    assert.equal(isEligible("agy-fast", null, false), false);
+    assert.equal(isEligible("agy-capsule", null, true), false);
+    assert.equal(isEligible("@org/custom-plugin", null, true), false);
+
+    // 插件卡片标题区（.font-medium）即使是带空格英文也不允许联网；描述区（.text-muted-foreground）正常允许
+    const cardTitleEl = { closest: (sel) => (sel === "[data-testid='customization-card']" || sel === ".font-medium" ? {} : null) };
+    const cardDescEl = { closest: (sel) => (sel === "[data-testid='customization-card']" || sel === ".text-muted-foreground" ? {} : null) };
+    assert.equal(isEligible("My Custom Plugin", cardTitleEl, true), false);
+    assert.equal(isEligible("Provide fast helpers for daily workflows.", cardDescEl, false), true);
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});
