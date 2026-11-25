@@ -12868,7 +12868,6 @@
     "Paid Pro": "付费 Pro",
     "Paid Plus": "付费 Plus",
     "Paid Ultra": "付费 Ultra",
-    "Markdown view mode": "Markdown 视图模式",
     "Markdown View Mode": "Markdown 视图模式",
     "Waiting": "等待中",
     "Compacting...": "正在压缩上下文...",
@@ -12888,7 +12887,281 @@
     "Couldn't load your SSH hosts. You can still type one.": "无法加载 SSH 主机列表，你仍可直接输入一个。",
     "Hidden hosts": "已隐藏主机",
     "Hide from this list": "从列表中隐藏",
-    "Show in the list again": "在列表中重新显示"
+    "Show in the list again": "在列表中重新显示",
+    "Permission preset": "权限预设",
+    "Security preset": "安全预设",
+    "Tool permissions": "工具权限",
+    "File reads": "文件读取",
+    "File writes": "文件写入",
+    "Terminal commands": "终端命令",
+    "Commands outside sandbox": "沙盒外命令",
+    "File access rules": "文件访问规则",
+    "Network access rules": "网络访问规则",
+    "Terminal command auto execution": "终端命令自动执行",
+    "Enable sandbox mode": "启用沙箱模式",
+    "Enter to send": "按 Enter 键发送",
+    "Command setup script": "命令安装脚本",
+    "Enable terminal sandbox": "启用终端沙箱",
+    "Enable sounds for agent": "为智能体启用提示音",
+    "Enable notifications for agent": "启用智能体通知",
+    "Conversation steps": "对话步骤",
+    "Custom context menus": "自定义右键菜单",
+    "Screen reader mode": "屏幕阅读器模式",
+    "Conversation width": "对话面板宽度",
+    "Terminal placement": "终端位置",
+    "Markdown artifact width": "Markdown 工件宽度",
+    "Context and quota indicator": "上下文与配额指示器",
+    "Open links in": "打开链接方式",
+    "Download location": "下载位置",
+    "Browser JavaScript execution policy": "浏览器 JavaScript 执行策略",
+    "Include Jetski default customizations": "包含系统默认定制项",
+    "Prevent sleep": "防止休眠",
+    "Keep in menu bar": "保持在菜单栏中",
+    "Automatic check for updates": "自动检查更新",
+    "Default workspace VCS": "默认工作区版本控制系统",
+    "Default Cog repository": "默认 Cog 仓库",
+    "Default Cog branch / ref": "默认 Cog 分支 / 引用",
+    "Sync JJ worktrees to head": "同步 JJ 工作树至最新提交",
+    "Enable telemetry": "启用遥测",
+    "Marketing emails": "营销邮件",
+    "Your plan": "你的方案",
+    "Google One referral": "Google One 好友推荐",
+    "Project required": "需要选择项目",
+    "License required": "需要许可证",
+    "Notification settings": "通知设置",
+    "Device name": "设备名称",
+    "Browsing history": "浏览记录",
+    "Browser actuation rules": "浏览器操作规则",
+    "Operating system": "操作系统",
+    "Host environment": "宿主环境",
+    "User type": "用户类型",
+    "Model selection": "模型选择",
+    "Enable AI credit overages": "允许超额使用 AI 点数",
+    "New conversation button": "新建对话按钮",
+    "Manage Permissions": "管理权限",
+    "Standalone terminals": "独立终端",
+    "Custom agents": "自定义智能体",
+    "custom agents": "自定义智能体",
+    "scheduled tasks": "计划任务",
+    "Code search": "代码搜索",
+    "In progress": "进行中",
+    "Mark as unread": "标记为未读",
+    "mark as unread": "标记为未读",
+    "Not found": "未找到",
+    "extra high": "超高",
+    "Input Box": "输入框",
+    "Choose which key sends a message in the chat composer.": "选择在对话输入框中发送消息的按键。",
+    "Press Cmd+Enter to send, Enter for a new line.": "按 Cmd+Enter 发送，按 Enter 换行。",
+    "Press Ctrl+Enter to send, Enter for a new line.": "按 Ctrl+Enter 发送，按 Enter 换行。",
+    "Press Enter to send, Shift+Enter for a new line.": "按 Enter 发送，按 Shift+Enter 换行。",
+    "example:\nsource ~/.jetski_shell_setup": "示例：\nsource ~/.jetski_shell_setup",
+    "Enable browser agent": "启用浏览器智能体",
+    "Let the agent open URLs, read web pages, and interact with browser content. This gives the agent access to important (and often critical) knowledge and methods of validation, but any browser integration does increase exposure to external malicious parties for security exploits.": "允许智能体打开网址、读取网页并与浏览器内容交互。这能让智能体获取重要（甚至关键）的信息与验证能力，但任何浏览器集成都会增加外部恶意攻击的安全风险。",
+    "Git-on-Borg repository used when creating a new Cog workspace from your initial prompt (e.g., chromium/chromium/src or android/platform/superproject).": "根据初始提示词创建新 Cog 工作区时使用的 Git-on-Borg 仓库（例如 chromium/chromium/src 或 android/platform/superproject）。",
+    "Plugin permissions": "插件权限",
+    "Changes plugins can make without asking.": "插件无需询问即可做出的更改。",
+    "Revoke all": "全部撤销",
+    "Allowed by you": "你已允许",
+    "Nothing is always allowed. You'll be asked before this plugin makes changes.": "暂无始终允许的权限。此插件进行更改前都会先询问你。",
+    "Included with plugin": "插件自带",
+    "These come with the plugin and can't be revoked.": "这些权限随插件附带，无法撤销。",
+    "Orchestrator Settings": "Orchestrator 设置",
+    "Orchestrator model selection": "Orchestrator 模型选择",
+    "Choose the models Orchestrator uses. A larger, smarter orchestrator model with a faster, cheaper executor gives high quality for fewer tokens.": "选择 Orchestrator 使用的模型。能力更强的协调模型搭配更快、更省成本的执行模型，可在更低 Token 消耗下保持高质量输出。",
+    "Default (Gemini Pro)": "默认（Gemini Pro）",
+    "Default uses server-managed routing and Orchestrator quota. Custom pins specific models for orchestration and execution.": "“默认”采用服务端智能路由与 Orchestrator 配额；“自定义”可固定指定协调模型与执行模型。",
+    "Orchestrator Model": "协调模型（Orchestrator）",
+    "Plans the work, makes design decisions, and reviews the result. Pick a top-tier model. You can also pick one per conversation from the Orchestrator row in the model menu.": "负责规划任务、制定设计决策并审核结果。建议选择旗舰模型；你也可以在模型菜单的 Orchestrator 行按对话单独指定。",
+    "Executor Model": "执行模型（Executor）",
+    "Carries out the plan: searches, edits, builds, and tests. Pick a faster, cheaper model.": "负责具体执行计划：搜索、编辑、构建与测试。建议选择响应更快、成本更低的模型。",
+    "Delete all Remote Agents data": "删除所有远程智能体数据",
+    "Clear Browsing Data?": "确定清除浏览数据？",
+    "Choose what to clear from the built-in browser. It can't be undone.": "选择要从内置浏览器中清除的数据，此操作无法撤销。",
+    "Visited URLs and autocomplete suggestions.": "访问过的网址和自动填充建议。",
+    "Cookies and other site data": "Cookie 及其他网站数据",
+    "Cookies, site storage and cache. Signs you out of all sites in the built-in browser and reloads its open tabs.": "包括 Cookie、站点存储和缓存。会退出你在内置浏览器中所有网站的登录状态，并重新加载已打开的标签页。",
+    "Cookies by Site": "按网站查看 Cookie",
+    "Search sites...": "搜索网站...",
+    "Couldn't load cookies.": "无法加载 Cookie。",
+    "No sites have cookies in the built-in browser.": "内置浏览器中暂无任何网站存储 Cookie。",
+    "Couldn't clear browsing data. Try again.": "无法清除浏览数据，请重试。",
+    "Cookies the built-in browser stores for each site. Deleting a site's cookies usually signs you out of it. Other site data (local storage, IndexedDB, cache) is cleared only by Browsing data → Clear.": "内置浏览器为各个网站保存的 Cookie。删除某个网站的 Cookie 通常会退出你在该网站的登录状态；其他网站数据（本地存储、IndexedDB、缓存）仅可通过“浏览数据 → 清除”一并清理。",
+    "Appears larger on mobile": "在移动端显示更大",
+    "Font size": "字体大小",
+    "Telemetry is turned off for your account.": "你的账号已关闭遥测数据收集。",
+    "This setting is turned off for your account.": "你的账号已关闭此设置。",
+    "Build With Google plugins": "与 Google 共建插件",
+    "Pre Tool Use": "工具调用前",
+    "Post Tool Use": "工具调用后",
+    "Pre Invocation": "模型调用前",
+    "Post Invocation": "模型调用后",
+    "Fires before a tool step executes.": "在工具步骤执行前触发。",
+    "Fires after a tool step completes.": "在工具步骤完成后触发。",
+    "Fires before the model is called.": "在调用模型前触发。",
+    "Fires after tool calls finish.": "在工具调用结束后触发。",
+    "Fires when the execution loop terminates.": "在执行循环终止时触发。",
+    "Built-in browser": "内置浏览器",
+    "Side panel preview": "侧边面板预览",
+    "Delete all remote agents data": "删除所有远程智能体数据",
+    "Remote agents data": "远程智能体数据",
+    "Browsing data": "浏览数据",
+    "Clear history, cookies and site data from the built-in browser, or manage cookies for each site.": "清除内置浏览器中的历史记录、Cookie 和网站数据，或按网站分别管理 Cookie。",
+    "Keybinding Scheme": "快捷键方案",
+    "Choose between non-colliding VS Code defaults or standalone Antigravity chords.": "选择互不冲突的 VS Code 默认快捷键，或使用独立的 Antigravity 组合键。",
+    "VS Code Default": "VS Code 默认",
+    "Antigravity (AGY) Style": "Antigravity (AGY) 风格",
+    "Customize Shortcuts": "自定义快捷键",
+    "Manage your keybinding scheme and customize shortcuts in VS Code.": "管理你的快捷键方案并在 VS Code 中自定义快捷键。",
+    "VS Code keyboard shortcuts": "VS Code 键盘快捷键",
+    "Inspect live bindings or record custom key chords filtered to": "查看实时按键绑定或录制仅筛选",
+    "Customize Sidebar": "定制侧边栏",
+    "Inbox Mode": "收件箱模式",
+    "Locked while grouped by Status": "按状态分组时已锁定",
+    "Manual Order": "手动排序",
+    "Working Section": "进行中分组",
+    "Auto-Resolve": "自动归档",
+    "Last Activity": "最近活动",
+    "Any time": "任意时间",
+    "3 days": "3 天",
+    "7 days": "7 天",
+    "14 days": "14 天",
+    "21 days": "21 天",
+    "Automatically pin conversations when you send a message. Unpin as needed to keep your Pinned list focused.": "发送消息时自动置顶对话。你可以按需取消置顶以保持置顶列表精简。",
+    "Keep running conversations in a separate Working section instead of in the Inbox.": "将运行中的对话保留在独立的“进行中”分组中，而不放入收件箱。",
+    "Move idle Inbox conversations to Resolved automatically after the selected time.": "在超过所选时间后，自动将空闲的收件箱对话移至“已处理”。",
+    "Click items to multi-select · Drag or ‹/› pills to reorder": "点击项目可多选 · 拖动或使用 ‹/› 标签调整顺序",
+    "Filters": "筛选",
+    "Pinned": "已置顶",
+    "Inbox": "收件箱",
+    "Resolved": "已处理",
+    "Unread": "未读",
+    "Needs Input": "需要输入",
+    "Stalled": "已停滞",
+    "Updating": "更新中",
+    "Provisioning": "正在配置",
+    "No agents": "暂无智能体",
+    "No longer available": "已不可用",
+    "No longer active": "已不再活跃",
+    "Select Sidebar Item 1": "选择侧边栏第 1 项",
+    "Select Sidebar Item 2": "选择侧边栏第 2 项",
+    "Select Sidebar Item 3": "选择侧边栏第 3 项",
+    "Select Sidebar Item 4": "选择侧边栏第 4 项",
+    "Select Sidebar Item 5": "选择侧边栏第 5 项",
+    "Select Sidebar Item 6": "选择侧边栏第 6 项",
+    "Select Sidebar Item 7": "选择侧边栏第 7 项",
+    "Select Sidebar Item 8": "选择侧边栏第 8 项",
+    "Select Sidebar Item 9": "选择侧边栏第 9 项",
+    "The Orchestrator's own planner": "Orchestrator 默认规划器",
+    "Demoted": "已降级",
+    "Review bundle before adding": "添加前请检查插件包",
+    "Review contents": "查看内容",
+    "Services this plugin connects to on your behalf.": "此插件将代表你连接以下服务。",
+    "Show or Hide Plugins": "显示或隐藏插件",
+    "Loading bundles...": "正在加载插件包...",
+    "No bundles available.": "暂无可用插件包。",
+    "Browse files": "浏览文件",
+    "Move Up": "上移",
+    "Move Down": "下移",
+    "Auto-detect (browser defaults)": "自动检测（浏览器默认）",
+    "Loading preview…": "正在加载预览…",
+    "Saving…": "正在保存…",
+    "Not configured": "未配置",
+    "Access restricted": "访问受限",
+    "Always open": "始终打开",
+    "Clone from Remote": "从远程克隆",
+    "Clone from This Computer": "从本机克隆",
+    "Continue Task →": "继续任务 →",
+    "Empty table": "空表格",
+    "Cloud Conversation": "云端对话",
+    "Dictation languages": "语音听写语言",
+    "Constrain voice dictation to selected languages in priority order. Leave empty to auto-detect.": "按优先级限定语音听写识别的语言；留空则自动检测。",
+    "Voice dictation unavailable": "语音听写不可用",
+    "Failed to send queued message": "发送排队消息失败",
+    "Failed to create automation.": "创建自动化失败。",
+    "New automation": "新建自动化",
+    "Unsent draft": "未发送的草稿",
+    "1 Draft": "1 份草稿",
+    "The main conversation's input isn't available right now.": "主对话输入框当前不可用。",
+    "This side question isn't available in this conversation.": "此旁问功能在当前对话中不可用。",
+    "Personal agent running as you": "以你的个人身份运行的智能体",
+    "Shared agent for your team": "团队共享智能体",
+    "Installed separately": "独立安装",
+    "Interrupt Agent": "中断智能体",
+    "No compatible devices found.": "未找到兼容设备。",
+    "Paste a code instead": "改为粘贴授权码",
+    "Get API key": "获取 API 密钥",
+    "Optional": "可选",
+    "Required": "必填",
+    "Waiting for the agents’ windows…": "正在等待智能体窗口…",
+    "Waiting for tool permission approval — click Open in full conversation (↗) to approve": "等待工具权限批准 — 点击“在完整对话中打开 (↗)”进行批准",
+    "Screen locked: agents can't use this Mac until you unlock it": "屏幕已锁定：请先解锁这台 Mac，智能体才能继续操作",
+    "Clear cookies and site data": "清除 Cookie 和网站数据",
+    "Flags come from Mendel experiments and from the host app. Overrides are local to this browser and change how every feature gated on the flag resolves. Some features are only read at startup — reload the window if a change does not take effect.": "开关标志来自 Mendel 实验及宿主应用。这里的覆盖设置仅在当前内置浏览器本地生效，会影响受其控制的所有功能；部分标志仅在启动时读取，修改后如未生效请重新加载窗口。",
+    "This page is taking longer than expected to load, or it may be blocking embedded views (via X-Frame-Options or CSP).": "此页面加载耗时超出预期，或该网站通过 X-Frame-Options / CSP 策略禁止嵌入预览。",
+    "Attackers might be trying to steal your information from": "攻击者可能正试图窃取你的信息，来源：",
+    "Workflows are changing on October 19th—stay tuned for updates. You can use the agent to migrate your workflows.": "工作流功能将于 10 月 19 日调整，敬请关注后续更新；你也可以让智能体协助迁移现有工作流。",
+    "Toggle Virtual Machine": "切换虚拟机",
+    "Computer": "电脑",
+    "Repo": "仓库",
+    "System default app": "系统默认应用",
+    "Command prompt": "命令提示符",
+    "Text Selection": "文本选择",
+    "Switch To": "切换至",
+    "Type your own answer": "输入你的回答",
+    "Search by name or username": "按姓名或用户名搜索",
+    "Layout": "布局",
+    "Not on a branch": "当前不在分支上",
+    "Build applications and shell workflows with the Gemini Interactions API, Decisions API, Live API, Genie 4 interactive worlds, and Gemini API CLI, including text, image, video, speech, and music generation, managed agents, and real-time multimodal streaming.": "使用 Gemini Interactions API、Decisions API、Live API、Genie 4 交互世界及 Gemini API CLI 构建应用与命令行工作流，涵盖文本、图像、视频、语音和音乐生成、托管智能体及实时多模态流式传输。",
+    "Search and retrieve official Google Health API documentation on developers.google.com/health through the Google Health Developer MCP server.": "通过 Google Health Developer MCP 服务器搜索和获取 developers.google.com/health 上的 Google Health API 官方文档。",
+    "Search official Google Home, Matter, and OpenThread documentation and query Cloud-to-cloud user feedback integration diagnostics through the Google Home Developer MCP server.": "通过 Google Home Developer MCP 服务器搜索 Google Home、Matter 与 OpenThread 官方文档，并查询云对云用户反馈集成诊断信息。",
+    "RDKit cheminformatics, reaction and property tools, plus ChEMBL and PubChem, to work with molecules, their properties, and bioactivity data.": "集成 RDKit 化学信息学、反应与性质工具以及 ChEMBL 和 PubChem，用于分析分子结构、理化性质及生物活性数据。",
+    "AlphaGenome and major genetics databases to analyze DNA variants, gene regulation, and links between genes and disease.": "结合 AlphaGenome 与主流遗传学数据库，分析 DNA 变异、基因调控机制以及基因与疾病之间的关联。",
+    "Antigravity for science highlights, and an overview of the main science plugins.": "Antigravity 科研能力亮点与核心科研插件总览。",
+    "Search scientific papers, clinical trials, FDA records, and historical texts.": "检索科学论文、临床试验记录、FDA 档案及历史文献资料。",
+    "AlphaFold, 3D visualization tools, and protein databases to explore protein structures, sequences, pathways, and drug interactions.": "通过 AlphaFold、3D 可视化工具与蛋白质数据库探索蛋白质结构、序列、信号通路及药物相互作用。",
+    "Connect Antigravity to your ClickUp workspace — manage tasks, track time, and collaborate with your team without switching context.": "将 Antigravity 连接到你的 ClickUp 工作区——无需切换上下文即可管理任务、记录工时并与团队高效协作。",
+    "Build, test, and manage n8n workflows and Agents through your instance MCP server. Use official skills for node setup, credentials, and debugging.": "通过实例 MCP 服务器构建、测试与管理 n8n 工作流及智能体，借助官方技能完成节点配置、凭据设置与调试。",
+    "Read-only marketing analytics: report spend, conversions, CPA and ROAS across ad platforms, GA4 and Search Console. It never changes your accounts.": "只读营销数据分析：汇总各广告平台、GA4 与 Search Console 的花费、转化、CPA 和 ROAS，绝不修改你的账户配置。",
+    "Search European procurement data and manage your tender pipeline.": "检索欧洲公开采购数据并管理你的招投标项目管线。",
+    "CodeRabbit is the governance and control layer for agentic software development helping developers trust AI written code.": "CodeRabbit 是面向智能体软件开发的治理与管控层，帮助开发者放心地审查并信任 AI 编写的代码。",
+    "Research U.S. case law, statutes, regulations, and court rules. Find authorities, check quotations against opinions, and see how later courts cite a case.": "检索美国判例法、成文法、法规与法院规则，查找法律依据、核对判词引文并追踪后续判例的引用情况。",
+    "Generate images and V4 videos with Kling AI. Supports multimodal references, reusable subjects, motion control, and task tracking through secure OAuth.": "使用可灵 AI（Kling AI）生成图像与 V4 视频，通过安全 OAuth 支持多模态参考、可复用主体、动作控制及任务追踪。",
+    "Salaries, jobs & career advice. Levels.fyi is your career companion to ensure you get paid fairly and find jobs you'll love.": "薪资数据、职位机会与职业发展建议。Levels.fyi 是你的职场伙伴，助你获得公平薪酬并找到心仪工作。",
+    "Generate 3D models from text or images with Meshy, then texture them and download game-ready GLB, FBX, OBJ and USDZ files, using your Meshy credits.": "使用 Meshy 根据文本或图像生成 3D 模型、制作贴图并下载可用于游戏的 GLB、FBX、OBJ 与 USDZ 文件（消耗 Meshy 点数）。",
+    "Research US case law, statutes, and regulations, plus live dockets from federal and state courts. A Midpage account is required.": "检索美国判例法、成文法、法规及联邦与州法院实时案卷记录（需要 Midpage 账号）。",
+    "Multi-model deliberation panel. Diverse AI voices + claim-level reactions on contested decisions.": "多模型协同审议面板：汇聚多元 AI 视角，针对争议决策提供逐条论断级的反馈评估。",
+    "Investigate cloud risk from your IDE: query Orca alerts, assets, attack paths, CVEs and compliance posture, and triage findings with Orca's MCP server.": "直接在 IDE 中排查云端风险：借助 Orca MCP 服务器查询告警、资产、攻击路径、CVE 漏洞与合规态势并完成风险分级。",
+    "U.S. immigration law research: published and unpublished BIA/AAO and federal cases, INA/CFR, USCIS policy, citator validity checks, and visa bulletins.": "美国移民法研究：覆盖已公开与未公开 BIA/AAO 及联邦判例、INA/CFR 条文、USCIS 政策、引文有效性核验及签证排期表。",
+    "Skills for integrating the Scandit Data Capture SDK: product selection, docs and implementation guides for barcode scanning, ID capture and smart label capture.": "Scandit Data Capture SDK 集成技能：提供条码扫描、证件识别与智能标签采集的选型、文档及实现指南。",
+    "Transcribe meetings, interviews, podcasts and videos in 119 languages, then write minutes, show notes and subtitles from the transcripts.": "支持 119 种语言的会议、访谈、播客与视频语音转写，并自动生成会议纪要、节目单与字幕文件。",
+    "SonarQube is the AI code quality and security verification platform used by millions of developers to catch bugs, vulnerabilities, and leaked secrets. This plugin enforces those standards in the agent coding loop: 7,500+ distinct issue types, secrets scanning, agentic analysis, and quality gates across 40+ languages.": "SonarQube 是数百万开发者信赖的代码质量与安全验证平台，用于捕获缺陷、漏洞与密钥泄露。该插件将其引入智能体编码闭环，支持 40+ 种语言的 7,500+ 类问题检测、密钥扫描、智能体分析与质量门禁。",
+    "Web search, content extraction, website crawling, URL discovery, and deep research for Antigravity via Tavily's hosted MCP server and skills.": "通过 Tavily 托管 MCP 服务器与技能，为 Antigravity 提供联网搜索、正文提取、网页抓取、URL 发现与深度研究能力。",
+    "Run, debug and triage tests on the TestMu AI cloud, plus Kane CLI for browser and mobile test automation and Rook CLI for testing AI agents.": "在 TestMu AI 云端运行、调试并分类测试结果，结合 Kane CLI 实现浏览器与移动端自动化测试及 Rook CLI 测试 AI 智能体。",
+    "See what GPTBot, ClaudeBot, PerplexityBot and other AI crawlers get from a website. Skills and a remote MCP server for robots.txt checks, AI visibility scans and agent directory listings.": "查看 GPTBot、ClaudeBot、PerplexityBot 等 AI 爬虫抓取网站的实际内容，提供 robots.txt 检查、AI 可见度扫描及智能体目录检索技能与远程 MCP。",
+    "Automate workflows across 10,000+ apps. Run one-off actions or build automations for YouTube, Instagram, Gmail, Facebook Pages, LinkedIn, Slack, Pinterest.": "打通 10,000+ 款应用的自动化工作流，一键执行单次任务或搭建面向 YouTube、Instagram、Gmail、Facebook Pages、LinkedIn、Slack 与 Pinterest 的自动化流程。",
+    "Productivity": "效率工具",
+    "Databases": "数据库",
+    "Observability": "可观测性",
+    "Design": "设计",
+    "Cloud": "云服务",
+    "Marketing": "营销",
+    "Identity and Access Management": "身份与访问管理",
+    "# Gemini API\n\nEquip your agent with current SDK patterns, CLI workflows, model identifiers,\nand live documentation lookup for building with the\n[Gemini API](https://aistudio.google.com/docs).\n\n## What's included\n\n### Skills\n\n| Skill | Description |\n| :--- | :--- |\n| `gemini-api-dev` | Build applications with the [Interactions API](https://aistudio.google.com/docs/interactions-overview) and [Decisions API](https://aistudio.google.com/docs/decisions-api). Covers text generation, stateful multi-turn chat, streaming, function calling, structured output, calibrated decisions (`gemini-decision-1`), image generation, speech generation (TTS), Voice Design, Voice Replication, Voice Remixing, music generation, managed agents, Deep Research, and migrations from `generateContent`. |\n| `gemini-live-api-dev` | Build low-latency, bidirectional voice and video applications over WebSockets with the [Gemini Live API](https://aistudio.google.com/docs/live-api). Covers real-time audio/video streaming, background reasoning (extended thinking), asynchronous non-blocking tool calls, real-time transcription, live speech translation, and session management. |\n| `gemini-omni-flash-api` | Generate and edit videos with Gemini Omni Flash using the Interactions API, including text-to-video, first-and-last-frame transitions, reference-guided generation, and video extensions. |\n| `genie-4-live-world` | Build real-time interactive 3D/video world generation and simulation apps with Genie 4 (`models/genie-4`) over `interactions.connect()` (WebRTC and WebSocket), including ephemeral auth tokens, `world_setup`, keyboard `user_action` controls, and mid-session prompt steering. |\n| `gemini-api-cli` | Call the Gemini API from the shell with the [`gemini-api` CLI](https://aistudio.google.com/docs/cli). Covers media generation (images, TTS, music, video), local file and YouTube analysis, audio and video transcription, Deep Research, and sandboxed agents. |\n\n### MCP server\n\n- **`gemini-api-docs`** (`https://gemini-api-docs-mcp.dev`): Provides\n  `gemini_search_docs` and `gemini_get_doc` so your agent can search and read\n  official Gemini API documentation directly without manual URL fetching.\n\n## Prerequisites\n\n1. **API key**: Set the `GEMINI_API_KEY` environment variable with a key from\n   [Google AI Studio](https://aistudio.google.com/apikey).\n2. **SDK installation**:\n   - **Python**: `pip install -U google-genai`\n   - **JavaScript / TypeScript**: `npm install @google/genai`\n3. **CLI installation** *(optional, for shell workflows)*:\n   - `curl -fsSL https://raw.githubusercontent.com/google-gemini/gemini-api-cli/main/scripts/install.sh | bash`\n\n## Example prompts\n\n- *\"Build a stateful multi-turn chat script using the Interactions API and the\n  latest models.\"*\n- *\"Create a real-time voice agent using the Gemini Live API and non-blocking\n  function calling.\"*\n- *\"Generate multi-speaker dialogue audio using the latest Gemini TTS models\n  and `speech_metadata` annotations.\"*\n- *\"Use the `gemini-api` CLI to transcribe `./interview.mp4` to an SRT file and\n  summarize the action items.\"*\n- *\"Migrate `src/` from `client.models.generate_content` to\n  `client.interactions.create`.\"*\n\n## Resources\n\n- [Gemini API Documentation in Google AI Studio](https://aistudio.google.com/docs)\n- [Interactions API Guide](https://aistudio.google.com/docs/interactions-overview)\n- [GitHub Repository (`google-gemini/gemini-skills`)](https://github.com/google-gemini/gemini-skills)": "# Gemini API\n\n为你的智能体配备最新的 SDK 规范、CLI 工作流、模型标识符以及实时文档查询能力，以便使用 [Gemini API](https://aistudio.google.com/docs) 构建应用。\n\n## 包含内容\n\n### 技能\n\n| 技能 | 说明 |\n| :--- | :--- |\n| `gemini-api-dev` | 使用 [Interactions API](https://aistudio.google.com/docs/interactions-overview) 和 [Decisions API](https://aistudio.google.com/docs/decisions-api) 构建应用程序。涵盖文本生成、有状态多轮对话、流式传输、函数调用、结构化输出、校准决策（`gemini-decision-1`）、图像生成、语音生成 (TTS)、语音设计 (Voice Design)、语音克隆 (Voice Replication)、语音重混 (Voice Remixing)、音乐生成、托管智能体、Deep Research 以及从 `generateContent` 迁移。 |\n| `gemini-live-api-dev` | 使用 [Gemini Live API](https://aistudio.google.com/docs/live-api) 基于 WebSockets 构建低延迟、双向语音与视频应用程序。涵盖实时音视频流式传输、后台推理（扩展思考）、异步非阻塞工具调用、实时转录、实时语音翻译以及会话管理。 |\n| `gemini-omni-flash-api` | 通过 Interactions API 使用 Gemini Omni Flash 生成和编辑视频，支持文生视频、首尾帧过渡、参考图引导生成以及视频续写扩展。 |\n| `genie-4-live-world` | 基于 Genie 4（`models/genie-4`）通过 `interactions.connect()`（WebRTC 与 WebSocket）构建实时交互式 3D/视频世界生成与仿真应用，涵盖临时鉴权令牌、`world_setup`、键盘 `user_action` 控制以及会话中提示词引导。 |\n| `gemini-api-cli` | 通过 [`gemini-api` CLI](https://aistudio.google.com/docs/cli) 从命令行调用 Gemini API，涵盖媒体生成（图像、TTS、音乐、视频）、本地文件与 YouTube 分析、音视频转录、Deep Research 以及沙箱智能体。 |\n\n### MCP 服务器\n\n- **`gemini-api-docs`**（`https://gemini-api-docs-mcp.dev`）：提供 `gemini_search_docs` 和 `gemini_get_doc` 工具，使你的智能体无需手动抓取 URL 即可直接搜索和阅读官方 Gemini API 文档。\n\n## 前提条件\n\n1. **API 密钥**：使用从 [Google AI Studio](https://aistudio.google.com/apikey) 获取的密钥设置 `GEMINI_API_KEY` 环境变量。\n2. **SDK 安装**：\n   - **Python**: `pip install -U google-genai`\n   - **JavaScript / TypeScript**: `npm install @google/genai`\n3. **CLI 安装** *（可选，用于命令行工作流）*：\n   - `curl -fsSL https://raw.githubusercontent.com/google-gemini/gemini-api-cli/main/scripts/install.sh | bash`\n\n## 示例提示词\n\n- *“使用 Interactions API 和最新模型构建一个有状态的多轮对话脚本。”*\n- *“使用 Gemini Live API 和非阻塞函数调用创建一个实时语音智能体。”*\n- *“使用最新的 Gemini TTS 模型和 `speech_metadata` 注解生成多人对话音频。”*\n- *“使用 `gemini-api` CLI 将 `./interview.mp4` 转录为 SRT 字幕文件并总结行动项。”*\n- *“将 `src/` 目录下的代码从 `client.models.generate_content` 迁移到 `client.interactions.create`。”*\n\n## 相关资源\n\n- [Google AI Studio 中的 Gemini API 文档](https://aistudio.google.com/docs)\n- [Interactions API 指南](https://aistudio.google.com/docs/interactions-overview)\n- [GitHub 仓库（`google-gemini/gemini-skills`）](https://github.com/google-gemini/gemini-skills)",
+    "Equip your agent with current SDK patterns, CLI workflows, model identifiers, and live documentation lookup for building with the [Gemini API](https://aistudio.google.com/docs).": "为你的智能体配备最新的 SDK 规范、CLI 工作流、模型标识符以及实时文档查询能力，以便使用 [Gemini API](https://aistudio.google.com/docs) 构建应用。",
+    "Build applications with the [Interactions API](https://aistudio.google.com/docs/interactions-overview) and [Decisions API](https://aistudio.google.com/docs/decisions-api). Covers text generation, stateful multi-turn chat, streaming, function calling, structured output, calibrated decisions (`gemini-decision-1`), image generation, speech generation (TTS), Voice Design, Voice Replication, Voice Remixing, music generation, managed agents, Deep Research, and migrations from `generateContent`.": "使用 [Interactions API](https://aistudio.google.com/docs/interactions-overview) 和 [Decisions API](https://aistudio.google.com/docs/decisions-api) 构建应用程序。涵盖文本生成、有状态多轮对话、流式传输、函数调用、结构化输出、校准决策（`gemini-decision-1`）、图像生成、语音生成 (TTS)、语音设计 (Voice Design)、语音克隆 (Voice Replication)、语音重混 (Voice Remixing)、音乐生成、托管智能体、Deep Research 以及从 `generateContent` 迁移。",
+    "Build real-time interactive 3D/video world generation and simulation apps with Genie 4 (`models/genie-4`) over `interactions.connect()` (WebRTC and WebSocket), including ephemeral auth tokens, `world_setup`, keyboard `user_action` controls, and mid-session prompt steering.": "基于 Genie 4（`models/genie-4`）通过 `interactions.connect()`（WebRTC 与 WebSocket）构建实时交互式 3D/视频世界生成与仿真应用，涵盖临时鉴权令牌、`world_setup`、键盘 `user_action` 控制以及会话中提示词引导。",
+    "Call the Gemini API from the shell with the [`gemini-api` CLI](https://aistudio.google.com/docs/cli). Covers media generation (images, TTS, music, video), local file and YouTube analysis, audio and video transcription, Deep Research, and sandboxed agents.": "通过 [`gemini-api` CLI](https://aistudio.google.com/docs/cli) 从命令行调用 Gemini API，涵盖媒体生成（图像、TTS、音乐、视频）、本地文件与 YouTube 分析、音视频转录、Deep Research 以及沙箱智能体。",
+    "**CLI installation** *(optional, for shell workflows)*:": "**CLI 安装** *（可选，用于命令行工作流）*：",
+    "*\"Use the `gemini-api` CLI to transcribe `./interview.mp4` to an SRT file and summarize the action items.\"*": "*“使用 `gemini-api` CLI 将 `./interview.mp4` 转录为 SRT 字幕文件并总结行动项。”*",
+    "# Science Overview\n\nAntigravity for science highlights, and an overview of the main science\nplugins.": "# 科研总览（Science Overview）\n\nAntigravity 科研能力亮点与核心科研插件总览。",
+    "# Adspirer Marketing Analytics for Antigravity\n\nAsk the agent how your marketing is doing and get answers from your real accounts. Adspirer Marketing Analytics is read-only: it reports spend, clicks, conversions, CPA and ROAS by channel and blended across channels, diagnoses funnels and attribution, audits conversion tracking, and reads Google Analytics 4, Search Console and Tag Manager. It cannot create, change, pause or delete anything.\n\n## Use it for\n\n- **Cross-channel reporting:** spend, conversions, CPA and ROAS by channel with a blended total, for any period you name.\n- **Attribution and funnels:** find where the funnel breaks, from ad click to site conversion.\n- **Web analytics:** Google Analytics 4 traffic and conversions, Search Console queries and pages, and Tag Manager setup.\n- **Tracking audits:** grade conversion tracking across ad platforms, GA4, Tag Manager and the Meta Pixel.\n- **Wasted spend:** search terms, keywords, placements and audiences spending without converting.\n- **Competitors:** the public ads a competitor is running now.\n\n## Install\n\n**Antigravity app:** open **Customizations**, find **Adspirer Marketing Analytics** in the\nMarketplace, and install it.\n\n**Antigravity CLI:**\n\n```text\nagy plugin install https://github.com/Adspirer/adspirer-analytics-antigravity-plugin\n```\n\n**Manual:** clone this repository into your plugins folder.\n\n```text\ngit clone https://github.com/Adspirer/adspirer-analytics-antigravity-plugin ~/.gemini/config/plugins/adspirer-analytics\n```\n\nThen sign in: open **Customizations**, then **Installed**, then **MCP Servers**, and choose\n**Authenticate** next to the Adspirer server. Sign in to Adspirer in the browser, then connect the\naccounts you want to report on at [adspirer.ai/connections](https://adspirer.ai/connections). No\nAPI key or client secret is required. An Adspirer account is required, and plan usage limits apply.\n\n## Get started\n\nAsk:\n\n```text\nShow spend, conversions, CPA and ROAS by channel for the last complete 30 days, with a blended total.\nWhich Search Console queries and pages lost the most clicks this month?\nWalk my conversion funnel and tell me where it breaks.\nAudit my GA4 and Meta Pixel tracking.\n```\n\nOr start with a skill by name:\n\n| Skill | What it does |\n| --- | --- |\n| `/adspirer-analytics-setup` | Connect your accounts and get a first look |\n| `/adspirer-analytics-status` | Connected accounts and remaining plan usage |\n| `/adspirer-analytics-performance-review` | Scorecard against the previous period, with the top changes |\n| `/adspirer-analytics-wasted-spend` | Spend that is not converting, with a fix proposed for each item |\n| `/adspirer-analytics-tracking-audit` | Grade conversion tracking and list the gaps |\n\nAdd a platform and period if you want, for example `/adspirer-analytics-performance-review last 7 days`.\n\n## What it covers\n\n| Area | Capabilities |\n| --- | --- |\n| Ad platforms | Google, Meta, TikTok, LinkedIn, Amazon, Microsoft, ChatGPT and Walmart Ads performance |\n| Web analytics | Google Analytics 4, Search Console and Tag Manager |\n| Diagnostics | Funnel diagnosis, conversion-tracking audit, and wasted-spend analysis |\n| Competitor research | Public competitor ads |\n\nThis plugin is read-only by design. Requests to create, pause, change budgets, submit URLs for\nindexing or edit tags are declined.\n\n## What's included\n\n- **Skills** (`skills/`): the five entry points above, plus `adspirer-analytics-attribution`,\n  `adspirer-analytics-competitor-research`, `adspirer-analytics-conversion-tracking`,\n  `adspirer-analytics-cross-channel`, `adspirer-analytics-platform-reports`,\n  `adspirer-analytics-product-help`, `adspirer-analytics-strategy`, `adspirer-analytics-tools` and\n  `adspirer-analytics-web-analytics`, which the agent loads when a request needs them.\n- **A rule** (`rules/adspirer-analytics.md`) that loads only for marketing-analytics requests and\n  keeps the agent read-only.\n- **The Adspirer Marketing Analytics MCP server** connection (`mcp_config.json`).\n\nThe hosted server is the source of truth for tool names and schemas. The skills teach the agent to\ndiscover the current tools and their parameters instead of hardcoding every operation.\n\n## Safety\n\n- **No writes.** The plugin cannot create, change, pause, resume or delete anything.\n- **No purchases.** The agent never buys, upgrades or renews a plan or paid feature. If a plan limit\n  is reached, it stops and explains the limit.\n- **Confirmation first** before quota-heavy runs, such as reporting on every account or property.\n- **Honest numbers.** Currency, dates, attribution window and data freshness are stated; ratios are\n  computed from totals; missing data is never reported as zero; platform-attributed revenue is not\n  treated as incremental profit; competitor research covers public ads only.\n\n## MCP and authentication\n\n```json\n{\n  \"mcpServers\": {\n    \"analytics\": {\n      \"url\": \"https://mcp.adspirer.com/analytics\"\n    }\n  }\n}\n```\n\nThe server speaks Streamable HTTP. Authentication uses OAuth 2.1 with PKCE and dynamic client\nregistration, so Antigravity handles the browser sign-in and the plugin contains no API keys,\ntokens, client secrets, or configuration variables. Ad-platform credentials stay server-side with\nAdspirer and are scoped to the accounts you connect.\n\n## Network and execution surface\n\nThe plugin's only MCP server is `https://mcp.adspirer.com/analytics`. It contains no hooks,\nscripts, telemetry, local executables, or bundled server code. Skills and the rule are Markdown\nguidance. Beyond the Adspirer server, the skills may ask the agent to read Adspirer's public\ndocumentation at `adspirer.com/docs` to answer questions about plans and setup.\n\n## Privacy, support, and source\n\n- Privacy policy: [adspirer.com/privacy](https://www.adspirer.com/privacy)\n- Terms: [adspirer.com/terms](https://www.adspirer.com/terms)\n- Documentation: [adspirer.com/docs](https://www.adspirer.com/docs)\n- Support: [support@adspirer.com](mailto:support@adspirer.com)\n- Issues: [github.com/Adspirer/adspirer-analytics-antigravity-plugin/issues](https://github.com/Adspirer/adspirer-analytics-antigravity-plugin/issues)\n\n## License\n\nMIT. See [LICENSE](LICENSE).": "# Adspirer 营销分析（适用于 Antigravity）\n\n向智能体询问营销表现，直接基于你的真实广告账户获取分析结果。Adspirer Marketing Analytics 采用只读设计：可按渠道及全渠道汇总维度报告花费、点击、转化、CPA 与 ROAS，诊断转化漏斗与归因链路，审计转化追踪配置，并读取 Google Analytics 4、Search Console 和 Tag Manager 数据；绝不会创建、修改、暂停或删除任何内容。\n\n## 适用场景\n\n- **跨渠道报表：** 按任意指定时间范围统计各渠道及总体汇总的花费、转化、CPA 与 ROAS。\n- **归因与漏斗分析：** 定位从广告点击到站内转化链路中的流失环节。\n- **网站数据分析：** 查看 Google Analytics 4 流量与转化、Search Console 搜索词与页面表现以及 Tag Manager 配置。\n- **追踪审计：** 评估各广告平台、GA4、Tag Manager 与 Meta Pixel 的转化追踪完整度。\n- **无效花费排查：** 识别产生消耗却未带来转化的搜索词、关键词、版位与受众群体。\n- **竞品调研：** 查看竞争对手当前正在投放的公开广告。\n\n## 安装方式\n\n**Antigravity 桌面端：** 打开 **插件**，在 **插件市场** 中搜索 **Adspirer Marketing Analytics** 并安装。\n\n**Antigravity CLI：**\n\n```text\nagy plugin install https://github.com/Adspirer/adspirer-analytics-antigravity-plugin\n```\n\n**手动安装：** 将该仓库克隆到你的插件目录。\n\n```text\ngit clone https://github.com/Adspirer/adspirer-analytics-antigravity-plugin ~/.gemini/config/plugins/adspirer-analytics\n```\n\n随后完成登录：打开 **插件** → **已安装** → **MCP 服务器**，在 Adspirer 服务器旁点击 **身份验证**。在浏览器中登录 Adspirer，并在 [adspirer.ai/connections](https://adspirer.ai/connections) 关联需要生成报表的账户。无需填写 API 密钥或客户端密钥，但需要 Adspirer 账号并受套餐用量限制约束。\n\n## 快速上手\n\n可以这样提问：\n\n```text\nShow spend, conversions, CPA and ROAS by channel for the last complete 30 days, with a blended total.\nWhich Search Console queries and pages lost the most clicks this month?\nWalk my conversion funnel and tell me where it breaks.\nAudit my GA4 and Meta Pixel tracking.\n```\n\n或直接按名称调用技能：\n\n| 技能 | 作用 |\n| --- | --- |\n| `/adspirer-analytics-setup` | 关联你的账户并获取首次数据概览 |\n| `/adspirer-analytics-status` | 查看已关联账户及剩余套餐额度 |\n| `/adspirer-analytics-performance-review` | 与上一周期对比评分，并列出核心变化项 |\n| `/adspirer-analytics-wasted-spend` | 找出未产生转化的花费并针对每项给出优化建议 |\n| `/adspirer-analytics-tracking-audit` | 评估转化追踪质量并列出缺失项 |\n\n如需指定平台或周期，可直接附加参数，例如 `/adspirer-analytics-performance-review last 7 days`。\n\n## 覆盖范围\n\n| 领域 | 支持能力 |\n| --- | --- |\n| 广告平台 | Google、Meta、TikTok、LinkedIn、Amazon、Microsoft、ChatGPT 与 Walmart Ads 投放表现 |\n| 网站分析 | Google Analytics 4、Search Console 与 Tag Manager |\n| 诊断分析 | 漏斗诊断、转化追踪审计与无效花费排查 |\n| 竞品研究 | 公开在投竞品广告监测 |\n\n该插件按只读模式设计，任何请求创建、暂停、调整预算、提交 URL 编入索引或修改标签的操作都会被拒绝。\n\n## 包含内容\n\n- **技能（`skills/`）：** 上述五个入口技能，以及 `adspirer-analytics-attribution`、`adspirer-analytics-competitor-research`、`adspirer-analytics-conversion-tracking`、`adspirer-analytics-cross-channel`、`adspirer-analytics-platform-reports`、`adspirer-analytics-product-help`、`adspirer-analytics-strategy`、`adspirer-analytics-tools` 和 `adspirer-analytics-web-analytics`（智能体按需加载）。\n- **规则（`rules/adspirer-analytics.md`）：** 仅在营销分析请求时加载，确保智能体保持只读行为。\n- **Adspirer Marketing Analytics MCP 服务器**连接配置（`mcp_config.json`）。\n\n托管服务端是工具名称与数据结构（Schema）的权威来源，技能会引导智能体动态发现当前工具及其参数，而非硬编码每项操作。\n\n## 安全保障\n\n- **只读不写：** 插件无法创建、修改、暂停、恢复或删除任何对象。\n- **不发起购买：** 智能体绝不会购买、升级或续订任何方案或付费功能；触发套餐上限时会停止并说明限额情况。\n- **高额度操作先确认：** 例如针对全部账户或媒体资源拉取全量报表前会先向你确认。\n- **数据如实呈现：** 明确标注币种、日期、归因窗口期与数据时效；基于总量计算比率；绝不将缺失数据报作零；不把平台归因收入等同于增量利润；竞品调研仅涵盖公开广告。\n\n## MCP 与身份验证\n\n```json\n{\n  \"mcpServers\": {\n    \"analytics\": {\n      \"url\": \"https://mcp.adspirer.com/analytics\"\n    }\n  }\n}\n```\n\n服务端使用 Streamable HTTP 协议通信，并采用支持 PKCE 与动态客户端注册的 OAuth 2.1 进行认证。Antigravity 会代为处理浏览器登录流程，插件本身不包含任何 API 密钥、令牌、客户端密钥或配置变量；广告平台凭据保留在 Adspirer 服务端并受你授权关联的账户范围限制。\n\n## 网络与执行边界\n\n该插件唯一的 MCP 服务器为 `https://mcp.adspirer.com/analytics`，不包含脚本钩子、遥测代码、本地可执行文件或打包服务端代码；技能与规则均为纯 Markdown 指南。除 Adspirer 服务器外，技能在解答方案或配置问题时可能会指示智能体查阅 `adspirer.com/docs` 公开文档。\n\n## 隐私、支持与源码\n\n- 隐私政策：[adspirer.com/privacy](https://www.adspirer.com/privacy)\n- 服务条款：[adspirer.com/terms](https://www.adspirer.com/terms)\n- 官方文档：[adspirer.com/docs](https://www.adspirer.com/docs)\n- 技术支持：[support@adspirer.com](mailto:support@adspirer.com)\n- 问题反馈：[github.com/Adspirer/adspirer-analytics-antigravity-plugin/issues](https://github.com/Adspirer/adspirer-analytics-antigravity-plugin/issues)\n\n## 许可证\n\nMIT。详见 [LICENSE](LICENSE)。",
+    "Run my daily standup from my open ClickUp tasks": "根据我当前未完成的 ClickUp 任务生成每日站会汇报",
+    "Break this initiative down into ordered subtasks in ClickUp": "将这项计划拆分为 ClickUp 中按顺序排列的子任务",
+    "Set up last quarter's project again for a new client": "为新客户复用并搭建上个季度的项目模板",
+    "Show spend, conversions, CPA and ROAS by channel for the last 30 days, with a blended total": "按渠道统计过去 30 天的花费、转化、CPA 和 ROAS，并给出汇总总计",
+    "Audit my conversion tracking across my ad platforms, GA4 and Tag Manager": "审计我在各广告平台、GA4 与 Tag Manager 上的转化追踪配置",
+    "Find ad spend that is not converting and suggest what to cut": "找出尚未产生转化的广告花费并建议可削减项",
+    "Add authentication and user management with Clerk. Skills for setup, frameworks, organizations, billing, webhooks, and testing, plus the Clerk MCP server.": "使用 Clerk 添加身份验证与用户管理，涵盖初始化配置、框架集成、组织管理、计费、Webhook 与测试技能及 Clerk MCP 服务器。"
   },
   "patterns": [
     {
@@ -13367,16 +13640,6 @@
       "flags": "u"
     },
     {
-      "source": "^Adding (.+)$",
-      "target": "正在添加 $1",
-      "flags": "u"
-    },
-    {
-      "source": "^Add (.+)$",
-      "target": "添加 $1",
-      "flags": "u"
-    },
-    {
       "source": "^Details for (.+)$",
       "target": "$1 的详情",
       "flags": "u"
@@ -13417,6 +13680,16 @@
       "flags": "u"
     },
     {
+      "source": "^Adding ((?!plugins?\\s+from\\b|your\\b|more\\b|support\\b|new\\s+)(?!.*(?:\\.\\.\\.|…)$)[^.!?;:—,\\n]{1,38})$",
+      "target": "正在添加 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Add ((?!\\d+\\s+plugins?\\s+from\\b|a\\s+platform\\b|your\\b|more\\b|support\\b)(?!.*(?:\\.\\.\\.|…)$)[^.!?;:—,\\n]{1,38})$",
+      "target": "添加 $1",
+      "flags": "u"
+    },
+    {
       "source": "^Sign in to (.+) on this computer$",
       "target": "在此电脑上登录 $1",
       "flags": "u"
@@ -13427,22 +13700,22 @@
       "flags": "u"
     },
     {
-      "source": "^Sign in to (.+)$",
+      "source": "^Sign in to ((?!.*(?:\\.\\.\\.|…)$)[^.!?;:—\\n]{1,38})$",
       "target": "登录 $1",
       "flags": "u"
     },
     {
-      "source": "^Reconnect (.+)$",
+      "source": "^Reconnect ((?!to\\s+your\\b|your\\b)(?!.*(?:\\.\\.\\.|…)$)[^.!?;:—,\\n]{1,38})$",
       "target": "重新连接 $1",
       "flags": "u"
     },
     {
-      "source": "^Disconnect (.+)$",
+      "source": "^Disconnect ((?!from\\s+your\\b|your\\b)(?!.*(?:\\.\\.\\.|…)$)[^.!?;:—,\\n]{1,38})$",
       "target": "断开 $1 连接",
       "flags": "u"
     },
     {
-      "source": "^Connect (.+)$",
+      "source": "^Connect ((?!Antigravity\\b|Google\\s+Antigravity\\b|to\\s+your\\b|to\\s+the\\b|your\\b|a\\b|an\\b|Zoho\\b|\\d+,\\d+)(?!.*(?:\\.\\.\\.|…)$)[^.!?;:—,\\n]{1,36})$",
       "target": "连接 $1",
       "flags": "u"
     },
@@ -20222,7 +20495,7 @@
       "flags": "u"
     },
     {
-      "source": "^Introducing (.+)$",
+      "source": "^Introducing ((?!.*(?:\\.\\.\\.|…)$)[^.!?;:—,\\n]{1,38})$",
       "target": "隆重推出 $1",
       "flags": "u"
     },
@@ -25572,7 +25845,7 @@
       "flags": "u"
     },
     {
-      "source": "^Search and retrieve official.*(?:\\.\\.\\.|…)$",
+      "source": "^Search and retrieve official documentation across Google Cloud.*(?:\\.\\.\\.|…)$",
       "target": "检索 Google Cloud、Gemini、Android、Fireb…",
       "flags": "u"
     },
@@ -25892,7 +26165,7 @@
       "flags": "u"
     },
     {
-      "source": "^Official Antigravity plugin .*(?:\\.\\.\\.|…)$",
+      "source": "^Official Antigravity plugin for MongoDB.*(?:\\.\\.\\.|…)$",
       "target": "MongoDB Atlas 官方 Antigravity 插件（托管 M…",
       "flags": "u"
     },
@@ -25922,7 +26195,7 @@
       "flags": "u"
     },
     {
-      "source": "^Connect Antigravity to your .*(?:\\.\\.\\.|…)$",
+      "source": "^Connect Antigravity to your Notion.*(?:\\.\\.\\.|…)$",
       "target": "通过 Notion MCP 服务器将 Antigravity 连接到你的…",
       "flags": "u"
     },
@@ -28834,6 +29107,416 @@
     {
       "source": "^File exceeds the (\\S+) display limit \\((\\S+)\\)\\.?$",
       "target": "文件大小（$2）超出 $1 的显示上限。",
+      "flags": "u"
+    },
+    {
+      "source": "^Show (\\d+) breakdowns?$",
+      "target": "显示 $1 项明细",
+      "flags": "u"
+    },
+    {
+      "source": "^Hide breakdown$",
+      "target": "收起明细",
+      "flags": "u"
+    },
+    {
+      "source": "^Manage project (?:folders|resources) and settings\\.$",
+      "target": "管理项目文件夹与设置。",
+      "flags": "u"
+    },
+    {
+      "source": "^Manage workspace (?:folders|resources) and settings\\.$",
+      "target": "管理工作区文件夹与设置。",
+      "flags": "u"
+    },
+    {
+      "source": "^Manage project (?:folders|resources), agent settings, and permissions\\.$",
+      "target": "管理项目文件夹、智能体设置与权限。",
+      "flags": "u"
+    },
+    {
+      "source": "^Manage workspace (?:folders|resources), agent settings, and permissions\\.$",
+      "target": "管理工作区文件夹、智能体设置与权限。",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) Drafts?$",
+      "target": "$1 份草稿",
+      "flags": "u"
+    },
+    {
+      "source": "^Show (\\d+) More$",
+      "target": "显示更多 ($1)",
+      "flags": "u"
+    },
+    {
+      "source": "^See (\\d+) more (.+)$",
+      "target": "查看其余 $1 项（$2）",
+      "flags": "u"
+    },
+    {
+      "source": "^\\+(\\d+) more \\(Show all\\)$",
+      "target": "+$1 项（显示全部）",
+      "flags": "u"
+    },
+    {
+      "source": "^Push (\\d+) commits? to (.+)$",
+      "target": "推送 $1 个提交到 $2",
+      "flags": "u"
+    },
+    {
+      "source": "^Pushed (\\d+) commits? to (.+)\\.$",
+      "target": "已推送 $1 个提交到 $2。",
+      "flags": "u"
+    },
+    {
+      "source": "^Pushed to (.+)\\.$",
+      "target": "已推送到 $1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Publish (.+) to origin$",
+      "target": "将 $1 发布到 origin",
+      "flags": "u"
+    },
+    {
+      "source": "^Published (.+) to origin\\.$",
+      "target": "已将 $1 发布到 origin。",
+      "flags": "u"
+    },
+    {
+      "source": "^Amended commit on (.+)\\.$",
+      "target": "已修改 $1 上的提交。",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) Help · (\\d+) Side Questions?$",
+      "target": "$1 项帮助 · $2 个旁问",
+      "flags": "u"
+    },
+    {
+      "source": "^View (\\d+) help(?: items?)? and (\\d+) side questions?$",
+      "target": "查看 $1 项帮助和 $2 个旁问",
+      "flags": "u"
+    },
+    {
+      "source": "^Stop (\\d+) selected$",
+      "target": "停止选中的 $1 项",
+      "flags": "u"
+    },
+    {
+      "source": "^Reset (\\d+) overrides?$",
+      "target": "重置 $1 项覆盖设置",
+      "flags": "u"
+    },
+    {
+      "source": "^No messages in last (\\d+) steps · Load more$",
+      "target": "最近 $1 步内无消息 · 加载更多",
+      "flags": "u"
+    },
+    {
+      "source": "^No messages in last (\\d+) steps — load older$",
+      "target": "最近 $1 步内无消息 — 加载更早消息",
+      "flags": "u"
+    },
+    {
+      "source": "^No messages in last (\\d+) steps, load older$",
+      "target": "最近 $1 步内无消息，加载更早消息",
+      "flags": "u"
+    },
+    {
+      "source": "^Sending (.+) to command$",
+      "target": "正在将 $1 发送到命令",
+      "flags": "u"
+    },
+    {
+      "source": "^Sent (.+) to command$",
+      "target": "已将 $1 发送到命令",
+      "flags": "u"
+    },
+    {
+      "source": "^Suggested sending (.+) to command$",
+      "target": "建议将 $1 发送到命令",
+      "flags": "u"
+    },
+    {
+      "source": "^Rejected sending (.+) to command$",
+      "target": "已拒绝将 $1 发送到命令",
+      "flags": "u"
+    },
+    {
+      "source": "^Error sending (.+) to command$",
+      "target": "将 $1 发送到命令时出错",
+      "flags": "u"
+    },
+    {
+      "source": "^Exceeded the rules token budget\\. Full rule content \\(([^)]+) tokens\\) was replaced with a lightweight file-path pointer in context\\.$",
+      "target": "已超出规则 Token 预算。完整规则内容（$1 Token）在上下文中已被替换为轻量文件路径指针。",
+      "flags": "u"
+    },
+    {
+      "source": "^Exceeded the customization token budget \\(([^)]+) tokens\\) and was excluded from context\\.$",
+      "target": "已超出自定义项 Token 预算（$1 Token），未纳入上下文。",
+      "flags": "u"
+    },
+    {
+      "source": "^All tools in this MCP server \\(([^)]+) tokens\\) exceeded the customization budget and were excluded from context\\.$",
+      "target": "此 MCP 服务器的所有工具（$1 Token）超出了自定义预算，未纳入上下文。",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) tools? in this MCP server \\(([^)]+) tokens\\) exceeded the customization budget and were excluded from context\\.$",
+      "target": "此 MCP 服务器中的 $1 个工具（$2 Token）超出了自定义预算，未纳入上下文。",
+      "flags": "u"
+    },
+    {
+      "source": "^Compare responses from (\\d+) models side-by-side to find the best result\\.$",
+      "target": "并排对比 $1 个模型的回复，挑选最佳结果。",
+      "flags": "u"
+    },
+    {
+      "source": "^Allow (.+) to (.+)\\?$",
+      "target": "是否允许 $1 执行“$2”？",
+      "flags": "u"
+    },
+    {
+      "source": "^Review permissions for (.+)$",
+      "target": "检查 $1 的权限",
+      "flags": "u"
+    },
+    {
+      "source": "^Review (.+) before installing$",
+      "target": "安装前检查 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Open (.+) link\\?$",
+      "target": "要打开 $1 链接吗？",
+      "flags": "u"
+    },
+    {
+      "source": "^Open URL in system browser: (.+)$",
+      "target": "在系统浏览器中打开网址：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Revoke all: (.+)$",
+      "target": "全部撤销：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Back to (.+)$",
+      "target": "返回 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Enter (.+) name\\.\\.\\.$",
+      "target": "输入$1名称...",
+      "flags": "u"
+    },
+    {
+      "source": "^Daily at (.+)$",
+      "target": "每天 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Monthly on the (\\d+)(?:st|nd|rd|th)? at (.+)$",
+      "target": "每月 $1 日 $2",
+      "flags": "u"
+    },
+    {
+      "source": "^All (\\d+) will be revoked\\. The plugin will ask before doing this again\\.$",
+      "target": "将撤销全部 $1 项权限。此插件后续执行这些操作前会重新询问你。",
+      "flags": "u"
+    },
+    {
+      "source": "^Shortcut (.+) for (.+)$",
+      "target": "$2 的快捷键：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Remove shortcut (.+) for (.+)$",
+      "target": "移除 $2 的快捷键 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Build applications and shell workflows with.*(?:\\.\\.\\.|…)$",
+      "target": "使用 Gemini Interactions API、Decisions API、Live API、Genie 4 交互世界及 Gemini API CLI 构建应用与命令行…",
+      "flags": "u"
+    },
+    {
+      "source": "^Search and retrieve official Google Health API.*(?:\\.\\.\\.|…)$",
+      "target": "通过 Google Health Developer MCP 服务器搜索和获取 Google Health API 官方文档…",
+      "flags": "u"
+    },
+    {
+      "source": "^Search official Google Home.*(?:\\.\\.\\.|…)$",
+      "target": "通过 Google Home Developer MCP 服务器搜索 Google Home、Matter 与 OpenThread 官方文档…",
+      "flags": "u"
+    },
+    {
+      "source": "^RDKit cheminformatics, reaction and property.*(?:\\.\\.\\.|…)$",
+      "target": "集成 RDKit 化学信息学、反应与性质工具以及 ChEMBL 和 PubChem，用于分析分子…",
+      "flags": "u"
+    },
+    {
+      "source": "^AlphaGenome and major genetics databases.*(?:\\.\\.\\.|…)$",
+      "target": "结合 AlphaGenome 与主流遗传学数据库，分析 DNA 变异、基因调控与疾病关联…",
+      "flags": "u"
+    },
+    {
+      "source": "^Antigravity for science highlights, and.*(?:\\.\\.\\.|…)$",
+      "target": "Antigravity 科研能力亮点与核心科研插件总览…",
+      "flags": "u"
+    },
+    {
+      "source": "^Search scientific papers, clinical trials.*(?:\\.\\.\\.|…)$",
+      "target": "检索科学论文、临床试验记录、FDA 档案及历史文献…",
+      "flags": "u"
+    },
+    {
+      "source": "^AlphaFold, 3D visualization tools, and protein.*(?:\\.\\.\\.|…)$",
+      "target": "通过 AlphaFold、3D 可视化工具与蛋白质数据库探索蛋白质结构、序列…",
+      "flags": "u"
+    },
+    {
+      "source": "^Connect Antigravity to your ClickUp workspace.*(?:\\.\\.\\.|…)$",
+      "target": "将 Antigravity 连接到你的 ClickUp 工作区——无需切换上下文即可管理任务…",
+      "flags": "u"
+    },
+    {
+      "source": "^Build, test, and manage n8n workflows.*(?:\\.\\.\\.|…)$",
+      "target": "通过实例 MCP 服务器构建、测试与管理 n8n 工作流及智能体…",
+      "flags": "u"
+    },
+    {
+      "source": "^Read-only marketing analytics: report spend.*(?:\\.\\.\\.|…)$",
+      "target": "只读营销数据分析：汇总各广告平台、GA4 与 Search Console 的花费与转化…",
+      "flags": "u"
+    },
+    {
+      "source": "^Search European procurement data.*(?:\\.\\.\\.|…)$",
+      "target": "检索欧洲公开采购数据并管理你的招投标项目管线…",
+      "flags": "u"
+    },
+    {
+      "source": "^CodeRabbit is the governance and control layer.*(?:\\.\\.\\.|…)$",
+      "target": "CodeRabbit 是面向智能体软件开发的治理与管控层…",
+      "flags": "u"
+    },
+    {
+      "source": "^Research U\\.S\\. case law, statutes, regulations.*(?:\\.\\.\\.|…)$",
+      "target": "检索美国判例法、成文法、法规与法院规则，查找依据并核对引文…",
+      "flags": "u"
+    },
+    {
+      "source": "^Generate images and V4 videos with Kling AI.*(?:\\.\\.\\.|…)$",
+      "target": "使用可灵 AI（Kling AI）生成图像与 V4 视频，支持多模态参考与动作控制…",
+      "flags": "u"
+    },
+    {
+      "source": "^Salaries, jobs & career advice\\. Levels\\.fyi.*(?:\\.\\.\\.|…)$",
+      "target": "薪资数据、职位机会与职业发展建议。Levels.fyi 是你的职场伙伴…",
+      "flags": "u"
+    },
+    {
+      "source": "^Generate 3D models from text or images.*(?:\\.\\.\\.|…)$",
+      "target": "使用 Meshy 根据文本或图像生成 3D 模型并导出贴图文件…",
+      "flags": "u"
+    },
+    {
+      "source": "^Research US case law, statutes, and regulations.*(?:\\.\\.\\.|…)$",
+      "target": "检索美国判例法、成文法、法规及联邦与州法院实时案卷…",
+      "flags": "u"
+    },
+    {
+      "source": "^Multi-model deliberation panel\\. Diverse AI.*(?:\\.\\.\\.|…)$",
+      "target": "多模型协同审议面板：汇聚多元 AI 视角与论断级评估…",
+      "flags": "u"
+    },
+    {
+      "source": "^Investigate cloud risk from your IDE: query Orca.*(?:\\.\\.\\.|…)$",
+      "target": "直接在 IDE 中排查云端风险：借助 Orca MCP 查询告警与合规态势…",
+      "flags": "u"
+    },
+    {
+      "source": "^U\\.S\\. immigration law research: published.*(?:\\.\\.\\.|…)$",
+      "target": "美国移民法研究：覆盖 BIA/AAO 与联邦判例、INA/CFR 及排期表…",
+      "flags": "u"
+    },
+    {
+      "source": "^Skills for integrating the Scandit Data Capture.*(?:\\.\\.\\.|…)$",
+      "target": "Scandit Data Capture SDK 集成技能：条码、证件与智能标签采集指南…",
+      "flags": "u"
+    },
+    {
+      "source": "^Transcribe meetings, interviews, podcasts.*(?:\\.\\.\\.|…)$",
+      "target": "支持 119 种语言的会议、访谈与视频转写，并生成纪要和字幕…",
+      "flags": "u"
+    },
+    {
+      "source": "^SonarQube is the AI code quality and security.*(?:\\.\\.\\.|…)$",
+      "target": "SonarQube 代码质量与安全验证平台，引入智能体编码闭环进行漏洞与密钥扫描…",
+      "flags": "u"
+    },
+    {
+      "source": "^Web search, content extraction, website crawling.*(?:\\.\\.\\.|…)$",
+      "target": "通过 Tavily 托管 MCP 为 Antigravity 提供联网搜索与深度研究能力…",
+      "flags": "u"
+    },
+    {
+      "source": "^Run, debug and triage tests on the TestMu AI.*(?:\\.\\.\\.|…)$",
+      "target": "在 TestMu AI 云端运行、调试并分类测试结果，结合 Kane 与 Rook CLI…",
+      "flags": "u"
+    },
+    {
+      "source": "^See what GPTBot, ClaudeBot, PerplexityBot.*(?:\\.\\.\\.|…)$",
+      "target": "查看各类 AI 爬虫抓取网站的实际内容，支持 robots.txt 检查与可见度扫描…",
+      "flags": "u"
+    },
+    {
+      "source": "^Automate workflows across 10,000\\+ apps.*(?:\\.\\.\\.|…)$",
+      "target": "打通 10,000+ 款应用的自动化工作流，一键执行任务或搭建自动流程…",
+      "flags": "u"
+    },
+    {
+      "source": "^Add authentication and user management with.*(?:\\.\\.\\.|…)$",
+      "target": "使用 Clerk 添加身份验证与用户管理，涵盖配置、框架与 MCP 服务器…",
+      "flags": "u"
+    },
+    {
+      "source": "^Robotics skills for any robot.*(?:\\.\\.\\.|…)$",
+      "target": "适用于各类机器人的技能：3D 感知、无碰撞运动规划、视觉伺服与 MuJoCo 仿真…",
+      "flags": "u"
+    },
+    {
+      "source": "^Investigate incidents, check who's on call.*(?:\\.\\.\\.|…)$",
+      "target": "在 Better Stack 中调查突发事件、查看值班人员并查询日志、指标与链路追踪…",
+      "flags": "u"
+    },
+    {
+      "source": "^Build, deploy and manage apps on Cloudflare.*(?:\\.\\.\\.|…)$",
+      "target": "在 Cloudflare Workers、存储与 AI 上构建、部署并管理应用…",
+      "flags": "u"
+    },
+    {
+      "source": "^Build, test, and debug Docusign.*(?:\\.\\.\\.|…)$",
+      "target": "借助开发者技能构建、测试和调试 Docusign 集成…",
+      "flags": "u"
+    },
+    {
+      "source": "^Query Grafana Cloud metrics.*(?:\\.\\.\\.|…)$",
+      "target": "通过托管的 MCP 服务器查询 Grafana Cloud 指标、日志、链路与性能分析…",
+      "flags": "u"
+    },
+    {
+      "source": "^The AI notepad for meetings\\..*(?:\\.\\.\\.|…)$",
+      "target": "会议 AI 智能笔记。连接会议历史记录，借助对话上下文高效完成工作…",
+      "flags": "u"
+    },
+    {
+      "source": "^Respond to and investigate incidents.*(?:\\.\\.\\.|…)$",
+      "target": "响应并调查突发事件、管理值班排班与升级流程，内置 incident.io MCP…",
       "flags": "u"
     }
   ],

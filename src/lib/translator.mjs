@@ -213,6 +213,47 @@ export function translateDynamicDurationText(normalizedCore, lookupFn) {
   return null;
 }
 
+const __caseFoldCache = new WeakMap();
+
+function isCaseFoldKeyEligible(text) {
+  return (
+    typeof text === "string" &&
+    text.length >= 4 &&
+    text.length <= 240 &&
+    !/[\r\n]/.test(text) &&
+    /\s/.test(text) &&
+    /^[A-Za-z]/.test(text) &&
+    /[a-z]/.test(text)
+  );
+}
+
+function getLowerMultiWordIndex(exactDict) {
+  if (!exactDict || typeof exactDict !== "object") return null;
+  let index = __caseFoldCache.get(exactDict);
+  if (index) return index;
+  index = new Map();
+  for (const [k, v] of Object.entries(exactDict)) {
+    if (typeof v === "string" && isCaseFoldKeyEligible(k)) {
+      const lk = k.toLowerCase();
+      if (!index.has(lk)) index.set(lk, v);
+    }
+  }
+  __caseFoldCache.set(exactDict, index);
+  return index;
+}
+
+function lookupCaseInsensitiveMultiWord(indexMap, normalizedCore) {
+  if (
+    !indexMap ||
+    !/^[A-Z]/.test(normalizedCore) ||
+    !isCaseFoldKeyEligible(normalizedCore)
+  ) {
+    return null;
+  }
+  const hit = indexMap.get(normalizedCore.toLowerCase());
+  return hit !== undefined ? hit : null;
+}
+
 export function translateDictionaryValue(value, dictionary) {
   if (typeof value !== "string" || value.length === 0) return null;
   const leading = value.match(/^\s*/u)?.[0] ?? "";
@@ -245,6 +286,13 @@ export function translateDictionaryValue(value, dictionary) {
       return leading + formatEnglishDateToChinese(normalizedCore.replace(regex, target)) + trailing;
     }
   }
+
+  const caseFoldHit = lookupCaseInsensitiveMultiWord(
+    getLowerMultiWordIndex(dictionary?.exact),
+    normalizedCore,
+  );
+  if (caseFoldHit !== null) return leading + caseFoldHit + trailing;
+
   return null;
 }
 
@@ -273,6 +321,37 @@ export function createRuntimeOverlay(dictionary) {
 ;(() => {
   "use strict";
   const exactTranslations = new Map(Object.entries(${serialized}));
+  const lowerMultiWordTranslations = new Map();
+  for (const [k, v] of exactTranslations.entries()) {
+    if (
+      typeof k === "string" &&
+      typeof v === "string" &&
+      k.length >= 4 &&
+      k.length <= 240 &&
+      !/[\\r\\n]/.test(k) &&
+      /\\s/.test(k) &&
+      /^[A-Za-z]/.test(k) &&
+      /[a-z]/.test(k)
+    ) {
+      const lk = k.toLowerCase();
+      if (!lowerMultiWordTranslations.has(lk)) lowerMultiWordTranslations.set(lk, v);
+    }
+  }
+  function __lookupCaseFoldMultiWord(text) {
+    if (
+      typeof text !== "string" ||
+      text.length < 4 ||
+      text.length > 240 ||
+      /[\\r\\n]/.test(text) ||
+      !/\\s/.test(text) ||
+      !/^[A-Z]/.test(text) ||
+      !/[a-z]/.test(text)
+    ) {
+      return null;
+    }
+    const hit = lowerMultiWordTranslations.get(text.toLowerCase());
+    return hit !== undefined ? hit : null;
+  }
   const patternTranslations = ${serializedPatterns}.map(({ source, target, flags }) => ({
     regex: new RegExp(source, flags),
     target
@@ -795,7 +874,13 @@ export function createRuntimeOverlay(dictionary) {
       "swarm_monitor": "Swarm 蜂群监视器",
       "swarm_narrator": "Swarm 协调叙述者",
       "UI Extension": "UI 扩展",
-      "Swarm": "Swarm 蜂群协作"
+      "Swarm": "Swarm 蜂群协作",
+      "a11y-debugging": "无障碍调试",
+      "chrome-devtools": "Chrome 开发者工具",
+      "cookie-debugging": "Cookie 调试",
+      "debug-optimize-lcp": "LCP 性能调优",
+      "memory-leak-debugging": "内存泄漏排查",
+      "troubleshooting": "连接与故障排查"
     };
     if (skillNameMap[trimmed]) return skillNameMap[trimmed];
 
@@ -827,16 +912,6 @@ export function createRuntimeOverlay(dictionary) {
 
     for (var i = 0; i < prefixRules.length; i++) {
       if (prefixRules[i][0].test(trimmed)) return prefixRules[i][1];
-    }
-    if (typeof desc !== "string" || !desc.trim()) return desc;
-    var trimmed = desc.trim();
-    var hit = exactTranslations.get(trimmed);
-    if (hit !== undefined) return hit;
-
-    var deEllipsis = trimmed.replace(/(?:\.\.\.|\u2026|\s)+$/g, "").trim();
-    if (deEllipsis) {
-      var hit2 = exactTranslations.get(deEllipsis);
-      if (hit2 !== undefined) return hit2;
     }
 
     var m;
@@ -881,6 +956,15 @@ export function createRuntimeOverlay(dictionary) {
 
     m = trimmed.match(/^Use\s+when\s+(.+?)(?:\.\.\.|\u2026|\.)?$/i);
     if (m) return "当 " + __translatePluginSubject(m[1]) + " 时使用。";
+
+    for (var pi = 0; pi < patternTranslations.length; pi++) {
+      var patEntry = patternTranslations[pi];
+      patEntry.regex.lastIndex = 0;
+      if (patEntry.regex.test(trimmed)) {
+        patEntry.regex.lastIndex = 0;
+        return trimmed.replace(patEntry.regex, patEntry.target);
+      }
+    }
 
     return trimmed;
   }
@@ -1016,7 +1100,7 @@ export function createRuntimeOverlay(dictionary) {
     // and wrap it, instead of leaving the whole label to machine translation.
     const __lookup = (s) => {
       const v = exactTranslations.get(s);
-      return v !== undefined ? v : null;
+      return v !== undefined ? v : __lookupCaseFoldMultiWord(s);
     };
     m = normalizedCore.match(/^(Remove shortcut|Shortcut)\\s+(\\S+)\\s+for\\s+(.+)$/);
     if (m) {
@@ -1047,6 +1131,9 @@ export function createRuntimeOverlay(dictionary) {
         return leading + __fmtEnDate(normalizedCore.replace(regex, target)) + trailing;
       }
     }
+
+    const caseFoldHit = __lookupCaseFoldMultiWord(normalizedCore);
+    if (caseFoldHit !== null) return leading + caseFoldHit + trailing;
 
     return null;
   }
@@ -2466,34 +2553,48 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /function ([A-Za-z0-9_$]+)\(a,b,c\)\{if\(b=([A-Za-z0-9_$]+)\.get\(b\)\)if\(c=\(c=([A-Za-z0-9_$]+)\(b,c\)\)\?b\.groupsByKey\.get\(c\.groupKey\)\?\.labels\.get\(a\):void 0\)return c;return\(Object\.hasOwn\(([A-Za-z0-9_$]+),a\)\?\4\[a\]:void 0\)\?\?a\}/g,
     'function $1(a,b,c){var _r;if(b=$2.get(b))if(c=(c=$3(b,c))?b.groupsByKey.get(c.groupKey)?.labels.get(a):void 0)_r=c;if(_r===void 0)_r=(Object.hasOwn($4,a)?$4[a]:void 0)??a;return ({low:"低",medium:"中",high:"高",xhigh:"超高",max:"极高",Low:"低",Medium:"中",High:"高",Extra:"超高","Extra High":"超高",Max:"极高"}[_r]||_r)}'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Thinking effort"',
     /([A-Za-z0-9_$]+)\.createElement\("span",\{className:"whitespace-nowrap"\},\s*"Thinking effort"\)/g,
     '$1.createElement("span",{className:"whitespace-nowrap"},"思考程度")'
   );
   // 对话步骤进度胶囊（例如 0/4 steps, 6/6 steps）跨版本原生汉化
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    ' steps`:""',
     /\[([A-Za-z0-9_$]+)>0\?`\$\{([A-Za-z0-9_$]+)\}\/\$\{\1\} steps`:"",([A-Za-z0-9_$]+)>0\?`\$\{\3\} failed`:"",([A-Za-z0-9_$]+)>0\?`\$\{\4\} skipped`:""\]/g,
     '[$1>0?`${$2}/${$1} 步骤`:"",$3>0?`${$3} 项失败`:"",$4>0?`${$4} 项已跳过`:""]'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"data-testid":"step-plan-chip"',
     /("data-testid":"step-plan-chip"[\s\S]{0,60}?"aria-label":`\$\{([A-Za-z0-9_$]+)\}\. )\$\{([A-Za-z0-9_$]+)\?"Hide":"Show"\} plan`/g,
     '$1${$3?"收起":"展开"}计划`'
   );
   // 代码块头部与文件预览视图切换器（Preview / Raw -> 预览 / 源码）
   sourceText = sourceText.replaceAll('"aria-label":"Markdown view mode"', '"aria-label":"Markdown 视图模式"');
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"code-block-preview-button"',
     /(value:"preview","data-testid":"code-block-preview-button"\s*\},\s*)"Preview"/g,
     '$1"预览"'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"code-block-raw-button"',
     /(value:"raw","data-testid":"code-block-raw-button"\s*\},\s*)"Raw"/g,
     '$1"源码"'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'previewMode:"preview"',
     /(previewMode:"preview"\s*\}\s*\}\s*,\s*[A-Za-z0-9_$]+\s*\)\s*\}\s*\}\s*,\s*)"Preview"/g,
     '$1"预览"'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'previewMode:"raw"',
     /(previewMode:"raw"\s*\}\s*\}\s*,\s*[A-Za-z0-9_$]+\s*\)\s*\}\s*\}\s*,\s*)"Raw"/g,
     '$1"源码"'
   );
@@ -2558,11 +2659,15 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = sourceText.replaceAll('title:"Create Project"', 'title:"创建项目"');
   sourceText = sourceText.replaceAll(',"New Workspace")', ',"新建工作区")');
   // 自动化与定时任务界面原生静态汉化（通用正则兼容各版本构建）
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"sidecar-list-empty"',
     /([A-Za-z_$][A-Za-z0-9_$]*)\.createElement\("p",\{className:"px-2\.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"\},"No ",([A-Za-z_$][A-Za-z0-9_$]*)\.emptyMessagePlural,\s*" match \\u201c",([A-Za-z_$][A-Za-z0-9_$]*),"\\u201d\."\)/g,
     '$1.createElement("p",{className:"px-2.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"},"未找到匹配“",$3,"”的",({"automations":"自动化","scheduled tasks":"定时任务"}[$2.emptyMessagePlural]||$2.emptyMessagePlural),"。")'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'className:"m-0 text-lg text-foreground"',
     /([A-Za-z_$][A-Za-z0-9_$]*)\.createElement\("p",\{className:"m-0 text-lg text-foreground"\},"No ",([A-Za-z_$][A-Za-z0-9_$]*)\.emptyMessagePlural," yet"\)/g,
     '$1.createElement("p",{className:"m-0 text-lg text-foreground"},"暂无",({"automations":"自动化","scheduled tasks":"定时任务"}[$2.emptyMessagePlural]||$2.emptyMessagePlural))'
   );
@@ -3531,17 +3636,17 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   );
   // 设置页技能项与作用域徽章跨版本安全注入 (DKb/cNb, BKb/aNb，绝不修改 VS/KT 内部避免白屏)
   sourceText = sourceText.replace(
-    /const ([a-zA-Z0-9_$]+)=\(\{item:a,onCopyPath:b,isLast:c,showBadge:d=!0\}\)\s*=>\s*B\.createElement\(([a-zA-Z0-9_$]+),\{name:a\.name,path:a\.path,onCopyPath:b,description:a\.description/g,
-    'const $1=({item:a,onCopyPath:b,isLast:c,showBadge:d=!0})=>B.createElement($2,{name:(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(a.name):a.name),path:a.path,onCopyPath:b,description:(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(a.description):a.description)'
+    /const ([a-zA-Z0-9_$]+)=\(\{item:a,onCopyPath:b,isLast:c,showBadge:d=!0\}\)\s*=>\s*([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{name:a\.name,path:a\.path,onCopyPath:b,description:a\.description/g,
+    'const $1=({item:a,onCopyPath:b,isLast:c,showBadge:d=!0})=>$2.createElement($3,{name:(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(a.name):a.name),path:a.path,onCopyPath:b,description:(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(a.description):a.description)'
   );
   sourceText = sourceText.replace(
-    /const ([a-zA-Z0-9_$]+)=\(\{isGlobal:a,workspaceName:b\}\)\s*=>\s*B\.createElement\("span",\{className:`text-\[10px\] px-1\.5 py-0\.5 rounded shrink-0 \${a\?"bg-blue-500\/10 text-blue-400":"bg-green-500\/10 text-green-400"}`\},a\?"Global":b\?b\.length>15\?b\.substring\(0,15\)\+"\\u2026":b:"Workspace"\);/g,
-    'const $1=({isGlobal:a,workspaceName:b})=>B.createElement("span",{className:`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${a?"bg-blue-500/10 text-blue-400":"bg-green-500/10 text-green-400"}`},a?"全局":b?b.length>15?b.substring(0,15)+"\\u2026":b:"工作区");'
+    /const ([a-zA-Z0-9_$]+)=\(\{isGlobal:a,workspaceName:b\}\)\s*=>\s*([A-Za-z_$][\w$]*)\.createElement\("span",\{className:`text-\[10px\] px-1\.5 py-0\.5 rounded shrink-0 \${a\?"bg-blue-500\/10 text-blue-400":"bg-green-500\/10 text-green-400"}`\},a\?"Global":b\?b\.length>15\?b\.substring\(0,15\)\+"\\u2026":b:"Workspace"\);/g,
+    'const $1=({isGlobal:a,workspaceName:b})=>$2.createElement("span",{className:`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${a?"bg-blue-500/10 text-blue-400":"bg-green-500/10 text-green-400"}`},a?"全局":b?b.length>15?b.substring(0,15)+"\\u2026":b:"工作区");'
   );
-  // 账户设置页方案配额说明跨版本注入
+  // 账户/模型设置页方案配额说明跨版本注入（兼容 Your Plan / Your plan）
   sourceText = sourceText.replace(
-    '"Your Plan: ",l),description:m,rightElement:',
-    '"你的方案：",globalThis.__AGY_ZHCN_TRANSLATE_PLAN__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN__(l):l),description:(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(m):m),rightElement:'
+    /"Your [Pp]lan: ",([a-zA-Z0-9_$]+)\),description:([a-zA-Z0-9_$]+),rightElement:/g,
+    '"你的方案：",globalThis.__AGY_ZHCN_TRANSLATE_PLAN__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN__($1):$1),description:(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__($2):$2),rightElement:'
   );
   // 右下角 NUX 新模型发布卡片组件 (M_) 原生前置翻译
   sourceText = sourceText.replace(
@@ -3558,18 +3663,18 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   // 9.11 Antigravity 2.32.2+ 全量动态变量、权限预设与深层设置组件跨版本自适应根治
   // =========================================================================
 
-  // [核心修复 1] 设置 -> 项目 -> 危险区域：“此项目由 Swarm 自动化统一管理，只能通过删除该自动化来删除。”（忽略换行符与混淆变量名）
+  // [核心修复 1] 设置 -> 项目 -> 危险区域：“此项目由 Swarm 自动化统一管理，只能通过删除该自动化来删除。”
   sourceText = fastAnchorReplace(
     sourceText,
     '" is managed by the"',
-    /([a-zA-Z0-9_$]+)\?B\.createElement\("span",null,"This ",([a-zA-Z0-9_$]+)\.lowercase," is managed by the",\s*" ",B\.createElement\("strong",null,([a-zA-Z0-9_$]+)\)," automation and can only be deleted by deleting that automation\."\):/g,
-    '$1?B.createElement("span",null,"此",$2.lowercase==="workspace"?"工作区":"项目","由 ",B.createElement("strong",null,$3)," 自动化统一管理，只能通过删除该自动化来删除。"):'
+    /([a-zA-Z0-9_$]+)\?([A-Za-z_$][\w$]*)\.createElement\("span",null,"This ",([a-zA-Z0-9_$]+)\.lowercase," is managed by the",\s*" ",\2\.createElement\("strong",null,([a-zA-Z0-9_$]+)\)," automation and can only be deleted by deleting that automation\."\):/g,
+    '$1?$2.createElement("span",null,"此",$3.lowercase==="workspace"?"工作区":"项目","由 ",$2.createElement("strong",null,$4)," 自动化统一管理，只能通过删除该自动化来删除。"):'
   );
 
-  // [核心修复 2] 设置 -> 项目 -> 权限设置副标题：“此项目专为“Swarm”自动化创建。同时包含在此项目中生效的全局权限。了解更多。”（跨变量名与换行符）
+  // [核心修复 2] 设置 -> 项目 -> 权限设置副标题（兼容 A/B/E 任意 React 变量名）
   sourceText = sourceText.replace(
-    /"Also includes",\s*" ",\s*B\.createElement\("span",\{onClick:([a-zA-Z0-9_$]+),className:"text-link hover:underline cursor-pointer font-medium"\},"Global Permissions"\),\s*" ",\s*"when working ",\s*([a-zA-Z0-9_$]+),\s*"\.",\s*" "/g,
-    '"同时包含在",$2==="in these conversations"?"这些对话":$2==="in this workspace"?"此工作区":"此项目","中生效的 ",B.createElement("span",{onClick:$1,className:"text-link hover:underline cursor-pointer font-medium"},"全局权限"),"。 "'
+    /"Also includes",\s*" ",\s*([A-Za-z_$][\w$]*)\.createElement\("span",\{onClick:([a-zA-Z0-9_$]+),className:"text-link hover:underline cursor-pointer font-medium"\},"Global Permissions"\),\s*" ",\s*"when working ",\s*([a-zA-Z0-9_$]+),\s*"\.",\s*" "/g,
+    '"同时包含在",$3==="in these conversations"?"这些对话":$3==="in this workspace"?"此工作区":"此项目","中生效的 ",$1.createElement("span",{onClick:$2,className:"text-link hover:underline cursor-pointer font-medium"},"全局权限"),"。 "'
   );
   sourceText = sourceText.replaceAll(
     'target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline cursor-pointer font-medium"},"Learn more"),"."',
@@ -3580,14 +3685,14 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     'target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline cursor-pointer font-medium"},\n"了解更多"),"。"'
   );
   sourceText = sourceText.replace(
-    /"This project was created for",\s*" ",\s*([a-zA-Z0-9_$]+)\?B\.createElement\(B\.Fragment,null,"the ",B\.createElement\("strong",null,\1\)\):"an",\s*" ",\s*"automation\. "/g,
-    '"此项目专为 ",$1?B.createElement(B.Fragment,null,"“",B.createElement("strong",null,$1),"”"):"某项"," 自动化创建。"'
+    /"This project was created for",\s*" ",\s*([a-zA-Z0-9_$]+)\?([A-Za-z_$][\w$]*)\.createElement\(\2\.Fragment,null,"the ",\2\.createElement\("strong",null,\1\)\):"an",\s*" ",\s*"automation\. "/g,
+    '"此项目专为 ",$1?$2.createElement($2.Fragment,null,"“",$2.createElement("strong",null,$1),"”"):"某项"," 自动化创建。"'
   );
 
-  // [核心修复 3] 权限预设 (AB / jC)、安全预设 (ZS / OT)、界面布局 (kj / sj)、向导卡片 (yPc / zUc)、设置搜索映射 (EBb / ZDb) 跨版本自适应
+  // [核心修复 3] 权限预设 (AB / jC)、安全预设 (ZS / OT)、界面布局 (kj / sj)、向导卡片 (yPc / zUc)、设置搜索映射 (EBb / ZDb / TOb) 跨版本自适应
   sourceText = sourceText.replace(
-    /var ([a-zA-Z0-9_$]+)=\{request_review:\{label:"Request Review",description:"Every command requires approval\.",prefValues:\{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.OFF,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ASK,permissionPreset:E\.AgentPermissionPreset\.REQUEST_REVIEW\}\},"default":\{label:"Default",description:"Ask before sensitive operations\.",prefValues:\{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.PROCEED_IN_SANDBOX,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ASK,\s*permissionPreset:E\.AgentPermissionPreset\.DEFAULT\}\},auto:\{label:"Auto",description:"Automatically decide if commands run\.",prefValues:\{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.AUTO,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ASK,permissionPreset:E\.AgentPermissionPreset\.AUTO\}\},turbo:\{label:"Turbo",description:"Run all commands without restrictions\.",prefValues:\{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E\.CascadeCommandsAutoExecution\.EAGER,nonWorkspaceFileAccessPolicy:E\.AgentSettingPolicy\.ALLOW,\s*permissionPreset:E\.AgentPermissionPreset\.TURBO\}\}\}/g,
-    'var $1={request_review:{label:"请求审核",description:"每条命令均需人工批准。",prefValues:{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.OFF,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ASK,permissionPreset:E.AgentPermissionPreset.REQUEST_REVIEW}},"default":{label:"默认",description:"敏感操作前向你询问确认。",prefValues:{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.PROCEED_IN_SANDBOX,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ASK,permissionPreset:E.AgentPermissionPreset.DEFAULT}},auto:{label:"自动",description:"自动判断是否运行命令。",prefValues:{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.AUTO,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ASK,permissionPreset:E.AgentPermissionPreset.AUTO}},turbo:{label:"极速",description:"无限制直接运行所有命令。",prefValues:{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:E.CascadeCommandsAutoExecution.EAGER,nonWorkspaceFileAccessPolicy:E.AgentSettingPolicy.ALLOW,permissionPreset:E.AgentPermissionPreset.TURBO}}}'
+    /var ([a-zA-Z0-9_$]+)=\{request_review:\{label:"Request Review",description:"Every command requires approval\.",prefValues:\{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:([A-Za-z_$][\w$]*)\.CascadeCommandsAutoExecution\.OFF,nonWorkspaceFileAccessPolicy:\2\.AgentSettingPolicy\.ASK,permissionPreset:\2\.AgentPermissionPreset\.REQUEST_REVIEW\}\},"default":\{label:"Default",description:"Ask before sensitive operations\.",prefValues:\{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:\2\.CascadeCommandsAutoExecution\.PROCEED_IN_SANDBOX,nonWorkspaceFileAccessPolicy:\2\.AgentSettingPolicy\.ASK,\s*permissionPreset:\2\.AgentPermissionPreset\.DEFAULT\}\},auto:\{label:"Auto",description:"Automatically decide if commands run\.",prefValues:\{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:\2\.CascadeCommandsAutoExecution\.AUTO,nonWorkspaceFileAccessPolicy:\2\.AgentSettingPolicy\.ASK,permissionPreset:\2\.AgentPermissionPreset\.AUTO\}\},turbo:\{label:"Turbo",description:"Run all commands without restrictions\.",prefValues:\{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:\2\.CascadeCommandsAutoExecution\.EAGER,nonWorkspaceFileAccessPolicy:\2\.AgentSettingPolicy\.ALLOW,\s*permissionPreset:\2\.AgentPermissionPreset\.TURBO\}\}\}/g,
+    'var $1={request_review:{label:"请求审核",description:"每条命令均需人工批准。",prefValues:{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:$2.CascadeCommandsAutoExecution.OFF,nonWorkspaceFileAccessPolicy:$2.AgentSettingPolicy.ASK,permissionPreset:$2.AgentPermissionPreset.REQUEST_REVIEW}},"default":{label:"默认",description:"敏感操作前向你询问确认。",prefValues:{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:$2.CascadeCommandsAutoExecution.PROCEED_IN_SANDBOX,nonWorkspaceFileAccessPolicy:$2.AgentSettingPolicy.ASK,permissionPreset:$2.AgentPermissionPreset.DEFAULT}},auto:{label:"自动",description:"自动判断是否运行命令。",prefValues:{enableTerminalSandbox:!0,cascadeAutoExecutionPolicy:$2.CascadeCommandsAutoExecution.AUTO,nonWorkspaceFileAccessPolicy:$2.AgentSettingPolicy.ASK,permissionPreset:$2.AgentPermissionPreset.AUTO}},turbo:{label:"极速",description:"无限制直接运行所有命令。",prefValues:{enableTerminalSandbox:!1,cascadeAutoExecutionPolicy:$2.CascadeCommandsAutoExecution.EAGER,nonWorkspaceFileAccessPolicy:$2.AgentSettingPolicy.ALLOW,permissionPreset:$2.AgentPermissionPreset.TURBO}}}'
   );
   sourceText = fastAnchorReplace(
     sourceText,
@@ -3610,8 +3715,8 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     'var $1=[{id:"global",label:"全球"},{id:"us",label:"美国"},{id:"eu",label:"欧洲"}];'
   );
   sourceText = sourceText.replace(
-    /var ([a-zA-Z0-9_$]+)=\[\{value:E\.ArtifactReviewMode\.TURBO,label:"Always Proceed",description:"Agent never asks for review\. This maximizes the autonomy of the Agent, but also has the highest risk of the Agent operating over unsafe or injected Artifact content\."\},\{value:E\.ArtifactReviewMode\.ALWAYS,label:"Always Ask",description:"Agent always asks for review\."\}\];/g,
-    'var $1=[{value:E.ArtifactReviewMode.TURBO,label:"始终继续",description:"智能体始终不会请求人工评审。这可最大限度提高智能体自主性，但也具有执行不安全或注入工件内容的最高风险。"},{value:E.ArtifactReviewMode.ALWAYS,label:"始终询问",description:"智能体每次都会请求你进行评审。"}];'
+    /var ([a-zA-Z0-9_$]+)=\[\{value:([A-Za-z_$][\w$]*)\.ArtifactReviewMode\.TURBO,label:"Always Proceed",description:"Agent never asks for review\. This maximizes the autonomy of the Agent, but also has the highest risk of the Agent operating over unsafe or injected Artifact content\."\},\{value:\2\.ArtifactReviewMode\.ALWAYS,label:"Always Ask",description:"Agent always asks for review\."\}\];/g,
+    'var $1=[{value:$2.ArtifactReviewMode.TURBO,label:"始终继续",description:"智能体始终不会请求人工评审。这可最大限度提高智能体自主性，但也具有执行不安全或注入工件内容的最高风险。"},{value:$2.ArtifactReviewMode.ALWAYS,label:"始终询问",description:"智能体每次都会请求你进行评审。"}];'
   );
   sourceText = sourceText.replace(
     /var ([a-zA-Z0-9_$]+)=new Map\(\[\["Appearance",\{sections:\[\{title:"Chat",settings:\["verboseConversationSteps"\]\},\{title:"Chat Layout",settings:\["themeMode","conversationWidth","artifactWidth","contextUsageIndicatorEnabled"\]\},\{title:"Terminal",settings:\["terminalPlacement"\]\},\{title:"Accessibility",settings:\["customContextMenusEnabled","screenReaderMode"\]\}\]\}\],\["General",\{sections:\[\{title:"Execution",settings:\["queuedMessageDeliveryStrategy"\]\},\{title:"Chat Input",settings:\["enterToSendOnMobile"\]\}\]\}\],\["Browser",\{sections:\[\{title:"General",\s*settings:\["defaultLinkOpenTarget","agentBrowserTools","browserJsExecutionPolicy"\]\}\]\}\],\["Account",\{sections:\[\{title:"General",settings:\["disableCodeSnippetTelemetry"\]\}\]\}\],\["Models",\{sections:\[\{title:"Quota",settings:\["useAICredits"\]\}\]\}\],\["Customizations",\{sections:\[\{title:"Default Customizations",settings:\["includeJetskiDefaultCustomizations"\]\},\{title:"Customize Global Skills",settings:\["antigravity\.customization\.skills"\]\},\{title:"Custom Agents",settings:\["antigravity\.customization\.customAgents"\]\},\s*\{title:"MCP Servers",settings:\["antigravity\.customization\.mcp"\]\}\]\}\],\["Notifications",\{sections:\[\{title:"General",settings:\["enableNotificationsForSpecialEvents","enableSoundsForSpecialEvents"\]\}\]\}\],\["App",\{sections:\[\{title:"General",settings:\["keepComputerAwake","runInBackground"\]\},\{title:"Updater",settings:\["autoCheckForUpdates"\]\}\]\}\],\["Jetski Chat",\{sections:\[\]\}\],\["Developer",\{sections:\[\]\}\]\]\);/g,
@@ -3649,17 +3754,23 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /([a-zA-Z0-9_$]+)==="use_global"\?`Inherits your Global Permissions when working \$\{([a-zA-Z0-9_$]+)\}\.`:([a-zA-Z0-9_$]+)\[\1\]\?\.description\?\?""/g,
     '$1==="use_global"?`在${$2==="in these conversations"?"这些对话":$2==="in this workspace"?"此工作区":"此项目"}中工作时继承全局权限。`:$3[$1]?.description??""'
   );
-  sourceText = sourceText.replace(
-    /\?"Inherit Global":([a-zA-Z0-9_$]+)===E\.AgentSettingPolicy\.ALLOW\?\s*"Allow":\1===E\.AgentSettingPolicy\.DENY\?"Deny":"Always Ask"/g,
-    '?"继承全局":$1===E.AgentSettingPolicy.ALLOW?"允许":$1===E.AgentSettingPolicy.DENY?"拒绝":"始终询问"'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '.AgentSettingPolicy.ALLOW?',
+    /\?"Inherit Global":([a-zA-Z0-9_$]+)===([A-Za-z_$][\w$]*)\.AgentSettingPolicy\.ALLOW\?\s*"Allow":\1===\2\.AgentSettingPolicy\.DENY\?"Deny":"Always Ask"/g,
+    '?"继承全局":$1===$2.AgentSettingPolicy.ALLOW?"允许":$1===$2.AgentSettingPolicy.DENY?"拒绝":"始终询问"'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '?"Inherit Global":',
     /\?"Inherit Global":([a-zA-Z0-9_$]+)\(/g,
     '?"继承全局":$1('
   );
-  sourceText = sourceText.replace(
-    /\?"Inherit Global":([a-zA-Z0-9_$]+)===E\.CascadeCommandsAutoExecution\.EAGER\?\s*"Always Proceed":\1===E\.CascadeCommandsAutoExecution\.PROCEED_IN_SANDBOX\?"Proceed in Sandbox":"Require Review"/g,
-    '?"继承全局":$1===E.CascadeCommandsAutoExecution.EAGER?"始终自动执行":$1===E.CascadeCommandsAutoExecution.PROCEED_IN_SANDBOX?"沙箱内自动执行":"需要审核"'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '.CascadeCommandsAutoExecution.EAGER?',
+    /\?"Inherit Global":([a-zA-Z0-9_$]+)===([A-Za-z_$][\w$]*)\.CascadeCommandsAutoExecution\.EAGER\?\s*"Always Proceed":\1===\2\.CascadeCommandsAutoExecution\.PROCEED_IN_SANDBOX\?"Proceed in Sandbox":"Require Review"/g,
+    '?"继承全局":$1===$2.CascadeCommandsAutoExecution.EAGER?"始终自动执行":$1===$2.CascadeCommandsAutoExecution.PROCEED_IN_SANDBOX?"沙箱内自动执行":"需要审核"'
   );
   sourceText = sourceText.replace(
     /"Enabled":([a-zA-Z0-9_$]+)===void 0\?"Inherit Global":\s*\1\?"Enabled":"Disabled":"Disabled"/g,
@@ -3677,33 +3788,96 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /([a-zA-Z0-9_$]+)==="use_global"\?"Inherit Global":\1==="turbo"\?"Always Proceed":"Always Ask"/g,
     '$1==="use_global"?"继承全局":$1==="turbo"?"始终继续":"始终询问"'
   );
-  sourceText = sourceText.replace(
-    /label:"Enable Sandbox Mode",labelId:([a-zA-Z0-9_$]+),description:"Restricts agent tools to a secure, isolated local sandbox\."/g,
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Restricts agent tools to a secure, isolated local sandbox."',
+    /label:"Enable [Ss]andbox [Mm]ode",\s*labelId:([a-zA-Z0-9_$]+),\s*description:"Restricts agent tools to a secure, isolated local sandbox\."/g,
     'label:"启用沙箱模式",labelId:$1,description:"将智能体工具限制在安全隔离的本地沙箱中运行。"'
   );
-  sourceText = sourceText.replace(
-    /label:"File Access Rules",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:"Configure allowed and denied paths for file reads and writes\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("file"\)\}\},"Open"\)/g,
-    'label:"文件访问规则",badge:$1>0?$1:void 0,description:"配置允许或拒绝文件读写的路径。",rightElement:B.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("file")}},"打开")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Restricts agent tools to a secure, isolated local sandbox."',
+    /label:"Enable [Ss]andbox [Mm]ode",\s*description:"Restricts agent tools to a secure, isolated local sandbox\."/g,
+    'label:"启用沙箱模式",description:"将智能体工具限制在安全隔离的本地沙箱中运行。"'
   );
-  sourceText = sourceText.replace(
-    /label:"Network Access Rules",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:"Configure allowed and denied URLs for reading\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("network"\)\}\},"Open"\)/g,
-    'label:"网络访问规则",badge:$1>0?$1:void 0,description:"配置允许或拒绝读取的网址。",rightElement:B.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("network")}},"打开")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Controls whether terminal commands require your approval before running."',
+    /label:"Terminal [Cc]ommand [Aa]uto [Ee]xecution",\s*description:"Controls whether terminal commands require your approval before running\."/g,
+    'label:"终端命令自动执行",description:"控制终端命令运行前是否需要你的确认批准。"'
   );
-  sourceText = sourceText.replace(
-    /label:"Terminal Commands",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:"Configure allowed terminal commands\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("command"\)\}\},"Open"\)/g,
-    'label:"终端命令",badge:$1>0?$1:void 0,description:"配置允许执行的终端命令。",rightElement:B.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("command")}},"打开")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Allow/deny agent read access to specific files or directories."',
+    /label:"File [Rr]eads",\s*description:"Allow\/deny agent read access to specific files or directories\."/g,
+    'label:"文件读取",description:"允许或拒绝智能体读取指定文件或目录。"'
   );
-  sourceText = sourceText.replace(
-    /label:"Commands Outside Sandbox",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:"Configure allowed commands outside the sandbox\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("unsandboxed"\)\}\},"Open"\)/g,
-    'label:"沙箱外命令",badge:$1>0?$1:void 0,description:"配置允许在沙箱外执行的命令。",rightElement:B.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("unsandboxed")}},"打开")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Allow/deny agent write access to specific files or directories."',
+    /label:"File [Ww]rites",\s*description:"Allow\/deny agent write access to specific files or directories\."/g,
+    'label:"文件写入",description:"允许或拒绝智能体写入指定文件或目录。"'
   );
-  sourceText = sourceText.replace(
-    /label:"MCP Tools",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:"(?:Configure external tools via Model Context Protocol\.|通过模型上下文协议 \(MCP\) 配置外部工具。)",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("mcp"\)\}\},"Open"\)/g,
-    'label:"MCP 工具",badge:$1>0?$1:void 0,description:"通过模型上下文协议 (MCP) 配置外部工具。",rightElement:B.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("mcp")}},"打开")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Allow/deny agent read access to specific URLs or domains."',
+    /label:"Read URLs",\s*description:"Allow\/deny agent read access to specific URLs or domains\."/g,
+    'label:"读取网址",description:"允许或拒绝智能体读取指定网址或域名。"'
   );
-  sourceText = sourceText.replace(
-    /label:"GitHub",description:"Configure GitHub access policies\.",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("github"\)\}\},"Open"\)/g,
-    'label:"GitHub",description:"配置 GitHub 访问策略。",rightElement:B.createElement($1,{variant:"secondary",size:"sm",onClick:()=>{$2("github")}},"打开")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Allow/deny specific terminal commands."',
+    /label:"Terminal [Cc]ommands",\s*description:"Allow\/deny specific terminal commands\."/g,
+    'label:"终端命令",description:"允许或拒绝执行指定的终端命令。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Allow/deny agent command execution outside the sandbox."',
+    /label:"Commands [Oo]utside [Ss]andbox",\s*description:"Allow\/deny agent command execution outside the sandbox\."/g,
+    'label:"沙箱外命令",description:"允许或拒绝智能体在沙箱外执行命令。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'label:"MCP ',
+    /label:"MCP [Tt]ools",\s*description:"(?:External tools the agent can call via Model Context Protocol\.|智能体可通过模型上下文协议 \(MCP\) 调用的外部工具。)"/g,
+    'label:"MCP 工具",description:"智能体可通过模型上下文协议 (MCP) 调用的外部工具。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'placeholder:"Enter tool name or server..."',
+    /placeholder:"Enter tool name or server\.\.\."/g,
+    'placeholder:"输入工具或服务器名称..."'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'id:"local",label:"This Computer"',
+    /\[\{id:"local",label:"This Computer"\},\{id:"cloud",label:"Remote"\}\]/g,
+    '[{id:"local",label:"本机"},{id:"cloud",label:"远程"}]'
+  );
+  const permissionRowDefs = [
+    ['File [Aa]ccess [Rr]ules', '文件访问规则', 'Configure allowed and denied paths for file reads and writes\\.', '配置允许或拒绝文件读写的路径。', 'file'],
+    ['Network [Aa]ccess [Rr]ules', '网络访问规则', 'Configure allowed and denied URLs for reading\\.', '配置允许或拒绝读取的网址。', 'network'],
+    ['Terminal [Cc]ommands', '终端命令', 'Configure allowed terminal commands\\.', '配置允许执行的终端命令。', 'command'],
+    ['Commands [Oo]utside [Ss]andbox', '沙箱外命令', 'Configure allowed commands outside the sandbox\\.', '配置允许在沙箱外执行的命令。', 'unsandboxed'],
+    ['MCP [Tt]ools', 'MCP 工具', '(?:Configure external tools via Model Context Protocol\\.|通过模型上下文协议 \\(MCP\\) 配置外部工具。)', '通过模型上下文协议 (MCP) 配置外部工具。', 'mcp'],
+    ['Plugin [Pp]ermissions', '插件权限', 'Changes plugins can make without asking\\.', '插件无需询问即可做出的更改。', 'plugins'],
+  ];
+  for (const [enLabel, zhLabel, enDesc, zhDesc, tabName] of permissionRowDefs) {
+    sourceText = fastAnchorReplace(
+      sourceText,
+      `("${tabName}")`,
+      new RegExp(
+        `((?:"data-testid":"[^"]+",\\s*)?)label:"${enLabel}",\\s*badge:([a-zA-Z0-9_$]+)>0\\?\\2:void 0,\\s*description:"${enDesc}",\\s*rightElement:([A-Za-z_$][\\w$]*)\\.createElement\\(([a-zA-Z0-9_$]+),\\{\\s*variant:"secondary",\\s*size:"sm",\\s*onClick:\\(\\)\\s*=>\\s*\\{([a-zA-Z0-9_$]+)\\("${tabName}"\\)\\}\\s*\\},\\s*"Open"\\)`,
+        'g'
+      ),
+      `$1label:"${zhLabel}",badge:$2>0?$2:void 0,description:"${zhDesc}",rightElement:$3.createElement($4,{variant:"secondary",size:"sm",onClick:()=>{$5("${tabName}")}},"打开")`
+    );
+  }
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '("github")',
+    /label:"GitHub",\s*description:"Configure GitHub access policies\.",\s*rightElement:([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{\s*variant:"secondary",\s*size:"sm",\s*onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("github"\)\}\s*\},\s*"Open"\)/g,
+    'label:"GitHub",description:"配置 GitHub 访问策略。",rightElement:$1.createElement($2,{variant:"secondary",size:"sm",onClick:()=>{$3("github")}},"打开")'
   );
   sourceText = fastAnchorReplace(
     sourceText,
@@ -3711,56 +3885,313 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?"Modify permissions for file, terminal, and MCP tools\.":"Modify permissions for file and terminal tools\."/g,
     '$1=$2?"修改文件、终端和 MCP 工具的相关权限。":"修改文件和终端工具的相关权限。"'
   );
-  sourceText = sourceText.replace(
-    /label:"Tool Permissions",badge:([a-zA-Z0-9_$]+)>0\?\1:void 0,description:([a-zA-Z0-9_$]+),rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"md",onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("tools"\)\}\},"Open"\)/g,
-    'label:"工具权限",badge:$1>0?$1:void 0,description:$2,rightElement:B.createElement($3,{variant:"secondary",size:"md",onClick:()=>{$4("tools")}},"打开")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '("tools")',
+    /((?:"data-testid":"tool-permissions-row",\s*)?)label:"Tool [Pp]ermissions",\s*badge:([a-zA-Z0-9_$]+)>0\?\2:void 0,\s*description:([a-zA-Z0-9_$]+),\s*rightElement:([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{\s*variant:"secondary",\s*size:"md",\s*onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\("tools"\)\}\s*\},\s*"Open"\)/g,
+    '$1label:"工具权限",badge:$2>0?$2:void 0,description:$3,rightElement:$4.createElement($5,{variant:"secondary",size:"md",onClick:()=>{$6("tools")}},"打开")'
   );
-  sourceText = sourceText.replace(
-    /\{title:"Tool Permissions",description:([a-zA-Z0-9_$]+)/g,
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Tool ',
+    /\{title:"Tool [Pp]ermissions",description:([a-zA-Z0-9_$]+)/g,
     '{title:"工具权限",description:$1'
   );
-  sourceText = sourceText.replace(
-    /label:"Commands Outside Sandbox",\s*description:"Allow\/deny agent command execution outside the sandbox\."/g,
-    'label:"沙箱外命令",description:"允许或拒绝智能体在沙箱外执行命令。"'
-  );
+  sourceText = fastAnchorReplace(sourceText, 'onBack:', /\{title:"Plugin [Pp]ermissions",onBack:/g, '{title:"插件权限",onBack:');
+  sourceText = fastAnchorReplace(sourceText, 'onBack:', /\{title:"File [Pp]ermissions",onBack:/g, '{title:"文件权限",onBack:');
+  sourceText = fastAnchorReplace(sourceText, 'onBack:', /\{title:"Network [Pp]ermissions",onBack:/g, '{title:"网络权限",onBack:');
+  sourceText = fastAnchorReplace(sourceText, 'onBack:', /\{title:"Terminal [Cc]ommands",onBack:/g, '{title:"终端命令",onBack:');
+  sourceText = fastAnchorReplace(sourceText, 'onBack:', /\{title:"Commands [Oo]utside [Ss]andbox",onBack:/g, '{title:"沙箱外命令",onBack:');
+  sourceText = fastAnchorReplace(sourceText, 'onBack:', /\{title:"MCP [Tt]ools",onBack:/g, '{title:"MCP 工具",onBack:');
 
-  // [核心修复 5] 设置区块标题组件 (VP / LQ) 与设置行组件 (UP / KQ) 跨版本通用替换
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Danger Zone"\}/g, 'B.createElement($1,{title:"危险区域"}');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:([a-zA-Z0-9_$]+)\?"Global Permissions":"Agent Settings"\}/g, 'B.createElement($1,{title:$2?"全局权限":"智能体设置"}');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Agent Behavior"\}/g, 'B.createElement($1,{title:"智能体行为"}');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:([a-zA-Z0-9_$]+)\?"Permissions":"Global Permissions"/g, 'B.createElement($1,{title:$2?"权限":"全局权限"');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Permission Settings",/g, 'B.createElement($1,{title:"权限设置",');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Local Permissions",subtitle:([a-zA-Z0-9_$]+)\}/g, 'B.createElement($1,{title:"本地权限",subtitle:$2}');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Permission Details"\}/g, 'B.createElement($1,{title:"权限详情"}');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Network Permissions"\}/g, 'B.createElement($1,{title:"网络权限"}');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Terminal & Tooling Permissions"\}/g, 'B.createElement($1,{title:"终端与工具权限"}');
-  sourceText = sourceText.replace(/label:([a-zA-Z0-9_$]+)\?"This Computer":"Permission Preset"/g, 'label:$1?"本地电脑":"权限预设"');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Default Customizations"\}/g, 'B.createElement($1,{title:"默认自定义项"}');
-  sourceText = sourceText.replace(/label:"Include Jetski Default Customizations",\s*description:"When enabled, the agent will include default customizations, including default skills\."/g, 'label:"包含默认自定义项",description:"启用后，智能体会包含默认自定义内容，包括默认技能。"');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Token Usage"\}/g, 'B.createElement($1,{title:"Token 用量"}');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Sound"\}/g, 'B.createElement($1,{title:"声音"}');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Remote Agents Data"\}/g, 'B.createElement($1,{title:"远程智能体数据"}');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{label:"Delete All Remote Agents Data"/g, 'B.createElement($1,{label:"删除所有远程智能体数据"');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Browser Subagent",\s*subtitle:([a-zA-Z0-9_$]+)\?"The browser subagent has been disabled by your administrator\. Contact your administrator to enable browser use\.":/g, 'B.createElement($1,{title:"浏览器子智能体",subtitle:$2?"你的管理员已禁用浏览器子智能体。请联系管理员以启用浏览器功能。":');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Installed MCP Servers"/g, 'B.createElement($1,{title:"已安装的 MCP 服务器"');
+  // [核心修复 5] 设置区块标题组件 (VP / bV) 与设置行组件 (UP / aV) 跨版本通用替换（兼容 A/B/E 任意 React 变量名与大小写）
+  const staticBlockTitles = [
+    ['Danger Zone', '危险区域'],
+    ['Agent Behavior', '智能体行为'],
+    ['Permission Settings', '权限设置'],
+    ['Permission Details', '权限详情'],
+    ['Network Permissions', '网络权限'],
+    ['Terminal & Tooling Permissions', '终端与工具权限'],
+    ['Default Customizations', '默认自定义项'],
+    ['Token Usage', 'Token 用量'],
+    ['Sound', '声音'],
+    ['Remote Agents Data', '远程智能体数据'],
+    ['Installed MCP Servers', '已安装的 MCP 服务器'],
+    ['Orchestrator Settings', 'Orchestrator 设置'],
+  ];
+  for (const [enTitle, zhTitle] of staticBlockTitles) {
+    sourceText = fastAnchorReplace(
+      sourceText,
+      `title:"${enTitle}"`,
+      new RegExp(`([A-Za-z_$][\\w$]*)\\.createElement\\(([a-zA-Z0-9_$]+),\\{title:"${enTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`, 'g'),
+      `$1.createElement($2,{title:"${zhTitle}"`
+    );
+  }
+  sourceText = fastAnchorReplace(sourceText, '"Global Permissions":"Agent Settings"', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:([a-zA-Z0-9_$]+)\?"Global Permissions":"Agent Settings"\}/g, '$1.createElement($2,{title:$3?"全局权限":"智能体设置"}');
+  sourceText = fastAnchorReplace(sourceText, '"Permissions":"Global Permissions"', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:([a-zA-Z0-9_$]+)\?"Permissions":"Global Permissions"/g, '$1.createElement($2,{title:$3?"权限":"全局权限"');
+  sourceText = fastAnchorReplace(sourceText, 'title:"Local Permissions",subtitle:', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"Local Permissions",subtitle:([a-zA-Z0-9_$]+)\}/g, '$1.createElement($2,{title:"本地权限",subtitle:$3}');
+  sourceText = sourceText.replace(/label:([a-zA-Z0-9_$]+)\?"This [Cc]omputer":"Permission [Pp]reset"/g, 'label:$1?"本地电脑":"权限预设"');
+  sourceText = sourceText.replace(/label:"Security [Pp]reset"/g, 'label:"安全预设"');
+  sourceText = sourceText.replace(/label:"Permission [Pp]reset"/g, 'label:"权限预设"');
+  sourceText = sourceText.replace(/label:"Include Jetski [Dd]efault [Cc]ustomizations",\s*description:"(?:When enabled, the agent will include default customizations, including default skills\.|Include default customizations, such as default skills\.)"/g, 'label:"包含系统默认定制项",description:"包含默认定制项，例如内置默认技能。"');
+  sourceText = fastAnchorReplace(sourceText, 'emote ', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{label:"Delete [Aa]ll [Rr]emote [Aa]gents [Dd]ata"/g, '$1.createElement($2,{label:"删除所有远程智能体数据"');
+  sourceText = fastAnchorReplace(sourceText, 'title:"Browser Subagent"', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"Browser Subagent",\s*subtitle:([a-zA-Z0-9_$]+)\?"The browser subagent has been disabled by your administrator\. Contact your administrator to enable browser use\.":/g, '$1.createElement($2,{title:"浏览器子智能体",subtitle:$3?"你的管理员已禁用浏览器子智能体。请联系管理员以启用浏览器功能。":');
   sourceText = sourceText.replace(/title:"Refresh MCP servers",\s*"aria-label":"Refresh MCP servers"/g, 'title:"刷新 MCP 服务器","aria-label":"刷新 MCP 服务器"');
-  sourceText = sourceText.replace(
-    /title:"Customizations",description:B\.createElement\("span",null,"Configure default behaviors, skills, and MCP servers\.",([a-zA-Z0-9_$]+)\?\.docsCustomizations&&\s*B\.createElement\(B\.Fragment,null," ",B\.createElement\("a",\{href:\1\.docsCustomizations,target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline"\},"Learn more"\),"\."\)\)/g,
-    'title:"插件",description:B.createElement("span",null,"配置默认行为、技能与 MCP 服务器。",$1?.docsCustomizations&&B.createElement(B.Fragment,null," ",B.createElement("a",{href:$1.docsCustomizations,target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline"},"了解更多"),"。"))'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Configure default behaviors, skills, and MCP servers.',
+    /title:"Customizations",description:([A-Za-z_$][\w$]*)\.createElement\("span",null,"Configure default behaviors, skills, and MCP servers\.",([a-zA-Z0-9_$]+)\?\.docsCustomizations&&\s*\1\.createElement\(\1\.Fragment,null," ",\1\.createElement\("a",\{href:\2\.docsCustomizations,target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline"\},\s*"Learn more"\),"\."\)\)/g,
+    'title:"插件",description:$1.createElement("span",null,"配置默认行为、技能与 MCP 服务器。",$2?.docsCustomizations&&$1.createElement($1.Fragment,null," ",$1.createElement("a",{href:$2.docsCustomizations,target:"_blank",rel:"noopener noreferrer",className:"text-link hover:underline"},"了解更多"),"。"))'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Browse and enable plugins from the Build With Google catalog.',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"Plugins"\},\1\.createElement\(([a-zA-Z0-9_$]+),null,\1\.createElement\(([a-zA-Z0-9_$]+),\{label:"Build With Google plugins",description:"Browse and enable plugins from the Build With Google catalog\."/g,
+    '$1.createElement($2,{title:"官方插件"},$1.createElement($3,null,$1.createElement($4,{label:"与 Google 共建插件",description:"从“与 Google 共建”目录中浏览并启用插件。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Configure agent execution, queued message delivery, and permissions.',
+    /title:"General",description:"Configure agent execution, queued message delivery, and permissions\."/g,
+    'title:"通用",description:"配置智能体执行、消息排队发送和权限。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Interface Layout"',
+    /title:"Interface Layout"/g,
+    'title:"界面布局"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Configure the agent\'s visual theme and display preferences.',
+    /title:"Appearance",description:"Configure the agent's visual theme and display preferences\."/g,
+    'title:"外观",description:"配置智能体的视觉主题与显示偏好设置。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    ' app settings.`',
+    /title:"Application",description:`Manage \$\{([a-zA-Z0-9_$]+)\} app settings\.`/g,
+    'title:"应用",description:`管理 ${$1} 应用设置。`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'label:"Advanced Settings"',
+    /label:"Advanced Settings"/g,
+    'label:"高级设置"'
+  );
+  // 2.35.1+ Settings sections Map (TOb)
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'settings:["queuedMessageDeliveryStrategy","sendMessageShortcut","enterToSendOnMobile"]',
+    /var ([a-zA-Z0-9_$]+)=new Map\(\[\["Appearance",\{sections:\[\{title:"Chat",settings:\["verboseConversationSteps"\]\},\{title:"Chat Layout",advanced:!0,settings:\["conversationWidth","artifactWidth","contextUsageIndicatorEnabled"\]\},\{title:"Terminal",advanced:!0,settings:\["terminalPlacement"\]\},\{title:"Accessibility",advanced:!0,settings:\["customContextMenusEnabled","screenReaderMode"\]\}\]\}\],\["General",\{sections:\[\{title:"Input Box",settings:\["queuedMessageDeliveryStrategy","sendMessageShortcut","enterToSendOnMobile"\]\},\{title:"Terminal",\s*advanced:!0,settings:\["shellSetupScript"\]\},\{title:"Workspaces",id:"workspace-creation",advanced:!0,settings:\["magicWorkspaceVcs","magicWorkspaceCogRepo","magicWorkspaceCogBranch","syncJjWorkspaceToHead"\]\},\{title:"Best of N",id:"best-of-n",advanced:!0,settings:\["bestOfNFullVcsClone","bestOfNGitFullClone"\]\},\{title:"Labs",id:"labs",advanced:!0,settings:\[\]\}\]\}\],\["Browser",\{sections:\[\{title:"(?:Built-in Browser|内置浏览器)",id:"defaultLinkOpenTarget",settings:\["defaultLinkOpenTarget","builtinBrowserDownloadDir"\]\},\{title:"Browser Subagent",\s*id:"browser-subagent",settings:\["agentBrowserTools","browserJsExecutionPolicy"\]\}\]\}\],\["Account",\{sections:\[\{title:"General",settings:\["disableCodeSnippetTelemetry"\]\}\]\}\],\["Models",\{sections:\[\{title:"Model Credits",settings:\["useAICredits"\]\}\]\}\],\["Customizations",\{sections:\[\{title:"Default Customizations",settings:\["includeJetskiDefaultCustomizations"\]\},\{title:"Customize Global Skills",settings:\["antigravity\.customization\.skills"\]\},\{title:"Custom Agents",settings:\["antigravity\.customization\.customAgents"\]\},\s*\{title:"MCP Servers",settings:\["antigravity\.customization\.mcp"\]\}\]\}\],\["Notifications",\{sections:\[\{title:"General",settings:\["enableNotificationsForSpecialEvents"\]\},\{title:"Sound",id:"notifications-sound",settings:\["enableSoundsForSpecialEvents","agentSoundVolume"\]\}\]\}\],\["App",\{sections:\[\{title:"General",settings:\["keepComputerAwake","runInBackground"\]\},\{advanced:!0,settings:\["autoCheckForUpdates"\]\}\]\}\]\s*\]\);/g,
+    'var $1=new Map([["Appearance",{sections:[{title:"对话",settings:["verboseConversationSteps"]},{title:"对话布局",advanced:!0,settings:["conversationWidth","artifactWidth","contextUsageIndicatorEnabled"]},{title:"终端",advanced:!0,settings:["terminalPlacement"]},{title:"辅助功能",advanced:!0,settings:["customContextMenusEnabled","screenReaderMode"]}]}],["General",{sections:[{title:"输入框",settings:["queuedMessageDeliveryStrategy","sendMessageShortcut","enterToSendOnMobile"]},{title:"终端",advanced:!0,settings:["shellSetupScript"]},{title:"工作区",id:"workspace-creation",advanced:!0,settings:["magicWorkspaceVcs","magicWorkspaceCogRepo","magicWorkspaceCogBranch","syncJjWorkspaceToHead"]},{title:"多方案优选 (Best of N)",id:"best-of-n",advanced:!0,settings:["bestOfNFullVcsClone","bestOfNGitFullClone"]},{title:"实验室",id:"labs",advanced:!0,settings:[]}]}],["Browser",{sections:[{title:"内置浏览器",id:"defaultLinkOpenTarget",settings:["defaultLinkOpenTarget","builtinBrowserDownloadDir"]},{title:"浏览器子智能体",id:"browser-subagent",settings:["agentBrowserTools","browserJsExecutionPolicy"]}]}],["Account",{sections:[{title:"通用",settings:["disableCodeSnippetTelemetry"]}]}],["Models",{sections:[{title:"模型点数",settings:["useAICredits"]}]}],["Customizations",{sections:[{title:"默认自定义项",settings:["includeJetskiDefaultCustomizations"]},{title:"自定义全局技能",settings:["antigravity.customization.skills"]},{title:"自定义智能体",settings:["antigravity.customization.customAgents"]},{title:"MCP 服务器",settings:["antigravity.customization.mcp"]}]}],["Notifications",{sections:[{title:"通用",settings:["enableNotificationsForSpecialEvents"]},{title:"声音",id:"notifications-sound",settings:["enableSoundsForSpecialEvents","agentSoundVolume"]}]}],["App",{sections:[{title:"通用",settings:["keepComputerAwake","runInBackground"]},{advanced:!0,settings:["autoCheckForUpdates"]}]}]]);'
+  );
+  // 2.35.1+ UOb 设置项与选项/描述原生替换 (Queued messages / Send message / ZTb / Conversation steps / Artifact width / Voice Mode)
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'label:"Queued messages"',
+    /label:"Queued messages",description:"Configure when follow-up messages are sent\.",options:\[([A-Za-z_$][\w$]*)\.MessageDeliveryStrategy\.WHEN_IDLE,\1\.MessageDeliveryStrategy\.NEXT_INVOCATION\],resolveSelectedOption:([^,]+),resolveOptionToString:([a-zA-Z0-9_$]+)=>\{switch\(\3\)\{case \1\.MessageDeliveryStrategy\.NEXT_INVOCATION:return"Send Immediately";\s*default:return"Queue"\}\},resolveOptionToDescription:([a-zA-Z0-9_$]+)=>\{switch\(\4\)\{case \1\.MessageDeliveryStrategy\.NEXT_INVOCATION:return"Interrupt the agent and send immediately\.";default:return"Queue until after the current turn\."\}\}/g,
+    'label:"排队中的消息",description:"配置后续消息的发送时机。",options:[$1.MessageDeliveryStrategy.WHEN_IDLE,$1.MessageDeliveryStrategy.NEXT_INVOCATION],resolveSelectedOption:$2,resolveOptionToString:$3=>{switch($3){case $1.MessageDeliveryStrategy.NEXT_INVOCATION:return"立即发送";default:return"排队发送"}},resolveOptionToDescription:$4=>{switch($4){case $1.MessageDeliveryStrategy.NEXT_INVOCATION:return"中断智能体并立即发送。";default:return"等待当前回合结束后再发送。"}}'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'label:"Send message"',
+    /label:"Send message",description:"Choose which key sends a message in the chat composer\.",options:\["enter","modEnter"\],resolveSelectedOption:([^,]+),resolveOptionToString:([a-zA-Z0-9_$]+)=>\{switch\(\2\)\{case "modEnter":return ([a-zA-Z0-9_$]+(?:\?\.isMac)?)\?"Cmd\+Enter":"Ctrl\+Enter";default:return"Enter"\}\},resolveOptionToDescription:([a-zA-Z0-9_$]+)=>\{switch\(\4\)\{case "modEnter":return \3\?"Press Cmd\+Enter to send, Enter for a new line\.":"Press Ctrl\+Enter to send, Enter for a new line\.";default:return"Press Enter to send, Shift\+Enter for a new line\."\}\}/g,
+    'label:"发送消息",description:"选择在对话输入框中发送消息的按键。",options:["enter","modEnter"],resolveSelectedOption:$1,resolveOptionToString:$2=>{switch($2){case "modEnter":return $3?"Cmd+Enter":"Ctrl+Enter";default:return"回车"}},resolveOptionToDescription:$4=>{switch($4){case "modEnter":return $3?"按 Cmd+Enter 发送，按 Enter 换行。":"按 Ctrl+Enter 发送，按 Enter 换行。";default:return"按 Enter 发送，按 Shift+Enter 换行。"}}'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"On empty prompt, sends next in queue"',
+    /MessageDeliveryStrategy\.NEXT_INVOCATION\?`\$\{([a-zA-Z0-9_$]+)\} Sends immediately`:`\$\{\1\} Queues after the turn`;([\s\S]{0,650}?)createElement\("span",null,"Keyboard shortcuts"\)/g,
+    (m) => m
+      .replaceAll('Sends immediately', '立即发送')
+      .replaceAll('Queues after the turn', '本轮结束后排队发送')
+      .replaceAll('On empty prompt, sends next in queue', '输入为空时发送队列下一条')
+      .replace('"Keyboard shortcuts"', '"键盘快捷键"')
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'label:"Conversation steps"',
+    /label:"Conversation steps",description:"Choose how much detail is shown during a conversation\.",settingType:"toggle-group",options:\[!1,!0\],resolveOptionToString:([a-zA-Z0-9_$]+)=>\1\?"Verbose":"Default"/g,
+    'label:"对话步骤",description:"选择对话过程中展示的步骤详细程度。",settingType:"toggle-group",options:[!1,!0],resolveOptionToString:$1=>$1?"详细":"默认"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'label:"Markdown artifact width"',
+    /label:"Markdown artifact width",description:"Configure the default width of markdown artifacts\.",settingType:"toggle-group",options:\[1,2,3\],resolveOptionToString:([a-zA-Z0-9_$]+)=>\{switch\(\1\)\{case 2:return"Wide";case 3:return"Fill";default:return"Default"\}\}/g,
+    'label:"Markdown 工件宽度",description:"配置 Markdown 工件的默认显示宽度。",settingType:"toggle-group",options:[1,2,3],resolveOptionToString:$1=>{switch($1){case 2:return"宽";case 3:return"铺满";default:return"默认"}}'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Voice Mode"',
+    /([A-Za-z_$][\w$]*)\.createElement\("div",\{className:"font-medium"\},"Voice Mode"\)/g,
+    '$1.createElement("div",{className:"font-medium"},"语音模式")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'label:"Voice engine"',
+    /label:"Voice engine"/g,
+    'label:"语音引擎"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"aria-label":"Voice engine address"',
+    /"aria-label":"Voice engine address"/g,
+    '"aria-label":"语音引擎地址"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'label:"Save audio recordings"',
+    /label:"Save audio recordings",description:"Only stored on your machine\."/g,
+    'label:"保存录音",description:"仅保存在你的本地设备上。"'
+  );
+  // 2.35.1+ Plugin Permissions (c_b)、Hooks 规则映射、Clear Browsing Data?、Cookies by Site、Browser 页头
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Allowed by you"',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),null,"Allowed by you"\),\s*([a-zA-Z0-9_$]+)\.length===0\?\1\.createElement\("div",\{className:"px-1 text-sm text-muted-foreground"\},\s*"Nothing is always allowed\. You'll be asked before this plugin makes changes\."\)/g,
+    '$1.createElement($2,null,"你已允许"),$3.length===0?$1.createElement("div",{className:"px-1 text-sm text-muted-foreground"},"暂无始终允许的权限。此插件进行更改前都会先询问你。")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"These come with the plugin and can\'t be revoked."',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),null,"Included with plugin"\),\s*\1\.createElement\("div",\{className:"px-1 text-xs text-muted-foreground"\},"These come with the plugin and can't be revoked\."\)/g,
+    '$1.createElement($2,null,"插件自带"),$1.createElement("div",{className:"px-1 text-xs text-muted-foreground"},"这些权限随插件附带，无法撤销。")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Revoke all"',
+    /`Revoke all: \$\{([a-zA-Z0-9_$]+)\}`,\s*onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\(!0\)\}\},\s*"Revoke all"/g,
+    '`全部撤销：${$1}`,onClick:()=>{$2(!0)}},"全部撤销"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Hook will trigger if any tool is executed.',
+    /\{value:"\*",label:"All tools \(\*\)",description:"Hook will trigger if any tool is executed\."\},\{value:"run_command",label:"run_command",description:"Hook will only trigger if the tool name matches run_command\."\},\{value:"run_command\|view_file",label:"run_command or view_file",description:"Hook will only trigger if the tool name matches run_command or view_file\."\},\s*\{value:"browser_\.\*",label:"Browser tools \(browser_\.\*\)",description:"Hook will only trigger if the tool name starts with browser_\."\}/g,
+    '{value:"*",label:"所有工具 (*)",description:"只要执行任何工具，钩子就会触发。"},{value:"run_command",label:"run_command",description:"仅当工具名称匹配 run_command 时，钩子才会触发。"},{value:"run_command|view_file",label:"run_command 或 view_file",description:"仅当工具名称匹配 run_command 或 view_file 时，钩子才会触发。"},{value:"browser_.*",label:"浏览器工具 (browser_.*)",description:"仅当工具名称以 browser_ 开头时，钩子才会触发。"}'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'PreToolUse:"Pre Tool Use"',
+    /\{PreToolUse:"Pre Tool Use",PostToolUse:"Post Tool Use",PreInvocation:"Pre Invocation",PostInvocation:"Post Invocation",Stop:"Stop"\}/g,
+    '{PreToolUse:"工具调用前",PostToolUse:"工具调用后",PreInvocation:"模型调用前",PostInvocation:"模型调用后",Stop:"停止"}'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Fires before a tool step executes.',
+    /\{PreToolUse:"Fires before a tool step executes\.",PostToolUse:"Fires after a tool step completes\.",PreInvocation:"Fires before the model is called\.",PostInvocation:"Fires after tool calls finish\.",Stop:"Fires when the execution loop terminates\."\}/g,
+    '{PreToolUse:"在工具步骤执行前触发。",PostToolUse:"在工具步骤完成后触发。",PreInvocation:"在调用模型前触发。",PostInvocation:"在工具调用结束后触发。",Stop:"在执行循环终止时触发。"}'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Clear Browsing Data?"',
+    /title:"Clear Browsing Data\?"\},([A-Za-z_$][\w$]*)\.createElement\("div",null,\1\.createElement\("p",\s*\{id:([a-zA-Z0-9_$]+),className:"text-foreground opacity-80 leading-relaxed mb-3"\},"Choose what to clear from the built-in browser\. It can't be undone\."\),([\s\S]{0,2400}?)"Couldn't clear browsing data\. Try again\."\)/g,
+    (m) => m
+      .replace('title:"Clear Browsing Data?"', 'title:"清除浏览数据？"')
+      .replace('"Choose what to clear from the built-in browser. It can\'t be undone."', '"选择要从内置浏览器中清除的数据，此操作无法撤销。"')
+      .replace('"Browsing history"', '"浏览记录"')
+      .replace('"Visited URLs and autocomplete suggestions."', '"访问过的网址和自动填充建议。"')
+      .replace('"Cookies and other site data"', '"Cookie 及其他网站数据"')
+      .replace('"Cookies, site storage and cache. Signs you out of all sites in the built-in browser and reloads its open tabs."', '"包括 Cookie、站点存储和缓存。会退出你在内置浏览器中所有网站的登录状态，并重新加载已打开的标签页。"')
+      .replace('"An agent is using the built-in browser. Clearing its data signs the agent out of sites and may interrupt its task."', '"有智能体正在使用内置浏览器。清除其数据会让智能体退出已登录的网站，并可能中断它的任务。"')
+      .replace('"Couldn\'t clear browsing data. Try again."', '"无法清除浏览数据，请重试。"')
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Cookies by Site"',
+    /title:"Cookies by Site"/g,
+    'title:"按网站查看 Cookie"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Browser",',
+    /title:"Browser",\s*description:"(?:Configure built-in browser, link opening, and browser subagent preferences\.|配置内置浏览器、链接打开方式以及浏览器子智能体偏好设置。)"/g,
+    'title:"浏览器",description:"配置内置浏览器、链接打开方式以及浏览器子智能体偏好设置。"'
   );
   sourceText = sourceText.replace(
-    /,"Change\\u2026"\)\)\}\),([a-zA-Z0-9_$]+)&&B\.createElement\(([a-zA-Z0-9_$]+),\{label:"(?:Browsing History|浏览记录)",description:([a-zA-Z0-9_$]+)\?"(?:Clear visited URLs and autocomplete suggestions from side panel preview\.|清除侧边栏预览中的访问网址与自动填充建议。)":"(?:Clear visited URLs and autocomplete suggestions from the built-in browser\.|清除内置浏览器的访问网址与自动填充建议。|清除内置浏览器中的访问网址与自动填充建议。)",rightElement:B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",disabled:([a-zA-Z0-9_$]+)\.length===0,onClick:([a-zA-Z0-9_$]+),"data-testid":"clear-browser-history-button"\},"Clear"\)/g,
-    ',"更改…"))}),$1&&B.createElement($2,{label:"浏览记录",description:$3?"清除侧边栏预览中的访问网址与自动填充建议。":"清除内置浏览器中的访问网址与自动填充建议。",rightElement:B.createElement($4,{variant:"secondary",size:"sm",disabled:$5.length===0,onClick:$6,"data-testid":"clear-browser-history-button"},"清除")'
+    /,"Change\\u2026"\)\)\}\),([a-zA-Z0-9_$]+)&&([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{label:"(?:Browsing [Hh]istory|浏览记录)",description:([a-zA-Z0-9_$]+)\?"(?:Clear visited URLs and autocomplete suggestions from side panel preview\.|清除侧边栏预览中的访问网址与自动填充建议。)":"(?:Clear visited URLs and autocomplete suggestions from the built-in browser\.|清除内置浏览器的访问网址与自动填充建议。|清除内置浏览器中的访问网址与自动填充建议。)",rightElement:\2\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",disabled:([a-zA-Z0-9_$]+)\.length===0,onClick:([a-zA-Z0-9_$]+),"data-testid":"clear-browser-history-button"\},"Clear"\)/g,
+    ',"更改…"))}),$1&&$2.createElement($3,{label:"浏览记录",description:$4?"清除侧边栏预览中的访问网址与自动填充建议。":"清除内置浏览器中的访问网址与自动填充建议。",rightElement:$2.createElement($5,{variant:"secondary",size:"sm",disabled:$6.length===0,onClick:$7,"data-testid":"clear-browser-history-button"},"清除")'
   );
 
-  // [核心修复 6] 账户设置页、模型与用量页、配额重置函数 (Q9b / ucc) 跨版本正则替换
+  // [核心修复 6] 账户设置页、模型与用量页、Orchestrator 设置、配额重置函数跨版本模块化替换
   sourceText = sourceText.replace(
     /B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Account"\},B\.createElement\(([a-zA-Z0-9_$]+),\s*null,P&&B\.createElement\(([a-zA-Z0-9_$]+),\{label:B\.createElement\("div",\{className:"font-medium"\},F\?`Your Plan: \$\{F\}`:"Your Plan",C&&" \(ADC\)"\),description:d\?"Authenticated via Enterprise Gateway":g&&h\?B\.createElement\(B\.Fragment,null,B\.createElement\("span",\{className:"text-foreground"\},"Project ID: ",h\),G&&B\.createElement\(B\.Fragment,null,B\.createElement\("br",null\),G\)\):G,rightElement:d\|\|x\?void 0:w&&g\?B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",onClick:\(\)\s*=>\s*\{z\(!0\)\}\},"Manage"\):c\?\.userTier\?\.upgradeSubscriptionUri\?\s*B\.createElement\("a",\{href:([a-zA-Z0-9_$]+)\(c\.userTier\.upgradeSubscriptionUri,"utm_campaign","ARGON_SETTINGS_PAGE"\),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary\/90"\},c\.userTier\?\.upgradeButtonText\|\|"Upgrade"\):void 0\}\),H&&B\.createElement\(\3,\{label:"Google One Referral",description:"Share your referral link with friends",rightElement:B\.createElement\(\4,\{variant:"secondary",size:"sm",\s*"data-testid":"g1-referral-invite-button",onClick:\(\)\s*=>\s*\{u\(H\)\}\},"Invite a Friend"\)\}\),J&&B\.createElement\(\3,\{label:B\.createElement\("div",\{className:"font-medium"\},f==="projectPicker"\?"Project Required":"License Required"\),description:f==="projectPicker"\?"A Google Cloud project is required to use Antigravity\.":"A license or project selection is required to use Antigravity\.",rightElement:B\.createElement\(\4,\{variant:"primary",size:"sm",onClick:\(\)\s*=>\s*\{z\(!0\)\}\},f==="projectPicker"\?"Select Project":"Manage License"\)\},\s*l\.settings\.isVisible\("antigravity\.section\.authChange"\)&&\(d\?B\.createElement\(\3,\{label:"Email",description:"Managed by Enterprise Gateway"\}\):K\?B\.createElement\(\3,\{label:"Email",description:c\?\.email,rightElement:B\.createElement\("span",\{"data-tooltip-id":v,tabIndex:n\?0:void 0\},B\.createElement\(\4,\{variant:"secondary",size:"sm",disabled:!!n\|\|A,onClick:async\(\)\s*=>\s*\{var O=e,Q=e;try\{D\(!0\);try\{Q\(await O\(a\.logout\(\)\)\)\}finally\{Q\(\),D\(!1\)\}\}finally\{O\(\)\}\}\},A\?"Signing Out\.\.\.":"Sign Out"\),B\.createElement\(([a-zA-Z0-9_$]+),\{id:v,content:n\}\)\)\}\):\s*B\.createElement\(\3,\{label:"Not Signed In",description:t\?`Sign in from the \$\{([a-zA-Z0-9_$]+)\} panel\.`:`Sign in to use \$\{\7\}!`/g,
     'B.createElement($1,{title:"账户"},B.createElement($2,null,P&&B.createElement($3,{label:B.createElement("div",{className:"font-medium"},F?`你的方案：${globalThis.__AGY_ZHCN_TRANSLATE_PLAN__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN__(F):F}`:"你的方案",C&&" (ADC)"),description:d?"已通过企业网关验证":g&&h?B.createElement(B.Fragment,null,B.createElement("span",{className:"text-foreground"},"项目 ID：",h),G&&B.createElement(B.Fragment,null,B.createElement("br",null),(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(G):G))):G&&(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(G):G),rightElement:d||x?void 0:w&&g?B.createElement($4,{variant:"secondary",size:"sm",onClick:()=>{z(!0)}},"管理"):c?.userTier?.upgradeSubscriptionUri?B.createElement("a",{href:$5(c.userTier.upgradeSubscriptionUri,"utm_campaign","ARGON_SETTINGS_PAGE"),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"},({"Upgrade":"升级","Manage":"管理","Learn more":"了解更多"}[c.userTier?.upgradeButtonText]||c.userTier?.upgradeButtonText||"升级")):void 0}),H&&B.createElement($3,{label:"Google One 推荐",description:"与好友分享你的推荐链接",rightElement:B.createElement($4,{variant:"secondary",size:"sm","data-testid":"g1-referral-invite-button",onClick:()=>{u(H)}},"邀请好友")}),J&&B.createElement($3,{label:B.createElement("div",{className:"font-medium"},f==="projectPicker"?"需要关联项目":"需要许可证"),description:f==="projectPicker"?"使用 Antigravity 需要关联 Google Cloud 项目。":"使用 Antigravity 需要配置许可证或选择项目。",rightElement:B.createElement($4,{variant:"primary",size:"sm",onClick:()=>{z(!0)}},f==="projectPicker"?"选择项目":"管理许可证")}),l.settings.isVisible("antigravity.section.authChange")&&(d?B.createElement($3,{label:"邮箱",description:"由企业网关统一管理"}):K?B.createElement($3,{label:"邮箱",description:c?.email,rightElement:B.createElement("span",{"data-tooltip-id":v,tabIndex:n?0:void 0},B.createElement($4,{variant:"secondary",size:"sm",disabled:!!n||A,onClick:async()=>{var O=e,Q=e;try{D(!0);try{Q(await O(a.logout()))}finally{Q(),D(!1)}}finally{O()}}},A?"正在退出登录...":"退出登录"),B.createElement($6,{id:v,content:n}))}):B.createElement($3,{label:"未登录",description:t?`请在 ${$7} 面板中登录。`:`登录后即可使用 ${$7}！`'
   );
+  // 2.35.1+ 模块化 Account / Telemetry / Models & Usage / Orchestrator 跨变量名补全
+  sourceText = sourceText.replaceAll('title:"Account",description:"Manage your plan, credentials, and general preferences."', 'title:"账户",description:"管理你的订阅方案、凭据与常规偏好设置。"');
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"General"},',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"General"\},\1\.createElement\(/g,
+    '$1.createElement($2,{title:"通用"},$1.createElement('
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Account"},',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"Account"\},\1\.createElement\(/g,
+    '$1.createElement($2,{title:"账户"},$1.createElement('
+  );
   sourceText = sourceText.replace(
-    /B\.createElement\(([a-zA-Z0-9_$]+),\{title:B\.createElement\("div",\s*\{className:"flex items-center gap-1\.5"\},\s*B\.createElement\("span",null,"Models & Usage"\),\s*B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"ghost",size:"icon-lg",onClick:w,disabled:n===void 0,title:"Refresh quota and credits data","aria-label":"Refresh quota and credits data"\},\s*B\.createElement\(([a-zA-Z0-9_$]+),\{name:"refresh",size:20,className:n===void 0\?"animate-spin":""\}\)\)\),\s*description:"Manage your model quota and credits\."\},h==="signedIn"&&l&&B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Plan"\},B\.createElement\(([a-zA-Z0-9_$]+),null,B\.createElement\(([a-zA-Z0-9_$]+),\{label:B\.createElement\("div",\s*\{className:"font-medium"\},\s*"(Your Plan: |你的方案：)",([\s\S]+?)\),description:([\s\S]+?),rightElement:c\?\.userTier\?\.upgradeSubscriptionUri&&B\.createElement\("a",\{href:([a-zA-Z0-9_$]+)\(c\.userTier\.upgradeSubscriptionUri,"utm_campaign","ARGON_MODELS_PAGE"\),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary\/90"\},c\.userTier\.upgradeButtonText\|\|"Upgrade"\)\}\)\)\),y!==void 0&&B\.createElement\(\4,\{title:"Model Credits"\},B\.createElement\(\5,\s*null,B\.createElement\(([a-zA-Z0-9_$]+),\s*\{label:"Enable AI Credit Overages",description:`When toggled on, \$\{g\} will use your AI credits to fulfill model requests once you're out of model quota\. \$\{g\} will always use your model quota first before using AI credits\.`,isSwitchOn:x,pushUpdate:A\}\),x&&B\.createElement\(\6,\{label:`Available AI Credits: \$\{y\?\?"0"\}`,/g,
-    'B.createElement($1,{title:B.createElement("div",{className:"flex items-center gap-1.5"},B.createElement("span",null,"模型与用量"),B.createElement($2,{variant:"ghost",size:"icon-lg",onClick:w,disabled:n===void 0,title:"刷新配额与点数数据","aria-label":"刷新配额与点数数据"},B.createElement($3,{name:"refresh",size:20,className:n===void 0?"animate-spin":""}))),description:"管理你的模型配额与 AI 点数。"},h==="signedIn"&&l&&B.createElement($4,{title:"订阅方案"},B.createElement($5,null,B.createElement($6,{label:B.createElement("div",{className:"font-medium"},"你的方案：",globalThis.__AGY_ZHCN_TRANSLATE_PLAN__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN__(l):l),description:(m&&(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(m):m)),rightElement:c?.userTier?.upgradeSubscriptionUri&&B.createElement("a",{href:$10(c.userTier.upgradeSubscriptionUri,"utm_campaign","ARGON_MODELS_PAGE"),target:"_blank",rel:"noopener noreferrer",className:"select-none rounded px-3 py-1 font-medium transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"},({"Upgrade":"升级","Manage":"管理","Learn more":"了解更多"}[c.userTier.upgradeButtonText]||c.userTier.upgradeButtonText||"升级"))}))),y!==void 0&&B.createElement($4,{title:"模型点数"},B.createElement($5,null,B.createElement($11,{label:"启用 AI 点数超额使用",description:`开启后，当模型配额用尽时，${g} 将自动使用你的 AI 点数继续处理请求。系统始终优先消耗模型配额。`,isSwitchOn:x,pushUpdate:A}),x&&B.createElement($6,{label:`可用 AI 点数：${y??"0"}`,'
+    /label:"Enable [Tt]elemetry",\s*description:`When toggled on, \$\{([^}]+)\} collects usage data to help Google enhance performance and features\.`/g,
+    'label:"启用遥测",description:`开启后，${$1} 会收集使用数据，帮助 Google 改进产品性能与功能。`'
+  );
+  sourceText = sourceText.replace(
+    /label:"Marketing [Ee]mails",\s*description:`Receive product updates, tips, and promotions from Google \$\{([^}]+)\} via email\.`/g,
+    'label:"营销邮件",description:`通过电子邮件接收来自 Google ${$1} 的产品更新、使用技巧与推广资讯。`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'lan: ${',
+    /([a-zA-Z0-9_$]+)\?`Your [Pp]lan: \$\{\1\}`:"Your [Pp]lan"/g,
+    '$1?`你的方案：${globalThis.__AGY_ZHCN_TRANSLATE_PLAN__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN__($1):$1}`:"你的方案"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Authenticated via Enterprise Gateway"',
+    /description:([a-zA-Z0-9_$]+)\?"Authenticated via Enterprise Gateway":([a-zA-Z0-9_$]+)&&([a-zA-Z0-9_$]+)\?([A-Za-z_$][\w$]*)\.createElement\(\4\.Fragment,null,\4\.createElement\("span",\{className:"text-foreground"\},"Project ID: ",\3\),([a-zA-Z0-9_$]+)&&\4\.createElement\(\4\.Fragment,null,\4\.createElement\("br",null\),\5\)\):\5/g,
+    'description:$1?"已通过企业网关验证":$2&&$3?$4.createElement($4.Fragment,null,$4.createElement("span",{className:"text-foreground"},"项目 ID：",$3),$5&&$4.createElement($4.Fragment,null,$4.createElement("br",null),(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__($5):$5))):($5&&(globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__($5):$5))'
+  );
+  sourceText = sourceText.replace(
+    /onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\(!0\)\}\},"Manage"\)/g,
+    'onClick:()=>{$1(!0)}},"管理")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'upgradeButtonText||"Upgrade"',
+    /([a-zA-Z0-9_$]+\??\.userTier\??\.upgradeButtonText)\|\|"Upgrade"/g,
+    '({"Upgrade":"升级","Manage":"管理","Learn more":"了解更多"}[$1]||$1||"升级")'
+  );
+  sourceText = sourceText.replace(
+    /label:"Google One [Rr]eferral",description:"Share your referral link with friends",rightElement:([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm","data-testid":"g1-referral-invite-button",onClick:([^}]+)\}\},"Invite a Friend"\)/g,
+    'label:"Google One 好友推荐",description:"与好友分享你的推荐链接",rightElement:$1.createElement($2,{variant:"secondary",size:"sm","data-testid":"g1-referral-invite-button",onClick:$3}},"邀请好友")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '==="projectPicker"?"Project ',
+    /([a-zA-Z0-9_$]+)==="projectPicker"\?"Project [Rr]equired":"License [Rr]equired"/g,
+    '$1==="projectPicker"?"需要关联项目":"需要许可证"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '==="projectPicker"?"Select Project"',
+    /([a-zA-Z0-9_$]+)==="projectPicker"\?"Select Project":"Manage License"/g,
+    '$1==="projectPicker"?"选择项目":"管理许可证"'
+  );
+  sourceText = sourceText.replaceAll('label:"Email",description:"Managed by Enterprise Gateway"', 'label:"邮箱",description:"由企业网关统一管理"');
+  sourceText = sourceText.replace(/label:"Email",description:([a-zA-Z0-9_$]+)\?\.email,/g, 'label:"邮箱",description:$1?.email,');
+  sourceText = fastAnchorReplace(sourceText, '"Signing Out...":"Sign Out"', /([a-zA-Z0-9_$]+)\?"Signing Out\.\.\.":"Sign Out"/g, '$1?"正在退出登录...":"退出登录"');
+  sourceText = fastAnchorReplace(sourceText, '"Refresh quota and credits data"', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:([A-Za-z_$][\w$]*)\.createElement\("div",\s*\{className:"flex items-center gap-1\.5"\},\s*\1\.createElement\("span",null,"Models & Usage"\),\s*\1\.createElement\(([a-zA-Z0-9_$]+),\{variant:"ghost",size:"icon-lg",onClick:([a-zA-Z0-9_$]+),disabled:([a-zA-Z0-9_$]+)===void 0,title:"Refresh quota and credits data","aria-label":"Refresh quota and credits data"\},\s*\1\.createElement\(([a-zA-Z0-9_$]+),\{name:"refresh",size:20,className:\6===void 0\?"animate-spin":""\}\)\)\),\s*description:"Manage your model quota and credits\."\}/g, '$1.createElement($2,{title:$1.createElement("div",{className:"flex items-center gap-1.5"},$1.createElement("span",null,"模型与用量"),$1.createElement($4,{variant:"ghost",size:"icon-lg",onClick:$5,disabled:$6===void 0,title:"刷新配额与点数数据","aria-label":"刷新配额与点数数据"},$1.createElement($7,{name:"refresh",size:20,className:$6===void 0?"animate-spin":""}))),description:"管理你的模型配额与 AI 点数。"}');
+  sourceText = fastAnchorReplace(sourceText, 'title:"Plan"}', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"Plan"\},\s*\1\.createElement\(/g, '$1.createElement($2,{title:"订阅方案"},$1.createElement(');
+  sourceText = fastAnchorReplace(sourceText, 'title:"Model Credits"}', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"Model Credits"\},\s*\1\.createElement\(/g, '$1.createElement($2,{title:"模型点数"},$1.createElement(');
+  sourceText = sourceText.replace(
+    /label:"Enable AI [Cc]redit [Oo]verages",description:`When toggled on, \$\{([a-zA-Z0-9_$]+)\} will use your AI credits to fulfill model requests once you're out of model quota\. \$\{\1\} will always use your model quota first before using AI credits\.`/g,
+    'label:"启用 AI 点数超额使用",description:`开启后，当模型配额用尽时，${$1} 将自动使用你的 AI 点数继续处理请求。系统始终优先消耗模型配额。`'
+  );
+  sourceText = sourceText.replace(/label:`Available AI [Cc]redits: \$\{([a-zA-Z0-9_$]+)\?\?"0"\}`/g, 'label:`可用 AI 点数：${$1??"0"}`');
+  sourceText = sourceText.replace(
+    /"For Antigravity Business consumption options, see"," ",([A-Za-z_$][\w$]*)\.createElement\("a",\{href:"https:\/\/antigravity\.google\/docs\/enterprise",className:"text-link hover:underline",target:"_blank",rel:"noopener noreferrer"\},"documentation"\),"\."/g,
+    '"如需了解 Antigravity 企业版用量选项，请参阅"," ",$1.createElement("a",{href:"https://antigravity.google/docs/enterprise",className:"text-link hover:underline",target:"_blank",rel:"noopener noreferrer"},"说明文档"),"。"'
   );
   sourceText = fastAnchorReplace(
     sourceText,
@@ -3769,22 +4200,70 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     '$1=(a,b,c,d,f,g)=>{if(g)return a=a||"此模型",b&&(b=new Date(b),!Number.isNaN(b.getTime()))?`你的 ${a} 配额将于 ${b.toLocaleString()} 重置。请切换到其他可用模型以继续。`:`你的 ${a} 配额已达上限。请切换到其他可用模型以继续。`;g="";var h=d!==void 0;h&&c&&(f===void 0||d<f)&&(g=`你还需要 ${f?"至少 "+f:"更多"} AI 点数才能继续发送消息。若要立即继续使用${a||"此模型"}，请购买更多 AI 点数。`);if(b)try{let k=(new Date(b)).toLocaleString();g+=` 你的方案基线配额将于 ${k} 刷新。`}catch(k){console.warn("Failed to parse quota reset timestamp",k)}h&&!c&&(g+=" 若要立即继续使用此模型，请启用 AI 点数超额使用。");return g};'
   );
 
-  // [核心修复 7] 首次引导最后一步弹窗、删除项目确认弹窗、活动对话计数跨版本正则替换
-  sourceText = sourceText.replace(
-    /B\.createElement\("h2",\{className:q\},"One last thing before getting started\\u2026"\),B\.createElement\("p",\{className:n\?"text-secondary-foreground mt-1":"text-secondary-foreground mt-1 text-center"\},"A few things to know, and a couple settings to review\."\)\),B\.createElement\("ul",\{className:"list-none p-0 m-0 flex flex-col gap-4"\},B\.createElement\("li",null,B\.createElement\(([a-zA-Z0-9_$]+),\{title:"Optimized for you"\},\s*"Customize your experience across the agent, plugins, and product from the settings and marketplace\. We won\\u2019t show you ads or let advertisers influence what ",a," says\."\)\),B\.createElement\("li",null,B\.createElement\(\1,\{title:"Built to help, not hurt"\},"Automated safeguards help to protect your conversations from insecure or unsafe content\. That being said, users should be aware of potential agentic risks, including data exfiltration\."\)\),B\.createElement\("li",null,B\.createElement\(\1,\{title:"You are in control"\},\s*a,"\\u2019s agents are powerful and will help you get a lot done better and faster than before, but still make sure to verify the actions taken by the agent\."\)\)\),B\.createElement\("hr",\{className:"border-t border-border my-4"\}\),h\?B\.createElement\("p",\{className:"text-sm text-muted-foreground leading-normal"\},"For ",k,", ",a," does not collect any of your prompts, content, or model responses but will still collect general usage patterns \(e\.g\., feature adoption, active user counts\)\."\):B\.createElement\("div",\s*\{className:"flex flex-col gap-3"\},B\.createElement\(([a-zA-Z0-9_$]+),\{checked:b,onChange:c,disabled:g,alignTop:!0,label:B\.createElement\(([a-zA-Z0-9_$]+),\{title:`Help us improve \$\{a\}\.`\},"Allow Google to collect and use your Interactions data, subject to the",\s*" ",\s*B\.createElement\("a",\{href:"https:\/\/antigravity\.google\/terms",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"\},"Google ",a," Terms of Service"\),\s*(?:" ","and"," "|"\s*与\s*"),\s*B\.createElement\("a",\{href:"https:\/\/policies\.google\.com\/privacy",className:"text-link hover:underline",\s*target:"_blank",rel:"noreferrer"\},"Google Privacy Policy"\),"\. You can control this from your settings at any point\."\)\}\),B\.createElement\(\2,\{checked:d,onChange:f,disabled:g,alignTop:!0,label:B\.createElement\(\3,\{title:"Stay up to date\."\},"Sign up for newsletters, tips and tricks, and other notifications about ",a,"\."\)\}\)\)/g,
-    'B.createElement("h2",{className:q},"开始使用前，还有最后几项确认…"),B.createElement("p",{className:n?"text-secondary-foreground mt-1":"text-secondary-foreground mt-1 text-center"},"请了解以下说明，并确认相关偏好设置。")),B.createElement("ul",{className:"list-none p-0 m-0 flex flex-col gap-4"},B.createElement("li",null,B.createElement($1,{title:"专属定制优化"},"你可以通过设置与插件市场，自由定制智能体、插件与整体产品体验。我们绝不向你展示广告，也不会允许任何广告商影响 ",a," 的回复。")),B.createElement("li",null,B.createElement($1,{title:"秉持安全设计，赋能开发"},"内置自动安全防护机制有助于保护你的对话免受不安全或风险内容影响。尽管如此，请依然留意智能体操作潜在的安全风险（包括数据泄露）。")),B.createElement("li",null,B.createElement($1,{title:"一切由你掌控"},a," 的智能体功能强大，可助你更快、更出色地完成任务，但请务必仔细核实智能体执行的操作。"))),B.createElement("hr",{className:"border-t border-border my-4"}),h?B.createElement("p",{className:"text-sm text-muted-foreground leading-normal"},"对于 ",k,"，",a," 不会收集你的提示词、代码内容或模型回复，但仍会收集常规使用模式（例如功能启用情况与活跃用户数）。"):B.createElement("div",{className:"flex flex-col gap-3"},B.createElement($2,{checked:b,onChange:c,disabled:g,alignTop:!0,label:B.createElement($3,{title:`帮助改进 ${a}。`},"允许 Google 依据 ",B.createElement("a",{href:"https://antigravity.google/terms",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"},"Google ",a," 服务条款")," 与 ",B.createElement("a",{href:"https://policies.google.com/privacy",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"},"Google 隐私权政策")," 收集并使用你的交互数据。你随时可以在设置中管理此选项。")}),B.createElement($2,{checked:d,onChange:f,disabled:g,alignTop:!0,label:B.createElement($3,{title:"订阅最新资讯。"},"订阅关于 ",a," 的产品动态、实用技巧及其他通知邮件。")}))'
+  // [核心修复 7] 首次引导最后一步弹窗（模块化拆分，容忍换行/变量名变更与遥测文案差异）
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'One last thing before getting started',
+    /([A-Za-z_$][\w$]*)\.createElement\("h2",\{className:([a-zA-Z0-9_$]+)\},"One last thing before getting started\\u2026"\),\s*\1\.createElement\("p",\{className:([a-zA-Z0-9_$]+)\?"text-secondary-foreground mt-1":"text-secondary-foreground mt-1 text-center"\},"A few things to know, and a couple settings to review\."\)/g,
+    '$1.createElement("h2",{className:$2},"开始使用前，还有最后几项确认…"),$1.createElement("p",{className:$3?"text-secondary-foreground mt-1":"text-secondary-foreground mt-1 text-center"},"请了解以下说明，并确认相关偏好设置。")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Optimized for you"',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"Optimized for you"\},\s*"Customize your experience across the agent, plugins, and product from the settings and marketplace\. We won\\u2019t show you ads or let advertisers influence what ",\s*([a-zA-Z0-9_$]+),\s*" says\."\)/g,
+    '$1.createElement($2,{title:"专属定制优化"},"你可以通过设置与插件市场，自由定制智能体、插件与整体产品体验。我们绝不向你展示广告，也不会允许任何广告商影响 ",$3," 的回复。")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Built to help, not hurt"',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"Built to help, not hurt"\},\s*"Automated safeguards help to protect your conversations from insecure or unsafe content\. That being said, users should be aware of potential agentic risks, including data exfiltration\."\)/g,
+    '$1.createElement($2,{title:"秉持安全设计，赋能开发"},"内置自动安全防护机制有助于保护你的对话免受不安全或风险内容影响。尽管如此，请依然留意智能体操作潜在的安全风险（包括数据泄露）。")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"You are in control"',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"You are in control"\},\s*([a-zA-Z0-9_$]+),\s*"\\u2019s agents are powerful and will help you get a lot done better and faster than before, but still make sure to verify the actions taken by the agent\."\)/g,
+    '$1.createElement($2,{title:"一切由你掌控"},$3," 的智能体功能强大，可助你更快、更出色地完成任务，但请务必仔细核实智能体执行的操作。")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'does not collect any of your prompts, content, or model responses',
+    /((?:"For ",[a-zA-Z0-9_$]+,", "|"Telemetry is turned off for your account\. ")),\s*([a-zA-Z0-9_$]+),\s*" does not collect any of your prompts, content, or model responses but will still collect general usage patterns \(e\.g\., feature adoption, active user counts\)\."/g,
+    (_, head, prodVar) => `${head.startsWith('"For') ? '"对于 ",k,"，"' : '"你的账号已关闭遥测数据收集。"'},${prodVar}," 不会收集你的提示词、代码内容或模型回复，但仍会收集常规使用模式（例如功能启用情况与活跃用户数）。"`
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Allow Google to collect and use your Interactions data',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:`Help us improve \$\{([a-zA-Z0-9_$]+)\}\.`\},\s*"Allow Google to collect and use your Interactions data, subject to the",\s*" ",\s*\1\.createElement\("a",\{href:"https:\/\/antigravity\.google\/terms",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"\},"Google ",\3," Terms of Service"\),\s*(?:" ","and"," "|"\s*与\s*"),\s*\1\.createElement\("a",\{href:"https:\/\/policies\.google\.com\/privacy",className:"text-link hover:underline",\s*target:"_blank",rel:"noreferrer"\},"Google Privacy Policy"\),"\. You can control this from your settings at any point\."\)/g,
+    '$1.createElement($2,{title:`帮助改进 ${$3}。`},"允许 Google 依据 ",$1.createElement("a",{href:"https://antigravity.google/terms",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"},"Google ",$3," 服务条款")," 与 ",$1.createElement("a",{href:"https://policies.google.com/privacy",className:"text-link hover:underline",target:"_blank",rel:"noreferrer"},"Google 隐私权政策")," 收集并使用你的交互数据。你随时可以在设置中管理此选项。")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Stay up to date."',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{title:"Stay up to date\."\},\s*"Sign up for newsletters, tips and tricks, and other notifications about ",\s*([a-zA-Z0-9_$]+),\s*"\."\)/g,
+    '$1.createElement($2,{title:"订阅最新资讯。"},"订阅关于 ",$3," 的产品动态、实用技巧及其他通知邮件。")'
   );
   sourceText = sourceText.replace(
     /function ([a-zA-Z0-9_$]+)\(\{activeCount:a,archivedCount:b\}\)\{var c=\[\];a>0&&c\.push\(a===1\?"1 active conversation":`\$\{a\} active conversations`\);b>0&&c\.push\(b===1\?"1 archived conversation":`\$\{b\} archived conversations`\);return c\.join\(" and "\)\}/g,
     'function $1({activeCount:a,archivedCount:b}){var c=[];a>0&&c.push(`${a} 个活动对话`);b>0&&c.push(`${b} 个已归档对话`);return c.join(" 与 ")}'
   );
   sourceText = sourceText.replace(
-    /title:`Delete \$\{h\.capitalized\}`,className:"rounded-md max-w-md"\},B\.createElement\("div",null,B\.createElement\("p",\s*\{className:"text-foreground opacity-80 leading-relaxed mb-3"\},"Are you sure you want to delete the ",h\.lowercase," ",B\.createElement\("strong",null,b\),"\\?"\),n&&B\.createElement\("p",\{className:"text-foreground opacity-80 leading-relaxed mb-4"\},"This will permanently delete ",B\.createElement\("strong",null,n\)," ","within it\."\),B\.createElement\("div",\{className:"flex justify-end gap-3"\},B\.createElement\(([a-zA-Z0-9_$]+),\{size:"md",variant:"secondary",onClick:m\},"Cancel"\),B\.createElement\(\1,\{size:"md",variant:"destructive",\s*onClick:l,"data-autofocus":"true"\},"Delete"\)\)\)/g,
-    'title:h.lowercase==="workspace"?"删除工作区":"删除项目",className:"rounded-md max-w-md"},B.createElement("div",null,B.createElement("p",{className:"text-foreground opacity-80 leading-relaxed mb-3"},"确定要删除",h.lowercase==="workspace"?"工作区":"项目"," ",B.createElement("strong",null,b)," 吗？"),n&&B.createElement("p",{className:"text-foreground opacity-80 leading-relaxed mb-4"},"此操作将永久删除其中的 ",B.createElement("strong",null,n),"。"),B.createElement("div",{className:"flex justify-end gap-3"},B.createElement($1,{size:"md",variant:"secondary",onClick:m},"取消"),B.createElement($1,{size:"md",variant:"destructive",onClick:l,"data-autofocus":"true"},"删除")))'
+    /title:`Delete \$\{h\.capitalized\}`,className:"rounded-md max-w-md"\},([A-Za-z_$][\w$]*)\.createElement\("div",null,\1\.createElement\("p",\s*\{className:"text-foreground opacity-80 leading-relaxed mb-3"\},"Are you sure you want to delete the ",h\.lowercase," ",\1\.createElement\("strong",null,b\),"\\?"\),n&&\1\.createElement\("p",\{className:"text-foreground opacity-80 leading-relaxed mb-4"\},"This will permanently delete ",\1\.createElement\("strong",null,n\)," ","within it\."\),(\1)\.createElement\("div",\{className:"flex justify-end gap-3"\},\1\.createElement\(([a-zA-Z0-9_$]+),\{size:"md",variant:"secondary",onClick:m\},"Cancel"\),\1\.createElement\(\3,\{size:"md",variant:"destructive",\s*onClick:l,"data-autofocus":"true"\},"Delete"\)\)\)/g,
+    'title:h.lowercase==="workspace"?"删除工作区":"删除项目",className:"rounded-md max-w-md"},$1.createElement("div",null,$1.createElement("p",{className:"text-foreground opacity-80 leading-relaxed mb-3"},"确定要删除",h.lowercase==="workspace"?"工作区":"项目"," ",$1.createElement("strong",null,b)," 吗？"),n&&$1.createElement("p",{className:"text-foreground opacity-80 leading-relaxed mb-4"},"此操作将永久删除其中的 ",$1.createElement("strong",null,n),"。"),$1.createElement("div",{className:"flex justify-end gap-3"},$1.createElement($3,{size:"md",variant:"secondary",onClick:m},"取消"),$1.createElement($3,{size:"md",variant:"destructive",onClick:l,"data-autofocus":"true"},"删除")))'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Plugins are packaged collections of skills and MCPs',
+    /([A-Za-z_$][\w$]*)\.createElement\("p",\{className:"text-muted-foreground mb-4"\},"Plugins are packaged collections of skills and MCPs to help the Agent in ",\s*([a-zA-Z0-9_$]+)," work with Google developer products\. You can always change your choices in Settings\."\)/g,
+    '$1.createElement("p",{className:"text-muted-foreground mb-4"},"插件是技能与 MCP 的封装合集，可帮助智能体在 ",$2," 中与 Google 开发者产品协同工作。你随时可以在“设置”中更改选择。")'
+  );
+  sourceText = sourceText.replace(
+    /"There are currently no Build with ",([a-zA-Z0-9_$]+)," plugins available\."/g,
+    '"当前暂无与 ",$1," 共建的可用插件。"'
   );
 
   // [核心修复 8] 进度耗时、思考计时、步骤汇总、章节标题、时间格式化跨版本正则替换
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,"Card "\),m\+1," of ",l/g, 'B.createElement($1,null,"卡片 "),m+1," / ",l');
+  sourceText = fastAnchorReplace(sourceText, 'null,"Card "),m+1," of ",l', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),null,"Card "\),m\+1," of ",l/g, '$1.createElement($2,null,"卡片 "),m+1," / ",l');
   sourceText = sourceText.replace(/headerText:`Worked for \$\{([a-zA-Z0-9_$]+)\(a\)\}`/g, 'headerText:`工作耗时 ${$1(a)}`');
   sourceText = sourceText.replace(
     /subtitle:P\?"Killed":N\?void 0:L\?"Working\.\.\.":l\?\.createdAtMs&&l\?\.lastModifiedAtMs\?`Worked for \$\{([a-zA-Z0-9_$]+)\(l\.lastModifiedAtMs-l\.createdAtMs\)\}`:""/g,
@@ -3834,9 +4313,11 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /\)\?`Thought for \$\{Math\.max\(1,Number\(([a-zA-Z0-9_$]+)\.seconds\)\)\}s`:"Thought Process"/g,
     ')?`思考耗时 ${Math.max(1,Number($1.seconds))} 秒`:"思考过程"'
   );
-  sourceText = sourceText.replace(
-    /B\.createElement\("span",\{ref:h,"data-titled":d\?"true":void 0,className:"font-medium leading-snug text-foreground"\},d\?\?([a-zA-Z0-9_$]+)\(a,b\)\)/g,
-    'B.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"font-medium leading-snug text-foreground"},(d?(globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__?globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__(d):d):d)??$1(a,b))'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"font-medium leading-snug text-foreground"',
+    /([A-Za-z_$][\w$]*)\.createElement\("span",\{ref:h,"data-titled":d\?"true":void 0,className:"font-medium leading-snug text-foreground"\},d\?\?([a-zA-Z0-9_$]+)\(a,b\)\)/g,
+    '$1.createElement("span",{ref:h,"data-titled":d?"true":void 0,className:"font-medium leading-snug text-foreground"},(d?(globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__?globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__(d):d):d)??$2(a,b))'
   );
   sourceText = fastAnchorReplace(
     sourceText,
@@ -3905,14 +4386,14 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     '$1"正在总结通话…"'
   );
 
-  // [核心修复 9] 插件页、气泡提示、终端空状态、工作区/项目选择器、MCP 搜索跨版本替换
+  // [核心修复 9] 插件页、气泡提示、终端空状态、工作区/项目选择器、MCP 搜索跨版本替换（全面通配 React 变量）
   sourceText = sourceText.replace(/"Removing\.\.\.":([a-zA-Z0-9_$]+)\?"Enabling\.\.\.":"Adding\.\.\."/g, '"正在移除...":$1?"正在启用...":"正在添加..."');
-  sourceText = sourceText.replace(/"Signed in as"," ",B\.createElement\(([a-zA-Z0-9_$]+)/g, '"当前登录账号"," ",B.createElement($1');
+  sourceText = sourceText.replace(/"Signed in as"," ",([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+)/g, '"当前登录账号"," ",$1.createElement($2');
   sourceText = fastAnchorReplace(
     sourceText,
     '"Configured servers"',
-    /([a-zA-Z0-9_$]+)\.length>0&&B\.createElement\("div",\{className:"mb-2 px-3 font-semibold text-foreground"\},\s*"Configured servers"\)/g,
-    '$1.length>0&&B.createElement("div",{className:"mb-2 px-3 font-semibold text-foreground"},"已配置的服务器")'
+    /([a-zA-Z0-9_$]+)\.length>0&&([A-Za-z_$][\w$]*)\.createElement\("div",\{className:"mb-2 px-3 font-semibold text-foreground"\},\s*"Configured servers"\)/g,
+    '$1.length>0&&$2.createElement("div",{className:"mb-2 px-3 font-semibold text-foreground"},"已配置的服务器")'
   );
   sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.RUNNING:return\{label:"Running"/g, 'case $1.SidecarStatus.RUNNING:return{label:"运行中"');
   sourceText = sourceText.replace(/case ([a-zA-Z0-9_$]+)\.SidecarStatus\.STARTING:return\{label:"Starting"/g, 'case $1.SidecarStatus.STARTING:return{label:"启动中"');
@@ -3929,57 +4410,69 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = fastAnchorReplace(
     sourceText,
     '"Controls the actions the agent can take."',
-    /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?B\.createElement\(([a-zA-Z0-9_$]+),null\):"Controls the actions the agent can take\."/g,
-    '$1=$2?B.createElement($3,null):"控制智能体可执行的各类操作。"'
+    /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),null\):"Controls the actions the agent can take\."/g,
+    '$1=$2?$3.createElement($4,null):"控制智能体可执行的各类操作。"'
   );
   sourceText = fastAnchorReplace(
     sourceText,
     '"Whether the agent asks you to review its documents."',
-    /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?B\.createElement\(([a-zA-Z0-9_$]+),null\):"Whether the agent asks you to review its documents\."/g,
-    '$1=$2?B.createElement($3,null):"控制智能体在生成计划或文档后是否请求你评审。"'
+    /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\?([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),null\):"Whether the agent asks you to review its documents\."/g,
+    '$1=$2?$3.createElement($4,null):"控制智能体在生成计划或文档后是否请求你评审。"'
   );
   sourceText = sourceText.replace(/k\.length>0\?k\.map\(([a-zA-Z0-9_$]+)\)\.join\(", "\):"No access"/g, 'k.length>0?k.map(m=>({"read":"读取","update":"更新","merge":"合并","approve":"批准","create":"创建","delete":"删除"}[m]||$1(m))).join("、"):"无权限"');
   sourceText = sourceText.replace(/function ([a-zA-Z0-9_$]+)\(a\)\{switch\(a\)\{case "system":return"System UI";case "inter":return"Inter";case "google-sans":return"Google Sans"\}\}/g, 'function $1(a){switch(a){case "system":return"系统默认";case "inter":return"Inter";case "google-sans":return"Google Sans"}}');
-  sourceText = sourceText.replace(/h\.length===0\?B\.createElement\(([a-zA-Z0-9_$]+),null,"No active terminals"\)/g, 'h.length===0?B.createElement($1,null,"暂无活动终端")');
-  sourceText = sourceText.replace(/"No active terminals"\),B\.createElement\(([a-zA-Z0-9_$]+)/g, '"暂无活动终端"),B.createElement($1');
+  sourceText = sourceText.replace(/h\.length===0\?([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),null,"No active terminals"\)/g, 'h.length===0?$1.createElement($2,null,"暂无活动终端")');
+  sourceText = sourceText.replace(/"No active terminals"\),([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+)/g, '"暂无活动终端"),$1.createElement($2');
   sourceText = fastAnchorReplace(
     sourceText,
     '.items.length})`:"See less"',
     /([a-zA-Z0-9_$]+)\?`See all \(\$\{([a-zA-Z0-9_$]+)\.items\.length\}\)`:"See less"/g,
     '$1?`查看全部 (${$2.items.length})`:"收起"'
   );
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},h\?"Copied":"Copy code"\)/g, 'B.createElement($1,{id:$2,place:"top"},h?"已复制":"复制代码")');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},"Insert in Terminal"\)/g, 'B.createElement($1,{id:$2,place:"top"},"在终端中插入")');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top-end"\},([a-zA-Z0-9_$]+)\?"Copied":"Copy"\)/g, 'B.createElement($1,{id:$2,place:"top-end"},$3?"已复制":"复制")');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},\s*"At Mention Code Block"\)/g, 'B.createElement($1,{id:$2,place:"top"},"@ 提及代码块")');
+  sourceText = fastAnchorReplace(sourceText, '?"Copied":"Copy code"', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},([a-zA-Z0-9_$]+)\?"Copied":"Copy code"\)/g, '$1.createElement($2,{id:$3,place:"top"},$4?"已复制":"复制代码")');
+  sourceText = fastAnchorReplace(sourceText, '"Insert in Terminal"', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},"Insert in Terminal"\)/g, '$1.createElement($2,{id:$3,place:"top"},"在终端中插入")');
+  sourceText = fastAnchorReplace(sourceText, 'place:"top-end"}', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top-end"\},([a-zA-Z0-9_$]+)\?"Copied":"Copy"\)/g, '$1.createElement($2,{id:$3,place:"top-end"},$4?"已复制":"复制")');
+  sourceText = fastAnchorReplace(sourceText, '"At Mention Code Block"', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{id:([a-zA-Z0-9_$]+),place:"top"\},\s*"At Mention Code Block"\)/g, '$1.createElement($2,{id:$3,place:"top"},"@ 提及代码块")');
   sourceText = sourceText.replace(/placeholder:([a-zA-Z0-9_$]+)\?"Search or enter a URL":"Search tabs, files and more"/g, 'placeholder:$1?"搜索或输入网址":"搜索标签页、文件等更多内容"');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,"GitHub Repositories"\)/g, 'B.createElement($1,null,"GitHub 仓库")');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,\s*"Remote Projects"\)/g, 'B.createElement($1,null,"远程项目")');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,"Recent"\)/g, 'B.createElement($1,null,"最近")');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),null,"Environment"\)/g, 'B.createElement($1,null,"运行环境")');
+  sourceText = fastAnchorReplace(sourceText, '"GitHub Repositories"', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),null,"GitHub Repositories"\)/g, '$1.createElement($2,null,"GitHub 仓库")');
+  sourceText = fastAnchorReplace(sourceText, '"Remote Projects"', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),null,\s*"Remote Projects"\)/g, '$1.createElement($2,null,"远程项目")');
+  sourceText = fastAnchorReplace(sourceText, ',null,"Recent")', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),null,"Recent"\)/g, '$1.createElement($2,null,"最近")');
+  sourceText = fastAnchorReplace(sourceText, ',null,"Environment")', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),null,"Environment"\)/g, '$1.createElement($2,null,"运行环境")');
   sourceText = fastAnchorReplace(
     sourceText,
     '.trim()?`No matching ${',
     /([a-zA-Z0-9_$]+)\.trim\(\)\?`No matching \$\{([a-zA-Z0-9_$]+)\}`:`No remote \$\{\2\}`/g,
     '$1.trim()?`未找到匹配的${({"projects":"项目","workspaces":"工作区"}[$2]||$2)}`:`暂无远程${({"projects":"项目","workspaces":"工作区"}[$2]||$2)}`'
   );
-  sourceText = sourceText.replace(/B\.createElement\("p",\{className:"px-2\.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"\},"No ",([a-zA-Z0-9_$]+)\.emptyMessagePlural,\s*" match \\u201c",([a-zA-Z0-9_$]+),"\\u201d\."\)/g, 'B.createElement("p",{className:"px-2.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"},"未找到匹配“",$2,"”的",({"automations":"自动化","scheduled tasks":"定时任务"}[$1.emptyMessagePlural]||$1.emptyMessagePlural),"。")');
-  sourceText = sourceText.replace(/paddingClassName:"pl-2\.5 pr-3",\s*icon:B\.createElement\(([a-zA-Z0-9_$]+),\{name:"add",size:14\}\)\},"New"\)\)\)/g, 'paddingClassName:"pl-2.5 pr-3",icon:B.createElement($1,{name:"add",size:14})},"新建")))');
-  sourceText = sourceText.replace(/"Reconnect"\),B\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"xs","aria-label":`Disconnect \$\{f\}`,onClick:\(\)\s*=>\s*\{d\(f\)\}\},"Disconnect"\)/g, '"重新连接"),B.createElement($1,{variant:"secondary",size:"xs","aria-label":`断开 ${f} 连接`,onClick:()=>{d(f)}},"断开连接")');
-  sourceText = sourceText.replace(/"aria-label":`More for \$\{a\}`\},B\.createElement\(([a-zA-Z0-9_$]+),\{name:"more_vert",size:18\}\)\)\),B\.createElement\(([a-zA-Z0-9_$]+),\{align:"end"\},B\.createElement\(([a-zA-Z0-9_$]+),\{disabled:c,onClick:\(\)\s*=>\s*\{if\(!f\.current\)\{var g=b\(\);g&&\(f\.current=!0,d\(!0\),Promise\.resolve\(g\)\.finally\(\(\)\s*=>\s*\{f\.current=!1;d\(!1\)\}\)\)\}\}\},"Disconnect"\)/g, '"aria-label":`更多选项：${a}`},B.createElement($1,{name:"more_vert",size:18}))),B.createElement($2,{align:"end"},B.createElement($3,{disabled:c,onClick:()=>{if(!f.current){var g=b();g&&(f.current=!0,d(!0),Promise.resolve(g).finally(()=>{f.current=!1;d(!1)}))}}},"断开连接")');
-  sourceText = sourceText.replace(/B\.createElement\(([a-zA-Z0-9_$]+),\{className:"w-4 h-4"\}\),"Loading MCP servers\.\.\."/g, 'B.createElement($1,{className:"w-4 h-4"}),"正在加载 MCP 服务器..."');
-  sourceText = sourceText.replace(/B\.createElement\("div",\{className:"font-medium"\},\s*"No MCP servers installed"\),B\.createElement\("div",\{className:"text-muted-foreground max-w-sm"\},c\.openConfigFile\?"Use Add MCP to browse the store, or add a custom server via the MCP config\.":"Use Add MCP to browse the store\."\)/g, 'B.createElement("div",{className:"font-medium"},"尚未安装任何 MCP 服务器"),B.createElement("div",{className:"text-muted-foreground max-w-sm"},c.openConfigFile?"使用“添加 MCP”浏览市场，或通过 MCP 配置文件添加自定义服务器。":"使用“添加 MCP”浏览市场。")');
+  sourceText = fastAnchorReplace(sourceText, '"sidecar-list-empty"', /([A-Za-z_$][\w$]*)\.createElement\("p",\{className:"px-2\.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"\},"No ",([a-zA-Z0-9_$]+)\.emptyMessagePlural,\s*" match \\u201c",([a-zA-Z0-9_$]+),"\\u201d\."\)/g, '$1.createElement("p",{className:"px-2.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"},"未找到匹配“",$3,"”的",({"automations":"自动化","scheduled tasks":"定时任务"}[$2.emptyMessagePlural]||$2.emptyMessagePlural),"。")');
+  sourceText = sourceText.replace(/paddingClassName:"pl-2\.5 pr-3",\s*icon:([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{name:"add",size:14\}\)\},"New"\)\)\)/g, 'paddingClassName:"pl-2.5 pr-3",icon:$1.createElement($2,{name:"add",size:14})},"新建")))');
+  sourceText = sourceText.replace(/"Reconnect"\),([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"xs","aria-label":`Disconnect \$\{([a-zA-Z0-9_$]+)\}`,onClick:\(\)\s*=>\s*\{([a-zA-Z0-9_$]+)\(\3\)\}\},"Disconnect"\)/g, '"重新连接"),$1.createElement($2,{variant:"secondary",size:"xs","aria-label":`断开 ${$3} 连接`,onClick:()=>{$4($3)}},"断开连接")');
+  sourceText = sourceText.replace(/"aria-label":`More for \$\{a\}`\},([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{name:"more_vert",size:18\}\)\)\),\1\.createElement\(([a-zA-Z0-9_$]+),\{align:"end"\},\1\.createElement\(([a-zA-Z0-9_$]+),\{disabled:c,onClick:\(\)\s*=>\s*\{if\(!f\.current\)\{var g=b\(\);g&&\(f\.current=!0,d\(!0\),Promise\.resolve\(g\)\.finally\(\(\)\s*=>\s*\{f\.current=!1;d\(!1\)\}\)\)\}\}\},"Disconnect"\)/g, '"aria-label":`更多选项：${a}`},$1.createElement($2,{name:"more_vert",size:18}))),$1.createElement($3,{align:"end"},$1.createElement($4,{disabled:c,onClick:()=>{if(!f.current){var g=b();g&&(f.current=!0,d(!0),Promise.resolve(g).finally(()=>{f.current=!1;d(!1)}))}}},"断开连接")');
+  sourceText = fastAnchorReplace(sourceText, '"Loading MCP servers..."', /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{className:"w-4 h-4"\}\),"Loading MCP servers\.\.\."/g, '$1.createElement($2,{className:"w-4 h-4"}),"正在加载 MCP 服务器..."');
+  sourceText = fastAnchorReplace(sourceText, '"No MCP servers installed"', /([A-Za-z_$][\w$]*)\.createElement\("div",\{className:"font-medium"\},\s*"No MCP servers installed"\),\1\.createElement\("div",\{className:"text-muted-foreground max-w-sm"\},c\.openConfigFile\?"Use Add MCP to browse the store, or add a custom server via the MCP config\.":"Use Add MCP to browse the store\."\)/g, '$1.createElement("div",{className:"font-medium"},"尚未安装任何 MCP 服务器"),$1.createElement("div",{className:"text-muted-foreground max-w-sm"},c.openConfigFile?"使用“添加 MCP”浏览市场，或通过 MCP 配置文件添加自定义服务器。":"使用“添加 MCP”浏览市场。")');
   sourceText = sourceText.replace(/py-8 text-muted-foreground text-center"\},'No MCP servers found for "',([a-zA-Z0-9_$]+),'"'/g, 'py-8 text-muted-foreground text-center"},\'未找到与“\',$1,\'”匹配的 MCP 服务器\'');
-  sourceText = sourceText.replace(/B\.createElement\("span",null,"Type"," ",B\.createElement\("code",\{className:"px-1\.5 py-0\.5 rounded bg-secondary text-foreground font-mono text-\[11px\] border border-border"\},"\/"\)," ","and select"," ",B\.createElement\("code",\{className:"px-1\.5 py-0\.5 rounded bg-secondary text-foreground font-mono text-\[11px\] border border-border"\},\s*"plan"\)," ","to have the agent generate a plan\."\)/g, 'B.createElement("span",null,"输入 ",B.createElement("code",{className:"px-1.5 py-0.5 rounded bg-secondary text-foreground font-mono text-[11px] border border-border"},"/")," 并选择 ",B.createElement("code",{className:"px-1.5 py-0.5 rounded bg-secondary text-foreground font-mono text-[11px] border border-border"},"plan"),"，即可让智能体生成计划。")');
+  sourceText = fastAnchorReplace(sourceText, '"to have the agent generate a plan."', /([A-Za-z_$][\w$]*)\.createElement\("span",null,"Type"," ",\1\.createElement\("code",\{className:"px-1\.5 py-0\.5 rounded bg-secondary text-foreground font-mono text-\[11px\] border border-border"\},"\/"\)," ","and select"," ",\1\.createElement\("code",\{className:"px-1\.5 py-0\.5 rounded bg-secondary text-foreground font-mono text-\[11px\] border border-border"\},\s*"plan"\)," ","to have the agent generate a plan\."\)/g, '$1.createElement("span",null,"输入 ",$1.createElement("code",{className:"px-1.5 py-0.5 rounded bg-secondary text-foreground font-mono text-[11px] border border-border"},"/")," 并选择 ",$1.createElement("code",{className:"px-1.5 py-0.5 rounded bg-secondary text-foreground font-mono text-[11px] border border-border"},"plan"),"，即可让智能体生成计划。")');
 
-  // [核心修复 10] 2.32.2 新增通用设置项（新建对话按钮默认工作区）与 MCP 工具展开状态原生汉化
+  // [核心修复 10] 2.32.2+ 新增通用/浏览器/定制设置项与 MCP 工具展开状态原生汉化
   sourceText = sourceText.replace(
     /function ([a-zA-Z0-9_$]+)\(a\)\{switch\(a\)\{case "newWorkspace":return"(?:New Workspace|新建工作区)";case "noProject":return"(?:No Project|无项目)";case "lastWorkspace":return"Last Workspace"\}\}function ([a-zA-Z0-9_$]+)\(a\)\{switch\(a\)\{case "newWorkspace":return"Create a new workspace from your first message\.";case "noProject":return"Start without a workspace, for general questions\.";case "lastWorkspace":return"Reuse your last workspace\."\}\}/g,
     'function $1(a){switch(a){case "newWorkspace":return"新建工作区";case "noProject":return"无项目";case "lastWorkspace":return"上次工作区"}}function $2(a){switch(a){case "newWorkspace":return"从你的第一条消息自动创建一个新工作区。";case "noProject":return"不关联工作区直接开始，适合日常通用提问。";case "lastWorkspace":return"复用你上次使用的工作区。"}}'
   );
   sourceText = sourceText.replaceAll(
-    'label:"New Conversation Button",description:"Which workspace the New Conversation button and keyboard shortcut start you in."',
+    /label:"New [Cc]onversation [Bb]utton",description:"Which workspace the New Conversation button and keyboard shortcut start you in\."/g,
     'label:"新建对话按钮",description:"设置点击“新建对话”按钮或按下对应快捷键时默认进入的工作区。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Browser actuation rules',
+    /label:"Browser actuation rules",([\s\S]{0,650}?),"(?:Edit|编辑)"\)/g,
+    (m) => m
+      .replace('label:"Browser actuation rules"', 'label:"浏览器操作规则"')
+      .replaceAll('"Configure allowed and denied URLs for the browser subagent. It runs in the built-in browser, so no separate browser install is needed."', '"配置浏览器子智能体允许和拒绝访问的网址。该智能体运行于内置浏览器中，无需单独安装浏览器。"')
+      .replace('"Configure allowed and denied URLs for the browser subagent (invoked with /browser). Requires"," "', '"配置浏览器子智能体（通过 /browser 调用）允许和拒绝访问的网址。需要安装并运行 "')
+      .replace('"需要安装并运行 "," "', '"需要安装并运行 "')
+      .replace(',".")', ',"。")')
+      .replace(',"Edit")', ',"编辑")')
   );
   sourceText = sourceText.replace(
     /z\?`\$\{C\} tool\$\{C!==1\?"s":""\}\s*enabled`:`\$\{v\.tools\.length\} tool\$\{v\.tools\.length!==\s*1\?"s":""\}\s*disabled`/g,
@@ -4029,25 +4522,35 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /function ([a-zA-Z0-9_$]+)\(a\)\{return a>=11&&a<=13\?`\$\{a\}th`:`\$\{a\}\$\{\["th","st","nd","rd"\]\[a%10\]\?\?"th"\}`\}/g,
     'function $1(a){return`${a} 日`}'
   );
-  sourceText = sourceText.replaceAll(
-    'B.createElement("span",{className:"text-muted-foreground select-none"},"at")',
-    'B.createElement("span",{className:"text-muted-foreground select-none"},"于")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'text-muted-foreground select-none"},"at"',
+    /([A-Za-z_$][\w$]*)\.createElement\("span",\{className:"text-muted-foreground select-none"\},"at"\)/g,
+    '$1.createElement("span",{className:"text-muted-foreground select-none"},"于")'
   );
-  sourceText = sourceText.replaceAll(
-    'B.createElement("span",{className:"text-muted-foreground select-none"},"on")',
-    'B.createElement("span",{className:"text-muted-foreground select-none"},"于")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'text-muted-foreground select-none"},"on"',
+    /([A-Za-z_$][\w$]*)\.createElement\("span",\{className:"text-muted-foreground select-none"\},"on"\)/g,
+    '$1.createElement("span",{className:"text-muted-foreground select-none"},"于")'
   );
-  sourceText = sourceText.replaceAll(
-    'B.createElement("span",{className:"text-muted-foreground select-none"},"on the")',
-    'B.createElement("span",{className:"text-muted-foreground select-none"},"于每月")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'text-muted-foreground select-none"},"on the"',
+    /([A-Za-z_$][\w$]*)\.createElement\("span",\{className:"text-muted-foreground select-none"\},"on the"\)/g,
+    '$1.createElement("span",{className:"text-muted-foreground select-none"},"于每月")'
   );
-  sourceText = sourceText.replaceAll(
-    'B.createElement("span",{className:"text-muted-foreground select-none"},"Repeat every")',
-    'B.createElement("span",{className:"text-muted-foreground select-none"},"重复周期：每")'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Repeat every"',
+    /([A-Za-z_$][\w$]*)\.createElement\("span",\{className:"text-muted-foreground select-none"\},\s*"Repeat every"\)/g,
+    '$1.createElement("span",{className:"text-muted-foreground select-none"},"重复周期：每")'
   );
-  sourceText = sourceText.replace(
-    /B\.createElement\(([a-zA-Z0-9_$]+),\{value:v,label:v,options:([a-zA-Z0-9_$]+),onChange:d,testId:"schedule-custom-unit",ariaLabel:"Repeat unit"\}\)/g,
-    'B.createElement($1,{value:v,label:({"hours":"小时","week":"周","month":"个月"}[v]||v),options:$2,onChange:d,testId:"schedule-custom-unit",ariaLabel:"重复单位"})'
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"schedule-custom-unit"',
+    /([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{value:v,label:v,options:([a-zA-Z0-9_$]+),onChange:d,testId:"schedule-custom-unit",ariaLabel:"Repeat unit"\}\)/g,
+    '$1.createElement($2,{value:v,label:({"hours":"小时","week":"周","month":"个月"}[v]||v),options:$3,onChange:d,testId:"schedule-custom-unit",ariaLabel:"重复单位"})'
   );
 
   // 4. 自动化列表、下次/上次运行时间、分组标题与创建向导字段
@@ -4127,11 +4630,15 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /("trajectorySummaries\/markConversationAsReadThunk",async\(a,b\)=>\{var c=e,d=e;try\{let f=a\.cascadeId,g=a\.agentService;b\.dispatch\(([a-zA-Z0-9_$]+)\(\{cascadeId:f,annotations:\{markedAsUnread:!1\}\}\)\);d\(await c\(g\.updateConversationAnnotations\?\.\(f,([a-zA-Z0-9_$]+)\(([a-zA-Z0-9_$]+)\.ConversationAnnotationsSchema,\{markedAsUnread:!1,lastUserViewTime:([a-zA-Z0-9_$]+)\(new Date\)\}\),!0\)\)\)\}finally\{c\(\)\}\}\);)/g,
     '$1globalThis.__AGY_ZHCN_ANNOT_HELPERS__={localAction:(p)=>$2(p),makeProto:(o)=>$3($4.ConversationAnnotationsSchema,o)};'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'getStartingConversationIds:',
     /(\{updateConversationAnnotations:([a-zA-Z0-9_$]+)\}=[a-zA-Z0-9_$]+\(\),([a-zA-Z0-9_$]+)=[a-zA-Z0-9_$]+\(\),([a-zA-Z0-9_$]+)=[a-zA-Z0-9_$]+\(\);\s*\(0,[a-zA-Z0-9_$]+\.useEffect\)\(\(\)=>[a-zA-Z0-9_$]+\(\{subscribeToRoute:[a-zA-Z0-9_$]+=>[a-zA-Z0-9_$]+\.subscribe\("onResolved",[a-zA-Z0-9_$]+\),getCascadeIdParam:[a-zA-Z0-9_$]+,getBattleIdParam:[a-zA-Z0-9_$]+,dispatch:([a-zA-Z0-9_$]+)\.dispatch,deps:\{updateConversationAnnotations:\2,recordError:\3,getStartingConversationIds:\(\)=>[a-zA-Z0-9_$]+\(\5\.getState\(\)\)\}\}\),\[[^\]]+\]\);)(return \4\?)/g,
     '$1globalThis.__AGY_ZHCN_BIND_TITLE_WATCHER__?.($5,$2);$6'
   );
-  sourceText = sourceText.replace(
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'reportedByCaller:!0',
     /([a-zA-Z0-9_$]+=\(0,[a-zA-Z0-9_$]+\.useCallback\)\(async ([a-zA-Z0-9_$]+)=>\{)(var ([a-zA-Z0-9_$]+)=[a-zA-Z0-9_$]+,[a-zA-Z0-9_$]+=[a-zA-Z0-9_$]+;try\{let [a-zA-Z0-9_$]+=[a-zA-Z0-9_$]+\(await \4\([a-zA-Z0-9_$]+\(\{cascadeId:([a-zA-Z0-9_$]+),annotations:\{title:\2\},onError:\{reportedByCaller:!0\}\}\)\)\);)/g,
     '$1globalThis.__AGY_ZHCN_RECORD_MANUAL_TITLE__?.($5,$2);$3'
   );
@@ -4240,6 +4747,302 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     '"Hide from this list"',
     /tooltip:([a-zA-Z0-9_$]+)\?"Hide from this list":"Show in the list again",[\s\r\n]*label:\1\?`Hide \$\{([a-zA-Z0-9_$]+)\.host\} from this list`:`Show \$\{\2\.host\} in the list again`/g,
     'tooltip:$1?"从列表中隐藏":"在列表中重新显示",label:$1?`从列表中隐藏 ${$2.host}`:`在列表中重新显示 ${$2.host}`'
+  );
+
+  // =========================================================================
+  // 9.15 全客户端 2.35.1+ 深度补齐（项目设置、Token用量明细、快捷键方案、侧栏定制、自动化频率、通用弹窗与提示）
+  // =========================================================================
+
+  // 1. 项目/工作区设置页副标题、同名警告、定制筛选框与 Terminal/Environment 分组
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'with this name already exists.")',
+    /"A ",([a-zA-Z0-9_$]+)\.lowercase," with this name already exists\."/g,
+    '"已存在同名的",$1.lowercase==="workspace"?"工作区":"项目","。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"folders"}',
+    /`Manage \$\{([a-zA-Z0-9_$]+)\.lowercase\} \$\{([a-zA-Z0-9_$]+)\?"resources":"folders"\}, agent settings, and permissions\.`/g,
+    '`管理${$1.lowercase==="workspace"?"工作区":"项目"}${$2?"资源":"文件夹"}、智能体设置与权限。`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"folders"} and settings.',
+    /`Manage \$\{([a-zA-Z0-9_$]+)\.lowercase\} \$\{([a-zA-Z0-9_$]+)\?"resources":"folders"\} and settings\.`/g,
+    '`管理${$1.lowercase==="workspace"?"工作区":"项目"}${$2?"资源":"文件夹"}与设置。`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"project-customizations-workspace-filter"',
+    /title:"Customizations",headerRight:([\s\S]{0,600}?)value:"all"\},"All Workspaces"\)([\s\S]{0,180}?)\|\|"Workspace"/g,
+    (m) => m
+      .replace('title:"Customizations"', 'title:"插件"')
+      .replace('"All Workspaces"', '"全部工作区"')
+      .replace('||"Workspace"', '||"工作区"')
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '?"Environment":"Terminal"',
+    /title:([a-zA-Z0-9_$]+)\?"Environment":"Terminal"/g,
+    'title:$1?"环境":"终端"'
+  );
+
+  // 2. Token 用量分布进度条、展开明细按钮 (Show N breakdowns) 与预算超限说明
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Hide breakdown',
+    /([a-zA-Z0-9_$]+)\?"Hide breakdown":`Show \$\{([a-zA-Z0-9_$]+)\.length\} breakdown\$\{\2\.length===1\?"":"s"\}`/g,
+    '$1?"收起明细":`显示 ${$2.length} 项明细`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '.toLocaleString()," / "',
+    /\.toLocaleString\(\)," \/ ",([a-zA-Z0-9_$]+)\.toLocaleString\(\),(?:" tokens \(",|" ","tokens \(",)/g,
+    '.toLocaleString()," / ",$1.toLocaleString()," Token (",'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '.tokens.toLocaleString()," tokens)"',
+    /\.tokens\.toLocaleString\(\)," tokens\)"/g,
+    '.tokens.toLocaleString()," Token)"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '.tokens.toLocaleString()} tokens`',
+    /`\$\{([a-zA-Z0-9_$]+)\.label\}: \$\{\1\.tokens\.toLocaleString\(\)\} tokens`/g,
+    '`${$1.label}：${$1.tokens.toLocaleString()} Token`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'exceeded the customization budget and were excluded from context.',
+    /if\(([a-zA-Z0-9_$]+)\)if\(([a-zA-Z0-9_$]+)\)\{var ([a-zA-Z0-9_$]+)="Demoted";var ([a-zA-Z0-9_$]+)=`Exceeded the rules token budget\. Full rule content \(\$\{([a-zA-Z0-9_$]+)\.numTokens\.toLocaleString\(\)\} tokens\) was replaced with a lightweight file-path pointer in context\.`\}else ([a-zA-Z0-9_$]+)&&\s*([a-zA-Z0-9_$]+)\?\(([a-zA-Z0-9_$]+)=Math\.max\(0,\5\.numTokens-\1\.numTokens\),\3=\8===0\?"Excluded":`\$\{([a-zA-Z0-9_$]+)\.size\} \$\{\9\.size===1\?"tool":"tools"\} excluded`,\4=\8===0\?`All tools in this MCP server \(\$\{\5\.numTokens\.toLocaleString\(\)\} tokens\) exceeded the customization budget and were excluded from context\.`:`\$\{\9\.size\} \$\{\9\.size===1\?"tool":"tools"\} in this MCP server \(\$\{\1\.numTokens\.toLocaleString\(\)\} tokens\) exceeded the customization budget and were excluded from context\.`\):\s*\(\3="Excluded",\4=`Exceeded the customization token budget \(\$\{\5\.numTokens\.toLocaleString\(\)\} tokens\) and was excluded from context\.`\);/g,
+    'if($1)if($2){var $3="已降级";var $4=`已超出规则 Token 预算。完整规则内容（${$5.numTokens.toLocaleString()} Token）在上下文中已被替换为轻量文件路径指针。`}else $6&&$7?($8=Math.max(0,$5.numTokens-$1.numTokens),$3=$8===0?"已排除":`已排除 ${$9.size} 个工具`,$4=$8===0?`此 MCP 服务器的所有工具（${$5.numTokens.toLocaleString()} Token）超出了自定义预算，未纳入上下文。`:`此 MCP 服务器中的 ${$9.size} 个工具（${$1.numTokens.toLocaleString()} Token）超出了自定义预算，未纳入上下文。`):($3="已排除",$4=`已超出自定义项 Token 预算（${$5.numTokens.toLocaleString()} Token），未纳入上下文。`);'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Exceeded the customization token budget',
+    /`Exceeded the customization token budget \(\$\{([a-zA-Z0-9_$.]+)\.numTokens\.toLocaleString\(\)\} tokens\) and was excluded from context\.`/g,
+    '`已超出自定义项 Token 预算（${$1.numTokens.toLocaleString()} Token），未纳入上下文。`'
+  );
+
+  // 3. 快捷键方案设置页 (Shortcuts / Keybinding Scheme / VS Code Default / Antigravity Style)
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'label:"VS Code Default"',
+    /\[\{value:"vscode",label:"VS Code Default",recommended:!0,description:([a-zA-Z0-9_$]+)=>`Honors standard VS Code shortcuts without collisions \(e\.g\. \$\{\1\?"\\u2318L Focus Input, \\u2318\\u21e7L New Conversation, \\u2318\\u21e7A Picker, \\u2318\\u21e7, Settings":"Ctrl\+L Focus Input, Ctrl\+Shift\+L New Conversation, Ctrl\+Shift\+A Picker, Ctrl\+Shift\+, Settings"\}\)\.`\},\{value:"agy",label:"Antigravity \(AGY\) Style",description:([a-zA-Z0-9_$]+)=>`Uses standalone Antigravity chords \(e\.g\. \$\{\2\?"\\u2318I Focus Input, \\u2318\\u21e7O New Conversation, \\u2318K Picker in chat, \\u2318, Settings, \\u2318\[\/\] History\)\. Replaces Go to Symbol \(\\u2318\\u21e7O\) and Trigger Suggest \(\\u2318I\), and rebinds VS Code Settings to \\u2318\\u2325,\.":\s*"Ctrl\+I Focus Input, Ctrl\+Shift\+O New Conversation, Ctrl\+K Picker in chat, Ctrl\+, Settings, Ctrl\+\[\/\] History\)\. Replaces Go to Symbol \(Ctrl\+Shift\+O\) and Trigger Suggest \(Ctrl\+I\), and rebinds VS Code Settings to Ctrl\+Alt\+,\."\}`\}\]/g,
+    '[{value:"vscode",label:"VS Code 默认",recommended:!0,description:$1=>`沿用标准 VS Code 快捷键且避免冲突（如 ${$1?"⌘L 聚焦输入框、⌘⇧L 新建对话、⌘⇧A 快速选择器、⌘⇧, 打开设置":"Ctrl+L 聚焦输入框、Ctrl+Shift+L 新建对话、Ctrl+Shift+A 快速选择器、Ctrl+Shift+, 打开设置"}）。`},{value:"agy",label:"Antigravity (AGY) 风格",description:$2=>`使用独立 Antigravity 组合键（如 ${$2?"⌘I 聚焦输入框、⌘⇧O 新建对话、⌘K 对话选择器、⌘, 打开设置、⌘[/] 历史记录）。会覆盖“转到符号 (⌘⇧O)”和“触发建议 (⌘I)”，并将 VS Code 设置重绑为 ⌘⌥,。":"Ctrl+I 聚焦输入框、Ctrl+Shift+O 新建对话、Ctrl+K 对话选择器、Ctrl+, 打开设置、Ctrl+[/] 历史记录）。会覆盖“转到符号 (Ctrl+Shift+O)”和“触发建议 (Ctrl+I)”，并将 VS Code 设置重绑为 Ctrl+Alt+,。"}`}]'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Shortcuts",description:"Manage your keybinding scheme',
+    /title:"Shortcuts",description:"Manage your keybinding scheme and customize shortcuts in VS Code\."/g,
+    'title:"快捷键",description:"管理你的快捷键方案并在 VS Code 中自定义快捷键。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'title:"Keybinding Scheme"',
+    /title:"Keybinding Scheme",subtitle:"Choose between non-colliding VS Code defaults or standalone Antigravity chords\."/g,
+    'title:"快捷键方案",subtitle:"选择互不冲突的 VS Code 默认快捷键，或使用独立的 Antigravity 组合键。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"aria-label":"Keybinding Scheme"',
+    /"aria-label":"Keybinding Scheme"/g,
+    '"aria-label":"快捷键方案"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Recommended"',
+    /\.recommended&&([A-Za-z_$][\w$]*)\.createElement\("span",\{className:"text-\[10px\] font-semibold leading-none bg-secondary text-secondary-foreground px-1\.5 py-0\.5 rounded-full border border-border"\},\s*"Recommended"\)/g,
+    '.recommended&&$1.createElement("span",{className:"text-[10px] font-semibold leading-none bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-full border border-border"},"推荐")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"VS Code keyboard shortcuts"',
+    /"VS Code keyboard shortcuts"\),([A-Za-z_$][\w$]*)\.createElement\("span",\{className:"text-xs text-muted-foreground leading-relaxed"\},"Inspect live bindings or record custom key chords filtered to"," ",\1\.createElement\("code",\{className:"px-1 py-0\.5 rounded bg-secondary text-foreground font-mono text-\[11px\]"\},"antigravity\."\),"\s*","commands\."\)([\s\S]{0,420}?)"Open Keyboard Shortcuts"/g,
+    (m) => m
+      .replace('"VS Code keyboard shortcuts"', '"VS Code 键盘快捷键"')
+      .replace('"Inspect live bindings or record custom key chords filtered to"," "', '"查看实时按键绑定，或录制已按 "')
+      .replace('" ","commands."', '" 过滤的自定义组合键。"')
+      .replace('"Open Keyboard Shortcuts"', '"打开键盘快捷键"')
+  );
+
+  // 4. 定制侧边栏 & 收件箱分组/排序菜单 (Customize Sidebar / Inbox Mode / Auto-Resolve / Filters)
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'label:"Never"},{value:3,label:"3 days"',
+    /\[\{value:0,label:"Never"\},\{value:3,label:"3 days"\},\{value:7,label:"7 days"\},\{value:14,label:"14 days"\}\],([a-zA-Z0-9_$]+)=\[\{value:"any",label:"Any time"\},\{value:7,label:"7 days"\},\{value:14,label:"14 days"\},\{value:21,label:"21 days"\}\],([a-zA-Z0-9_$]+)=\[\{value:"last_updated",label:"Last Updated"\},\{value:"last_user_prompt",label:"Last Prompt"\},\{value:"custom",label:"Manual Order"\}\]/g,
+    '[{value:0,label:"从不"},{value:3,label:"3 天"},{value:7,label:"7 天"},{value:14,label:"14 天"}],$1=[{value:"any",label:"任意时间"},{value:7,label:"7 天"},{value:14,label:"14 天"},{value:21,label:"21 天"}],$2=[{value:"last_updated",label:"最近更新"},{value:"last_user_prompt",label:"最近提问"},{value:"custom",label:"手动排序"}]'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'id:"env:local",label:"This Computer"',
+    /\[\{id:"env:local",label:"This Computer",icon:"monitor"\},\{id:"env:cloud",label:"Remote",icon:"cloud"\}\];const ([a-zA-Z0-9_$]+)=\{last_updated:"Last Updated",last_user_prompt:"Last Prompt",custom:"Custom Order"\},([a-zA-Z0-9_$]+)=\{\.\.\.\1,custom:"Manual Order"\}/g,
+    '[{id:"env:local",label:"本机",icon:"monitor"},{id:"env:cloud",label:"远程",icon:"cloud"}];const $1={last_updated:"最近更新",last_user_prompt:"最近提问",custom:"自定义排序"},$2={...$1,custom:"手动排序"}'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Customize Sidebar"',
+    /"aria-label":"Customize Sidebar"([\s\S]{0,600}?)"Customize Sidebar"\)/g,
+    (m) => m.replaceAll('"Customize Sidebar"', '"定制侧边栏"')
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'value:"repo",label:"Repo"',
+    /\{value:"project",label:([a-zA-Z0-9_$]+)\},\.\.\.\(([a-zA-Z0-9_$]+)\?\[\{value:"repo",label:"Repo"\},\{value:"location",label:"Environment"\}\]:\[\]\),\{value:"status",label:"Status"\},\{value:"none",label:"None"\}\]([\s\S]{0,300}?)"Last Updated"/g,
+    (m) => m
+      .replace('label:"Repo"', 'label:"仓库"')
+      .replace('label:"Environment"', 'label:"环境"')
+      .replace('label:"Status"', 'label:"状态"')
+      .replace('label:"None"', 'label:"无"')
+      .replaceAll('"Last Updated"', '"最近更新"')
+      .replaceAll('"All"', '"全部"')
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Locked while grouped by Status"',
+    /"Inbox Mode"([\s\S]{0,1600}?)"Archived Only"([\s\S]{0,300}?)"Advanced"/g,
+    (m) => m
+      .replaceAll('"Inbox Mode"', '"收件箱模式"')
+      .replaceAll('"Group By"', '"分组方式"')
+      .replaceAll('"Sort By"', '"排序方式"')
+      .replace('"Locked while grouped by Status"', '"按状态分组时已锁定"')
+      .replaceAll('"Archived Only"', '"仅看已归档"')
+      .replace('"Advanced"', '"高级"')
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Keep running conversations in a separate Working section instead of in the Inbox."',
+    /"Working Section"([\s\S]{0,1600}?)"Filters"([\s\S]{0,500}?)"Any time"/g,
+    (m) => m
+      .replaceAll('"Working Section"', '"进行中分组"')
+      .replace('"Keep running conversations in a separate Working section instead of in the Inbox."', '"将运行中的对话保留在独立的“进行中”分组中，而不放入收件箱。"')
+      .replaceAll('"Auto-Resolve"', '"自动归档"')
+      .replace('"Move idle Inbox conversations to Resolved automatically after the selected time."', '"在超过所选时间后，自动将空闲的收件箱对话移至“已处理”。"')
+      .replace('"7 days"', '"7 天"')
+      .replaceAll('"Filters"', '"筛选"')
+      .replaceAll('"Last Activity"', '"最近活动"')
+      .replace('"Any time"', '"任意时间"')
+  );
+
+  // 5. 自动化列表频率展示器 (byd / cyd / dyd / eyd / fyd / hyd / D6)
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Sunday Monday Tuesday Wednesday Thursday Friday Saturday".split(" ")',
+    /const ([a-zA-Z0-9_$]+)="Sunday Monday Tuesday Wednesday Thursday Friday Saturday"\.split\(" "\),([a-zA-Z0-9_$]+)="Sun Mon Tue Wed Thu Fri Sat"\.split\(" "\);[\s\S]{0,1800}?`Daily at \$\{g\}`/g,
+    (m) => m
+      .replace('"Sunday Monday Tuesday Wednesday Thursday Friday Saturday"', '"周日 周一 周二 周三 周四 周五 周六"')
+      .replace('"Sun Mon Tue Wed Thu Fri Sat"', '"日 一 二 三 四 五 六"')
+      .replace('return`${a}th`;switch(a%10){case 1:return`${a}st`;case 2:return`${a}nd`;case 3:return`${a}rd`;default:return`${a}th`}', 'return`${a}日`;switch(a%10){case 1:return`${a}日`;case 2:return`${a}日`;case 3:return`${a}日`;default:return`${a}日`}')
+      .replace('"weekdays"', '"工作日"')
+      .replace('"weekends"', '"周末"')
+      .replace('`${a[0]} and ${a[1]}`', '`${a[0]} 和 ${a[1]}`')
+      .replace('`${a.slice(0,-1).join(", ")} and ${a[a.length-1]}`', '`${a.slice(0,-1).join("、")} 和 ${a[a.length-1]}`')
+      .replaceAll('"Custom schedule"', '"自定义计划"')
+      .replace('` on ${f}`', '` · ${f}`')
+      .replace('`Every ${f[1]} minutes${g}`', '`每 ${f[1]} 分钟${g}`')
+      .replace('"Every hour"', '"每小时"')
+      .replace('`Every hour at :${String(h).padStart(2,\n"0")}`', '`每小时 :${String(h).padStart(2,"0")}`')
+      .replace('`Every ${f[1]} hours${g}`', '`每 ${f[1]} 小时${g}`')
+      .replace('`Every ${k[1]} hours${g}`', '`每 ${k[1]} 小时${g}`')
+      .replace('`Every hour, ${', '`每小时，${')
+      .replace(', on ${f}`', '（${f}）`')
+      .replace('`Monthly on the ${', '`每月 ${')
+      .replace('} at ${g}`', '} ${g}`')
+      .replace('`${f.charAt(0).toUpperCase()+f.slice(1)} at ${g}`', '`${f} ${g}`')
+      .replace('`Daily at ${g}`', '`每天 ${g}`')
+  );
+
+  // 6. 浏览数据行、立即发送提示条、全部撤销确认弹窗、插件动作映射、Orchestrator 模型器、终端命令发送状态、旁问条、插件包提示与 Git 推送
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"data-testid":"browsing-data-row"',
+    /"data-testid":"browsing-data-row",[\s\S]{0,420}?"Manage"\)/g,
+    (m) => m
+      .replace('label:"Browsing data"', 'label:"浏览数据"')
+      .replace('description:"Clear history, cookies and site data from the built-in browser, or manage cookies for each site."', 'description:"清除内置浏览器中的历史记录、Cookie 和网站数据，或按网站分别管理 Cookie。"')
+      .replace(',"Manage")', ',"管理")')
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Messages now send immediately. Configure in"',
+    /"Messages now send immediately\. Configure in",([\s\S]{0,180}?),"settings"\)/g,
+    '"现在按回车会立即发送消息。可前往 ",$1,"设置")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"confirm-revoke-all"',
+    /,"Cancel"\),([\s\S]{0,180}?)"confirm-revoke-all",onClick:([a-zA-Z0-9_$]+)\},"Revoke all"\)/g,
+    ',"取消"),$1"confirm-revoke-all",onClick:$2},"全部撤销")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'action:"download_url",label:"Browser downloads"',
+    /\{action:"write_file",label:"Write files"\},\{action:"read_url",label:"Read URLs"\},\{action:"execute_url",label:"Browser actions"\},\{action:"download_url",label:"Browser downloads",icon:"download"\},\{action:"mcp",label:"MCP tools"\},\{action:"escalate_admin",label:"Admin escalation"\},\{action:"custom",label:"Custom"\}/g,
+    '{action:"write_file",label:"写入文件"},{action:"read_url",label:"读取网址"},{action:"execute_url",label:"浏览器操作"},{action:"download_url",label:"浏览器下载",icon:"download"},{action:"mcp",label:"MCP 工具"},{action:"escalate_admin",label:"管理员提权"},{action:"custom",label:"自定义"}'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Default (Gemini Pro)"',
+    /\?"Default \(Gemini Pro\)":([^:]+):"The Orchestrator's own planner"/g,
+    '?"默认 (Gemini Pro)":$1:"Orchestrator 默认规划器"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Default (Gemini Pro)"',
+    /"Default \(Gemini Pro\)"/g,
+    '"默认 (Gemini Pro)"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Suggested sending ${',
+    /`Rejected sending \$\{([a-zA-Z0-9_$]+)\} to command`:([a-zA-Z0-9_$]+)===[A-Za-z_$][\w$]*\.CortexStepStatus\.DONE\?`Sent \$\{\1\} to command`:\2===[A-Za-z_$][\w$]*\.CortexStepStatus\.WAITING\?`Suggested sending \$\{\1\} to command`:\2===[A-Za-z_$][\w$]*\.CortexStepStatus\.ERROR\?`Error sending \$\{\1\} to command`:`Sending \$\{\1\} to command`([\s\S]{0,420}?)"Error Details:"/g,
+    (m) => m
+      .replace(/`Rejected sending \$\{([^}]+)\} to command`/, '`已拒绝将 ${$1} 发送到命令`')
+      .replace(/`Sent \$\{([^}]+)\} to command`/, '`已将 ${$1} 发送到命令`')
+      .replace(/`Suggested sending \$\{([^}]+)\} to command`/, '`建议将 ${$1} 发送到命令`')
+      .replace(/`Error sending \$\{([^}]+)\} to command`/, '`将 ${$1} 发送到命令时出错`')
+      .replace(/`Sending \$\{([^}]+)\} to command`/, '`正在将 ${$1} 发送到命令`')
+      .replace('"Error Details:"', '"错误详情："')
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"data-testid":"side-question-toolbar-button"',
+    /`\$\{([a-zA-Z0-9_$]+)\} Help \\u00b7 \$\{([a-zA-Z0-9_$]+)\} Side Question\$\{\2===1\?"":"s"\}`:([a-zA-Z0-9_$]+)\?([a-zA-Z0-9_$]+)===1\?"Help":`\$\{\4\} Help`:`\$\{\4\} Side Question\$\{\4===1\?"":"s"\}`;([a-zA-Z0-9_$]+)=[\s\r\n]*([a-zA-Z0-9_$]+)\?`View \$\{\1\} help\$\{\1===1\?"":" items"\} and \$\{\2\} side question\$\{\2===1\?"":"s"\}`:\3\?`View \$\{\4\} help\$\{\4===1\?"":" items"\}`:`View \$\{\4\} side question\$\{\4===1\?"":"s"\}`/g,
+    '`${$1} 项帮助 · ${$2} 个旁问`:$3?"帮助":`${$4} 个旁问`;$5=$6?`查看 ${$1} 项帮助和 ${$2} 个旁问`:$3?`查看 ${$4} 项帮助`:`查看 ${$4} 个旁问`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'conversations in progress. Updating will',
+    /`You have \$\{([a-zA-Z0-9_$]+)\.length\} conversations in progress\. Updating will interrupt them, and they will automatically resume once the update completes\.`:`You have \$\{\1\.length\} conversations in progress\. Updating will cancel them and you'll need to manually restart them\.`:\1\.length===1\?([a-zA-Z0-9_$]+)\?"You have a conversation in progress\. Updating will interrupt it, and it will automatically resume once the update completes\.":"You have a conversation in progress\. Updating will cancel it and you'll need to manually restart it\."/g,
+    '`你有 ${$1.length} 个对话正在进行中。更新将会中断这些对话，待更新完成后将自动恢复。`:`你有 ${$1.length} 个对话正在进行中。更新将会取消这些对话，之后需要手动重新启动。`:$1.length===1?$2?"你当前有 1 个对话正在进行中。更新将会中断该对话，待更新完成后将自动恢复。":"你当前有 1 个对话正在进行中。更新将会取消该对话，之后需要手动重新启动。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Add bundle installs',
+    /function ([a-zA-Z0-9_$]+)\(a\)\{return`\$\{a\} \$\{a===1\?"plugin":"plugins"\}`\}function ([a-zA-Z0-9_$]+)\(\{memberCount:a,remainingCount:b,allInstalled:c\}\)\{var d=\1\(a\);return c\?`\$\{d\}, all already installed\. Adding the bundle installs plugins it gains later\.`:b===0\?`\$\{d\}\. Adding the bundle installs plugins it gains later\.`:b>=a\?a===1\?`\$\{d\}\. Add bundle installs it\.`:`\$\{d\}\. Add bundle installs all of them\.`:`\$\{d\}\. Add bundle installs \$\{b\}; the ones you already have stay as they are\.`\}/g,
+    'function $1(a){return`${a} 个插件`}function $2({memberCount:a,remainingCount:b,allInstalled:c}){var d=$1(a);return c?`${d}，均已安装。添加此插件包后，后续新增的插件将自动安装。`:b===0?`${d}。添加此插件包后，后续新增的插件将自动安装。`:b>=a?`${d}。添加此插件包将全部安装。`:`${d}。添加此插件包将安装其中尚未安装的 ${b} 个；已安装插件保持不变。`}'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'may have looser code review. Review',
+    /`This plugin in \$\{([a-zA-Z0-9_$]+)\} may have looser code review\. Review its contents before adding the bundle\.`:`These plugins in \$\{\1\} may have looser code review\. Review their contents before adding the bundle\.`/g,
+    '`来自 ${$1} 的此插件可能代码审查较为宽松。添加插件包前请先检查其内容。`:`来自 ${$1} 的这些插件可能代码审查较为宽松。添加插件包前请先检查其内容。`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'key:"git-push",label:"Push"',
+    /key:"git-push",label:"Push",tooltip:([a-zA-Z0-9_$]+)\?`Push \$\{([a-zA-Z0-9_$]+)\} commit\$\{\2===1\?"":"s"\} to \$\{\1\}`:([a-zA-Z0-9_$]+)\?\.currentRef\?`Publish \$\{\3\.currentRef\} to origin`:"Push",([\s\S]{0,420}?)disabledReason:\3\?\.hasPushRemote===!1\?"No remote configured":\3\?\.currentRef\?\1!==void 0&&\2===0\?"No commits to push":void 0:"Not on a branch",([\s\S]{0,220}?)("Pushing\.\.\.")/g,
+    (m) => m
+      .replace('key:"git-push",label:"Push"', 'key:"git-push",label:"推送"')
+      .replace(/`Push \$\{([^}]+)\} commit\$\{\1===1\?"":"s"\} to \$\{([^}]+)\}`/, '`推送 ${$1} 个提交到 ${$2}`')
+      .replace(/`Publish \$\{([^}]+)\.currentRef\} to origin`/, '`将 ${$1.currentRef} 发布到 origin`')
+      .replace(':"Push",', ':"推送",')
+      .replace('"No remote configured"', '"未配置远程仓库"')
+      .replace('"No commits to push"', '"没有待推送的提交"')
+      .replace('"Not on a branch"', '"当前不在分支上"')
+      .replace('"Pushing..."', '"正在推送..."')
   );
 
   const overlay = createRuntimeOverlay(dictionary);
