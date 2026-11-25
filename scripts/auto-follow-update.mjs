@@ -1,5 +1,5 @@
 import { showClient } from "../src/lib/show-client.mjs";
-import { failure, info, ok, step, warn } from "../src/lib/console-ui.mjs";
+import { failure, info, ok, runTimedTask, step, warn } from "../src/lib/console-ui.mjs";
 
 // Show a friendly summary instead of a stack trace when something goes wrong.
 process.on("uncaughtException", (error) => {
@@ -39,18 +39,17 @@ const abortIfRunning = process.argv.includes("--abort-if-running");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-// True only when this script started the client itself to read the UI or is immediately
-// taking over a fresh updater relaunch.
-let launchedByTool = ownedRestart;
+// True only when this script itself launched Antigravity temporarily just to read the UI.
+let launchedByTool = false;
 
-async function waitForRuntimeUi(executablePath) {
+async function waitForRuntimeUi(executablePath, setLabel) {
   if (!(await clientProcesses()).length) {
-    info("需要临时打开原版 Antigravity 读取界面，读完会自动关闭，无需操作。");
+    setLabel?.("正在临时打开原版 Antigravity 读取界面（读完自动关闭）…");
     await launchAntigravity(executablePath);
     launchedByTool = true;
   }
   for (let attempt = 0; attempt < 120; attempt += 1) {
-    if (attempt > 0 && attempt % 10 === 0) info("仍在等待客户端界面就绪…");
+    if (attempt >= 3) setLabel?.("正在等待原版客户端界面就绪…");
     const port = await findLatestUiPort();
     if (port) {
       try {
@@ -159,8 +158,13 @@ const originalScheme = await readFileFromAsar(inspection.appAsarPath, CUSTOM_SCH
 // exact structural anchors used by the patcher; an arbitrary new layout fails closed.
 patchCustomSchemeSource(originalScheme.toString("utf8"));
 step("准备中文界面");
-const runtime = await readEmbeddedWindowsUi(inspection) ?? await waitForRuntimeUi(inspection.executablePath);
-ok("已读取原版界面");
+const runtime = await runTimedTask({
+  label: "正在读取原版界面…",
+  doneText: "已读取原版界面",
+  work: async ({ setLabel }) => {
+    return (await readEmbeddedWindowsUi(inspection)) ?? (await waitForRuntimeUi(inspection.executablePath, setLabel));
+  },
+});
 const dictionary = await loadDomTranslations();
 const localized = await createLocalizedBundleWithProgress(runtime.buffer, dictionary, { skipCoverage: true });
 
@@ -184,7 +188,8 @@ try {
     warn("客户端正在运行，后台汉化不会关闭它。");
     process.exit(3);
   }
-  await gracefulCloseAntigravity({ owned: launchedByTool });
+  const closeOwnedMode = launchedByTool ? "tool-temp" : ownedRestart ? "updater-restart" : false;
+  await gracefulCloseAntigravity({ owned: closeOwnedMode });
   step(noLaunch ? "应用汉化" : "应用汉化并启动");
 } catch (closeErr) {
   if (closeErr?.silentUserCancelled) {
@@ -196,56 +201,63 @@ const recheck = await inspectInstallation({ allowRemoteCompatibility: false });
 if (recheck.appAsarSha256 !== inspection.appAsarSha256 || recheck.packageVersion !== inspection.packageVersion) {
   throw new Error("关闭客户端期间安装文件再次变化，拒绝修改。");
 }
-await ensureBackup(recheck.appAsarPath, backupPath, recheck.appAsarSha256);
-
-const buildRoot = await mkdtemp(path.join(os.tmpdir(), "antigravity-zhcn-auto-"));
-const builtAsarPath = path.join(buildRoot, "app.asar");
-let asarReplacement;
-let bundleResult;
-try {
-  const built = await buildPatchedAsar({
-    sourceAsarPath: recheck.appAsarPath,
-    outputAsarPath: builtAsarPath,
-    customSchemePath: CUSTOM_SCHEME_PATH,
-    expectedCustomSchemeSha256: sha256Buffer(originalScheme),
-  });
-  if (built.packageVersion !== recheck.packageVersion) throw new Error("补丁构建版本校验失败。");
-  asarReplacement = await atomicReplaceFile({
-    currentPath: recheck.appAsarPath,
-    replacementPath: builtAsarPath,
-    currentExpectedHash: recheck.appAsarSha256,
-    replacementExpectedHash: built.patchedAsarSha256,
-  });
-  bundleResult = await replaceBundle(installedBundlePath, localized.buffer, replaceableBundleHash);
-  await writeInstallState({
-    schemaVersion: 1,
-    status: "installed",
-    toolFingerprint,
-    appVersion: recheck.packageVersion,
-    installedAt: new Date().toISOString(),
-    installRoot: recheck.installRoot,
-    originalAsarSha256: recheck.appAsarSha256,
-    patchedAsarSha256: built.patchedAsarSha256,
-    originalCustomSchemeSha256: sha256Buffer(originalScheme),
-    patchedCustomSchemeSha256: built.patchedCustomSchemeSha256,
-    sourceBundleSha256: sha256Buffer(runtime.buffer),
-    localizedBundleSha256: bundleResult.sha256,
-    backupPath,
-    installedBundlePath,
-    autoFollow: { structuralGate: true, appliedAt: new Date().toISOString() },
-  });
-  await bundleResult.replacement?.finalize();
-  await asarReplacement.finalize();
-} catch (error) {
-  await bundleResult?.replacement?.rollback().catch(() => {});
-  await asarReplacement?.rollback().catch(() => {});
-  throw error;
-} finally {
-  await rm(buildRoot, { recursive: true, force: true });
-}
-
-ok("已备份原版文件并应用中文");
+await runTimedTask({
+  label: "正在备份原版文件并应用汉化…",
+  doneText: "已备份原版文件并应用中文",
+  work: async () => {
+    await ensureBackup(recheck.appAsarPath, backupPath, recheck.appAsarSha256);
+    const buildRoot = await mkdtemp(path.join(os.tmpdir(), "antigravity-zhcn-auto-"));
+    const builtAsarPath = path.join(buildRoot, "app.asar");
+    let asarReplacement;
+    let bundleResult;
+    try {
+      const built = await buildPatchedAsar({
+        sourceAsarPath: recheck.appAsarPath,
+        outputAsarPath: builtAsarPath,
+        customSchemePath: CUSTOM_SCHEME_PATH,
+        expectedCustomSchemeSha256: sha256Buffer(originalScheme),
+      });
+      if (built.packageVersion !== recheck.packageVersion) throw new Error("补丁构建版本校验失败。");
+      asarReplacement = await atomicReplaceFile({
+        currentPath: recheck.appAsarPath,
+        replacementPath: builtAsarPath,
+        currentExpectedHash: recheck.appAsarSha256,
+        replacementExpectedHash: built.patchedAsarSha256,
+      });
+      bundleResult = await replaceBundle(installedBundlePath, localized.buffer, replaceableBundleHash);
+      await writeInstallState({
+        schemaVersion: 1,
+        status: "installed",
+        toolFingerprint,
+        appVersion: recheck.packageVersion,
+        installedAt: new Date().toISOString(),
+        installRoot: recheck.installRoot,
+        originalAsarSha256: recheck.appAsarSha256,
+        patchedAsarSha256: built.patchedAsarSha256,
+        originalCustomSchemeSha256: sha256Buffer(originalScheme),
+        patchedCustomSchemeSha256: built.patchedCustomSchemeSha256,
+        sourceBundleSha256: sha256Buffer(runtime.buffer),
+        localizedBundleSha256: bundleResult.sha256,
+        backupPath,
+        installedBundlePath,
+        autoFollow: { structuralGate: true, appliedAt: new Date().toISOString() },
+      });
+      await bundleResult.replacement?.finalize();
+      await asarReplacement.finalize();
+    } catch (error) {
+      await bundleResult?.replacement?.rollback().catch(() => {});
+      await asarReplacement?.rollback().catch(() => {});
+      throw error;
+    } finally {
+      await rm(buildRoot, { recursive: true, force: true });
+    }
+  },
+});
 await syncAutoFollow();
 if (!noLaunch) {
-  await showClient(recheck.executablePath);
+  await runTimedTask({
+    label: "正在启动 Antigravity 中文版…",
+    doneText: "已启动 Antigravity 中文版",
+    work: () => showClient(recheck.executablePath),
+  });
 }

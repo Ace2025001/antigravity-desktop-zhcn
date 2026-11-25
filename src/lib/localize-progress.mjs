@@ -1,10 +1,8 @@
-import { SYMBOLS, color, endLiveLine, liveLine } from "./console-ui.mjs";
+import { SYMBOLS, color, endLiveLine, formatElapsed, liveLine } from "./console-ui.mjs";
 import { Worker } from "node:worker_threads";
 import { createLocalizedBundle } from "./translator.mjs";
 
-export function formatElapsed(seconds) {
-  return seconds < 60 ? `${seconds} 秒` : `${Math.floor(seconds / 60)} 分 ${seconds % 60} 秒`;
-}
+export { formatElapsed };
 
 class WorkerUnavailableError extends Error {}
 

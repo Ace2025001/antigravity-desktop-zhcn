@@ -208,7 +208,14 @@ export async function closeClientForChanges({ owned = false } = {}) {
   }
 
   // Only show the “quit client” step when there is actually a client to close.
-  if ((await clientProcesses()).length) step(owned ? "关闭临时打开的客户端" : "退出客户端");
+  if ((await clientProcesses()).length) {
+    const stepTitle = owned === "updater-restart"
+      ? "关闭更新后自动打开的客户端"
+      : owned
+        ? "关闭临时打开的客户端"
+        : "退出客户端";
+    step(stepTitle);
+  }
 
   let exitHint;
   if (process.platform === "win32") {

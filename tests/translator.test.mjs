@@ -2771,3 +2771,54 @@ test("文件编辑分组标题不带量词：原文没有数字，不能出现�
   assert.ok(out.includes('return c>0?"文件":d>0?"工件":""'), out);
   assert.ok(!out.includes("个文件") && !out.includes("个工件"));
 });
+
+test("Case 147: 2.35.1 跨版本模型标签、下线机翻纠偏、swarm_pane 技能与 steps 进度胶囊", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+  const dictionary = await loadDomTranslations();
+  const { isObsoleteLearnedKey } = await import("../src/lib/auto-learned-dict.mjs");
+
+  // 1. 词典与动态正则对步骤胶囊、新版本提示与漏翻技能的覆盖验证
+  assert.equal(translateDictionaryValue("swarm_pane", dictionary), "蜂群面板");
+  assert.equal(translateDictionaryValue("conversations", dictionary), "对话管理");
+  assert.equal(translateDictionaryValue("Leaving Soon", dictionary), "即将下线");
+  assert.equal(translateDictionaryValue("0/4 steps", dictionary), "0/4 步骤");
+  assert.equal(translateDictionaryValue("6/6 steps", dictionary), "6/6 步骤");
+  assert.equal(translateDictionaryValue("2/5 steps · 1 failed · 1 skipped", dictionary), "2/5 步骤 · 1 项失败 · 1 项已跳过");
+  assert.equal(translateDictionaryValue("Load older messages, showing 100 of 20559", dictionary), "加载旧消息（已显示 100 / 20559 条）");
+  assert.equal(
+    translateDictionaryValue("Use Hydrogen for better quality with lower quota usage. Leaving on Nov 30.", dictionary),
+    "建议使用 Hydrogen，模型质量更优且配额消耗更低。此模型将于 11 月 30 日下线。"
+  );
+  assert.equal(
+    translateDictionaryValue("Available on paid Google AI Pro and Ultra plans. Not included with your current plan.", dictionary),
+    "仅限付费 Google AI Pro 与 Ultra 方案使用。当前方案不包含此模型。"
+  );
+
+  // 2. 跨版本混淆名源码 (2.35.1 E.createElement / WV / G5 / step-plan-chip) 静态本地化
+  const sample235Source = [
+    'var G5=({option:a,iconOnly:b=!1})=>{var c=NL();return a.tagTitle&&a.tagDescription?E.createElement(E.Fragment,null,E.createElement("div",{"data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1.5 text-sm${b?" h-4 flex-none":""}`},!b&&E.createElement("span",null,a.tagTitle),E.createElement(sx,{name:"info",className:"h-3 w-3 flex-none"})),E.createElement(jJ,{id:c},E.createElement("div",{className:"max-w-[200px]"},a.tagDescription))):a.tagTitle?E.createElement("div",{className:"bg-secondary rounded-full px-1.5 text-sm"},a.tagTitle):null};',
+    'function WV(a,b,c){if(b=TV.get(b))if(c=(c=UV(b,c))?b.groupsByKey.get(c.groupKey)?.labels.get(a):void 0)return c;return(Object.hasOwn(eVb,a)?eVb[a]:void 0)??a}',
+    'B.createElement("span",{className:"whitespace-nowrap"},"Thinking effort")',
+    'var {done:d,total:f,skipped:g,failed:h}=zTc(a);a=[f>0?`${d}/${f} steps`:"",h>0?`${h} failed`:"",g>0?`${g} skipped`:""].filter(Boolean).join(" \\u00b7 ");return E.createElement(m4,{"data-testid":"step-plan-chip","aria-expanded":b,"aria-label":`${a}. ${b?"Hide":"Show"} plan`})'
+  ].join("\n");
+
+  const localized = createLocalizedBundle(Buffer.from(sample235Source, "utf8"), dictionary, { skipCoverage: true }).buffer.toString("utf8");
+  assert.ok(localized.includes('"Leaving Soon":"即将下线"'), "2.35.1 G5 component must include Leaving Soon mapping");
+  assert.ok(localized.includes('xhigh:"超高"'), "2.35.1 WV must map xhigh to 超高");
+  assert.ok(localized.includes('B.createElement("span",{className:"whitespace-nowrap"},"思考程度")'), "Thinking effort with B.createElement must be localized");
+  assert.ok(localized.includes('`${d}/${f} 步骤`') && localized.includes('`${h} 项失败`') && localized.includes('`${g} 项已跳过`'), "step-plan-chip must localize steps, failed, and skipped");
+  assert.ok(localized.includes('${b?"收起":"展开"}计划'), "step-plan-chip aria-label must be localized");
+
+  // 3. 废弃与机翻旧词条目清理校验
+  assert.equal(isObsoleteLearnedKey("Leaving Soon"), true);
+  assert.equal(isObsoleteLearnedKey("Load older messages, showing 100 of 20559"), true);
+  assert.equal(isObsoleteLearnedKey("Use Hydrogen for better quality with lower quota usage. Leaving on Nov 30."), true);
+  assert.equal(isObsoleteLearnedKey("Model: Gemini 4 Hydrogen Extra High, Model cannot be changed while the agent is running"), true);
+  assert.equal(isObsoleteLearnedKey("Paid Pro"), true);
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});

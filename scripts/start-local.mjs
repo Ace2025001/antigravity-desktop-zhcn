@@ -5,7 +5,7 @@ import { getStateRoot, projectRoot } from "../src/lib/paths.mjs";
 import { resolveInteractiveInstallation } from "../src/lib/install-discovery.mjs";
 import { ensureAutoShortcuts } from "../src/lib/auto-shortcuts.mjs";
 import { askFirstRunSettings, runSettingsMenu } from "../src/lib/settings-prompts.mjs";
-import { banner, failure, finish, info, step } from "../src/lib/console-ui.mjs";
+import { banner, failure, finish, formatElapsed, info, runTimedTask, step } from "../src/lib/console-ui.mjs";
 import { readUserSettings } from "../src/lib/user-settings.mjs";
 
 const packageVersion = JSON.parse(await readFile(path.join(projectRoot, "package.json"), "utf8")).version;
@@ -51,6 +51,7 @@ async function acquireSilentLaunchLock() {
 }
 
 let silentLockFile = null;
+const launchStartedAt = Date.now();
 try {
   const action = process.argv[2];
   const dryVerify = process.argv.includes("--dry-verify");
@@ -71,14 +72,11 @@ try {
   if (action === "start" && !dryVerify) await askFirstRunSettings();
 
   step("检查客户端");
-  info("正在查找本机 Antigravity…");
-  const progress = setInterval(() => info("仍在查找或等待你选择客户端，请勿重复打开启动器…"), 10000);
-  let selected;
-  try {
-    selected = await resolveInteractiveInstallation();
-  } finally {
-    clearInterval(progress);
-  }
+  const selected = await runTimedTask({
+    label: "正在查找本机 Antigravity…",
+    doneText: "已定位客户端",
+    work: () => resolveInteractiveInstallation(),
+  });
   if (dryVerify) {
     process.exit(0);
   }
@@ -95,6 +93,7 @@ try {
     child.once("exit", (value) => resolve(value ?? 1));
   });
   process.exitCode = code;
+  const totalElapsed = formatElapsed(Math.max(0, Math.floor((Date.now() - launchStartedAt) / 1000)));
   if (code === 0 && action === "start") {
     try {
       await ensureAutoShortcuts(selected);
@@ -102,9 +101,9 @@ try {
       info(`后台设置未能完成：${error.message}。汉化本身已完成。`);
     }
     const { settings } = await readUserSettings();
-    finish("完成！Antigravity 已切换为中文", [process.platform === "win32" ? FOLLOW_SUMMARY[settings.autoFollow] : "以后客户端更新后，双击“启动中文”即可重新汉化。", "需要修改设置时，双击“汉化设置”。"]);
+    finish(`完成！Antigravity 已切换为中文（总用时 ${totalElapsed}）`, [process.platform === "win32" ? FOLLOW_SUMMARY[settings.autoFollow] : "以后客户端更新后，双击“启动中文”即可重新汉化。", "需要修改设置时，双击“汉化设置”。"]);
   } else if (code === 0 && action === "restore") {
-    finish("已恢复英文原版", ["想再用中文时，双击“启动中文”即可。"]);
+    finish(`已恢复英文原版（用时 ${totalElapsed}）`, ["想再用中文时，双击“启动中文”即可。"]);
   }
 } catch (error) {
   failure(error.message, "保留这个窗口里的信息，确认客户端安装正常后重试；仍不行可到 GitHub 提交问题反馈。");

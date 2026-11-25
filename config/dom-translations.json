@@ -12793,7 +12793,7 @@
     "Runs even when your computer is off. Schedules and events.": "即使电脑关机也能继续运行。支持定时计划与事件触发。",
     "Runs even when your computer is off. Schedules only.": "即使电脑关机也能继续运行。仅支持定时计划。",
     "Guide me through creating an automated task": "引导我创建一个自动化任务",
-    "Toggle Swarm": "切换蜂群视图",
+    "Toggle Swarm": "切换蜂群面板",
     "Side Question Selection": "对选中内容附带提问",
     "Terminal: Select All": "终端：全选",
     "Search Hosts...": "搜索主机…",
@@ -12849,9 +12849,109 @@
     "Managed by organization": "由组织管理",
     "Failed to parse quota metadata": "无法解析配额元数据",
     "Rate limited": "已受配额限制",
-    "Antigravity does not support higher rate limits on this Google plan. Consider paid Pro and Ultra plans for higher limits.": "Antigravity 不支持在此 Google 方案下提升配额。请考虑购买付费 Pro 或 Ultra 方案以获取更高配额。"
+    "Antigravity does not support higher rate limits on this Google plan. Consider paid Pro and Ultra plans for higher limits.": "Antigravity 不支持在此 Google 方案下提升配额。请考虑购买付费 Pro 或 Ultra 方案以获取更高配额。",
+    "swarm_pane": "蜂群面板",
+    "ONLY for the coordinator of an active /swarm session. What the coordinator writes so the Swarm UI's Overview can show the swarm's goal, its groups of work and a screenshot timeline; load it before you brief and add the first workers. Outside /swarm, do not load this.": "仅供处于活动状态的 /swarm 会话协调者使用。协调者通过此技能编写内容，以便蜂群界面的“总览”能够展示蜂群目标、任务分组及截图时间线；请在下达任务并添加首批工作者前加载它。在 /swarm 之外请勿加载此技能。",
+    "What the coordinator writes so the Swarm UI's Overview can show the swarm's goal, its groups of work and a screenshot timeline. Load it before you brief and add the first workers to a swarm.": "协调者通过此技能编写内容，以便蜂群界面的“总览”能够展示蜂群目标、任务分组及截图时间线；请在下达任务并添加首批工作者前加载它。",
+    "conversations": "对话管理",
+    "Manage local Antigravity conversations programmatically over HTTP+JSON: create a new conversation (with an optional initial prompt), list conversations, read conversation metadata and run state, rename, archive, pin, star, tag, or group conversations, and delete conversations. Use when the user asks to list, rename, pin, star, archive, delete, or start conversations, including the current one, or when a script, plugin, or automation needs to manage conversations outside of subagent tool calls.": "通过 HTTP+JSON 以编程方式管理本地 Antigravity 对话：创建新对话（支持可选初始提示词）、列出对话、读取对话元数据与运行状态，以及重命名、归档、置顶、星标、添加标签、分组或删除对话。当用户要求列出、重命名、置顶、星标、归档、删除或发起对话（含当前对话），或脚本、插件、自动化任务需要在子智能体工具调用之外管理对话时使用。",
+    "Migrates the user's MCP servers, skills, slash commands, subagents, and instruction files from other coding agents (Claude Code, Codex, Cursor, Gemini CLI) into one new Antigravity plugin. Use when the user wants to bring over, import, or migrate their setup or config from another agent or tool. Don't use for installing Marketplace plugins or authoring a new plugin from scratch (use the plugin skill).": "将用户的 MCP 服务器、技能、斜杠命令、子智能体及指令文件从其他编程智能体（Claude Code、Codex、Cursor、Gemini CLI）迁移到新的 Antigravity 插件中。当用户希望从其他智能体或工具导入、迁移配置与工作环境时使用。请勿用于安装应用市场插件或从零编写新插件（此类场景请使用插件管理技能）。",
+    "Leaving Soon": "即将下线",
+    "Leaving soon": "即将下线",
+    "Available on paid Google AI Pro and Ultra plans. Not included with your current plan.": "仅限付费 Google AI Pro 与 Ultra 方案使用。当前方案不包含此模型。",
+    "Use Hydrogen for better quality with lower quota usage. Leaving on Nov 30.": "建议使用 Hydrogen，模型质量更优且配额消耗更低。此模型将于 11 月 30 日下线。",
+    "Gemini 4 Hydrogen now available!": "Gemini 4 Hydrogen 现已上线！",
+    "Extra High": "超高",
+    "Extra high": "超高",
+    "Show plan": "展开计划",
+    "Hide plan": "收起计划"
   },
   "patterns": [
+    {
+      "source": "^(\\d+)\\/(\\d+)\\s+steps?\\s*·\\s*(\\d+)\\s+failed\\s*·\\s*(\\d+)\\s+skipped$",
+      "target": "$1/$2 步骤 · $3 项失败 · $4 项已跳过",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\/(\\d+)\\s+steps?\\s*·\\s*(\\d+)\\s+failed$",
+      "target": "$1/$2 步骤 · $3 项失败",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\/(\\d+)\\s+steps?\\s*·\\s*(\\d+)\\s+skipped$",
+      "target": "$1/$2 步骤 · $3 项已跳过",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\/(\\d+)\\s+steps?$",
+      "target": "$1/$2 步骤",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\/(\\d+)\\s+steps?\\.\\s*Show\\s+plan$",
+      "target": "$1/$2 步骤。展开计划",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\/(\\d+)\\s+steps?\\.\\s*Hide\\s+plan$",
+      "target": "$1/$2 步骤。收起计划",
+      "flags": "u"
+    },
+    {
+      "source": "^Plan,\\s*(\\d+)\\s+of\\s+(\\d+)\\s+steps?\\s+done$",
+      "target": "计划，已完成 $1/$2 个步骤",
+      "flags": "u"
+    },
+    {
+      "source": "^Load\\s+older\\s+messages,\\s*showing\\s+(\\d+)\\s+of\\s+(\\d+)$",
+      "target": "加载旧消息（已显示 $1 / $2 条）",
+      "flags": "u"
+    },
+    {
+      "source": "^Loading\\s+older\\s+messages(?:…|\\.\\.\\.)?,\\s*showing\\s+(\\d+)\\s+of\\s+(\\d+)$",
+      "target": "正在加载旧消息…（已显示 $1 / $2 条）",
+      "flags": "u"
+    },
+    {
+      "source": "^Model:\\s*(.+?),\\s*Model cannot be changed while the agent is running$",
+      "target": "模型：$1，智能体运行期间无法切换模型",
+      "flags": "u"
+    },
+    {
+      "source": "^Use\\s+(.+?)\\s+for\\s+better\\s+quality\\s+with\\s+lower\\s+quota\\s+usage\\.\\s*Leaving(?:\\s+on)?\\s+([A-Za-z]+\\s+\\d{1,2}(?:,\\s*\\d{4})?|\\d{4}-\\d{2}-\\d{2})\\.?$",
+      "target": "建议使用 $1，模型质量更优且配额消耗更低。此模型将于 $2 下线。",
+      "flags": "u"
+    },
+    {
+      "source": "^Leaving(?:\\s+on)?\\s+([A-Za-z]+\\s+\\d{1,2}(?:,\\s*\\d{4})?|\\d{4}-\\d{2}-\\d{2})\\.?$",
+      "target": "将于 $1 下线。",
+      "flags": "u"
+    },
+    {
+      "source": "^(?!.*\\b(?:is|are)\\b)([A-Za-z0-9 .+_-]+?)\\s+now\\s+available!?$",
+      "target": "$1 现已上线！",
+      "flags": "u"
+    },
+    {
+      "source": "^Available\\s+on\\s+paid\\s+(.+?)\\s+plans?\\.\\s*Not\\s+included\\s+with\\s+your\\s+current\\s+plan\\.?$",
+      "target": "仅限付费 $1 方案使用。当前方案不包含此模型。",
+      "flags": "u"
+    },
+    {
+      "source": "^ONLY for the coordinator of an active /swarm session[\\s\\S]*$",
+      "target": "仅供处于活动状态的 /swarm 会话协调者使用。协调者通过此技能编写内容，以便蜂群界面的“总览”能够展示蜂群目标、任务分组及截图时间线；请在下达任务并添加首批工作者前加载它。在 /swarm 之外请勿加载此技能。",
+      "flags": "u"
+    },
+    {
+      "source": "^Manage local Antigravity conversations programmatically over HTTP\\+JSON[\\s\\S]*$",
+      "target": "通过 HTTP+JSON 以编程方式管理本地 Antigravity 对话：创建新对话（支持可选初始提示词）、列出对话、读取对话元数据与运行状态，以及重命名、归档、置顶、星标、添加标签、分组或删除对话。",
+      "flags": "u"
+    },
+    {
+      "source": "^Migrates the user's MCP servers, skills, slash commands, subagents, and instruction files from other coding agents[\\s\\S]*$",
+      "target": "将用户的 MCP 服务器、技能、斜杠命令、子智能体及指令文件从其他编程智能体（Claude Code、Codex、Cursor、Gemini CLI）迁移到新的 Antigravity 插件中。当用户希望从其他智能体或工具导入、迁移配置与工作环境时使用。",
+      "flags": "u"
+    },
     {
       "source": "^Your plan's baseline quota will refresh on\\s+([0-9/: -]+(?:\\s+[AP]M)?)\\.\\s*You can upgrade to (?:a |an )?(.+?)(?:\\s+(or above|or higher))?\\s*(?:plans?\\s*)?(?:for|to (?:receive|get|unlock|access|enjoy))\\s+(?:higher|priority|expanded|increased|more)\\s+(?:rate\\s+)?(?:limits|quota)\\.\\s*(?:See|View) plans?\\.?$",
       "target": "你的方案基线配额将于 $1 刷新。你可以升级至 $2 方案以获取更高配额。查看方案。",

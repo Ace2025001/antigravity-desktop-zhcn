@@ -79,3 +79,52 @@ export function liveLine(text, stream = process.stdout) {
 export function endLiveLine(stream = process.stdout) {
   stream.write(`\r${" ".repeat(90)}\r`);
 }
+
+export function formatElapsed(seconds) {
+  return seconds < 60 ? `${seconds} 秒` : `${Math.floor(seconds / 60)} 分 ${seconds % 60} 秒`;
+}
+
+export async function runTimedTask({
+  label,
+  doneText,
+  work,
+  log = console.log,
+  stdout = process.stdout,
+  intervalMs = 1000,
+}) {
+  const startedAt = Date.now();
+  const elapsed = () => Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+  const live = log === console.log && stdout.isTTY;
+  let currentLabel = label;
+  const setLabel = (nextLabel) => {
+    if (!nextLabel) return;
+    currentLabel = nextLabel;
+    if (live) liveLine(`${currentLabel} 已用时 ${formatElapsed(elapsed())}`, stdout);
+  };
+  if (live) liveLine(`${currentLabel} 已用时 0 秒`, stdout);
+  else log(`  ${currentLabel}`);
+  let lastNotice = 0;
+  const ticker = setInterval(() => {
+    const seconds = elapsed();
+    if (live) liveLine(`${currentLabel} 已用时 ${formatElapsed(seconds)}`, stdout);
+    else if (seconds - lastNotice >= 15) {
+      lastNotice = seconds;
+      log(`  ${currentLabel} 已用时 ${formatElapsed(seconds)}…`);
+    }
+  }, intervalMs);
+  try {
+    const result = await work({ setLabel, elapsed });
+    clearInterval(ticker);
+    if (live) endLiveLine(stdout);
+    const totalSeconds = elapsed();
+    if (doneText) {
+      const text = typeof doneText === "function" ? doneText(result, totalSeconds) : doneText;
+      if (text) log(`  ${color.green(SYMBOLS.ok)} ${text}（用时 ${formatElapsed(totalSeconds)}）`);
+    }
+    return result;
+  } catch (err) {
+    clearInterval(ticker);
+    if (live) endLiveLine(stdout);
+    throw err;
+  }
+}

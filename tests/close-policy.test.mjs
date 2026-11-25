@@ -203,3 +203,13 @@ test("按 2 不强制，一直等到手动退出", async () => {
   assert.equal(f.forced, 0);
   assert.ok(f.time >= 200_000);
 });
+
+test("更新后自动打开的客户端使用专属提示语并展示真实耗时", async () => {
+  const f = fixture({ quitOn: "force" });
+  const sleep = f.args.sleep;
+  f.args.sleep = async (ms) => { await sleep(ms); };
+  await closeWithPolicy({ ...f.args, owned: "updater-restart" });
+  assert.ok(f.logs.some((s) => s.includes("更新后自动打开的客户端")));
+  assert.ok(!f.logs.some((s) => s.includes("汉化工具临时打开的客户端")));
+  assert.ok(f.logs.some((s) => s.includes("用时")));
+});
