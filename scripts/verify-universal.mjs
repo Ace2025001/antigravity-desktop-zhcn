@@ -7,8 +7,8 @@ assert.deepEqual((await readdir(root)).sort(),["mac启动","win启动","语言�
 const core=path.join(root,"语言包/核心程序");
 for(const platform of ["win","mac"]){
   const entry=path.join(root,`${platform}启动`),ext=platform==="win"?"bat":"command";
-  assert.deepEqual((await readdir(entry)).sort(),["配套程序",`启动中文.${ext}`,`恢复英文.${ext}`,`汉化设置.${ext}`].sort());
-  for(const name of ["启动中文","恢复英文","汉化设置"]){
+  assert.deepEqual((await readdir(entry)).sort(),["配套程序",`启动中文.${ext}`,`卸载汉化.${ext}`,`汉化设置.${ext}`].sort());
+  for(const name of ["启动中文","卸载汉化","汉化设置"]){
     const file=path.join(entry,`${name}.${ext}`),text=await readFile(file,"utf8");
     assert.match(text,/start-local\.mjs/);assert.match(text,/语言包/);
     if(platform==="mac"&&process.platform!=="win32")assert.ok((await stat(file)).mode&0o111);

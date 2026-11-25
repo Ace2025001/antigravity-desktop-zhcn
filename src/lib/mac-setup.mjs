@@ -12,5 +12,5 @@ export async function runMacSetup({ inspect, waitUntilClosed, openOriginal, read
   log("正在安装中文，请稍候…");
   await install(info);
   await launch();
-  log("安装完成！以后双击“启动中文”即可。恢复时双击“恢复英文”。");
+  log("安装完成！以后双击“启动中文”即可。卸载时双击“卸载汉化”。");
 }

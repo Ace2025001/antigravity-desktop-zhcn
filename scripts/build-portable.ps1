@@ -105,7 +105,7 @@ try {
     foreach ($file in @(
         "安装中文.bat",
         "启动中文.bat",
-        "恢复英文.bat",
+        "卸载汉化.bat",
         "使用说明.txt",
         "README.md",
         "README.en.md",

@@ -25,7 +25,7 @@ Only install when the user has asked for it. Full step-by-step guide: [docs/ai-i
 4. Run:
    - Windows: `win启动\启动中文.bat` (set `AGY_INSTALL_PATH` to the client folder to skip the picker dialog). Read-only check: `win启动\配套程序\node.exe 语言包\核心程序\src\cli.mjs check` with `AGY_LANGUAGE_PACK` set to the `语言包` folder.
    - macOS: `mac启动/启动中文.command` (set `AGY_MAC_SOURCE` to the official `.app` to skip the picker). First run is interactive: open the official app, wait for the home screen, quit with ⌘Q, then press Enter.
-5. Restore English: `win启动\恢复英文.bat` or `mac启动/恢复英文.command`.
+5. Restore English: `win启动\卸载汉化.bat` or `mac启动/卸载汉化.command`.
 
 First-run questions only appear in an interactive terminal. In unattended runs the defaults apply (auto-follow `auto`, pack auto-update `auto`, online fill-in on, title auto-translate on). Tell the user about these defaults, or preset them with environment variables before running:
 

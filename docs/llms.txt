@@ -4,7 +4,7 @@
 
 Download: https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip
 Verify: compare the file's SHA-256 with the `digest` field of the asset `Antigravity-Windows+Mac.zip` from https://api.github.com/repos/Ace2025001/antigravity-desktop-zhcn/releases/latest
-Run: extract fully, then `win启动/启动中文.bat` (Windows) or `mac启动/启动中文.command` (macOS). Restore: `恢复英文`.
+Run: extract fully, then `win启动/启动中文.bat` (Windows) or `mac启动/启动中文.command` (macOS). Uninstall: `卸载汉化`.
 
 ## Docs
 

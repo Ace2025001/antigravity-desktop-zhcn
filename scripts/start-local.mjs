@@ -7,7 +7,7 @@ import { ensureAutoShortcuts } from "../src/lib/auto-shortcuts.mjs";
 import { askFirstRunSettings, runSettingsMenu } from "../src/lib/settings-prompts.mjs";
 import { banner, failure, finish, formatElapsed, info, runTimedTask, step } from "../src/lib/console-ui.mjs";
 import { maybeShowCompletionDialog } from "../src/lib/completion-dialog.mjs";
-import { checkLatestRelease, performSelfUpdate, readPackUpdateState, resolvePackRootFromCore, writePackUpdateState } from "../src/lib/self-update.mjs";
+import { checkLatestRelease, finalizePackLaunchers, performSelfUpdate, readPackUpdateState, resolvePackRootFromCore, writePackUpdateState } from "../src/lib/self-update.mjs";
 import { readUserSettings } from "../src/lib/user-settings.mjs";
 import { createInterface } from "node:readline/promises";
 
@@ -58,7 +58,9 @@ const launchStartedAt = Date.now();
 try {
   const action = process.argv[2];
   const dryVerify = process.argv.includes("--dry-verify");
-  if (!["start", "restore", "settings"].includes(action)) throw new Error("请使用启动中文、恢复英文或汉化设置入口。");
+  if (!["start", "restore", "settings"].includes(action)) throw new Error("请使用启动中文、卸载汉化或汉化设置入口。");
+  // 整理升级后残留的旧入口。卸载流程跳过：用户可能正是从旧入口进来的，批处理运行中不能删除自身。
+  if (action !== "restore") await finalizePackLaunchers(resolvePackRootFromCore(projectRoot)).catch(() => {});
   if (action === "settings") {
     process.exitCode = await runSettingsMenu();
     process.exit(process.exitCode);
@@ -71,7 +73,7 @@ try {
     }
   }
 
-  if (!dryVerify) banner(`Antigravity 汉化包 v${packageVersion}  ·  ${action === "start" ? "启动中文" : "恢复英文"}`);
+  if (!dryVerify) banner(`Antigravity 汉化包 v${packageVersion}  ·  ${action === "start" ? "启动中文" : "卸载汉化"}`);
   if (action === "start" && !dryVerify) await askFirstRunSettings();
 
   if (action === "start" && !dryVerify && process.env.AGY_SELF_UPDATED !== "1") {
@@ -158,7 +160,7 @@ try {
     ]);
     await maybeShowCompletionDialog({ action, exitCode: code, dryVerify });
   } else if (code === 0 && action === "restore") {
-    finish(`已恢复英文原版（用时 ${totalElapsed}）`, ["想再用中文时，双击“启动中文”即可。"]);
+    finish(`已卸载汉化，客户端恢复为官方英文原版（用时 ${totalElapsed}）`, ["想再用中文时，双击“启动中文”即可。"]);
   }
 } catch (error) {
   failure(error.message, "保留这个窗口里的信息，确认客户端安装正常后重试；仍不行可到 GitHub 提交问题反馈。");

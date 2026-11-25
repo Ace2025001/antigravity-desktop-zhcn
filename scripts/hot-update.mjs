@@ -12,6 +12,8 @@ import { readInstallState, writeInstallState } from "../src/lib/state.mjs";
 import { sha256Buffer, sha256File } from "../src/lib/hash.mjs";
 import { getAntigravityUserDataRoot } from "../src/lib/paths.mjs";
 import { localizationFingerprint } from "../src/lib/language-pack.mjs";
+import { projectRoot } from "../src/lib/paths.mjs";
+import { finalizePackLaunchers, resolvePackRootFromCore } from "../src/lib/self-update.mjs";
 
 const BUNDLE_NAME = "agy_zhcn_ui_main.js";
 const dryRun = process.argv.includes("--dry-run");
@@ -22,6 +24,9 @@ function fail(message) {
 }
 
 if (process.platform !== "win32") fail("只支持 Windows；Mac 请用 mac启动/启动中文.command。");
+
+// 老版本自更新后会调用新版的本脚本：顺带整理改名前残留的旧入口（仓库内运行时找不到汉化包目录，自动跳过）。
+await finalizePackLaunchers(resolvePackRootFromCore(projectRoot)).catch(() => {});
 
 const state = await readInstallState();
 if (state?.status !== "installed" || !state.installRoot) fail("客户端还没有汉化过，请先运行“启动中文”。");

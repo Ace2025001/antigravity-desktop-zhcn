@@ -38,7 +38,7 @@ body:
     id: console_log
     attributes:
       label: 控制台输出日志（如有）
-      description: 运行“启动中文”或“恢复英文”时窗口中打印的完整文本
+      description: 运行“启动中文”或“卸载汉化”时窗口中打印的完整文本
       render: shell
   - type: textarea
     id: screenshot

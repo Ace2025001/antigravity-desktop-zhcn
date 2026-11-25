@@ -73,7 +73,7 @@ if (
   state?.status === "installed" &&
   state.patchedAsarSha256 === target.appAsarSha256
 ) {
-  throw new Error("当前 app.asar 已安装汉化补丁；请先恢复英文再采集候选。");
+  throw new Error("当前 app.asar 已安装汉化补丁；请先卸载汉化再采集候选。");
 }
 
 const outputPath = explicitOutputPath

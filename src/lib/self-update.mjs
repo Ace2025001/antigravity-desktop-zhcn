@@ -305,9 +305,31 @@ export async function syncPackDirectory({
     }
   }
 
+  await finalizePackLaunchers(targetPackRoot, platform);
+}
+
+// 入口文件名：v3.1.7 起“恢复英文”改名为“卸载汉化”。
+export const PACK_LAUNCHER_NAMES = ["启动中文", "卸载汉化", "汉化设置"];
+const LEGACY_LAUNCHER_RENAMES = { 恢复英文: "卸载汉化" };
+
+// 升级后整理入口：新入口已就位时删除改名前的旧入口；Mac 上补齐可执行权限。
+// 老版本自更新只覆盖复制入口目录，旧入口会残留，由新版代码在下次运行时清理。
+export async function finalizePackLaunchers(packRoot, platform = process.platform) {
+  if (!packRoot) return;
+  for (const [dir, ext] of [["win启动", "bat"], ["mac启动", "command"]]) {
+    const entryDir = path.join(packRoot, dir);
+    for (const [legacy, current] of Object.entries(LEGACY_LAUNCHER_RENAMES)) {
+      try {
+        await access(path.join(entryDir, `${current}.${ext}`));
+        await rm(path.join(entryDir, `${legacy}.${ext}`), { force: true });
+      } catch {
+        // 新入口不在：保留旧入口。
+      }
+    }
+  }
   if (platform === "darwin") {
-    const macDir = path.join(targetPackRoot, "mac启动");
-    for (const rel of ["启动中文.command", "恢复英文.command", "汉化设置.command", "配套程序/node"]) {
+    const macDir = path.join(packRoot, "mac启动");
+    for (const rel of [...PACK_LAUNCHER_NAMES.map((name) => `${name}.command`), "配套程序/node"]) {
       await chmod(path.join(macDir, rel), 0o755).catch(() => {});
     }
   }
