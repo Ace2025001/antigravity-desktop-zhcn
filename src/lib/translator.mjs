@@ -904,7 +904,7 @@ export function createRuntimeOverlay(dictionary) {
       [/^Use when one Python service must send each agent/i, "当单个 Python 服务必须将各智能体、租户、团队或请求的 Span 链路分流发送到对应的 Arize 空间和项目时使用。"],
       [/^Exports,\s*views,\s*and debugs Arize AX traces/i, "通过 ax 命令行工具导出、查看并调试 Arize AX 链路追踪、Span 和会话。"],
       [/^Call the Gemini API from the shell/i, "通过终端使用 gemini-api 命令行调用 Gemini API。适用于媒体生成（图像、TTS、音乐、视频）、本地文件与 YouTube 分析、音视频转录、深度研究及沙箱智能体。"],
-      [/^Build,\s*package,\s*and debug MCP Apps/i, "为 Antigravity 构建、打包并调试 MCP 应用程序：MCP 服务端工具可将其结果在对话中作为交互式 UI、在侧边栏窗格中或从侧边栏整页呈现。在为 MCP 工具添加 UI、构建或定制应用主题、将其打包为插件，或调试未按预期渲染或运行的应用时使用此技能。"],
+      [/^Build,\s*package,\s*and debug MCP Apps/i, "为 Antigravity 构建、打包并调试 MCP 应用程序：MCP 服务端工具可将其结果在对话中作为交互式 UI、在侧面板中或以侧面板整页形式呈现。在为 MCP 工具添加 UI、构建或定制应用主题、将其打包为插件，或调试未按预期渲染或运行的应用时使用此技能。"],
       [/^Live view of the native swarm board/i, "实时查看当前会话 Swarm 智能体群组的原生消息看板、成员花名册与 @提及关系图。"],
       [/^Swarm Live view of the native swarm board/i, "Swarm 实时查看当前会话 Swarm 智能体群组的原生消息看板、成员花名册与 @提及关系图。"],
       [/^ONLY for the native-swarm worker whose brief says it is the narrator/i, "仅供任务摘要指明为叙述者的原生蜂群工作人员使用。负责监视消息板并实时更新用户概览（view.json）背后的事实信息。协调员和其他工作人员请勿加载此技能。"]
@@ -2440,7 +2440,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = sourceText.replaceAll('B.createElement("span",\n{className:"text-sm text-muted-foreground font-medium"},"Target Tools:")', 'B.createElement("span",\n{className:"text-sm text-muted-foreground font-medium"},"目标工具：")');
   sourceText = sourceText.replaceAll('B.createElement("span",{className:"text-sm text-muted-foreground font-medium"},"Command:")', 'B.createElement("span",{className:"text-sm text-muted-foreground font-medium"},"执行命令：")');
   sourceText = sourceText.replaceAll('c==="extension"?`UI Extension ${l+1}`:`Automation ${l+1}`', 'c==="extension"?`UI 扩展 ${l+1}`:`自动化 ${l+1}`');
-  sourceText = sourceText.replaceAll('"UI Extension (SidePanel)"', '"UI 扩展（侧边面板）"');
+  sourceText = sourceText.replaceAll('"UI Extension (SidePanel)"', '"UI 扩展（侧面板）"');
   sourceText = sourceText.replaceAll('"Scheduled Task"', '"定时任务"');
   sourceText = sourceText.replaceAll(':"Automation"', ':"自动化"');
   sourceText = sourceText.replaceAll('case I.SidecarStatus.RUNNING:return{label:"Running"', 'case I.SidecarStatus.RUNNING:return{label:"运行中"');
@@ -2449,9 +2449,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = sourceText.replaceAll('case I.SidecarStatus.ERRORED:return{label:"Error"', 'case I.SidecarStatus.ERRORED:return{label:"错误"');
   sourceText = sourceText.replaceAll('case I.SidecarStatus.BACKOFF:return{label:"Backoff"', 'case I.SidecarStatus.BACKOFF:return{label:"重试等待"');
   sourceText = sourceText.replaceAll('default:return{label:"Unknown"', 'default:return{label:"未知"');
-  sourceText = sourceText.replaceAll('"Side Pane UI Available"', '"侧边栏界面可用"');
-  sourceText = sourceText.replaceAll('"Stream and control ",q," directly in the side pane."', '"直接在侧边栏中流式传输并控制 ",q,"。"');
-  sourceText = sourceText.replaceAll('"Open in Side Pane"', '"在侧边栏中打开"');
+  sourceText = sourceText.replaceAll('"Side Pane UI Available"', '"侧面板界面可用"');
+  sourceText = sourceText.replaceAll('"Stream and control ",q," directly in the side pane."', '"直接在侧面板中实时查看并控制 ",q,"。"');
+  sourceText = sourceText.replaceAll('"Open in Side Pane"', '"在侧面板中打开"');
   sourceText = sourceText.replaceAll('B.createElement("span",{className:"text-muted-foreground"},"Managed by plugin"', 'B.createElement("span",{className:"text-muted-foreground"},"由插件托管"');
   sourceText = sourceText.replaceAll('B.createElement("span",{className:"text-sm font-semibold text-foreground"},"Recent Events")', 'B.createElement("span",{className:"text-sm font-semibold text-foreground"},"近期事件")');
   sourceText = sourceText.replaceAll('B.createElement("span",{className:"text-muted-foreground shrink-0"},"Host Endpoint")', 'B.createElement("span",{className:"text-muted-foreground shrink-0"},"主机端点")');
@@ -2604,7 +2604,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   // 9.8 2.31.0 全量菜单、模型微章、侧边栏、自动化、搜索、外观与提示组件修复
   sourceText = sourceText.replace(
     'var g={id:f,label:d.label,type:d.type&&d.type!=="item"&&d.type!=="label"?d.type:"normal"',
-    'var _mL={"Rename":"重命名","Pin":"置顶","Unpin":"取消置顶","Mark Read":"标记为已读","Mark Unread":"标记为未读","Copy":"复制","Cut":"剪切","Paste":"粘贴","Select All":"全选","Undo":"撤销","Redo":"重做","Delete":"删除","Delete Permanently":"永久删除","Archive":"归档","Restore":"恢复","Share":"分享","Stop":"停止","Split":"拆分","Fork":"分支","View Debug":"查看调试信息","Telemetry":"遥测","New Group":"新建分组","Remove from Group":"从分组中移除","Conversation Name":"对话名称","Conversation ID":"对话 ID","Project Name":"项目名称","Workspace Name":"工作区名称","Worktree Name":"工作树名称","Split Right":"向右拆分","Split Down":"向下拆分","Replace with New":"替换为新对话","Replace With New":"替换为新对话","Remove from Split":"从拆分中移除","Copy Image":"复制图片","Save Image":"保存图片","Save Video":"保存视频","Open in Tab":"在标签页中打开","Open in New Tab":"在新标签页中打开","Copy Link Address":"复制链接地址","Open Link in New Tab":"在新标签页中打开链接","Open Link in External Browser":"在外部浏览器中打开链接","Open Image in New Tab":"在新标签页中打开图片","Copy Image Address":"复制图片地址","Copy Message":"复制消息","Copy Path":"复制路径","Undo to Here":"撤销到此处","Fork in Shared Workspace":"在共享工作区中派生","Fork in New Workspace":"在新建工作区中派生","Close Other Tabs":"关闭其他标签页","Close Tabs to the Left":"关闭左侧标签页","Close Tabs to the Right":"关闭右侧标签页","Comment":"评论","Open in Code Search":"在代码搜索中打开","Edit Shortcut":"编辑快捷键","Add Shortcut":"添加快捷键","Remove Shortcut":"移除快捷键","Reset to Default":"恢复默认"};var g={id:f,label:(_mL[d.label]||globalThis.__AGY_ZHCN_TRANSLATE__?.(d.label)||d.label),type:d.type&&d.type!=="item"&&d.type!=="label"?d.type:"normal"'
+    'var _mL={"Rename":"重命名","Pin":"置顶","Unpin":"取消置顶","Mark Read":"标记为已读","Mark Unread":"标记为未读","Copy":"复制","Cut":"剪切","Paste":"粘贴","Select All":"全选","Undo":"撤销","Redo":"重做","Delete":"删除","Delete Permanently":"永久删除","Archive":"归档","Restore":"恢复","Share":"分享","Stop":"停止","Split":"拆分","Fork":"分支","View Debug":"查看调试信息","Telemetry":"遥测","New Group":"新建分组","Remove from Group":"从分组中移除","Conversation Name":"对话名称","Conversation ID":"对话 ID","Project Name":"项目名称","Workspace Name":"工作区名称","Worktree Name":"工作树名称","Split Right":"向右拆分","Split Down":"向下拆分","Replace with New":"替换为新对话","Replace With New":"替换为新对话","Remove from Split":"从拆分中移除","Copy Image":"复制图片","Save Image":"保存图片","Save Video":"保存视频","Open in Tab":"在标签页中打开","Open in New Tab":"在新标签页中打开","Copy Link Address":"复制链接地址","Open Link in New Tab":"在新标签页中打开链接","Open Link in External Browser":"在外部浏览器中打开链接","Open Image in New Tab":"在新标签页中打开图片","Copy Image Address":"复制图片地址","Copy Message":"复制消息","Copy Path":"复制路径","Undo to Here":"撤销到此处","Fork in Shared Workspace":"在共享工作区中分叉","Fork in New Workspace":"在新工作区中分叉","Close Other Tabs":"关闭其他标签页","Close Tabs to the Left":"关闭左侧标签页","Close Tabs to the Right":"关闭右侧标签页","Comment":"评论","Open in Code Search":"在代码搜索中打开","Edit Shortcut":"编辑快捷键","Add Shortcut":"添加快捷键","Remove Shortcut":"移除快捷键","Reset to Default":"恢复默认"};var g={id:f,label:(_mL[d.label]||globalThis.__AGY_ZHCN_TRANSLATE__?.(d.label)||d.label),type:d.type&&d.type!=="item"&&d.type!=="label"?d.type:"normal"'
   );
   sourceText = sourceText.replace(
     /var ([a-zA-Z0-9_$]+)=\(\{option:a,iconOnly:b=!1\}\)\s*=>\s*\{var c=([a-zA-Z0-9_$]+)\(\);return a\.tagTitle&&a\.tagDescription\?([A-Za-z0-9_$]+)\.createElement\(\3\.Fragment,null,\3\.createElement\("div",\{"data-tooltip-id":c,className:`bg-secondary opacity-70 flex items-center gap-1 rounded-full px-1\.5 text-sm\${b\?" h-4 flex-none":""}`\},!b&&\3\.createElement\("span",null,a\.tagTitle\),\3\.createElement\(([a-zA-Z0-9_$]+),\{name:"info",className:"h-3 w-3 flex-none"\}\)\),\3\.createElement\(([a-zA-Z0-9_$]+),\{id:c\},\3\.createElement\("div",\{className:"max-w-\[200px\]"\},a\.tagDescription\)\)\):a\.tagTitle\?\3\.createElement\("div",\s*\{className:"bg-secondary rounded-full px-1\.5 text-sm"\},a\.tagTitle\):null\};/g,
@@ -2674,7 +2674,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = sourceText.replaceAll('label:"Conversation Width",description:"Configure the maximum width of the conversation panel."', 'label:"对话宽度",description:"配置对话面板的最大显示宽度。"');
   sourceText = sourceText.replaceAll('case 2:return"Narrow";case 3:return"Wide";case 4:return"Fill";default:return"Default"', 'case 2:return"窄";case 3:return"宽";case 4:return"铺满";default:return"默认"');
   sourceText = sourceText.replaceAll('label:"Terminal Placement",description:"Choose where terminal sessions appear."', 'label:"终端位置",description:"选择终端会话的显示位置。"');
-  sourceText = sourceText.replaceAll('case "bottomPanel":return"Bottom Panel";default:return"Side Panel"', 'case "bottomPanel":return"底部面板";default:return"侧边栏面板"');
+  sourceText = sourceText.replaceAll('case "bottomPanel":return"Bottom Panel";default:return"Side Panel"', 'case "bottomPanel":return"底部面板";default:return"侧面板"');
   sourceText = sourceText.replaceAll('emptyText:d="No artifacts generated"', 'emptyText:d="暂无已生成的工件"');
   sourceText = sourceText.replaceAll('emptyText:g="No artifacts generated"', 'emptyText:g="暂无已生成的工件"');
   sourceText = sourceText.replaceAll('h.length===0?B.createElement(m4,null,"No active terminals")', 'h.length===0?B.createElement(m4,null,"暂无活动终端")');
@@ -2761,7 +2761,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     'var BBb=[{value:E.ArtifactReviewMode.TURBO,label:"Always Proceed",description:"Agent never asks for review. This maximizes the autonomy of the Agent, but also has the highest risk of the Agent operating over unsafe or injected Artifact content."},{value:E.ArtifactReviewMode.ALWAYS,label:"Always Ask",description:"Agent always asks for review."}];',
     'var BBb=[{value:E.ArtifactReviewMode.TURBO,label:"始终继续",description:"智能体始终不会请求人工评审。这可最大限度提高智能体自主性，但也具有执行不安全或注入工件内容的最高风险。"},{value:E.ArtifactReviewMode.ALWAYS,label:"始终询问",description:"智能体每次都会请求你进行评审。"}];'
   );
-  sourceText = sourceText.replaceAll(',"Change\\u2026"))})),g&&B.createElement(UP,{label:"Browsing History",description:c?"Clear visited URLs and autocomplete suggestions from side panel preview.":"Clear visited URLs and autocomplete suggestions from the built-in browser.",rightElement:B.createElement(Uy,{variant:"secondary",size:"sm",disabled:p.length===0,onClick:q,"data-testid":"clear-browser-history-button"},"Clear")', ',"更改…"))})),g&&B.createElement(UP,{label:"浏览记录",description:c?"清除侧边栏预览中的访问网址与自动填充建议。":"清除内置浏览器中的访问网址与自动填充建议。",rightElement:B.createElement(Uy,{variant:"secondary",size:"sm",disabled:p.length===0,onClick:q,"data-testid":"clear-browser-history-button"},"清除")');
+  sourceText = sourceText.replaceAll(',"Change\\u2026"))})),g&&B.createElement(UP,{label:"Browsing History",description:c?"Clear visited URLs and autocomplete suggestions from side panel preview.":"Clear visited URLs and autocomplete suggestions from the built-in browser.",rightElement:B.createElement(Uy,{variant:"secondary",size:"sm",disabled:p.length===0,onClick:q,"data-testid":"clear-browser-history-button"},"Clear")', ',"更改…"))})),g&&B.createElement(UP,{label:"浏览记录",description:c?"清除侧面板预览中的访问网址与自动填充建议。":"清除内置浏览器中的访问网址与自动填充建议。",rightElement:B.createElement(Uy,{variant:"secondary",size:"sm",disabled:p.length===0,onClick:q,"data-testid":"clear-browser-history-button"},"清除")');
   sourceText = sourceText.replaceAll(',"Reset")', ',"重置")');
   sourceText = sourceText.replaceAll('},"Edit")}))', '},"编辑")}))');
   sourceText = sourceText.replace(
@@ -3147,7 +3147,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = sourceText.replaceAll('plainTextFallback:"View archived in the sidebar (Display options menu)."', 'plainTextFallback:"在侧边栏中查看已归档内容（显示选项菜单）。"');
 
   // 内置浏览器与打开链接选项原生汉化
-  sourceText = sourceText.replaceAll('c=b?"Side Panel":"Built-in Browser"', 'c=b?"侧边栏面板":"内置浏览器"');
+  sourceText = sourceText.replaceAll('c=b?"Side Panel":"Built-in Browser"', 'c=b?"侧面板":"内置浏览器"');
   sourceText = sourceText.replaceAll('d=b?"New Tab":"External Browser"', 'd=b?"新标签页":"外部浏览器"');
   sourceText = sourceText.replaceAll('label:"Open Links In"', 'label:"打开链接方式"');
   sourceText = sourceText.replaceAll('description:"Choose where links open by default when clicked."', 'description:"选择点击链接时默认打开的位置。"');
@@ -3247,18 +3247,18 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   );
 
   // 2.29.0 通用设置：内置浏览器下载与历史清理、语音模式与麦克风设备
-  sourceText = sourceText.replaceAll('"Side Panel Preview"', '"侧边栏预览"');
-  sourceText = sourceText.replaceAll('title:p?"Side Panel Preview":"Built-in Browser"', 'title:p?"侧边栏预览":"内置浏览器"');
-  sourceText = sourceText.replaceAll('title:p?"Side Panel Preview":"内置浏览器"', 'title:p?"侧边栏预览":"内置浏览器"');
+  sourceText = sourceText.replaceAll('"Side Panel Preview"', '"侧面板预览"');
+  sourceText = sourceText.replaceAll('title:p?"Side Panel Preview":"Built-in Browser"', 'title:p?"侧面板预览":"内置浏览器"');
+  sourceText = sourceText.replaceAll('title:p?"Side Panel Preview":"内置浏览器"', 'title:p?"侧面板预览":"内置浏览器"');
   sourceText = sourceText.replaceAll('subtitle:p?void 0:"Configure link opening and built-in browser preferences."', 'subtitle:p?void 0:"配置链接打开方式与内置浏览器偏好。"');
-  sourceText = sourceText.replaceAll('d=b?"Side Panel":"Built-in Browser",f=b?"New Tab":"External Browser"', 'd=b?"侧边栏":"内置浏览器",f=b?"新标签页":"外部浏览器"');
+  sourceText = sourceText.replaceAll('d=b?"Side Panel":"Built-in Browser",f=b?"New Tab":"External Browser"', 'd=b?"侧面板":"内置浏览器",f=b?"新标签页":"外部浏览器"');
   sourceText = sourceText.replaceAll('label:"Download Location"', 'label:"下载位置"');
   sourceText = sourceText.replaceAll('"Folder where files downloaded in the built-in browser are saved."', '"内置浏览器下载文件的保存目录。"');
   sourceText = sourceText.replaceAll('"CitC workspace paths are world-readable and permanently snapshotted. Choose a local folder outside CitC."', '"CitC 工作区路径对所有人可见且永久保留快照，请选择 CitC 之外的本地文件夹。"');
   sourceText = sourceText.replaceAll('},"Change\\u2026"))})),m&&A.createElement(XP,{label:"Browsing History"', '},"更改…"))})),m&&A.createElement(XP,{label:"浏览记录"');
   sourceText = sourceText.replaceAll('label:"Browsing History"', 'label:"浏览记录"');
   sourceText = sourceText.replaceAll('"Clear visited URLs and autocomplete suggestions from the built-in browser."', '"清除内置浏览器的访问网址与自动填充建议。"');
-  sourceText = sourceText.replaceAll('"Clear visited URLs and autocomplete suggestions from side panel preview."', '"清除侧边栏预览中的访问网址与自动填充建议。"');
+  sourceText = sourceText.replaceAll('"Clear visited URLs and autocomplete suggestions from side panel preview."', '"清除侧面板预览中的访问网址与自动填充建议。"');
   sourceText = sourceText.replaceAll('"builtin-browser-download-dir-reset",onClick:()=>{v(null);T.setPrefValue("builtinBrowserDownloadDir","")}},"Reset")', '"builtin-browser-download-dir-reset",onClick:()=>{v(null);T.setPrefValue("builtinBrowserDownloadDir","")}},"重置")');
   sourceText = sourceText.replaceAll('title:b?"Voice":"Voice mode"', 'title:b?"语音":"语音模式"');
   sourceText = sourceText.replaceAll('label:"Voice",description:b?"The voice Jetski speaks with.":"The voice used in Voice mode. Powered by Gemini Live."', 'label:"语音",description:b?"Jetski 发音使用的声音。":"语音模式使用的声音，由 Gemini Live 提供技术支持。"');
@@ -3353,8 +3353,8 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   // 高频菜单与操作按钮原生汉化
   sourceText = sourceText.replaceAll('label:"Undo to Here"', 'label:"撤销到此处"');
   sourceText = sourceText.replaceAll('label:"Copy Message"', 'label:"复制消息"');
-  sourceText = sourceText.replaceAll('label:"Fork in Shared Workspace"', 'label:"在共享工作区中派生"');
-  sourceText = sourceText.replaceAll('label:"Fork in New Workspace"', 'label:"在新建工作区中派生"');
+  sourceText = sourceText.replaceAll('label:"Fork in Shared Workspace"', 'label:"在共享工作区中分叉"');
+  sourceText = sourceText.replaceAll('label:"Fork in New Workspace"', 'label:"在新工作区中分叉"');
   sourceText = sourceText.replaceAll('label:"Open Link in New Tab"', 'label:"在新标签页中打开链接"');
   sourceText = sourceText.replaceAll('label:"Copy Link Address"', 'label:"复制链接地址"');
   sourceText = sourceText.replaceAll('label:"Open Image in New Tab"', 'label:"在新标签页中打开图片"');
@@ -3367,7 +3367,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = sourceText.replaceAll('tooltip:"Remove Shortcut"', 'tooltip:"移除快捷键"');
   sourceText = sourceText.replaceAll('tooltip:"Add Shortcut"', 'tooltip:"添加快捷键"');
   sourceText = sourceText.replaceAll('tooltip:"Reset All to Defaults"', 'tooltip:"全部重置为默认值"');
-  sourceText = sourceText.replaceAll('tooltip:"Open in side pane"', 'tooltip:"在侧边栏中打开"');
+  sourceText = sourceText.replaceAll('tooltip:"Open in side pane"', 'tooltip:"在侧面板中打开"');
   sourceText = sourceText.replaceAll('tooltip:"Open in Notebook View"', 'tooltip:"在笔记本视图中打开"');
   sourceText = sourceText.replaceAll('tooltip:"Download File"', 'tooltip:"下载文件"');
   sourceText = sourceText.replaceAll('tooltip:"Kill Terminal"', 'tooltip:"终止终端"');
@@ -3656,7 +3656,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     'l||p?d=B.createElement("span",null,f):(b=`${f} ${b}`',
     'l||p?d=B.createElement("span",null,f):(b=`${f} ${globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLAN_DESC__(b):b}`'
   );
-  sourceText = sourceText.replace('D=f==="extension"||c.config?.hasWebUi?"UI Extension (SidePanel)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"Scheduled Task":"Automation"', 'D=f==="extension"||c.config?.hasWebUi?"UI 扩展 (侧边栏)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"计划任务":"自动化"');
+  sourceText = sourceText.replace('D=f==="extension"||c.config?.hasWebUi?"UI Extension (SidePanel)":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"Scheduled Task":"Automation"', 'D=f==="extension"||c.config?.hasWebUi?"UI 扩展（侧面板）":c.config?.mode?.case==="builtin"&&c.config?.mode?.value==="schedule"?"计划任务":"自动化"');
   sourceText = sourceText.replace('window.confirm("Sign out of this server?")', 'window.confirm("确定要退出登录此服务器吗？")');
   sourceText = sourceText.replace('k=d?.get(f.serverName);', 'k=d?.get(f.serverName);if(k)k=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__?globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__(k):k);');
 
@@ -4171,8 +4171,8 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     'title:"浏览器",description:"配置内置浏览器、链接打开方式以及浏览器子智能体偏好设置。"'
   );
   sourceText = sourceText.replace(
-    /,"Change\\u2026"\)\)\}\),([a-zA-Z0-9_$]+)&&([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{label:"(?:Browsing [Hh]istory|浏览记录)",description:([a-zA-Z0-9_$]+)\?"(?:Clear visited URLs and autocomplete suggestions from side panel preview\.|清除侧边栏预览中的访问网址与自动填充建议。)":"(?:Clear visited URLs and autocomplete suggestions from the built-in browser\.|清除内置浏览器的访问网址与自动填充建议。|清除内置浏览器中的访问网址与自动填充建议。)",rightElement:\2\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",disabled:([a-zA-Z0-9_$]+)\.length===0,onClick:([a-zA-Z0-9_$]+),"data-testid":"clear-browser-history-button"\},"Clear"\)/g,
-    ',"更改…"))}),$1&&$2.createElement($3,{label:"浏览记录",description:$4?"清除侧边栏预览中的访问网址与自动填充建议。":"清除内置浏览器中的访问网址与自动填充建议。",rightElement:$2.createElement($5,{variant:"secondary",size:"sm",disabled:$6.length===0,onClick:$7,"data-testid":"clear-browser-history-button"},"清除")'
+    /,"Change\\u2026"\)\)\}\),([a-zA-Z0-9_$]+)&&([A-Za-z_$][\w$]*)\.createElement\(([a-zA-Z0-9_$]+),\{label:"(?:Browsing [Hh]istory|浏览记录)",description:([a-zA-Z0-9_$]+)\?"(?:Clear visited URLs and autocomplete suggestions from side panel preview\.|清除侧面板预览中的访问网址与自动填充建议。)":"(?:Clear visited URLs and autocomplete suggestions from the built-in browser\.|清除内置浏览器的访问网址与自动填充建议。|清除内置浏览器中的访问网址与自动填充建议。)",rightElement:\2\.createElement\(([a-zA-Z0-9_$]+),\{variant:"secondary",size:"sm",disabled:([a-zA-Z0-9_$]+)\.length===0,onClick:([a-zA-Z0-9_$]+),"data-testid":"clear-browser-history-button"\},"Clear"\)/g,
+    ',"更改…"))}),$1&&$2.createElement($3,{label:"浏览记录",description:$4?"清除侧面板预览中的访问网址与自动填充建议。":"清除内置浏览器中的访问网址与自动填充建议。",rightElement:$2.createElement($5,{variant:"secondary",size:"sm",disabled:$6.length===0,onClick:$7,"data-testid":"clear-browser-history-button"},"清除")'
   );
 
   // [核心修复 6] 账户设置页、模型与用量页、Orchestrator 设置、配额重置函数跨版本模块化替换

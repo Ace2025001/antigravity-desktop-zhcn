@@ -836,11 +836,11 @@ test("Antigravity 2.23.0 agent execution mode popover and permission policy stri
     },
     {
       source: "This project overrides your global permission settings.",
-      expected: "此项目覆盖了您的全局权限设置。",
+      expected: "此项目覆盖了你的全局权限设置。",
     },
     {
       source: "This workspace overrides your global permission settings.",
-      expected: "此工作区覆盖了您的全局权限设置。",
+      expected: "此工作区覆盖了你的全局权限设置。",
     },
     {
       source: "Agent permissions preset selector, current: Default",
@@ -1060,7 +1060,7 @@ test("customizations marketplace plugins, empty notes, and see more expansion bu
     },
     {
       source: "Keep your coding agent up to date with the latest web best practices.",
-      expected: "让您的代码智能体始终与最新的 Web 最佳实践保持同步。",
+      expected: "让你的代码智能体始终与最新的 Web 最佳实践保持同步。",
     },
   ];
 
@@ -1097,7 +1097,7 @@ test("entity empty states, dropdowns, and common action phrases are fully covere
     { source: "No conversations found", expected: "未找到对话" },
     { source: "No conversations found.", expected: "未找到对话。" },
     { source: "No matching conversations found", expected: "未找到匹配的对话" },
-    { source: "No conversations match your search criteria.", expected: "没有匹配您搜索条件的对话。" },
+    { source: "No conversations match your search criteria.", expected: "没有匹配你搜索条件的对话。" },
     { source: "No tasks found", expected: "未找到任务" },
     { source: "No background tasks", expected: "无后台任务" },
     { source: "No automations configured.", expected: "未配置计划任务。" },
@@ -1131,7 +1131,7 @@ test("entity empty states, dropdowns, and common action phrases are fully covere
     { source: "Create Cloud Project", expected: "创建云端项目" },
     { source: "Create a Plugin with the Agent", expected: "使用智能体创建插件" },
     { source: "Create a new scratch file", expected: "创建新的临时暂存文件" },
-    { source: "Choose the experience that fits how you work.", expected: "选择适合您工作方式的体验。" },
+    { source: "Choose the experience that fits how you work.", expected: "选择适合你工作方式的体验。" },
     { source: "Choose a model", expected: "选择模型" },
     { source: "Archive project", expected: "归档项目" },
     { source: "Archive Workspace", expected: "归档工作区" },
@@ -2236,7 +2236,7 @@ test("Case 138: translate plugin overview markdown, table cells, V4 UI extension
 
   const bundleOut = createLocalizedBundle(Buffer.from(sampleV4, "utf8"), current).buffer.toString("utf8");
   assert.ok(bundleOut.includes("globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__"), "Must hook V4 description");
-  assert.ok(bundleOut.includes('"UI 扩展（侧边面板）"'), "Must translate UI Extension SidePanel");
+  assert.ok(bundleOut.includes('"UI 扩展（侧面板）"'), "Must translate UI Extension SidePanel（侧面板，与左侧“侧边栏”区分）");
   assert.ok(bundleOut.includes('"确定要退出登录此服务器吗？"'), "Must translate sign out confirm");
   assert.ok(bundleOut.includes('k=(globalThis.__AGY_ZHCN_TRANSLATE_PLUGIN_DESC__'), "Must hook MCP server note");
 });
@@ -3592,4 +3592,20 @@ test("Case 156: 插件市场全量目录/截断/Gemini 2.9.0 与 chrome-devtools
     if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
     else process.env.AGY_LANGUAGE_PACK = savedPack;
   }
+});
+
+test("用语统一：侧面板与侧边栏分开、分叉、工件、组合包、你", async () => {
+  const { exact } = await loadDomTranslations();
+  assert.equal(exact["Toggle Sidebar"], "切换侧边栏");
+  assert.equal(exact["Toggle Side Panel"], "切换侧面板");
+  assert.notEqual(exact["Toggle Sidebar"], exact["Toggle Side Panel"], "侧边栏与侧面板不能同名");
+  assert.equal(exact["Fork"], "分叉");
+  assert.equal(exact["Fork Conversation"], "分叉对话");
+  assert.equal(exact["Download Artifact"], "下载工件");
+  assert.equal(exact["Bundle"], "组合包");
+  const values = Object.values(exact);
+  assert.equal(values.filter((v) => v.includes("您")).length, 0, "统一用“你”");
+  assert.equal(values.filter((v) => v.includes("侧边面板")).length, 0, "Side Panel 统一为“侧面板”");
+  assert.equal(exact["Microphone blocked in system settings."], "麦克风已在系统设置中被禁止。");
+  assert.equal(exact["Creating the forked conversation..."], "正在创建分叉对话…");
 });
