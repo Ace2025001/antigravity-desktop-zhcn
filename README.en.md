@@ -34,11 +34,14 @@ The first run asks setup questions; press Enter to accept the recommended values
 |---|---|---|
 | After the client updates (Windows) | Localize automatically / Ask me / Do nothing | Localize automatically |
 | Language pack auto-update | Auto-update / Ask me / Off | Auto-update |
+| Online fill-in for UI text not yet in the dictionary | On / Off | On |
 | Title auto-translation (Antigravity generates English titles by default) | On / Off | On |
 
 - **Localize automatically**: after “Restart to update”, the new version is localized and reopened in Chinese in about 40 seconds. **Ask me** prompts with an update card. No scheduled task or resident process is installed.
 - **Language pack auto-update**: regardless of how Antigravity is launched, checks the latest GitHub release against SHA-256 `digest`. **Auto-update** updates translations and core scripts silently in the background; **Ask me** prompts first; **Off** disables pack update checks. Existing installs created before this setting default to **Ask me**.
-- **Title auto-translation**: all app UI strings use curated human translations only (no machine translation on UI buttons/menus). When enabled, only AI-generated English conversation titles are translated for display (without modifying stored chat records); manually renamed titles always stay English. Chat content, code, terminal output, file names, links, paths and anything you type are never sent. Language pack auto-update only reads the GitHub release page and downloads the package; nothing is uploaded.
+- **Online fill-in**: the UI uses curated human translations first. When a client update adds buttons, menus or hints the dictionary does not cover yet, they are shown in Chinese via Google Translate until a curated translation ships, which then replaces it. Existing installs are asked once on the next `启动中文` run and stay off until they answer.
+- **Title auto-translation**: when enabled, only AI-generated English conversation titles are translated for display (without modifying stored chat records); manually renamed titles always stay English.
+- Chat content, code, terminal output, file names, links, paths, account details, your own skills and rules, and anything you type are never sent. Language pack auto-update only reads the GitHub release page and downloads the package; nothing is uploaded.
 
 ## Features
 

@@ -1392,6 +1392,19 @@ export function createRuntimeOverlay(dictionary) {
   const __manualTitleTexts = new Set();
   const __observedNonTranslatedTitles = new Set();
   const __learnedTitleTranslations = new Map();
+  // Machine translations of UI strings not yet in the curated dictionary (onlineTranslate).
+  const __learnedUiTranslations = new Map();
+  function __isUiOnlineTranslateEnabled(settings = __zhcnSettings) {
+    return Boolean(settings && typeof settings === "object" && settings.onlineTranslate === true);
+  }
+  function __lookupLearnedUi(value) {
+    if (typeof value !== "string" || value.length === 0) return null;
+    const leading = value.match(/^\\s*/u)?.[0] ?? "";
+    const trailing = value.match(/\\s*$/u)?.[0] ?? "";
+    const core = value.slice(leading.length, value.length - trailing.length).replace(/\\s+/g, " ");
+    const hit = core ? __learnedUiTranslations.get(core) : undefined;
+    return typeof hit === "string" && hit !== core ? leading + hit + trailing : null;
+  }
   function __isTitleAutoTranslateEnabled(settings = __zhcnSettings) {
     if (!settings || typeof settings !== "object") return false;
     if (typeof settings.titleAutoTranslate === "boolean") return settings.titleAutoTranslate;
@@ -1442,31 +1455,34 @@ export function createRuntimeOverlay(dictionary) {
       }
     } catch (_) {}
     if (!__zhcnSettings || typeof __zhcnSettings !== "object") {
-      __zhcnSettings = { titleAutoTranslate: false, titleWriteBack: false };
+      __zhcnSettings = { onlineTranslate: false, titleAutoTranslate: false, titleWriteBack: false };
     }
     if (__isTitleAutoTranslateEnabled(__zhcnSettings) && typeof __rescanConvTitlesFn === "function") {
       try { __rescanConvTitlesFn(); } catch (_) {}
     }
     return __zhcnSettings;
   }
-  function __canAutoTranslateRuntime() {
+  // kind: "title" (conversation titles, titleAutoTranslate) or "ui" (UI fill-in, onlineTranslate).
+  function __canAutoTranslateRuntime(kind = "title") {
     if (globalThis.__AGY_ZHCN_DISABLE_AUTO_TRANSLATE__ === true) return false;
+    const enabled = kind === "ui" ? __isUiOnlineTranslateEnabled : __isTitleAutoTranslateEnabled;
     if (typeof globalThis.__AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__ === "function") {
-      if (__zhcnSettings && !__isTitleAutoTranslateEnabled(__zhcnSettings)) return false;
+      if (__zhcnSettings && !enabled(__zhcnSettings)) return false;
       return true;
     }
-    if (!__isTitleAutoTranslateEnabled(__zhcnSettings)) return false;
+    if (!enabled(__zhcnSettings)) return false;
     if (typeof window === "undefined" || typeof fetch !== "function") return false;
     const proto = window.location?.protocol || "";
     return proto === "https:" || proto === "http:" || proto === "agy-zhcn:" || proto === "file:";
   }
   function __canAutoTranslateTitlesRuntime() {
-    return __canAutoTranslateRuntime();
+    return __canAutoTranslateRuntime("title");
   }
 
   function __isEligibleForAutoTranslate(core, parentEl, isTitle, isAttribute = false) {
-    if (isTitle !== true) return false;
     if (typeof core !== "string") return false;
+    // The main-process proxy rejects queries over 200 characters.
+    if (!isTitle && core.trim().length > 200) return false;
     const t = core.trim();
     if (isTitle ? (t.length < 3 || t.length > 160) : (t.length < 6 || t.length > 600)) return false;
     if (!/[A-Za-z]/.test(t) || /[\\u4e00-\\u9fff]/.test(t)) return false;
@@ -1494,6 +1510,9 @@ export function createRuntimeOverlay(dictionary) {
     if (/[\\w-]+\\.(?:[a-z]{1,4}\\d?|json|yaml|toml|lock|tsx|jsx|mjs|cjs|vbs|bat|cmd|ps1|txt|md|log|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\\b(?![\\w-])/.test(t) && !/\\b(?:e\\.g|i\\.e|etc|vs)\\./i.test(t)) return false;
     if (/^(?:Gemini|Claude|GPT-OSS|Google|Antigravity|Orchestrator)\\s+[0-9A-Za-z.\\s()-]+$/i.test(t) && t.split(/\\s+/).length <= 4) return false;
     if (parentEl && (__isInsideUserContent(parentEl, isAttribute) || __isProtectedNativeIdentifier(parentEl, isAttribute, t))) return false;
+    // Customization cards list the user's own skills, rules and plugins: their titles and
+    // descriptions are user content. Official ones are covered by the curated dictionary.
+    if (parentEl && typeof parentEl.closest === "function" && parentEl.closest("[data-testid='customization-card']")) return false;
     return true;
   }
 
@@ -1555,13 +1574,13 @@ export function createRuntimeOverlay(dictionary) {
     return out;
   }
 
-  async function __requestRemoteTranslate(preparedText) {
+  async function __requestRemoteTranslate(preparedText, kind = "title") {
     if (typeof globalThis.__AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__ === "function") {
-      return await globalThis.__AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__(preparedText);
+      return await globalThis.__AGY_ZHCN_CUSTOM_TRANSLATE_FETCH__(preparedText, kind);
     }
     const makeTimeoutOpts = () => (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") ? { signal: AbortSignal.timeout(8000) } : {};
     try {
-      const proxyResp = await fetch("agy-zhcn://translate?q=" + encodeURIComponent(preparedText), makeTimeoutOpts());
+      const proxyResp = await fetch("agy-zhcn://translate?kind=" + (kind === "ui" ? "ui" : "title") + "&q=" + encodeURIComponent(preparedText), makeTimeoutOpts());
       if (proxyResp && proxyResp.ok) {
         const proxyJson = await proxyResp.json();
         if (proxyJson && proxyJson.ok && typeof proxyJson.translated === "string") {
@@ -1575,8 +1594,8 @@ export function createRuntimeOverlay(dictionary) {
     return null;
   }
 
-  function __persistAutoLearnedEntry(enKey, zhVal) {
-    __learnedTitleTranslations.set(enKey, zhVal);
+  function __persistAutoLearnedEntry(enKey, zhVal, isTitle = true) {
+    (isTitle ? __learnedTitleTranslations : __learnedUiTranslations).set(enKey, zhVal);
     // The on-disk dictionary (agy-zhcn://auto-dict) is the only store, so entries
     // removed or filtered there cannot come back from a browser-side copy.
     __autoPersistQueue[enKey] = zhVal;
@@ -1648,16 +1667,24 @@ export function createRuntimeOverlay(dictionary) {
         if (resp && resp.ok) {
           const data = await resp.json().catch(() => null);
           if (data && data.exact && typeof data.exact === "object") {
+            const titlesOn = __isTitleAutoTranslateEnabled(__zhcnSettings);
+            const uiOn = __isUiOnlineTranslateEnabled(__zhcnSettings);
             for (const [k, v] of Object.entries(data.exact)) {
               if (
-                typeof k === "string" &&
-                typeof v === "string" &&
-                !exactTranslations.has(k) &&
-                !__manualTitleTexts.has(k) &&
-                !__isObsoleteLearnedKey(k) &&
-                __isEligibleForAutoTranslate(k, null, true)
-              ) {
+                typeof k !== "string" ||
+                typeof v !== "string" ||
+                exactTranslations.has(k) ||
+                __manualTitleTexts.has(k) ||
+                __isObsoleteLearnedKey(k)
+              ) continue;
+              // One shared file: an entry is usable as a title and/or as UI text depending
+              // on which switches are on and which eligibility rules it passes.
+              if (titlesOn && __isEligibleForAutoTranslate(k, null, true)) {
                 __learnedTitleTranslations.set(k, v);
+                loadedAny = true;
+              }
+              if (uiOn && __isEligibleForAutoTranslate(k, null, false)) {
+                __learnedUiTranslations.set(k, v);
                 loadedAny = true;
               }
             }
@@ -1672,11 +1699,12 @@ export function createRuntimeOverlay(dictionary) {
   }
 
   async function __translateAndLearnAsync(core, { isTitle = false } = {}) {
-    if (isTitle !== true) return null;
+    const kind = isTitle === true ? "title" : "ui";
+    const learned = kind === "title" ? __learnedTitleTranslations : __learnedUiTranslations;
     const normalized = core.trim().replace(/\\s+/g, " ");
     if (exactTranslations.has(normalized)) return exactTranslations.get(normalized);
-    if (__learnedTitleTranslations.has(normalized)) return __learnedTitleTranslations.get(normalized);
-    if (!__canAutoTranslateTitlesRuntime() || __autoFailedKeys.has(normalized)) return null;
+    if (learned.has(normalized)) return learned.get(normalized);
+    if (!__canAutoTranslateRuntime(kind) || __autoFailedKeys.has(normalized)) return null;
     if (__autoPendingKeys.has(normalized)) {
       return new Promise((resolve) => {
         const list = __autoNodeSubscribers.get(normalized) || [];
@@ -1687,12 +1715,12 @@ export function createRuntimeOverlay(dictionary) {
     __autoPendingKeys.add(normalized);
     try {
       const { prepared, placeholders } = __prepareAntiMtPayload(normalized);
-      const rawTranslated = await __requestRemoteTranslate(prepared);
+      const rawTranslated = await __requestRemoteTranslate(prepared, kind);
       const polished = __polishTranslatedZh(rawTranslated, normalized, placeholders, isTitle);
       if (polished && polished !== normalized) {
-        __persistAutoLearnedEntry(normalized, polished);
+        __persistAutoLearnedEntry(normalized, polished, kind === "title");
         if (core.trim() !== normalized) {
-          __persistAutoLearnedEntry(core.trim(), polished);
+          __persistAutoLearnedEntry(core.trim(), polished, kind === "title");
         }
         const waiters = __autoNodeSubscribers.get(normalized) || [];
         __autoNodeSubscribers.delete(normalized);
@@ -1718,7 +1746,7 @@ export function createRuntimeOverlay(dictionary) {
   globalThis.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__ = __isEligibleForAutoTranslate;
   globalThis.__AGY_ZHCN_IS_PROTECTED_ELEMENT__ = __isProtectedNativeIdentifier;
   globalThis.__AGY_ZHCN_TRANSLATE_VALUE__ = translateValue;
-  globalThis.__AGY_ZHCN_LOOKUP__ = (text) => exactTranslations.get(text) ?? __learnedTitleTranslations.get(text);
+  globalThis.__AGY_ZHCN_LOOKUP__ = (text) => exactTranslations.get(text) ?? __learnedTitleTranslations.get(text) ?? __learnedUiTranslations.get(text);
   globalThis.__AGY_ZHCN_PREPARE_ANTI_MT__ = __prepareAntiMtPayload;
   globalThis.__AGY_ZHCN_POLISH_ZH__ = __polishTranslatedZh;
 
@@ -1924,6 +1952,25 @@ export function createRuntimeOverlay(dictionary) {
             }
           });
         }
+        return;
+      }
+      // UI fill-in for strings the curated dictionary does not cover yet.
+      if (__isUiOnlineTranslateEnabled(__zhcnSettings) && !__isConversationTitleElement(parent, false)) {
+        const uiHit = __lookupLearnedUi(rawVal);
+        if (uiHit !== null && uiHit !== rawVal) {
+          node.nodeValue = uiHit;
+          stats.translatedTextNodes += 1;
+        } else if (uiHit === null && __canAutoTranslateRuntime("ui") && __isEligibleForAutoTranslate(rawVal, parent, false)) {
+          const leading = rawVal.match(/^\\s*/u)?.[0] ?? "";
+          const trailing = rawVal.match(/\\s*$/u)?.[0] ?? "";
+          const core = rawVal.slice(leading.length, rawVal.length - trailing.length);
+          __translateAndLearnAsync(core, { isTitle: false }).then((zh) => {
+            if (zh && node.nodeValue === rawVal) {
+              node.nodeValue = leading + zh + trailing;
+              stats.translatedTextNodes += 1;
+            }
+          });
+        }
       }
     }
   }
@@ -1957,6 +2004,19 @@ export function createRuntimeOverlay(dictionary) {
           if (titleHit !== null && titleHit !== current) {
             element.setAttribute(attribute, titleHit);
             stats.translatedAttributes += 1;
+          }
+        } else if (__isUiOnlineTranslateEnabled(__zhcnSettings) && !__isConversationTitleElement(element, true)) {
+          const uiHit = __lookupLearnedUi(current);
+          if (uiHit !== null && uiHit !== current) {
+            element.setAttribute(attribute, uiHit);
+            stats.translatedAttributes += 1;
+          } else if (uiHit === null && __canAutoTranslateRuntime("ui") && __isEligibleForAutoTranslate(current, element, false, true)) {
+            __translateAndLearnAsync(current, { isTitle: false }).then((zh) => {
+              if (zh && element.getAttribute(attribute) === current) {
+                element.setAttribute(attribute, zh);
+                stats.translatedAttributes += 1;
+              }
+            });
           }
         }
       }
@@ -2151,7 +2211,9 @@ export function createRuntimeOverlay(dictionary) {
     hookNativeContextMenu();
     translateTree(document.documentElement);
     // Persisted title translations are only applied while title auto-translation is on.
-    __loadZhcnSettings().then((settings) => { if (__isTitleAutoTranslateEnabled(settings)) __loadPersistedAutoDict(); });
+    __loadZhcnSettings().then((settings) => {
+      if (__isTitleAutoTranslateEnabled(settings) || __isUiOnlineTranslateEnabled(settings)) __loadPersistedAutoDict();
+    });
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === "characterData") {

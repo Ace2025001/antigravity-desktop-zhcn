@@ -60,9 +60,11 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             if (globalThis.__agyZhcnSettingsCache && now - globalThis.__agyZhcnSettingsCache.at < 3000) {
                 return globalThis.__agyZhcnSettingsCache.value;
             }
-            const value = { titleAutoTranslate: true, packAutoUpdate: 'auto', titleWriteBack: false };
+            // onlineTranslate (UI fill-in) is off unless the settings file explicitly turns it on.
+            const value = { onlineTranslate: false, titleAutoTranslate: true, packAutoUpdate: 'auto', titleWriteBack: false };
             try {
                 const raw = JSON.parse(await fsPromises.readFile(path.join(path.dirname(getAutoDictPath()), 'settings.json'), 'utf8'));
+                if (typeof raw.onlineTranslate === 'boolean') value.onlineTranslate = raw.onlineTranslate;
                 if (typeof raw.titleAutoTranslate === 'boolean') {
                     value.titleAutoTranslate = raw.titleAutoTranslate;
                 } else if (raw.onlineTranslate === false || raw.autoTranslateTitles === false) {
@@ -158,8 +160,11 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                 });
             }
             if (reqUrl.hostname === 'translate') {
-                // The only translation network exit; honours the user's titleAutoTranslate switch.
-                if (!(await getZhcnSettings()).titleAutoTranslate) {
+                // The only translation network exit. UI fill-in (kind=ui) honours onlineTranslate;
+                // conversation titles (kind=title, the default) honour titleAutoTranslate.
+                const zhcnSettingsNow = await getZhcnSettings();
+                const translateKind = reqUrl.searchParams.get('kind') === 'ui' ? 'ui' : 'title';
+                if (translateKind === 'ui' ? !zhcnSettingsNow.onlineTranslate : !zhcnSettingsNow.titleAutoTranslate) {
                     return new Response(JSON.stringify({ ok: false, disabled: true }), { status: 403, headers: { 'Content-Type': 'application/json; charset=utf-8' } });
                 }
                 const q = reqUrl.searchParams.get('q') || '';
