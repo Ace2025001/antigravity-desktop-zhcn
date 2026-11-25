@@ -102,7 +102,7 @@ antigravity汉化包/
 |---|---|
 | Windows x64 | 已在 Antigravity Desktop 2.32.2、2.33.0、2.34.0、2.35.1 实测，支持更新后自动汉化 |
 | Apple 芯片 Mac | 保留官方原版，另建一份本地签名的中文副本；Intel Mac 未验证 |
-| 适用对象 | 只适用于 Antigravity Desktop 桌面客户端，**不是** Antigravity IDE 扩展 |
+| 适用对象 | 只适用于 Antigravity Desktop 独立桌面客户端 |
 | 兼容方式 | 每次汉化前都会检查客户端文件结构；新版本会先尝试自动适配，结构对不上就停下并提示，不会硬改 |
 
 ## 常见问题
@@ -125,7 +125,7 @@ antigravity汉化包/
 
 ### 支持 Antigravity Desktop 2.35 和 Mac 吗？支持哪些系统版本？
 
-支持 Windows x64（已在 Google Antigravity Desktop 2.32.2、2.33.0、2.34.0、2.35.1 实测）和 Apple 芯片 Mac（保留官方原版并生成本地中文版），Intel Mac 未验证。只适用于反重力（Antigravity Desktop）独立桌面客户端，不是 Antigravity IDE 扩展。
+支持 Windows x64（已在 Google Antigravity Desktop 2.32.2、2.33.0、2.34.0、2.35.1 实测）和 Apple 芯片 Mac（保留官方原版并生成本地中文版），Intel Mac 未验证。只适用于反重力（Antigravity Desktop）独立桌面客户端。
 
 ### 怎么更新语言包？
 
@@ -137,7 +137,7 @@ antigravity汉化包/
 
 ### 能让 AI 助手帮我安装吗？
 
-可以。把下面这句话发给豆包、DeepSeek、Antigravity、Codex、Claude Code 等 AI 助手：
+可以。把下面这句话发给豆包、DeepSeek、WorkBuddy、Antigravity、Codex、Claude Code 等 AI 助手：
 
 > 帮我把 https://github.com/Ace2025001/antigravity-desktop-zhcn 安装到电脑上，按仓库里的 docs/ai-install.md 操作
 
