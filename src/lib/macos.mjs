@@ -45,20 +45,21 @@ export async function findMacUiPort() {
   return [...log.matchAll(/Local:\s+https:\/\/127\.0\.0\.1:(\d+)\//g)].at(-1)?.[1] ?? null;
 }
 
-export async function signMacApp(appPath) {
+export async function signMacApp(appPath, { execFile = exec } = {}) {
   const plistPath = path.join(appPath, "Contents", "Info.plist");
   const archive = await readFile(path.join(macResources(appPath), "app.asar"));
-  const { stdout } = await exec("/usr/bin/plutil", ["-extract", "ElectronAsarIntegrity", "json", "-o", "-", plistPath]);
+  const { stdout } = await execFile("/usr/bin/plutil", ["-extract", "ElectronAsarIntegrity", "json", "-o", "-", plistPath]);
   const integrity = JSON.parse(stdout);
   if (integrity["Resources/app.asar"]?.algorithm !== "SHA256") {
     throw new Error("Mac 原版 ASAR 校验配置发生变化，拒绝签名。");
   }
   integrity["Resources/app.asar"].hash = asarHeaderHash(archive);
-  await exec("/usr/bin/plutil", ["-replace", "ElectronAsarIntegrity", "-json", JSON.stringify(integrity), plistPath]);
-  await exec("/usr/bin/plutil", ["-replace", "CFBundleDisplayName", "-string", "Antigravity 中文", plistPath]);
-  // Keep the original entitlements and hardened runtime. Only the copy is signed.
-  await exec("/usr/bin/codesign", ["--force", "--sign", "-", "--preserve-metadata=entitlements,flags,runtime", appPath], { timeout: 120_000 });
-  await exec("/usr/bin/codesign", ["--verify", "--deep", "--strict", appPath], { timeout: 120_000 });
+  await execFile("/usr/bin/plutil", ["-replace", "ElectronAsarIntegrity", "-json", JSON.stringify(integrity), plistPath]);
+  await execFile("/usr/bin/plutil", ["-replace", "CFBundleDisplayName", "-string", "Antigravity 中文", plistPath]);
+  // Sign the entire bundle copy (--deep) with its entitlements so dyld never
+  // rejects Google-signed nested frameworks against the ad-hoc main binary.
+  await execFile("/usr/bin/codesign", ["--force", "--deep", "--sign", "-", "--preserve-metadata=entitlements", appPath], { timeout: 120_000 });
+  await execFile("/usr/bin/codesign", ["--verify", "--deep", "--strict", appPath], { timeout: 120_000 });
 }
 
 export async function runningMacApps() {
