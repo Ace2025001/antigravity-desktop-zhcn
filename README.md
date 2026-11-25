@@ -10,15 +10,23 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 
 [安装教程](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [常见问题](https://ace2025001.github.io/antigravity-desktop-zhcn/faq/) · [更新日志](https://ace2025001.github.io/antigravity-desktop-zhcn/changelog/) · [AI 助手安装指南](docs/ai-install.md) · [English](README.en.md)
 
+### [⬇ 下载完整汉化包（Windows + Mac）](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip)
+
+> 下载后请先右键“全部解压缩”，进入 `win启动` 或 `mac启动` 双击 **启动中文**（不要下载绿按钮 `Code` 或 Source code；具体目录与步骤见下方[使用步骤](#使用步骤)）。觉得好用的话，欢迎点右上角 ⭐ **Star** 支持！
+
 ## 汉化效果与覆盖范围
 
-| 登录页 | 智能体执行过程 | 设置 |
+| 登录页 | 首页 | 插件市场 |
 |---|---|---|
-| ![Antigravity 汉化后的登录页：欢迎使用 Antigravity、通过 Google 继续](docs/images/zhcn-login.jpg) | ![Antigravity 汉化后的智能体执行过程：任务清单、运行测试、编辑文件](docs/images/zhcn-agent-run.jpg) | ![Antigravity 汉化后的通用设置：界面布局、全局权限、输入框](docs/images/zhcn-settings-general.jpg) |
+| ![Antigravity 汉化后的登录页：欢迎使用 Antigravity、通过 Google 继续](docs/images/zhcn-login.jpg) | ![Antigravity 汉化后的首页：中文问候语、侧边栏与输入框](docs/images/zhcn-home.webp) | ![Antigravity 汉化后的插件市场：分类、搜索与官方插件说明](docs/images/zhcn-marketplace.webp) |
 
-| 首页 | 设置：技能与 Token 用量 |
-|---|---|
-| ![Antigravity 汉化后的首页：中文问候语、侧边栏与输入框](docs/images/zhcn-home.webp) | ![Antigravity 汉化后的设置页：规则 Token 用量与技能列表说明](docs/images/zhcn-settings-skills.webp) |
+**智能体执行过程（完整展示）**
+
+![Antigravity 汉化后的智能体执行过程：任务进度 6/6 步骤、文件编辑与模型操作](docs/images/zhcn-agent-run.jpg)
+
+**设置页面全览（完整展示）**
+
+![Antigravity 汉化后的通用设置：界面布局、全局权限与输入框设置](docs/images/zhcn-settings-general.jpg)
 
 - **基础界面**：主菜单、系统托盘、全局设置、独立对话面板、权限确认弹窗。
 - **智能体（Agent）执行过程**：文件创建 / 编辑 / 删除、运行命令与退出代码、MCP 工具调用、图片生成、网页读取、思考中 / 工作中 / 探索中等状态，命令和路径原样保留。
@@ -36,17 +44,13 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 - **安全可恢复**：不修改对话记录，一键恢复英文；Mac 保留官方原版，另建中文副本。
 - **不碰你的环境**：不修改代理、节点、系统设置，不安装任何后台服务。
 
-## 下载与使用
-
-### [⬇ 下载完整汉化包（Windows + Mac）](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip)
-
-> 觉得好用的话，请点右上角 ⭐ **Star**。星越多，越容易被搜到，也能让更多人用上中文版。
+## 使用步骤
 
 1. 下载后右键“全部解压缩”，不要在压缩包里直接运行。
 2. Windows 打开 `win启动`，Mac 打开 `mac启动`。
 3. 双击 **启动中文**，按提示完成。第一次运行会问两个设置，直接回车用推荐值即可。
 
-想换回英文，双击 **恢复英文**；想改设置，双击 **汉化设置**。
+想换回官方英文原版，双击 **恢复英文**；想改设置，双击 **汉化设置**。
 
 > 发布页上的文件名是 `Antigravity-完整汉化包-Windows+Mac.zip`，下载后显示为 `Antigravity-Windows+Mac.zip`，是同一个文件。不需要下载 Source code。
 
