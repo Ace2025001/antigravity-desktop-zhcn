@@ -2,7 +2,7 @@
 
 [![最新版本](https://img.shields.io/github/v/release/Ace2025001/antigravity-desktop-zhcn?label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)
 [![下载量](https://img.shields.io/github/downloads/Ace2025001/antigravity-desktop-zhcn/total?label=%E4%B8%8B%E8%BD%BD%E9%87%8F)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases)
-[![平台](https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%20x64%20%7C%20macOS%20Apple%20%E8%8A%AF%E7%89%87-blue)](#支持哪些系统和版本)
+[![平台](https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%20x64%20%7C%20macOS%20Apple%20%E8%8A%AF%E7%89%87-blue)](#支持范围)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![已适配客户端](https://img.shields.io/badge/%E5%B7%B2%E9%80%82%E9%85%8D%E5%AE%A2%E6%88%B7%E7%AB%AF-2.35.1-brightgreen)](#支持范围)
 
@@ -10,9 +10,31 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 
 [安装教程](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [常见问题](https://ace2025001.github.io/antigravity-desktop-zhcn/faq/) · [更新日志](https://ace2025001.github.io/antigravity-desktop-zhcn/changelog/) · [AI 助手安装指南](docs/ai-install.md) · [English](README.en.md)
 
+## 汉化效果与覆盖范围
+
 | 登录页 | 智能体执行过程 | 设置 |
 |---|---|---|
 | ![Antigravity 汉化后的登录页：欢迎使用 Antigravity、通过 Google 继续](docs/images/zhcn-login.jpg) | ![Antigravity 汉化后的智能体执行过程：任务清单、运行测试、编辑文件](docs/images/zhcn-agent-run.jpg) | ![Antigravity 汉化后的通用设置：界面布局、全局权限、输入框](docs/images/zhcn-settings-general.jpg) |
+
+| 首页 | 设置：技能与 Token 用量 |
+|---|---|
+| ![Antigravity 汉化后的首页：中文问候语、侧边栏与输入框](docs/images/zhcn-home.webp) | ![Antigravity 汉化后的设置页：规则 Token 用量与技能列表说明](docs/images/zhcn-settings-skills.webp) |
+
+- **基础界面**：主菜单、系统托盘、全局设置、独立对话面板、权限确认弹窗。
+- **智能体（Agent）执行过程**：文件创建 / 编辑 / 删除、运行命令与退出代码、MCP 工具调用、图片生成、网页读取、思考中 / 工作中 / 探索中等状态，命令和路径原样保留。
+- **插件市场**：官方与合作伙伴的 75+ 插件、子选项、推荐提示词和授权说明。
+- **其他细节**：首页问候语、模型用量与配额说明、对话时间线卡片、输入框快捷键提示。
+- **保留专有名词**：`agy` CLI、Catppuccin、Dracula、One Dark Pro、Tokyo Night 等不翻译。
+- **绝不翻译**：你输入的内容、对话内容、代码、路径、命令和终端输出保持原样。
+
+## 主要特点
+
+- **解压即用**：内置运行环境，无需安装 Node.js；自动找到客户端，找不到时弹窗选择。
+- **更新后自动汉化**：在客户端里点“重启以更新”后，自动跟着重新汉化；也可以设为先问你。
+- **翻译全面**：1.6 万条人工整理的译文，用语统一，告别中英混杂。
+- **联网补充翻译**：新版本里还没收录的英文用谷歌翻译补齐，可随时关闭。
+- **安全可恢复**：不修改对话记录，一键恢复英文；Mac 保留官方原版，另建中文副本。
+- **不碰你的环境**：不修改代理、节点、系统设置，不安装任何后台服务。
 
 ## 下载与使用
 
@@ -64,32 +86,11 @@ antigravity汉化包/
 
 汉化包内置 1.6 万条人工整理的译文。客户端新版本难免出现还没收录的英文，开启这项后会通过谷歌翻译补齐，结果只保存在你的电脑上。
 
-- **会发送**：界面上还没收录的英文，以及对话标题。
-- **不会发送**：对话内容、代码、终端输出、文件名、链接、路径，以及你输入的任何内容。
-- **优缺点说明**：优点是客户端小版本更新后能第一时间补齐新界面，减少裸露英文；缺点是按片段调用谷歌翻译，遇到被代码拆成多段的句子时，偶尔可能出现语序生硬、机翻感较重或局部中英混杂（欢迎提 Issue 收进正式词库修正）。
+- **自动翻译覆盖区域**：界面上还没收录的英文，以及对话标题。
+- **自动翻译排除区域**：对话内容、代码、终端输出、文件名、链接、路径，以及你输入的任何内容（既不翻译，也不上传）。
+- **优点**：客户端小版本更新后能第一时间补齐新界面，减少裸露英文，同时自动翻译对话标题。
+- **缺点**：按片段调用谷歌翻译，遇到被代码拆成多段的句子时，偶尔可能出现语序生硬、机翻感较重或局部中英混杂（欢迎提 Issue 收进正式词库修正）。
 - 关闭后完全不联网，想只保留纯人工译文随时可在“汉化设置”中关闭。改完重新打开客户端即可生效，不需要重新汉化。
-
-## 主要特点
-
-- **解压即用**：内置运行环境，无需安装 Node.js；自动找到客户端，找不到时弹窗选择。
-- **更新后自动汉化**：在客户端里点“重启以更新”后，自动跟着重新汉化；也可以设为先问你。
-- **翻译全面**：1.6 万条人工整理的译文，用语统一，告别中英混杂。
-- **联网补充翻译**：新版本里还没收录的英文用谷歌翻译补齐，可随时关闭。
-- **安全可恢复**：不修改对话记录，一键恢复英文；Mac 保留官方原版，另建中文副本。
-- **不碰你的环境**：不修改代理、节点、系统设置，不安装任何后台服务。
-
-## 汉化了哪些内容
-
-| 首页 | 设置：技能与 Token 用量 |
-|---|---|
-| ![Antigravity 汉化后的首页：中文问候语、侧边栏与输入框](docs/images/zhcn-home.webp) | ![Antigravity 汉化后的设置页：规则 Token 用量与技能列表说明](docs/images/zhcn-settings-skills.webp) |
-
-- **基础界面**：主菜单、系统托盘、全局设置、独立对话面板、权限确认弹窗。
-- **智能体（Agent）执行过程**：文件创建 / 编辑 / 删除、运行命令与退出代码、MCP 工具调用、图片生成、网页读取、思考中 / 工作中 / 探索中等状态，命令和路径原样保留。
-- **插件市场**：官方与合作伙伴的 75+ 插件、子选项、推荐提示词和授权说明。
-- **其他细节**：首页问候语、模型用量与配额说明、对话时间线卡片、输入框快捷键提示。
-- **保留专有名词**：`agy` CLI、Catppuccin、Dracula、One Dark Pro、Tokyo Night 等不翻译。
-- **绝不翻译**：你输入的内容、对话内容、代码、路径、命令和终端输出保持原样。
 
 ## 支持范围
 
