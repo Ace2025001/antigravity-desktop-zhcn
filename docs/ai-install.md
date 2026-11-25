@@ -83,11 +83,13 @@ $env:AGY_INSTALL_PATH = "$env:LOCALAPPDATA\Programs\Antigravity"   # 按实际�
 | 设置 | 默认值 | 环境变量 | 说明 |
 |---|---|---|---|
 | 客户端更新后怎么处理 | 自动汉化 | `AGY_AUTO_FOLLOW=auto\|ask\|off` | `auto`/`ask`：用户在客户端里点“重启以更新”后自动重新汉化或弹窗询问，不添加计划任务、不常驻后台；`off` 不处理 |
-| 联网补充翻译 | 开启 | `AGY_ONLINE_TRANSLATE=on\|off` | 开启后会把尚未收录的界面英文和对话标题发到谷歌翻译；对话内容、代码、终端输出、文件和用户输入不会发送 |
+| 汉化包自动更新 | 自动更新（默认） | `AGY_PACK_AUTO_UPDATE=auto\|ask\|off` | `auto`/`ask`：启动 Antigravity 时检查最新版汉化包并核对 SHA-256，自动更新或弹窗先问我（老版本升级前先按先问我处理）；`off` 不检查 |
+| 标题自动翻译 | 开启 | `AGY_TITLE_AUTO_TRANSLATE=on\|off` | 软件界面全部使用人工词库，仅自动翻译 Antigravity 生成的纯英文对话标题；对话内容、代码、终端、文件和用户输入不会发送 |
 
 ```powershell
-$env:AGY_AUTO_FOLLOW = 'auto'        # 用户不想要后台任务时改为 off
-$env:AGY_ONLINE_TRANSLATE = 'on'     # 用户不想联网时改为 off
+$env:AGY_AUTO_FOLLOW = 'auto'              # 用户不想要自动跟随汉化时改为 off
+$env:AGY_PACK_AUTO_UPDATE = 'auto'         # 用户不想要汉化包自动更新时改为 ask 或 off
+$env:AGY_TITLE_AUTO_TRANSLATE = 'on'       # 用户不想自动翻译英文对话标题时改为 off
 ```
 
 之后用户可以随时双击 `win启动\汉化设置.bat`（Mac 为 `mac启动/汉化设置.command`）修改。
@@ -136,8 +138,8 @@ AGY_LANGUAGE_PACK="$PWD/语言包" ./mac启动/配套程序/node ./语言包/核
 
 ## 9. 向用户报告
 
-报告客户端版本、汉化包版本、安装位置、已验证的界面、备份位置和恢复方法，以及两项设置的实际取值（客户端更新后怎么处理、是否开启联网补充翻译）。没有看到实际界面时，明确标注“尚未完成界面验证”。不要自动 Star、关注仓库或修改账号设置。
+报告客户端版本、汉化包版本、安装位置、已验证的界面、备份位置和恢复方法，以及各项设置的实际取值（客户端更新后怎么处理、汉化包自动更新、标题自动翻译）。没有看到实际界面时，明确标注“尚未完成界面验证”。不要自动 Star、关注仓库或修改账号设置。
 
 ## 10. 更新语言包
 
-语言包会持续更新。已有完整包时，从[最新发布页](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)下载“仅更新语言包”，替换 `语言包` 目录后再次运行“启动中文”。首次使用或从 v2.2.0 及更早版本升级时，请下载完整包。
+开启“汉化包自动更新”后，启动或退出 Antigravity 时会按设置自动检查、校验 SHA-256 并升级词库与核心脚本。也可以运行 `& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\scripts\self-update.mjs'` 立即手动更新，或到[最新发布页](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)下载覆盖。

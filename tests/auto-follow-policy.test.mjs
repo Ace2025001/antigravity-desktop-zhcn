@@ -67,12 +67,12 @@ test("红线：客户端页面内不得直接联网翻译，只能经主进程�
   assert.ok(!/fetch\(\s*["'`]https?:/.test(overlay), "页面叠加层不得直接请求外部网址");
 });
 
-test("红线：主进程翻译代理先检查联网开关再发请求", async () => {
+test("红线：主进程翻译代理先检查标题自动翻译开关再发请求", async () => {
   const patcher = await readFile(new URL("../src/lib/patcher.mjs", import.meta.url), "utf8");
   const route = patcher.indexOf("reqUrl.hostname === 'translate'");
-  const gate = patcher.indexOf("onlineTranslate", route);
+  const gate = patcher.indexOf("titleAutoTranslate", route);
   const request = patcher.indexOf("translate.googleapis.com", route);
-  assert.ok(route > 0 && gate > route && gate < request, "联网开关检查必须位于请求之前");
+  assert.ok(route > 0 && gate > route && gate < request, "标题自动翻译开关检查必须位于请求之前");
 });
 
 test("红线：标题默认只显示不写回", () => {

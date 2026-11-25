@@ -3,6 +3,7 @@ import { promisify } from "node:util";
 import { readFile } from "node:fs/promises";
 import { closeWithPolicy, CloseCancelledError } from "./close-policy.mjs";
 import { step } from "./console-ui.mjs";
+import { getRelaunchConfirmDialogSpec, showModernWindowsDialog } from "./modern-dialog.mjs";
 import path from "node:path";
 import os from "node:os";
 
@@ -151,19 +152,8 @@ async function forceClose() {
 }
 
 async function askSilentRelaunchConfirmation() {
-  const psPrompt = [
-    "Add-Type -AssemblyName System.Windows.Forms",
-    "$msg = \"检测到 Antigravity 客户端已更新，需要重启窗口以自动完成中文汉化。`r`n`r`n请先保存当前窗口中的工作，点击【确定】立即关闭并重新打开中文版；点击【取消】暂不更新。\"",
-    "$res = [System.Windows.Forms.MessageBox]::Show($msg, 'Antigravity 中文自动跟进', [System.Windows.Forms.MessageBoxButtons]::OKCancel, [System.Windows.Forms.MessageBoxIcon]::Information)",
-    "[Console]::Write($res.ToString())",
-  ].join("; ");
-  const encoded = Buffer.from(psPrompt, "utf16le").toString("base64");
-  const { stdout } = await exec(
-    "powershell.exe",
-    ["-NoProfile", "-STA", "-EncodedCommand", encoded],
-    { windowsHide: true, timeout: 120000, encoding: "utf8" }
-  );
-  return stdout.trim() === "OK";
+  const result = await showModernWindowsDialog(getRelaunchConfirmDialogSpec(), { exec, timeoutMs: 120000 });
+  return result === "ok";
 }
 
 async function countMacVisibleWindows() {

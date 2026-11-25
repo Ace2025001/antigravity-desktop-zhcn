@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline/promises";
 import { runMacSetup } from "../src/lib/mac-setup.mjs";
+import { writePackHookMetadata } from "../src/lib/self-update.mjs";
 import { languageFile, localizationFingerprint } from "../src/lib/language-pack.mjs";
 import { buildPatchedAsar, patchCustomSchemeSource } from "../src/lib/patcher.mjs";
 import { readFileFromAsar, readJsonFromAsar } from "../src/lib/asar-reader.mjs";
@@ -118,6 +119,12 @@ async function install(info) {
     await verify(state);
     await writeFile(`${statePath}.tmp`, JSON.stringify(state, null, 2));
     await rename(`${statePath}.tmp`, statePath);
+    await writePackHookMetadata({
+      coreRoot: root,
+      languagePackDir: process.env.AGY_LANGUAGE_PACK || path.join(root, ".."),
+      nodePath: process.execPath,
+      packVersion: await JSON.parse(await readFile(path.join(root, "package.json"), "utf8")).version,
+    }).catch(() => {});
     if (displaced) console.log(`上一版已保留：${oldApp}`);
     console.log(`已部署：${macAppPath}；官方原版保持原样。`);
   } catch (error) {
@@ -131,20 +138,49 @@ async function install(info) {
   }
 }
 
+async function hasReusableCachedRuntime(originalHash) {
+  try {
+    const runtime = await readFile(runtimePath);
+    const meta = JSON.parse(await readFile(`${runtimePath}.json`, "utf8"));
+    return meta?.originalHash === originalHash && meta?.uiHash === sha256Buffer(runtime);
+  } catch {
+    return false;
+  }
+}
+
 try {
   if (process.platform !== "darwin") throw new Error("此入口只支持 macOS。");
   let needsSetup = command === "setup";
+  let autoReused = false;
   if (command === "start") {
     const info = await inspectOriginal();
     const state = await readState();
     needsSetup = !state || state.originalAsarSha256 !== info.originalHash || state.toolFingerprint !== await localizationFingerprint("darwin");
+    if (needsSetup && await hasReusableCachedRuntime(info.originalHash)) {
+      await install(info);
+      needsSetup = false;
+      autoReused = true;
+    }
     if (!needsSetup) {
-      await verify(state);
+      await verify(await readState());
+      await writePackHookMetadata({
+        coreRoot: root,
+        languagePackDir: process.env.AGY_LANGUAGE_PACK || path.join(root, ".."),
+        nodePath: process.execPath,
+      }).catch(() => {});
       const apps = await runningMacApps();
       if (apps.some(app => app.executable !== path.join(macAppPath, "Contents", "MacOS", "Antigravity"))) await closeClientForChanges();
       await exec("/usr/bin/open", [macAppPath]);
-      console.log("中文已就绪，已打开应用。");
+      console.log(autoReused ? "已复用本地缓存完成中文重签，已打开应用。" : "中文已就绪，已打开应用。");
     }
+  }
+  if (command === "install-auto") {
+    const info = await inspectOriginal();
+    if (!(await hasReusableCachedRuntime(info.originalHash))) {
+      throw new Error("官方原版构建已变化或尚未采集缓存，需要手动运行“启动中文.command”。");
+    }
+    await install(info);
+    process.exit(0);
   }
   if (needsSetup) {
     if (!process.stdin.isTTY) throw new Error("请双击“启动中文.command”，在窗口中按提示操作。");

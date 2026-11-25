@@ -2477,9 +2477,9 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     assert.equal(diskDict["Brand New Official Feature Toggle"], "全新官方功能开关");
 
     const merged = await loadDomTranslations();
-    // 新词条必须自动合并进主词库
-    assert.equal(merged.exact["Brand New Official Feature Toggle"], "全新官方功能开关");
-    // 人工精校主词库优先级必须高于自动学习词库（"Copy" 仍保持 "复制"）
+    // 持久化标题词库不再混入静态主词库，避免污染普通界面翻译
+    assert.equal(merged.exact["Brand New Official Feature Toggle"], undefined);
+    // 人工精校主词库保持纯粹（"Copy" 仍保持 "复制"）
     assert.equal(merged.exact["Copy"], "复制");
   } finally {
     if (prevStateEnv === undefined) delete process.env.AGY_ZHCN_STATE_DIR;
@@ -2534,7 +2534,7 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
   sandbox.globalThis = sandbox;
   vm.runInNewContext(overlayCode, sandbox);
 
-  // 联网补充翻译的排除规则：按标识的完整词判断，不按子串误伤设置行；输入框自身的占位符可补译
+  // 联网仅用于纯英文会话标题：普通界面文案一律不再送去联网；标题仍严格受隐私与保护规则约束
   {
     const makeEl = (tag, testid, parent = null, attrs = {}) => {
       const el = {
@@ -2557,19 +2557,20 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     };
     const eligible = sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__;
     const shortcutRow = makeEl("div", "shortcut-row-terminalSelectAll");
-    assert.equal(eligible("Terminal: Select All", makeEl("span", null, shortcutRow), false), true, "快捷键行不能因为标识含 terminal 被排除");
-    assert.equal(eligible("No terminals running yet", makeEl("p", "bottom-terminal-panel-empty"), false), true, "终端面板空状态属于界面文字");
-    assert.equal(eligible("Message the agent here", makeEl("span", null, makeEl("div", "settings-error-messages-card")), false), true);
+    assert.equal(eligible("Terminal: Select All", makeEl("span", null, shortcutRow), false), false, "普通界面文案不再联网补译");
+    assert.equal(eligible("No terminals running yet", makeEl("p", "bottom-terminal-panel-empty"), false), false, "终端面板空状态也不再联网");
+    assert.equal(eligible("Message the agent here", makeEl("span", null, makeEl("div", "settings-error-messages-card")), false), false);
     const hostInput = makeEl("input", null, makeEl("div", "ssh-host-picker"));
-    assert.equal(eligible("Search Hosts...", hostInput, false, true), true, "输入框自身的占位符可补译");
+    assert.equal(eligible("Search Hosts...", hostInput, false, true), false, "输入框占位符不再联网补译");
     assert.equal(eligible("Search Hosts...", hostInput, false, false), false, "输入框内的文字不补译");
     for (const id of ["user-message-content", "live-transcript", "terminal-surface", "browser-subagent-thinking", "conversation-navigator-turn", "agent-response-message", "turn-12"]) {
-      assert.equal(eligible("Please refactor the build script", makeEl("span", null, makeEl("div", id)), false), false, id + " 内的内容不得联网");
+      assert.equal(eligible("Please refactor the build script", makeEl("span", null, makeEl("div", id)), true), false, id + " 内的内容不得联网");
     }
-    assert.equal(eligible("Please refactor the build script", makeEl("span", null, makeEl("div", "x", null, { class: "xterm" })), false), false);
-    // 文件名、链接、路径、行内代码不论出现在句中何处都不联网
+    assert.equal(eligible("Please refactor the build script", makeEl("span", null, makeEl("div", "x", null, { class: "xterm" })), true), false);
+    assert.equal(eligible("Analyzing Doubao Video Script with Gemini", null, true), true, "纯英文会话标题允许自动翻译");
+    // 文件名、链接、路径、行内代码不论出现在标题中何处都不联网
     for (const s of ["Close package-usage.txt", "Opens external link: https://127.0", "`/Applications/Ant", "Open report in /tmp/out", "Edited silent-auto-follow.vbs"]) {
-      assert.equal(eligible(s, null, false, true), false, s + " 不得联网");
+      assert.equal(eligible(s, null, true, false), false, s + " 不得联网");
     }
   }
 
@@ -2599,7 +2600,7 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     assert.equal(isObsoleteLearnedKey("Fixing bugs, 2 turns"), true);
     assert.equal(isObsoleteLearnedKey("Copied sign-in link to clipboard"), false);
     assert.equal(isObsoleteLearnedKey("Better Stack"), true, "品牌名的旧机翻要丢弃");
-    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Grafana Cloud", null, false, true), false, "品牌名不联网");
+    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Grafana Cloud", null, true, false), false, "品牌名不联网");
     // 账号卡片（头像 + 邮箱）里的姓名不联网；用虚构姓名测试，公开仓库不写真实个人信息
     {
       const card = {
@@ -2609,15 +2610,20 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
         querySelector: (sel) => (sel.includes("rounded-full") ? {} : null)
       };
       const nameEl = { nodeType: 1, parentElement: card, getAttribute: () => null, closest(sel) { return sel.includes("div") ? card : null; } };
-      assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Jane Example", nameEl, false, false), false, "账号卡片里的姓名不联网");
+      assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Jane Example", nameEl, true, false), false, "账号卡片里的姓名不联网");
     }
   }
 
-  // 验证普通 UI 句子的四道防机翻翻译效果
-  const uiTranslated = await sandbox.__AGY_ZHCN_AUTO_TRANSLATE__(
-    "Allow agents to run `/plan` with Gemini 4 Carbon in workspaces"
+  // 非标题调用一律跳过联网，仅标题翻译走四道防机翻流水线
+  assert.equal(
+    await sandbox.__AGY_ZHCN_AUTO_TRANSLATE__("Allow agents to run `/plan` with Gemini 4 Carbon in workspaces", { isTitle: false }),
+    null
   );
-  assert.equal(uiTranslated, "允许智能体在工作区中使用 Gemini 4 Carbon 运行 `/plan`");
+  const titleTranslated = await sandbox.__AGY_ZHCN_AUTO_TRANSLATE__(
+    "Allow agents to run `/plan` with Gemini 4 Carbon in workspaces",
+    { isTitle: true }
+  );
+  assert.equal(titleTranslated, "允许智能体在工作区中使用 Gemini 4 Carbon 运行 `/plan`");
 
   // 验证新开对话英文标题自动转中文并写回 store 与 updateConversationAnnotations
   const fakeStore = {
@@ -2636,15 +2642,16 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     persistedAnnotations.push({ cid, proto, merge });
   };
 
-  // 默认（未开启“标题写回”）：只加入显示词库，不改对话记录
+  // 默认（未开启“标题写回”）：仅加入标题显示缓存，不改对话记录，也不污染普通 UI 静态词库
   sandbox.__AGY_ZHCN_BIND_TITLE_WATCHER__(fakeStore, fakeUpdateAnnotations);
   await new Promise((r) => setTimeout(r, 50));
   assert.equal(dispatchedActions.length, 0, "默认不得写回对话记录");
   assert.equal(persistedAnnotations.length, 0, "默认不得调用 updateConversationAnnotations");
   assert.equal(sandbox.__AGY_ZHCN_LOOKUP__("Analyzing Doubao Video Script with Gemini"), "使用 Gemini 分析豆包视频脚本");
+  assert.equal(sandbox.__AGY_ZHCN_TRANSLATE_VALUE__("Analyzing Doubao Video Script with Gemini"), null, "标题缓存不得污染普通 UI 翻译");
 
   // 用户在“汉化设置”中开启“标题写回”后才写回 store 与 updateConversationAnnotations
-  const writeBackSandbox = { ...sandbox, fetch: async (url) => ({ ok: String(url) === "agy-zhcn://settings", json: async () => ({ onlineTranslate: true, titleWriteBack: true }) }) };
+  const writeBackSandbox = { ...sandbox, fetch: async (url) => ({ ok: String(url) === "agy-zhcn://settings", json: async () => ({ titleAutoTranslate: true, titleWriteBack: true }) }) };
   writeBackSandbox.globalThis = writeBackSandbox;
   vm.runInNewContext(overlayCode, writeBackSandbox);
   await writeBackSandbox.__AGY_ZHCN_LOAD_SETTINGS__();
@@ -2879,11 +2886,11 @@ test("Case 148: Paid Pro 模型徽章汉化为“付费 Pro”与第三方插件
     assert.equal(isEligible("agy-capsule", null, true), false);
     assert.equal(isEligible("@org/custom-plugin", null, true), false);
 
-    // 插件卡片标题区（.font-medium）即使是带空格英文也不允许联网；描述区（.text-muted-foreground）正常允许
+    // 插件卡片标题区（.font-medium）和普通说明区（.text-muted-foreground）都不送去联网翻译
     const cardTitleEl = { closest: (sel) => (sel === "[data-testid='customization-card']" || sel === ".font-medium" ? {} : null) };
     const cardDescEl = { closest: (sel) => (sel === "[data-testid='customization-card']" || sel === ".text-muted-foreground" ? {} : null) };
     assert.equal(isEligible("My Custom Plugin", cardTitleEl, true), false);
-    assert.equal(isEligible("Provide fast helpers for daily workflows.", cardDescEl, false), true);
+    assert.equal(isEligible("Provide fast helpers for daily workflows.", cardDescEl, false), false);
   } finally {
     if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
     else process.env.AGY_LANGUAGE_PACK = savedPack;
@@ -3218,8 +3225,7 @@ test("Case 154: 手动重命名对话永久保英文，且支持独立关闭 aut
     };
 
     const { sb: sbA, sentQueries: sentA, postedManual } = await makeSandbox({
-      onlineTranslate: true,
-      autoTranslateTitles: true,
+      titleAutoTranslate: true,
       titleWriteBack: false,
     });
     sbA.__AGY_ZHCN_RECORD_MANUAL_TITLE__("conv-1", "API Refactor");
@@ -3255,10 +3261,9 @@ test("Case 154: 手动重命名对话永久保英文，且支持独立关闭 aut
     });
     assert.equal(sbA.__AGY_ZHCN_IS_PROTECTED_ELEMENT__(mkConvRowTitle("conv-1"), false, "API Refactor"), true);
 
-    // 3. 场景 B：关闭 autoTranslateTitles=false 后，连普通新英文对话也不自动翻译且 DOM 受保护
+    // 3. 场景 B：关闭 titleAutoTranslate=false 后，连普通新英文对话也不自动翻译且 DOM 受保护
     const { sb: sbB, sentQueries: sentB } = await makeSandbox({
-      onlineTranslate: true,
-      autoTranslateTitles: false,
+      titleAutoTranslate: false,
       titleWriteBack: false,
     });
     const storeB = {
@@ -3273,7 +3278,7 @@ test("Case 154: 手动重命名对话永久保英文，且支持独立关闭 aut
     };
     sbB.__AGY_ZHCN_BIND_TITLE_WATCHER__(storeB, null);
     await new Promise((r) => setTimeout(r, 20));
-    assert.equal(sentB.length, 0, "关闭标题汉化开关后不再发送任何标题去翻译");
+    assert.equal(sentB.length, 0, "关闭标题自动翻译开关后不再发送任何标题去翻译");
     const breadcrumbEl = {
       nodeType: 1,
       textContent: "Fix Payment Bug",
@@ -3281,7 +3286,39 @@ test("Case 154: 手动重命名对话永久保英文，且支持独立关闭 aut
       closest: (sel) => (sel.includes("breadcrumb-segment") ? {} : null),
     };
     assert.equal(sbB.__AGY_ZHCN_IS_PROTECTED_ELEMENT__(breadcrumbEl, false, "Fix Payment Bug"), true);
-    assert.equal(sbB.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Manage workspace rules", null, false), true, "界面其他补译仍正常开启");
+    assert.equal(sbB.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Manage workspace rules", null, false), false, "普通界面文案不再走联网翻译");
+
+    // 4. 2.35.1 轮次导航计数 (E.createElement) 本地直替 + 章节标题卡片联网翻译（普通轮次提示保留原文）
+    const navBundle = createLocalizedBundle(
+      Buffer.from('h?"Couldn\'t load message":"No message text",E.createElement("span",null,a," of ",c)', "utf8"),
+      current,
+      { skipCoverage: true },
+    ).buffer.toString("utf8");
+    assert.ok(navBundle.includes('E.createElement("span",null,a," / ",c)'));
+    assert.ok(navBundle.includes('"无法加载消息"'));
+    assert.ok(navBundle.includes('"无消息内容"'));
+
+    const { sb: sbChapter, sentQueries: chapterSent } = await makeSandbox({
+      titleAutoTranslate: true,
+      titleWriteBack: false,
+    });
+    const chapterEl = {
+      nodeType: 1,
+      tagName: "SPAN",
+      parentElement: null,
+      getAttribute: (k) => (k === "data-titled" ? "true" : null),
+      closest(sel) {
+        if (sel.includes("[data-titled='true']")) return this;
+        if (sel.includes("[data-testid='conversation-navigator-group-card-header']")) return { getAttribute: () => "conversation-navigator-group-card-header" };
+        if (sel.includes("[data-testid='conversation-navigator-group-card']")) return { getAttribute: () => "conversation-navigator-group-card" };
+        return null;
+      },
+    };
+    const chapterTextNode = { nodeType: 3, parentElement: chapterEl, nodeValue: "Fixing UI localization and translation regressions" };
+    sbChapter.__AGY_ZHCN_BIND_TITLE_WATCHER__({ getState: () => ({}), subscribe: () => () => {} }, null);
+    // Simulate MutationObserver / initial walk via translateTree on a minimal documentElement wrapper
+    sbChapter.document.documentElement.childNodes = [];
+    assert.equal(sbChapter.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Fixing UI localization and translation regressions", chapterEl, true), true);
   } finally {
     if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
     else process.env.AGY_LANGUAGE_PACK = savedPack;

@@ -4,6 +4,7 @@ import {readFile,writeFile,chmod,access,lstat,rename,unlink} from "node:fs/promi
 import path from "node:path";
 import {projectRoot} from "./paths.mjs";
 import {applyAutoFollowSetting} from "./auto-follow-task.mjs";
+import {writePackHookMetadata} from "./self-update.mjs";
 import {readUserSettings} from "./user-settings.mjs";
 const exec=promisify(execFile);
 const marker="# antigravity-zhcn managed shortcut v1";
@@ -50,6 +51,7 @@ export async function ensureAutoShortcuts(selectedClient) {
     const bundledNode=path.join(winEntry,"配套程序/node.exe");
     const nodeExePath=await access(bundledNode).then(()=>bundledNode).catch(()=>process.execPath);
     await applyAutoFollowSetting(settings,{nodeExePath,coreRoot:projectRoot,languagePackDir:path.join(root,"语言包")}).catch(()=>{});
+    await writePackHookMetadata({coreRoot:projectRoot,languagePackDir:path.join(root,"语言包"),nodePath:nodeExePath}).catch(()=>{});
     return;
   }
   if(process.platform!=="darwin")throw new Error("快捷方式仅支持 Windows 与 macOS。");
