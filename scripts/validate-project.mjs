@@ -162,7 +162,7 @@ const requiredLaunchers = [
   "一键检查兼容性.bat",
   "生成汉化预览.bat",
   "一键汉化.bat",
-  "一键恢复英文.bat",
+  "一键卸载汉化.bat",
   "清理缓存.bat",
   "完全卸载.bat",
 ];
@@ -261,7 +261,7 @@ const moduleFiles = (await collectFiles(projectRoot)).filter((filePath) =>
 for (const [name, command] of Object.entries({
   "一键检查兼容性": "check", "采集新版界面": "capture",
   "一键安装并启动中文": "setup", "启动中文": "launch",
-  "恢复英文": "restore", "验证中文安装": "verify",
+  "卸载汉化": "restore", "验证中文安装": "verify",
 })) {
   const launcher = await readFile(path.join(projectRoot, "macOS", `${name}.command`), "utf8");
   assert(launcher.startsWith("#!/bin/bash\n") && !launcher.includes("\r"), `${name}.command 必须使用 LF 换行。`);

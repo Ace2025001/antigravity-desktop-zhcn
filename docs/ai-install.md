@@ -43,11 +43,11 @@ gh api repos/Ace2025001/antigravity-desktop-zhcn/releases/latest --jq '.assets[]
 antigravity汉化包/
 ├─ win启动/
 │  ├─ 启动中文.bat
-│  ├─ 恢复英文.bat
+│  ├─ 卸载汉化.bat
 │  └─ 配套程序/node.exe        Windows 内置运行环境
 ├─ mac启动/
 │  ├─ 启动中文.command
-│  ├─ 恢复英文.command
+│  ├─ 卸载汉化.command
 │  └─ 配套程序/node            Mac 内置运行环境
 └─ 语言包/
    ├─ dom-translations.json
@@ -102,7 +102,7 @@ Mac 方案**保留官方原版**，在 `~/Applications/Antigravity 中文.app` �
 
 ```bash
 cd antigravity汉化包/mac启动
-chmod u+x 启动中文.command 恢复英文.command 配套程序/node
+chmod u+x 启动中文.command 卸载汉化.command 配套程序/node
 export AGY_MAC_SOURCE="/Applications/Antigravity.app"   # 可选，跳过选择弹窗
 ./启动中文.command
 ```
@@ -129,14 +129,14 @@ AGY_LANGUAGE_PACK="$PWD/语言包" ./mac启动/配套程序/node ./语言包/核
 - 打开客户端，确认设置页、对话面板等代表性界面显示中文后，才算安装成功。
 - 结构检查失败时保留完整输出并反馈，校验保持开启，等待新版本适配。
 
-## 8. 恢复英文
+## 8. 卸载汉化
 
 保存工作并退出客户端，然后运行：
 
-- Windows：双击 `win启动\恢复英文.bat`，或执行 `& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\scripts\start-local.mjs' restore`
-- Mac：运行 `mac启动/恢复英文.command`（启动未修改的官方原版，中文副本保留）
+- Windows：双击 `win启动\卸载汉化.bat`，或执行 `& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\scripts\start-local.mjs' restore`
+- Mac：运行 `mac启动/卸载汉化.command`（启动未修改的官方原版，中文副本保留）
 
-恢复成功前请保留原版备份和汉化工具。Windows 恢复英文时会一并移除更新后自动汉化的设置。
+恢复成功前请保留原版备份和汉化工具。Windows 卸载汉化时会一并移除更新后自动汉化的设置。
 
 ## 9. 向用户报告
 

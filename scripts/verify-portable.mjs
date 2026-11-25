@@ -6,7 +6,7 @@ const root = path.resolve(process.argv[2] ?? ".");
 const mac = process.platform === "darwin";
 const extension = mac ? "command" : "bat";
 const node = path.join(root, "runtime", mac ? "node" : "node.exe");
-for (const file of ["安装中文", "启动中文", "恢复英文"]) {
+for (const file of ["安装中文", "启动中文", "卸载汉化"]) {
   const entry = path.join(root, `${file}.${extension}`);
   await access(entry);
   if (mac && !((await stat(entry)).mode & 0o111)) throw new Error(`入口缺少执行权限：${file}`);

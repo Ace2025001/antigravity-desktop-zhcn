@@ -381,7 +381,7 @@ async function updateInstalledLocalization({
 }) {
   const target = await findInstalledTarget(existingState);
   if (!target) {
-    throw new Error("现有汉化状态无法对应到兼容性清单，请先恢复英文。");
+    throw new Error("现有汉化状态无法对应到兼容性清单，请先卸载汉化。");
   }
 
   printStep(2, 5, "读取原始运行时 UI，生成最新中文文件");
@@ -497,7 +497,7 @@ async function install({ assumeYes = false } = {}) {
       });
     }
     throw new Error(
-      "检测到已安装的 ASAR 补丁，但中文 UI 文件缺失或已变化；请先恢复英文。",
+      "检测到已安装的 ASAR 补丁，但中文 UI 文件缺失或已变化；请先卸载汉化。",
     );
   }
 
@@ -767,9 +767,9 @@ async function restore() {
   }
 
   await askUserToCloseAntigravity(
-    "请彻底关闭 Antigravity，然后按回车继续恢复英文...",
+    "请彻底关闭 Antigravity，然后按回车继续卸载汉化...",
   );
-  uiStep("恢复英文原版");
+  uiStep("卸载汉化，还原官方英文原版");
   const inspection = await inspectInstallation();
   if (
     !areSamePaths(inspection.installRoot, state.installRoot) ||
@@ -811,7 +811,7 @@ async function restore() {
   const daemon = await removeAutoFollowDaemon().catch(() => ({ removed: false }));
   await removePackHookMetadata().catch(() => {});
   if (daemon.removed) uiOk("已清理旧版的后台计划任务");
-  uiOk("已恢复英文原版文件");
+  uiOk("已还原官方英文原版文件");
   return 0;
 }
 
@@ -840,7 +840,7 @@ async function purge({ assumeYes = false } = {}) {
 
   console.log("完全卸载将执行以下操作：");
   if (installAction === "restore") {
-    console.log("- 先验证备份并恢复英文原版；");
+    console.log("- 先验证备份并还原官方英文原版；");
   } else if (installAction === "already-original") {
     console.log("- 当前客户端已是受支持的官方原版，跳过跨版本恢复；");
   }

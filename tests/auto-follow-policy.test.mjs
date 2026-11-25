@@ -31,7 +31,7 @@ test("后台脚本只由客户端退出钩子启动", async () => {
   assert.match(patcher, /'--post-quit'/);
 });
 
-test("恢复英文 / 卸载会删除计划任务", { skip: process.platform !== "win32" }, async () => {
+test("卸载汉化 / 完全卸载会删除计划任务", { skip: process.platform !== "win32" }, async () => {
   const calls = [];
   // Redirect both the state dir and the client's userData dir so the test never
   // deletes the real quit-hook file on the developer's machine.
@@ -56,7 +56,7 @@ test("恢复英文 / 卸载会删除计划任务", { skip: process.platform !== 
   }
 });
 
-test("红线：恢复英文与完全卸载都调用计划任务清理", async () => {
+test("红线：卸载汉化与完全卸载都调用计划任务清理", async () => {
   const cli = await readFile(new URL("../src/cli.mjs", import.meta.url), "utf8");
   assert.ok((cli.match(/removeAutoFollowDaemon\(\)/g) || []).length >= 2);
 });

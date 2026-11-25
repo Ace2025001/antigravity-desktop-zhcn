@@ -17,11 +17,11 @@ A **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google 
 
 1. Download [**Antigravity-Windows+Mac.zip**](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip) and extract it, then run it from the extracted folder.
 2. Open `win启动` (Windows) or `mac启动` (macOS).
-3. Run **`启动中文`** (Start Chinese). Use **`恢复英文`** to restore English and **`汉化设置`** to change settings.
+3. Run **`启动中文`** (Start Chinese). Use **`卸载汉化`** (uninstall) to restore English and **`汉化设置`** to change settings.
 
 ```text
 antigravity汉化包/
-├─ win启动/     Windows entry points: 启动中文.bat, 恢复英文.bat, 汉化设置.bat
+├─ win启动/     Windows entry points: 启动中文.bat, 卸载汉化.bat, 汉化设置.bat
 ├─ mac启动/     macOS entry points (.command), same usage
 └─ 语言包/      translation data and shared code — keep it
 ```
@@ -60,7 +60,7 @@ The first run asks setup questions; press Enter to accept the recommended values
 
 ## FAQ
 
-- **Restore English?** Save your work and run `恢复英文`; the official English client is restored and your conversations are kept.
+- **Restore English?** Save your work and run `卸载汉化`; the official English client is restored and your conversations are kept.
 - **Full pack, language update or Source code?** First-time users need the full pack only. The language update is for existing users; Source code is for developers.
 - **Updating the pack?** Keep **Language pack auto-update** enabled to update automatically on launch/quit, or download the latest release and overwrite the folder.
 - **Install with an AI agent?** Ask Claude Code, Codex, Cursor or another agent to follow [docs/ai-install.md](docs/ai-install.md).

@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![已适配客户端](https://img.shields.io/badge/%E5%B7%B2%E9%80%82%E9%85%8D%E5%AE%A2%E6%88%B7%E7%AB%AF-2.35.1-brightgreen)](#支持范围)
 
-Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉化包（Antigravity 中文语言包）。Windows 和 Apple 芯片 Mac 通用，解压即用，在客户端里点更新后自动跟着重新汉化，随时可以一键恢复英文。
+Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉化包（Antigravity 中文语言包）。Windows 和 Apple 芯片 Mac 通用，解压即用，在客户端里点更新后自动跟着重新汉化，随时可以一键卸载汉化、回到官方原版。
 
 [安装教程](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [常见问题](https://ace2025001.github.io/antigravity-desktop-zhcn/faq/) · [更新日志](https://ace2025001.github.io/antigravity-desktop-zhcn/changelog/) · [AI 助手安装指南](docs/ai-install.md) · [English](README.en.md)
 
@@ -42,7 +42,7 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 - **汉化包自动更新**：启动客户端时按设置自动检查新版本并校验 SHA-256，可自动升级或弹窗提醒。
 - **翻译全面**：1.7 万条人工整理的译文，用语统一，告别中英混杂；支持纯英文对话标题自动翻译。
 - **新功能也有中文**：Antigravity 更新出了汉化包还没收录的新文字时，可以先用联网补充翻译临时显示中文，等收录了人工译文自动替换。
-- **安全可恢复**：对话记录原样保留，一键恢复英文；Mac 保留官方原版，另建中文副本。
+- **安全可恢复**：对话记录原样保留，一键卸载汉化；Mac 保留官方原版，另建中文副本。
 
 ## 使用步骤
 
@@ -50,7 +50,7 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 2. Windows 打开 `win启动`，Mac 打开 `mac启动`。
 3. 双击 **启动中文**，按提示完成。第一次运行会问设置，直接回车用推荐值即可。
 
-想换回官方英文原版，双击 **恢复英文**；想改设置，双击 **汉化设置**。
+想换回官方英文原版，双击 **卸载汉化**；想改设置，双击 **汉化设置**。
 
 > 发布页上的文件名是 `Antigravity-完整汉化包-Windows+Mac.zip`，下载后显示为 `Antigravity-Windows+Mac.zip`，是同一个文件。
 
@@ -60,7 +60,7 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 antigravity汉化包/
 ├─ win启动/            ← Windows 用这里
 │  ├─ 启动中文.bat      汉化并打开客户端（日常也可以用它打开）
-│  ├─ 恢复英文.bat      还原官方英文原版
+│  ├─ 卸载汉化.bat      还原官方英文原版
 │  ├─ 汉化设置.bat      修改下面四项设置
 │  └─ 配套程序/         内置运行环境，请保留
 ├─ mac启动/            ← Mac 用这里（.command 文件，用法相同）
@@ -118,7 +118,7 @@ antigravity汉化包/
 
 ### 能恢复官方原版吗？
 
-能。保存工作后双击“恢复英文”，客户端会还原成官方英文原版，对话记录完整保留。想再用中文时双击“启动中文”即可。
+能。保存工作后双击“卸载汉化”，客户端会还原成官方英文原版，对话记录完整保留。想再用中文时双击“启动中文”即可。
 
 ### 下载完整包、语言更新包还是 Source code？
 
