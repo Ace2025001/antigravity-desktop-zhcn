@@ -38,7 +38,7 @@ The first run asks setup questions; press Enter to accept the recommended values
 
 - **Localize automatically**: after “Restart to update”, the new version is localized and reopened in Chinese in about 40 seconds. **Ask me** prompts with an update card. No scheduled task or resident process is installed.
 - **Language pack auto-update**: regardless of how Antigravity is launched, checks the latest GitHub release against SHA-256 `digest`. **Auto-update** updates translations and core scripts silently in the background; **Ask me** prompts first; **Off** disables pack update checks. Existing installs created before this setting default to **Ask me**.
-- **Title auto-translation**: all app UI strings use curated human translations only (no machine translation on UI buttons/menus). When enabled, only AI-generated English conversation titles are translated for display (without modifying stored chat records); manually renamed titles always stay English. Chat content, code, terminal output, file names, links, paths and anything you type are never sent.
+- **Title auto-translation**: all app UI strings use curated human translations only (no machine translation on UI buttons/menus). When enabled, only AI-generated English conversation titles are translated for display (without modifying stored chat records); manually renamed titles always stay English. Chat content, code, terminal output, file names, links, paths and anything you type are never sent. Language pack auto-update only reads the GitHub release page and downloads the package; nothing is uploaded.
 
 ## Features
 
