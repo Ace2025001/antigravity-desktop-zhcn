@@ -102,7 +102,7 @@ antigravity汉化包/
 |---|---|
 | Windows x64 | 已在 Antigravity Desktop 2.32.2、2.33.0、2.34.0、2.35.1 实测，支持更新后自动汉化 |
 | Apple 芯片 Mac | 保留官方原版，另建一份本地签名的中文副本；Intel Mac 未验证 |
-| 适用对象 | 只适用于 Antigravity Desktop 独立桌面客户端 |
+| 适用对象 | Antigravity Desktop 独立桌面客户端 |
 | 兼容方式 | 每次汉化前都会检查客户端文件结构；新版本会先尝试自动适配，结构对不上就停下并提示，不会硬改 |
 
 ## 常见问题
@@ -123,7 +123,7 @@ antigravity汉化包/
 
 第一次使用只下载完整包。语言更新包只给已经装过完整包的用户更新词条用；Source code 是开发源码，不能直接使用。
 
-### 支持 Antigravity Desktop 2.35 和 Mac 吗？支持哪些系统版本？
+### 支持哪些系统版本？
 
 支持 Windows x64（已在 Google Antigravity Desktop 2.32.2、2.33.0、2.34.0、2.35.1 实测）和 Apple 芯片 Mac（保留官方原版并生成本地中文版），Intel Mac 未验证。只适用于反重力（Antigravity Desktop）独立桌面客户端。
 
