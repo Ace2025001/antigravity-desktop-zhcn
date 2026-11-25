@@ -13303,7 +13303,457 @@
     "Use the default color.": "使用默认颜色。",
     "Reply": "回复",
     "Subtitle": "副标题",
-    "Terminal window": "终端窗口"
+    "Terminal window": "终端窗口",
+    "Switch to RTL text direction": "切换为从右到左的文字方向",
+    "Switch to default text direction": "恢复默认文字方向",
+    "Account this MCP server uses:": "此 MCP 服务器使用的账号：",
+    "Action requires your attention": "有操作需要你处理",
+    "Agent goal": "智能体目标",
+    "Agent name": "智能体名称",
+    "All caught up": "已全部处理完",
+    "Allow microphone access to start Voice": "允许访问麦克风以开始语音",
+    "Already exists": "已存在",
+    "Already on? Select": "已经开启？选择",
+    "Always allowed": "始终允许",
+    "Always on": "始终开启",
+    "Answered in chat": "已在聊天中回答",
+    "Antigravity Base Quota": "Antigravity 基础配额",
+    "Antigravity Plus Quota": "Antigravity Plus 配额",
+    "Base Quota": "基础配额",
+    "Plus Quota": "Plus 配额",
+    "Free Tier": "免费层级",
+    "Any resource": "任意资源",
+    "Application Menu": "应用菜单",
+    "Artifact image": "工件图片",
+    "Artifact not found": "未找到工件",
+    "Attached context:": "附加的上下文：",
+    "Attachment error:": "附件错误：",
+    "Audio File": "音频文件",
+    "Audio clip": "音频片段",
+    "Audio player": "音频播放器",
+    "Video player": "视频播放器",
+    "Audio file size exceeds 20MB limit": "音频文件大小超过 20MB 上限",
+    "Document file size exceeds 10MB limit": "文档文件大小超过 10MB 上限",
+    "File size exceeds 20MB limit": "文件大小超过 20MB 上限",
+    "Text file size exceeds 1MB limit": "文本文件大小超过 1MB 上限",
+    "Zip file size exceeds 20MB limit": "Zip 文件大小超过 20MB 上限",
+    "Audio streaming transcription not available": "音频流式转写不可用",
+    "Audio transcription session timed out waiting for ready": "等待音频转写会话就绪超时",
+    "Authentication failed": "认证失败",
+    "Automation saved": "自动化已保存",
+    "Aux pane": "辅助窗格",
+    "Available CEL field tokens and helpers": "可用的 CEL 字段标记和辅助函数",
+    "Available CEL helper functions": "可用的 CEL 辅助函数",
+    "Indexed CEL helper functions": "已索引的 CEL 辅助函数",
+    "Available dictation languages": "可用的听写语言",
+    "Selected dictation languages": "已选的听写语言",
+    "Dictation language options": "听写语言选项",
+    "Basic auth": "基本认证",
+    "Better instruction following": "更好地遵循指令",
+    "Better solution & code": "方案和代码更好",
+    "More thorough research": "调研更深入",
+    "The other model hallucinated": "另一个模型出现了幻觉",
+    "Clearer writing & artifacts": "文字和工件更清晰",
+    "Faster response": "响应更快",
+    "Blocked agent-triggered sign-in popup": "已拦截智能体触发的登录弹窗",
+    "Blocked popup navigation to unapproved domain:": "已拦截跳转到未批准域名的弹窗：",
+    "Blocked: file type not allowed": "已拦截：不允许的文件类型",
+    "Bounding box": "边界框",
+    "Bounding box on page": "页面上的边界框",
+    "Browser tools are disabled in the Antigravity Android desktop app.": "Antigravity Android 桌面应用中已停用浏览器工具。",
+    "Bundled With the App": "随应用内置",
+    "Chinese (Mandarin)": "中文（普通话）",
+    "Clear file filter": "清除文件筛选",
+    "Clear row filter": "清除行筛选",
+    "Cleared built-in browser data": "已清除内置浏览器数据",
+    "Cleared built-in browser history": "已清除内置浏览器历史记录",
+    "Clearing cookies and site data for": "清除以下网站的 Cookie 和网站数据：",
+    "may sign you out of this site.": "可能会让你退出该网站的登录。",
+    "Could not clear site data for": "无法清除以下网站的数据：",
+    "Site data cleared for": "已清除以下网站的数据：",
+    "Couldn't delete cookies for": "无法删除以下网站的 Cookie：",
+    "Try again.": "请重试。",
+    "Clone locally": "克隆到本地",
+    "Close references": "关闭引用",
+    "Cloud Permissions": "云端权限",
+    "Code block": "代码块",
+    "Combined filter clauses share no compatible event type": "组合的筛选条件没有共同兼容的事件类型",
+    "Command execution": "命令执行",
+    "Comment Box": "评论框",
+    "Comments (": "评论 (",
+    "Confirm & Save": "确认并保存",
+    "Conflicts with your configured Ask permission:": "与你配置的“询问”权限冲突：",
+    "Connected account": "已连接的账号",
+    "Connection closed": "连接已关闭",
+    "Connection security information is not available for this page": "此页面没有连接安全信息",
+    "Continue as a New Conversation": "作为新对话继续",
+    "Continue as a new conversation": "作为新对话继续",
+    "Continue in Current Workspace": "在当前工作区中继续",
+    "Continue in New Workspace": "在新工作区中继续",
+    "Continue in Shared Workspace": "在共享工作区中继续",
+    "Fork in Current Workspace": "在当前工作区中分叉",
+    "Forked conversation": "已分叉的对话",
+    "Ephemeral fork": "临时分叉",
+    "Fork Environment Notice": "分叉环境提示",
+    "Conversation details unavailable": "对话详情不可用",
+    "Conversation link": "对话链接",
+    "Coordinator goal": "协调智能体目标",
+    "Coordinator name": "协调智能体名称",
+    "Coordinators Options": "协调智能体选项",
+    "Create Agent": "创建智能体",
+    "Create Coordinator": "创建协调智能体",
+    "Create automation": "创建自动化",
+    "Copy as Markdown": "复制为 Markdown",
+    "Copy the folder elsewhere first if you might want it back.": "如果之后可能还要用，请先把文件夹复制到别处。",
+    "Cost summary:": "费用汇总：",
+    "Could not attach image:": "无法附加图片：",
+    "Could not open folder:": "无法打开文件夹：",
+    "Could not determine MCP config file path. Please check your home directory settings.": "无法确定 MCP 配置文件路径。请检查你的主目录设置。",
+    "Could not read MCP config file": "无法读取 MCP 配置文件",
+    "Couldn't load apps:": "无法加载应用：",
+    "Couldn't load branches": "无法加载分支",
+    "Couldn't load older messages, retry": "无法加载更早的消息，点此重试",
+    "Couldn't load your SSH hosts": "无法加载你的 SSH 主机",
+    "Couldn't save base branch:": "无法保存基准分支：",
+    "Couldn't search files": "无法搜索文件",
+    "Couldn't start the coordinator:": "无法启动协调智能体：",
+    "Describe your changes": "描述你的更改",
+    "Describe your changes, or leave empty to auto-generate": "描述你的更改，或留空自动生成",
+    "Detected on the page:": "在页面上检测到：",
+    "Directory Viewer": "目录查看器",
+    "Directory not shown": "未显示目录",
+    "Dismiss conversation open elsewhere warning": "关闭“对话已在别处打开”的提醒",
+    "Dismiss suggestion": "忽略建议",
+    "Docs, Sheets, Slides, and folders": "文档、表格、幻灯片和文件夹",
+    "Downloads, in progress": "下载，进行中",
+    "Edit comment:": "编辑评论：",
+    "Edit side question title:": "编辑追问标题：",
+    "Edits the conversation title": "编辑对话标题",
+    "Empty message": "空消息",
+    "Enlarged media": "放大的媒体",
+    "Enlarged media:": "放大的媒体：",
+    "Enter a side question after /btw": "在 /btw 后输入追问内容",
+    "Enterprise Gateway": "企业网关",
+    "Environment name should contain only text characters and spaces": "环境名称只能包含文字字符和空格",
+    "Error disconnecting MCP server:": "断开 MCP 服务器时出错：",
+    "Error during tool execution": "工具执行出错",
+    "Error installing MCP server:": "安装 MCP 服务器时出错：",
+    "Error refreshing MCP servers:": "刷新 MCP 服务器时出错：",
+    "Error restarting MCP server:": "重启 MCP 服务器时出错：",
+    "Error signing in to MCP server:": "登录 MCP 服务器时出错：",
+    "Error starting sign-in:": "启动登录时出错：",
+    "Error starting sign-in: this host can't start it": "启动登录时出错：此主机无法发起登录",
+    "Error submitting auth code:": "提交授权码时出错：",
+    "Error toggling MCP server:": "切换 MCP 服务器状态时出错：",
+    "Error updating agent:": "更新智能体时出错：",
+    "Error while analyzing directory": "分析目录时出错",
+    "Error while running MCP tool": "运行 MCP 工具时出错",
+    "Error while running command": "运行命令时出错",
+    "Error while searching": "搜索时出错",
+    "Error while searching filesystem": "搜索文件系统时出错",
+    "Error while searching the web": "搜索网页时出错",
+    "Error while semantic searching": "语义搜索时出错",
+    "Event type": "事件类型",
+    "Exit inspect element mode (Esc)": "退出检查元素模式（Esc）",
+    "Expand message": "展开消息",
+    "Failed to attach file": "附加文件失败",
+    "Failed to capture browser console logs:": "获取浏览器控制台日志失败：",
+    "Failed to capture screenshot": "截图失败",
+    "Failed to create new workspace": "创建新工作区失败",
+    "Failed to delete recordings:": "删除录音失败：",
+    "Failed to determine plugin ID": "无法确定插件 ID",
+    "Failed to fetch directory contents:": "获取目录内容失败：",
+    "Failed to load instances:": "加载实例失败：",
+    "Failed to load page": "页面加载失败",
+    "Failed to load plugins": "插件加载失败",
+    "Failed to load trajectory:": "加载轨迹失败：",
+    "Failed to open MCP config file": "打开 MCP 配置文件失败",
+    "Failed to open workspace:": "打开工作区失败：",
+    "Failed to process image": "图片处理失败",
+    "Failed to resolve folder:": "解析文件夹失败：",
+    "Failed to save cloud permission settings:": "保存云端权限设置失败：",
+    "Failed to save project permissions:": "保存项目权限失败：",
+    "Failed to save project settings:": "保存项目设置失败：",
+    "Failed to save project:": "保存项目失败：",
+    "Failed to save settings:": "保存设置失败：",
+    "Failed to select workspace:": "选择工作区失败：",
+    "Failed to send interaction:": "发送交互失败：",
+    "Failed to unarchive project:": "取消归档项目失败：",
+    "Failed to write MCP config:": "写入 MCP 配置失败：",
+    "Filter agents": "筛选智能体",
+    "Filter files": "筛选文件",
+    "Filter plugins": "筛选插件",
+    "Filter rows": "筛选行",
+    "Filter skills and rules:": "筛选技能和规则：",
+    "Fix with Agent:": "用智能体修复：",
+    "Focus this tile": "聚焦此磁贴",
+    "Fold lines": "折叠行",
+    "Unfold lines": "展开行",
+    "For Me": "个人使用",
+    "For My Team": "团队使用",
+    "Found in This Workspace": "在此工作区中找到",
+    "From a plugin": "来自插件",
+    "Generated media": "生成的媒体",
+    "Generation Steps (": "生成步骤 (",
+    "Generic Tool": "通用工具",
+    "Group Actions": "分组操作",
+    "Hidden by policy": "已被策略隐藏",
+    "Hide advanced": "隐藏高级选项",
+    "Hide earlier steps": "隐藏较早的步骤",
+    "Idle Guard Warning": "空闲保护警告",
+    "Image viewer": "图片查看器",
+    "In System Settings, click": "在系统设置中，点击",
+    "In System Settings, turn on": "在系统设置中，打开",
+    "In chat": "在聊天中",
+    "In review": "审核中",
+    "Include at least one positive": "至少包含一个正向",
+    "Included in:": "包含于：",
+    "Incompatible event type": "不兼容的事件类型",
+    "Insert into main conversation": "插入到主对话",
+    "Inspect element to comment": "检查元素以添加评论",
+    "Invite now": "立即邀请",
+    "Keyboard input": "键盘输入",
+    "Listed in Your Config": "已在你的配置中列出",
+    "Live preview unavailable": "实时预览不可用",
+    "Loaded older messages": "已加载更早的消息",
+    "Loading messages": "正在加载消息",
+    "Loading newer messages": "正在加载较新的消息",
+    "Managed by application menu": "由应用菜单管理",
+    "Marked 1 conversation as read": "已将 1 个对话标记为已读",
+    "Match Condition (CEL)": "匹配条件（CEL）",
+    "Microphone blocked": "麦克风已被阻止",
+    "Microphone blocked. Allow in": "麦克风已被阻止。请在以下位置允许：",
+    "Microphone open timed out": "打开麦克风超时",
+    "Microphone problem": "麦克风出现问题",
+    "Microphone silent": "麦克风没有声音",
+    "Middle Click": "中键点击",
+    "Most popular first": "最热门优先",
+    "Most popular matches first": "最热门的匹配优先",
+    "Move Conversation": "移动对话",
+    "Moved conversation": "已移动对话",
+    "Move to Project": "移动到项目",
+    "Move to Workspace": "移动到工作区",
+    "Remove from Project": "从项目中移除",
+    "Remove from Workspace": "从工作区中移除",
+    "Pin Entire Project": "固定整个项目",
+    "Pin Entire Workspace": "固定整个工作区",
+    "Unpin Project": "取消固定项目",
+    "Unpin Workspace": "取消固定工作区",
+    "Opens the New Conversation screen for this project": "为此项目打开新建对话界面",
+    "Opens the New Conversation screen for this workspace": "为此工作区打开新建对话界面",
+    "Native PDF viewer not supported": "不支持原生 PDF 查看器",
+    "Needs relaunch": "需要重新启动",
+    "Needs sign-in": "需要登录",
+    "No access to this PR": "无权访问此拉取请求",
+    "No archived conversations": "没有已归档的对话",
+    "No browser steps recorded": "没有记录到浏览器步骤",
+    "No commits yet": "还没有提交",
+    "No connectors available in this project": "此项目中没有可用的连接器",
+    "No method available to open MCP config file": "没有可用的方式打开 MCP 配置文件",
+    "No mic audio detected": "未检测到麦克风音频",
+    "No shared path provided": "未提供共享路径",
+    "No trajectory found in response": "响应中未找到轨迹",
+    "None (clear inherited style)": "无（清除继承的样式）",
+    "Not responding": "无响应",
+    "Not running": "未运行",
+    "Not started": "未开始",
+    "Notebook execution not implemented": "尚不支持执行笔记本",
+    "Notebook viewer": "笔记本查看器",
+    "Only for": "仅适用于",
+    "Only the conversation will be rewound; your files will be left as-is.": "只会回退对话，你的文件保持不变。",
+    "Open Mermaid diagram preview": "打开 Mermaid 图表预览",
+    "Open Project Picker": "打开项目选择器",
+    "Open Remote Control": "打开远程控制",
+    "Open Subagent:": "打开子智能体：",
+    "Open URL in system browser:": "在系统浏览器中打开网址：",
+    "Open a merge request": "创建合并请求",
+    "Open a pull request": "创建拉取请求",
+    "Open browser screenshot": "打开浏览器截图",
+    "Open in Remote": "在远程环境中打开",
+    "Open the change": "打开该更改",
+    "Open with": "打开方式",
+    "Parent workspace not found for this battle.": "未找到此对抗的父工作区。",
+    "Paste key": "粘贴密钥",
+    "Paste new key": "粘贴新密钥",
+    "Permission denied": "权限被拒绝",
+    "Pick a model to change it.": "选择一个模型进行更换。",
+    "Pick at most 2 reasons": "最多选择 2 个原因",
+    "Playback speed": "播放速度",
+    "Please fill in all required fields:": "请填写所有必填字段：",
+    "Plugin disabled": "插件已停用",
+    "Plugins Options": "插件选项",
+    "Privacy Settings": "隐私设置",
+    "Proceed to": "继续前往",
+    "(unsafe)": "（不安全）",
+    "Process exited with an error": "进程异常退出",
+    "Proceed with implementation plan": "按实施计划继续",
+    "Progress Bar": "进度条",
+    "Project already exists": "项目已存在",
+    "Project location": "项目位置",
+    "Queued message deleted": "已删除排队中的消息",
+    "Queued message sent": "已发送排队中的消息",
+    "Recently opened": "最近打开",
+    "Remote Control channel closed": "远程控制通道已关闭",
+    "Remote instance is unreachable": "无法连接远程实例",
+    "Remove bundle": "移除组合包",
+    "Removing bookmark": "正在移除书签",
+    "Reply to /help": "回复 /help",
+    "Reply to /help... (Esc to minimize)": "回复 /help…（按 Esc 最小化）",
+    "Repo default": "仓库默认值",
+    "Repository access required": "需要仓库访问权限",
+    "Request aborted": "请求已中止",
+    "Request failed": "请求失败",
+    "Request timed out": "请求超时",
+    "Requesting your permission in Terminal:": "正在终端中请求你的许可：",
+    "Requesting your permission:": "正在请求你的许可：",
+    "Requires manual confirmation:": "需要手动确认：",
+    "Reset overrides": "重置覆盖设置",
+    "Reset to auto": "重置为自动",
+    "Resolve conflicts first": "请先解决冲突",
+    "Resolve conversation": "将对话标记为已解决",
+    "Response (incl. tool calls)": "回复（含工具调用）",
+    "Return to Inbox": "移回收件箱",
+    "Returned conversation to Inbox": "已将对话移回收件箱",
+    "Reveal in Finder": "在 Finder 中显示",
+    "Show in File Manager": "在文件管理器中显示",
+    "Review permissions": "查看权限",
+    "Revoke all:": "全部撤销：",
+    "Runs on this machine": "在本机运行",
+    "Scrollable table": "可滚动表格",
+    "Search identities": "搜索身份",
+    "Search workspace files": "搜索工作区文件",
+    "Search workspace folders": "搜索工作区文件夹",
+    "Searching older messages": "正在搜索更早的消息",
+    "Select Google Drive files or folders": "选择 Google 云端硬盘中的文件或文件夹",
+    "Send a message in the main conversation first to start a side question": "请先在主对话中发送一条消息，再开始追问",
+    "Send now:": "立即发送：",
+    "Sent response:": "已发送回复：",
+    "Set Project Name": "设置项目名称",
+    "Set up my environment": "设置我的环境",
+    "Show 1 earlier step": "显示 1 个较早的步骤",
+    "Show Automations": "显示自动化",
+    "Show Plugins": "显示插件",
+    "Show more (": "显示更多 (",
+    "Show submitted (": "显示已提交 (",
+    "Side question failed:": "追问失败：",
+    "Sidecar disabled": "Sidecar 已停用",
+    "Sign out of this server?": "要退出此服务器的登录吗？",
+    "Sign-in failed:": "登录失败：",
+    "Sign-in page": "登录页面",
+    "Signed in": "已登录",
+    "Signed in:": "已登录：",
+    "Sites with cookies": "存有 Cookie 的网站",
+    "Sort and filter conversations": "排序和筛选对话",
+    "Start Plugin": "启动插件",
+    "Stop all agents": "停止所有智能体",
+    "Stop transcription": "停止转写",
+    "Switching tabs": "正在切换标签页",
+    "System Message": "系统消息",
+    "System Settings": "系统设置",
+    "Telemetry is turned off in settings": "设置中已关闭遥测",
+    "Telemetry will be disabled for this conversation; click to enable.": "此对话将停用遥测；点击可启用。",
+    "Telemetry will be enabled for this conversation; click to disable.": "此对话将启用遥测；点击可停用。",
+    "Terminal input": "终端输入",
+    "Text input": "文本输入",
+    "Text viewer": "文本查看器",
+    "There was an error determining the code changes that this undo action will make:": "确定此撤销操作要做的代码更改时出错：",
+    "This field is required": "此字段为必填项",
+    "Timed out waiting for commit message generation": "等待生成提交信息超时",
+    "Toggle Google Cloud projects": "展开或收起 Google Cloud 项目",
+    "Toggle language list": "展开或收起语言列表",
+    "Too much output to announce, navigate to rows manually to read": "输出过多无法朗读，请手动定位到各行阅读",
+    "Turned off by your admin": "已被管理员关闭",
+    "Type to search file contents": "输入以搜索文件内容",
+    "Unarchive the main conversation to insert": "需先取消归档主对话才能插入",
+    "Unknown Environment": "未知环境",
+    "Unknown execution error": "未知执行错误",
+    "Unnamed Agent": "未命名智能体",
+    "Untitled project": "未命名项目",
+    "Upload to Agent": "上传给智能体",
+    "Using system default microphone": "使用系统默认麦克风",
+    "Virtual File": "虚拟文件",
+    "Waiting for approval to grant administrator access": "正在等待批准授予管理员权限",
+    "Waiting for response... (Esc to minimize)": "正在等待回复…（按 Esc 最小化）",
+    "Waiting for subagent": "正在等待子智能体",
+    "We'll keep waiting, or you can open it directly in a new tab.": "我们会继续等待，你也可以直接在新标签页中打开。",
+    "Web (desktop, remote agents)": "Web（桌面端，远程智能体）",
+    "Web (desktop, remote agents, PWA)": "Web（桌面端，远程智能体，PWA）",
+    "Web (mobile, remote agents)": "Web（移动端，远程智能体）",
+    "Web (mobile, remote agents, PWA)": "Web（移动端，远程智能体，PWA）",
+    "What should this agent accomplish?": "这个智能体要完成什么？",
+    "Working copy": "工作副本",
+    "Workspace File Explorer": "工作区文件浏览器",
+    "Workspace URI not found": "未找到工作区 URI",
+    "Workspace folder suggestions": "工作区文件夹建议",
+    "Workspace mismatch actions": "工作区不匹配时的操作",
+    "Yes, allow downloads from": "是，允许下载来源",
+    "for this run": "（仅本次运行）",
+    "in this conversation": "（在此对话中）",
+    "Yes, allow for this conversation": "是，在此对话中允许",
+    "Yes, allow for this task": "是，在此任务中允许",
+    "Yes, allow this download": "是，允许此下载",
+    "Yes, always allow": "是，始终允许",
+    "Yes, always allow downloads from": "是，始终允许下载来源",
+    "Yes, and always allow '": "是，并始终允许“",
+    "Yes, save rule for '": "是，保存规则：“",
+    "' in this conversation": "”（在此对话中）",
+    "' globally": "”（全局）",
+    "You've reached the maximum number of turns for this battle. End battle mode to continue.": "已达到此对抗的最大轮数。请结束对抗模式后再继续。",
+    "Your connection to this site is not fully secure": "你与此网站的连接并非完全安全",
+    "Your sign-in needs an update.": "你的登录信息需要更新。",
+    "Zoom to Fit": "缩放以适应",
+    "Transcribing audio…": "正在转写音频…",
+    "Microphone blocked. Allow in System Settings.": "麦克风已被阻止。请在系统设置中允许。",
+    "Microphone blocked. Allow in Windows Settings.": "麦克风已被阻止。请在 Windows 设置中允许。",
+    "Windows Settings": "Windows 设置",
+    "Allowed in this conversation": "已在此对话中允许",
+    "Always allowed in this project": "在此项目中始终允许",
+    "Browser screenshot": "浏览器截图",
+    "Browser task still running…": "浏览器任务仍在运行…",
+    "Cancel Questionnaire and Stop the Agent": "取消问卷并停止智能体",
+    "Chrome extension": "Chrome 扩展",
+    "Cloning locally…": "正在克隆到本地…",
+    "Conversation resolved": "对话已标记为已解决",
+    "Ctrl+click to open": "按住 Ctrl 点击打开",
+    "Download from": "下载来源",
+    "Generated image preview": "生成的图片预览",
+    "Grant administrator access for": "授予管理员权限：",
+    "Internal error": "内部错误",
+    "Internal search": "内部搜索",
+    "Loading browser steps…": "正在加载浏览器步骤…",
+    "Loading cookies…": "正在加载 Cookie…",
+    "Loading messages…": "正在加载消息…",
+    "Loading newer messages…": "正在加载较新的消息…",
+    "Loading older messages…": "正在加载更早的消息…",
+    "Searching older messages…": "正在搜索更早的消息…",
+    "Signing out…": "正在退出登录…",
+    "Starting preview…": "正在启动预览…",
+    "Waiting for video…": "正在等待视频…",
+    "Checking availability…": "正在检查可用性…",
+    "Mermaid diagram": "Mermaid 图表",
+    "Missing required field": "缺少必填字段",
+    "Name unavailable": "名称不可用",
+    "Needs Target": "需要目标",
+    "No matching hosts": "没有匹配的主机",
+    "No matching identities": "没有匹配的身份",
+    "Organization MCP Allowlist (Read-Only)": "组织 MCP 允许列表（只读）",
+    "Permission decision": "权限决定",
+    "Pressing key": "正在按键",
+    "Remote Debugging Required": "需要远程调试",
+    "Run (unsandboxed)": "运行（不使用沙盒）",
+    "Search sites": "搜索网站",
+    "Searched for files": "已搜索文件",
+    "Send command input?": "要发送命令输入吗？",
+    "The remote workspace is not running": "远程工作区未运行",
+    "This Conversation": "此对话",
+    "This site": "此网站",
+    "Unknown Worktree": "未知工作树",
+    "User uploaded image": "用户上传的图片",
+    "Weekdays (Mon–Fri)": "工作日（周一至周五）",
+    "Workspaces are not available for this project": "此项目不支持工作区",
+    "Requesting your permission to open URL:": "正在请求你的许可以打开网址：",
+    "Unnamed resource": "未命名资源",
+    "Copy Workspace Name": "复制工作区名称"
   },
   "patterns": [
     {
@@ -29659,6 +30109,781 @@
     {
       "source": "^Respond to and investigate incidents.*(?:\\.\\.\\.|…)$",
       "target": "响应并调查突发事件、管理值班排班与升级流程，内置 incident.io MCP…",
+      "flags": "u"
+    },
+    {
+      "source": "^Enable Word Wrap(.*)$",
+      "target": "启用自动换行$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Disable Word Wrap(.*)$",
+      "target": "停用自动换行$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Toggle Word Wrap(.+)$",
+      "target": "切换自动换行$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Agent permissions preset selector, current: (.+)$",
+      "target": "智能体权限预设选择器，当前：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Agent permissions preset: (.+)$",
+      "target": "智能体权限预设：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^All changes since (.+)$",
+      "target": "自 $1 以来的所有更改",
+      "flags": "u"
+    },
+    {
+      "source": "^Amended commit on (.+?)\\.$",
+      "target": "已在 $1 上修订提交。",
+      "flags": "u"
+    },
+    {
+      "source": "^An embedded page at (.+) wants to connect to (.+)$",
+      "target": "$1 中的嵌入页面想要连接到 $2",
+      "flags": "u"
+    },
+    {
+      "source": "^An embedded page on this page wants to connect to (.+)$",
+      "target": "此页面中的嵌入页面想要连接到 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^This page wants to connect to (.+)$",
+      "target": "此页面想要连接到 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^An embedded page at (.+) says$",
+      "target": "$1 中的嵌入页面显示",
+      "flags": "u"
+    },
+    {
+      "source": "^(?:Auth|Authorization) code for (.+)$",
+      "target": "$1 的授权码",
+      "flags": "u"
+    },
+    {
+      "source": "^Branch, current: (.+)$",
+      "target": "分支，当前：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Checked out in (.+)$",
+      "target": "已在 $1 中检出",
+      "flags": "u"
+    },
+    {
+      "source": "^Comment \\((.+)\\)$",
+      "target": "评论 ($1)",
+      "flags": "u"
+    },
+    {
+      "source": "^Committed to (.+?)\\.$",
+      "target": "已提交到 $1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Pushed to (.+?)\\.$",
+      "target": "已推送到 $1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Compare responses from (.+) models side-by-side to find the best result\\.$",
+      "target": "并排比较 $1 个模型的回复，找出最佳结果。",
+      "flags": "u"
+    },
+    {
+      "source": "^Connect an account for (.+) so the agent can run automations\\.$",
+      "target": "为 $1 连接账号，智能体才能运行自动化。",
+      "flags": "u"
+    },
+    {
+      "source": "^Connected to (.+)$",
+      "target": "已连接到 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Connecting to (.+?)…$",
+      "target": "正在连接到 $1…",
+      "flags": "u"
+    },
+    {
+      "source": "^Couldn't connect to (.+?)\\. (.+)$",
+      "target": "无法连接到 $1。$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Couldn't connect to (.+)$",
+      "target": "无法连接到 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Couldn't disconnect (.+?): (.+)$",
+      "target": "无法断开 $1：$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Couldn't switch to (.+?): (.+)$",
+      "target": "无法切换到 $1：$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Branch (.+) no longer exists$",
+      "target": "分支 $1 已不存在",
+      "flags": "u"
+    },
+    {
+      "source": "^Could not read (.+?)\\.$",
+      "target": "无法读取 $1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Detached at (.+)$",
+      "target": "已分离于 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Error restarting (.+?): (.+)$",
+      "target": "重启 $1 时出错：$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Error while running: (.+)$",
+      "target": "运行时出错：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to create directory (.+?): (.+)$",
+      "target": "创建目录 $1 失败：$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to create project: (.+)$",
+      "target": "创建项目失败：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to delete project: (.+)$",
+      "target": "删除项目失败：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to delete workspace: (.+)$",
+      "target": "删除工作区失败：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to delete recordings: (.+)$",
+      "target": "删除录音失败：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to execute notebook$",
+      "target": "执行笔记本失败",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to execute notebook cells$",
+      "target": "执行笔记本单元格失败",
+      "flags": "u"
+    },
+    {
+      "source": "^Executing notebook( cells)?$",
+      "target": "正在执行笔记本$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Executed notebook( cells)?$",
+      "target": "已执行笔记本$1",
+      "flags": "u"
+    },
+    {
+      "source": "^File exceeds the (\\d+)MB display limit \\((\\d+)MB\\), so it can't be opened or downloaded here\\.?$",
+      "target": "文件超过 $1MB 的显示上限（$2MB），无法在此打开或下载。",
+      "flags": "u"
+    },
+    {
+      "source": "^Filter does not apply to (.+?) \\(supported on (.+)\\)$",
+      "target": "筛选条件不适用于 $1（支持：$2）",
+      "flags": "u"
+    },
+    {
+      "source": "^Filter only applies to (.+)$",
+      "target": "筛选条件仅适用于 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Selected event types \\((.+)\\) share no compatible target field$",
+      "target": "所选事件类型（$1）没有共同兼容的目标字段",
+      "flags": "u"
+    },
+    {
+      "source": "^Generate with (.+)$",
+      "target": "使用 $1 生成",
+      "flags": "u"
+    },
+    {
+      "source": "^Generated with (.+)$",
+      "target": "已使用 $1 生成",
+      "flags": "u"
+    },
+    {
+      "source": "^Generating with (.+)$",
+      "target": "正在使用 $1 生成",
+      "flags": "u"
+    },
+    {
+      "source": "^Go to slide (\\d+)$",
+      "target": "转到第 $1 张幻灯片",
+      "flags": "u"
+    },
+    {
+      "source": "^Hidden by policy \\((.+)\\)\\.$",
+      "target": "已被策略隐藏（$1）。",
+      "flags": "u"
+    },
+    {
+      "source": "^Managed by the (.+) automation$",
+      "target": "由 $1 自动化管理",
+      "flags": "u"
+    },
+    {
+      "source": "^Managed by the (.+) plugin$",
+      "target": "由 $1 插件管理",
+      "flags": "u"
+    },
+    {
+      "source": "^Message from (.+)$",
+      "target": "来自 $1 的消息",
+      "flags": "u"
+    },
+    {
+      "source": "^Microphone access for (.+) was denied\\. Quit and reopen the app to be asked again\\.$",
+      "target": "$1 的麦克风访问被拒绝。退出并重新打开应用后会再次询问。",
+      "flags": "u"
+    },
+    {
+      "source": "^Microphone access for (.+) wasn't allowed\\.$",
+      "target": "$1 未获得麦克风访问权限。",
+      "flags": "u"
+    },
+    {
+      "source": "^Microphone blocked\\. Allow in (.+?)\\.$",
+      "target": "麦克风已被阻止。请在 $1 中允许。",
+      "flags": "u"
+    },
+    {
+      "source": "^Minimum length is (\\d+)$",
+      "target": "最小长度为 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Minimum value is (.+)$",
+      "target": "最小值为 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Maximum value is (.+)$",
+      "target": "最大值为 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^More options for (.+)$",
+      "target": "$1 的更多选项",
+      "flags": "u"
+    },
+    {
+      "source": "^New secret for (.+)$",
+      "target": "$1 的新密钥",
+      "flags": "u"
+    },
+    {
+      "source": "^Secret for a new (.+) account$",
+      "target": "新 $1 账号的密钥",
+      "flags": "u"
+    },
+    {
+      "source": "^No audio from (.+)$",
+      "target": "$1 没有声音",
+      "flags": "u"
+    },
+    {
+      "source": "^No matching languages for \"(.+)\"$",
+      "target": "没有与“$1”匹配的语言",
+      "flags": "u"
+    },
+    {
+      "source": "^No messages in last (\\d+) steps(?: — |, )load older$",
+      "target": "最近 $1 步中没有消息，加载更早的消息",
+      "flags": "u"
+    },
+    {
+      "source": "^No visible messages in last (\\d+) steps\\. Activate Load older messages to continue\\.$",
+      "target": "最近 $1 步中没有可见消息。请使用“加载更早的消息”继续。",
+      "flags": "u"
+    },
+    {
+      "source": "^Recording exceeds 15MB limit \\((.+)\\)$",
+      "target": "录音超过 15MB 上限（$1）",
+      "flags": "u"
+    },
+    {
+      "source": "^Recording shortcut for (.+?)\\. Press keys to bind, Enter to save, Escape to cancel\\.$",
+      "target": "正在为 $1 录制快捷键。按下按键进行绑定，Enter 保存，Esc 取消。",
+      "flags": "u"
+    },
+    {
+      "source": "^Remove context from (.+)$",
+      "target": "从 $1 移除上下文",
+      "flags": "u"
+    },
+    {
+      "source": "^Retrying transcription \\(attempt (\\d+)\\)…$",
+      "target": "正在重试转写（第 $1 次）…",
+      "flags": "u"
+    },
+    {
+      "source": "^Showing first (\\d+) references$",
+      "target": "显示前 $1 个引用",
+      "flags": "u"
+    },
+    {
+      "source": "^Showing latest (\\d+) browser steps$",
+      "target": "显示最近 $1 个浏览器步骤",
+      "flags": "u"
+    },
+    {
+      "source": "^Sign in from the (.+) panel\\.$",
+      "target": "请在 $1 面板中登录。",
+      "flags": "u"
+    },
+    {
+      "source": "^Sign in to use (.+?)!$",
+      "target": "登录后即可使用 $1！",
+      "flags": "u"
+    },
+    {
+      "source": "^Sign-ins to (.+) are kept in the cloud with your account\\.$",
+      "target": "$1 的登录信息随你的账号保存在云端。",
+      "flags": "u"
+    },
+    {
+      "source": "^Switch environment \\((.+)\\)$",
+      "target": "切换环境（$1）",
+      "flags": "u"
+    },
+    {
+      "source": "^System default \\((.+)\\)$",
+      "target": "系统默认（$1）",
+      "flags": "u"
+    },
+    {
+      "source": "^Timed out \\((\\d+)ms\\)$",
+      "target": "超时（$1 毫秒）",
+      "flags": "u"
+    },
+    {
+      "source": "^Total media size exceeds (\\d+)MB limit$",
+      "target": "媒体总大小超过 $1MB 上限",
+      "flags": "u"
+    },
+    {
+      "source": "^Using browser · (.+) \\((\\d+)s\\)$",
+      "target": "正在使用浏览器 · $1（$2 秒）",
+      "flags": "u"
+    },
+    {
+      "source": "^Voice [Ss]peed, (.+)$",
+      "target": "语速，$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Waiting for (\\d+) timers$",
+      "target": "正在等待 $1 个计时器",
+      "flags": "u"
+    },
+    {
+      "source": "^Waiting on (.+)$",
+      "target": "正在等待 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Welcome to (.+?)!$",
+      "target": "欢迎使用 $1！",
+      "flags": "u"
+    },
+    {
+      "source": "^You're signing in on (.+?)\\. Your sign-in stays on that machine\\.$",
+      "target": "你正在 $1 上登录。登录信息只保存在那台机器上。",
+      "flags": "u"
+    },
+    {
+      "source": "^Upstream proxy error: HTTP (.+)$",
+      "target": "上游代理错误：HTTP $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Added (.+) and installed (.+)\\.$",
+      "target": "已添加 $1 并安装 $2。",
+      "flags": "u"
+    },
+    {
+      "source": "^Added MCP server \"(.+)\", but it failed to start: (.+)$",
+      "target": "已添加 MCP 服务器“$1”，但启动失败：$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Agent finished: (.+)$",
+      "target": "智能体已完成：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^App view for (.+)$",
+      "target": "$1 的应用视图",
+      "flags": "u"
+    },
+    {
+      "source": "^Browser task: \"(.+)\"$",
+      "target": "浏览器任务：“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^Build with (.+) Plugins$",
+      "target": "使用 $1 插件构建",
+      "flags": "u"
+    },
+    {
+      "source": "^Cancel Questionnaire and Stop the Agent \\((.+)\\)$",
+      "target": "取消问卷并停止智能体（$1）",
+      "flags": "u"
+    },
+    {
+      "source": "^Code search: \"(.+)\"$",
+      "target": "代码搜索：“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^Configure (.+), values missing$",
+      "target": "配置 $1，缺少参数值",
+      "flags": "u"
+    },
+    {
+      "source": "^Conflicts with \"(.+)\" \\((.+)\\)$",
+      "target": "与“$1”冲突（$2）",
+      "flags": "u"
+    },
+    {
+      "source": "^Conflicts with \"(.+)\"$",
+      "target": "与“$1”冲突",
+      "flags": "u"
+    },
+    {
+      "source": "^Could not attach folder \"(.+)\": (.+)$",
+      "target": "无法附加文件夹“$1”：$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Couldn't remove (.+) from Recent$",
+      "target": "无法将 $1 从最近列表中移除",
+      "flags": "u"
+    },
+    {
+      "source": "^Removed (.+) from Recent$",
+      "target": "已将 $1 从最近列表中移除",
+      "flags": "u"
+    },
+    {
+      "source": "^Deleted cookies for (.+)$",
+      "target": "已删除 $1 的 Cookie",
+      "flags": "u"
+    },
+    {
+      "source": "^Enabled \"(.+)\"\\.$",
+      "target": "已启用“$1”。",
+      "flags": "u"
+    },
+    {
+      "source": "^Started \"(.+)\"\\.$",
+      "target": "已启动“$1”。",
+      "flags": "u"
+    },
+    {
+      "source": "^Restarted \"(.+)\"\\.$",
+      "target": "已重启“$1”。",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to start \"(.+)\"\\.$",
+      "target": "启动“$1”失败。",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to delete \"(.+)\"$",
+      "target": "删除“$1”失败",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to save \"(.+)\"$",
+      "target": "保存“$1”失败",
+      "flags": "u"
+    },
+    {
+      "source": "^Resolved \"(.+)\"$",
+      "target": "已解决“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^Error deleting MCP server: (.+)$",
+      "target": "删除 MCP 服务器时出错：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Error toggling tool: (.+)$",
+      "target": "切换工具状态时出错：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Failed to save configuration: (.+)$",
+      "target": "保存配置失败：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Go to page (\\d+)$",
+      "target": "转到第 $1 页",
+      "flags": "u"
+    },
+    {
+      "source": "^Host stopped responding after (\\d+)ms$",
+      "target": "主机在 $1 毫秒后停止响应",
+      "flags": "u"
+    },
+    {
+      "source": "^Install folder \"(.+)\" is already in use$",
+      "target": "安装文件夹“$1”已被占用",
+      "flags": "u"
+    },
+    {
+      "source": "^Internal search: \"(.+)\"$",
+      "target": "内部搜索：“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^Language server: (.+)$",
+      "target": "语言服务器：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Matches (\\d+) of (\\d+) event types$",
+      "target": "匹配 $2 种事件类型中的 $1 种",
+      "flags": "u"
+    },
+    {
+      "source": "^Model: (.+?), (.+)$",
+      "target": "模型：$1，$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Move this conversation to \"(.+)\"\\?$",
+      "target": "要将此对话移动到“$1”吗？",
+      "flags": "u"
+    },
+    {
+      "source": "^Move to Group: (.+)$",
+      "target": "移动到分组：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^No apps found for \"(.+)\"\\.$",
+      "target": "没有找到与“$1”匹配的应用。",
+      "flags": "u"
+    },
+    {
+      "source": "^No installation command found for MCP server \"(.+)\"\\.$",
+      "target": "未找到 MCP 服务器“$1”的安装命令。",
+      "flags": "u"
+    },
+    {
+      "source": "^Open Google Chrome on (.+)\\.$",
+      "target": "在 $1 上打开 Google Chrome。",
+      "flags": "u"
+    },
+    {
+      "source": "^Open image (\\d+) of (\\d+)$",
+      "target": "打开第 $1 张图片（共 $2 张）",
+      "flags": "u"
+    },
+    {
+      "source": "^Open the (.+) plugin$",
+      "target": "打开 $1 插件",
+      "flags": "u"
+    },
+    {
+      "source": "^Page (\\d+) failed to load$",
+      "target": "第 $1 页加载失败",
+      "flags": "u"
+    },
+    {
+      "source": "^Relaunch (.+) to finish Screen Recording\\.$",
+      "target": "重新启动 $1 以完成屏幕录制授权。",
+      "flags": "u"
+    },
+    {
+      "source": "^Reopen (.+) settings$",
+      "target": "重新打开 $1 设置",
+      "flags": "u"
+    },
+    {
+      "source": "^Save rule to always allow (.+)\\?$",
+      "target": "要保存规则以始终允许 $1 吗？",
+      "flags": "u"
+    },
+    {
+      "source": "^Search Google for \"(.+)\"$",
+      "target": "在 Google 上搜索“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^Searched for \"(.+)\"$",
+      "target": "已搜索“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^Searched for files: (.+)$",
+      "target": "已搜索文件：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Secret for (.+)$",
+      "target": "$1 的密钥",
+      "flags": "u"
+    },
+    {
+      "source": "^Send all \\((\\d+)\\)$",
+      "target": "全部发送 ($1)",
+      "flags": "u"
+    },
+    {
+      "source": "^Server \"(.+)\" not found in config$",
+      "target": "配置中未找到服务器“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^Skip \\((.+)\\), Skip All \\((.+)\\)$",
+      "target": "跳过（$1），全部跳过（$2）",
+      "flags": "u"
+    },
+    {
+      "source": "^Task \"(.*)\"$",
+      "target": "任务“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^The (.+) MCP server requires configuration parameters before it can be started\\.$",
+      "target": "MCP 服务器 $1 需要先配置参数才能启动。",
+      "flags": "u"
+    },
+    {
+      "source": "^The browser blocked the download of (.+)$",
+      "target": "浏览器拦截了 $1 的下载",
+      "flags": "u"
+    },
+    {
+      "source": "^The certificate was rejected \\((.+)\\)\\.$",
+      "target": "证书被拒绝（$1）。",
+      "flags": "u"
+    },
+    {
+      "source": "^This window's agents, files, and terminals are on (.+)\\.$",
+      "target": "此窗口的智能体、文件和终端都在 $1 上。",
+      "flags": "u"
+    },
+    {
+      "source": "^Unable to search @(.+)$",
+      "target": "无法搜索 @$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Upload error: (.+)$",
+      "target": "上传错误：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Upstream stream error: HTTP (.+)$",
+      "target": "上游数据流错误：HTTP $1",
+      "flags": "u"
+    },
+    {
+      "source": "^User uploaded media (.+)$",
+      "target": "用户上传的媒体 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Wants to run: (.+)$",
+      "target": "想要运行：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Worktree from (.+)$",
+      "target": "基于 $1 的工作树",
+      "flags": "u"
+    },
+    {
+      "source": "^Check if there is a typo in (.+), or open the page in your external browser\\.$",
+      "target": "请检查 $1 是否有拼写错误，或在外部浏览器中打开该页面。",
+      "flags": "u"
+    },
+    {
+      "source": "^Input must match (.+)$",
+      "target": "输入必须匹配 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Listed directory (.+)$",
+      "target": "已列出目录 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Maximum length is (\\d+)$",
+      "target": "最大长度为 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^On top of those defaults, (.+) requests the access below\\.$",
+      "target": "在这些默认权限之外，$1 还请求以下访问权限。",
+      "flags": "u"
+    },
+    {
+      "source": "^Process exited with code (.+?)\\.$",
+      "target": "进程已退出，退出码 $1。",
+      "flags": "u"
+    },
+    {
+      "source": "^Release channel: (.+)$",
+      "target": "发布渠道：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Select at least (\\d+) items$",
+      "target": "至少选择 $1 项",
+      "flags": "u"
+    },
+    {
+      "source": "^Select at most (\\d+) items$",
+      "target": "最多选择 $1 项",
+      "flags": "u"
+    },
+    {
+      "source": "^Web app: (.+)$",
+      "target": "Web 应用：$1",
       "flags": "u"
     }
   ],

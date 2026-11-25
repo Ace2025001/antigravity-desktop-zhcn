@@ -3609,3 +3609,25 @@ test("用语统一：侧面板与侧边栏分开、分叉、工件、组合包�
   assert.equal(exact["Microphone blocked in system settings."], "麦克风已在系统设置中被禁止。");
   assert.equal(exact["Creating the forked conversation..."], "正在创建分叉对话…");
 });
+
+test("变量赋值、三元表达式、模板字符串和 JSX 拆段里的界面文案都要覆盖", async () => {
+  const dictionary = await loadDomTranslations();
+  const t = (s) => translateDictionaryValue(s, dictionary);
+  // 三元表达式赋给变量后再作为 tooltip（Markdown 预览工具栏）
+  assert.equal(t("Switch to RTL text direction"), "切换为从右到左的文字方向");
+  assert.equal(t("Switch to default text direction"), "恢复默认文字方向");
+  // 模板字符串：`Enable Word Wrap${shortcut}`
+  assert.equal(t("Enable Word Wrap (Alt+Z)"), "启用自动换行 (Alt+Z)");
+  assert.equal(t("Disable Word Wrap"), "停用自动换行");
+  assert.equal(t("Toggle Word Wrap (Alt+Z)"), "切换自动换行 (Alt+Z)");
+  assert.equal(t("Connected to devbox"), "已连接到 devbox");
+  assert.equal(t("More actions for main.py"), "main.py 的更多操作");
+  assert.equal(t("Pushed 2 commits to main."), "已推送 2 个提交到 main。");
+  assert.equal(t("Go to slide 3"), "转到第 3 张幻灯片");
+  // JSX 拆段：前缀单独成一个文字节点，带尾随空格
+  assert.equal(t("Clearing cookies and site data for "), "清除以下网站的 Cookie 和网站数据： ");
+  assert.equal(t("Yes, allow downloads from "), "是，允许下载来源 ");
+  // 新句式不能抢走已有精确译文
+  assert.equal(t("Move to Project"), "移动到项目");
+  assert.equal(t("Confirm & Save"), "确认并保存");
+});

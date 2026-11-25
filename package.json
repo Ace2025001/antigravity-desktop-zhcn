@@ -18,6 +18,7 @@
     "hot-update": "node scripts/hot-update.mjs",
     "collect:compatibility": "node scripts/collect-compatibility-candidate.mjs",
     "collect:untranslated": "node scripts/collect-untranslated.mjs",
+    "scan:untranslated": "node scripts/scan-untranslated.mjs",
     "compatibility:sign": "node scripts/sign-compatibility-manifest.mjs",
     "compatibility:verify": "node scripts/verify-remote-compatibility.mjs",
     "release:notes": "node scripts/generate-release-notes.mjs",
