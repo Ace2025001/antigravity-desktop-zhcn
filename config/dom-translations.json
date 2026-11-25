@@ -12869,9 +12869,18 @@
     "Paid Plus": "付费 Plus",
     "Paid Ultra": "付费 Ultra",
     "Markdown view mode": "Markdown 视图模式",
-    "Markdown View Mode": "Markdown 视图模式"
+    "Markdown View Mode": "Markdown 视图模式",
+    "Waiting": "等待中",
+    "Compacting...": "正在压缩上下文...",
+    "Summarizing call…": "正在总结通话…",
+    "Summarizing call...": "正在总结通话..."
   },
   "patterns": [
+    {
+      "source": "^Compacting\\s*·\\s*(.+)$",
+      "target": "正在压缩上下文 · $1",
+      "flags": "u"
+    },
     {
       "source": "^Preview\\s+unavailable\\s*[—–-]\\s*(.+)$",
       "target": "无法预览 — $1",

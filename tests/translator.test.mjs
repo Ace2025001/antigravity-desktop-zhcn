@@ -2915,3 +2915,43 @@ test("Case 149: 代码块与文件预览头部 Preview / Raw 切换器汉化为 
     else process.env.AGY_LANGUAGE_PACK = savedPack;
   }
 });
+
+test("Case 150: 智能体状态栏 Working / Compacting / 重试倒计时 / 通话摘要源码直替", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+    assert.equal(translateDictionaryValue("Waiting", current), "等待中");
+    assert.equal(translateDictionaryValue("Summarizing call…", current), "正在总结通话…");
+    assert.equal(translateDictionaryValue("Compacting · 32s", current), "正在压缩上下文 · 32s");
+
+    const sampleStatusBundle = [
+      'E.createElement(aY,null,g??k??(c?"Compacting":b??"Working"))',
+      'const CUc={context_summary:"Compacting"};function DUc(a){a=Math.floor(a/1E3);return a<60?`${a}s`:`${Math.floor(a/60)}m ${a%60}s`}',
+      'a=f.attempt;f=f.maxAttempts;a=a>0&&f>0?` (attempt ${a}/${f})`:"";f=b!==void 0?Math.max(0,Math.ceil((b-c)/1E3)):0;return f>0?`Model unavailable, retrying in ${f}s${a}`:`Model unavailable, retrying${a}`',
+      'a=(f=f&&!b)?"Waiting for your approval":a.isSubagent?a.focus||"Working":KUc({steps:a.steps})',
+      'return d.length>0?d.join(", "):"Done"',
+      'if(b&&c||!b&&!g)return null;c="Working";',
+      'l=p?u:q?m?"Waiting for your approval":f??"Working":b;',
+      'return c?c:a.status===K.CortexStepStatus.RUNNING?b||"Working":""',
+      'C=n&&z===void 0&&!c&&(b||!!g),D=g||"Working";',
+      'E.createElement(aY,{className:"text-muted-foreground"},"Summarizing call\\u2026")',
+    ].join("\n");
+
+    const localized = createLocalizedBundle(Buffer.from(sampleStatusBundle, "utf8"), current, { skipCoverage: true }).buffer.toString("utf8");
+    assert.ok(localized.includes('?"正在压缩上下文":b??"工作中")'));
+    assert.ok(localized.includes('const CUc={context_summary:"正在压缩上下文"};function DUc(a){a=Math.floor(a/1E3);return a<60?`${a} 秒`:`${Math.floor(a/60)} 分 ${a%60} 秒`}'));
+    assert.ok(localized.includes('（第 ${a}/${f} 次重试）'));
+    assert.ok(localized.includes('模型暂不可用，${f} 秒后重试${a}'));
+    assert.ok(localized.includes('?"正在等待你的批准":a.isSubagent?a.focus||"工作中":KUc'));
+    assert.ok(localized.includes('return d.length>0?d.join("、"):"已完成"'));
+    assert.ok(localized.includes('return null;c="工作中";'));
+    assert.ok(localized.includes('m?"正在等待你的批准":f??"工作中":b'));
+    assert.ok(localized.includes('CortexStepStatus.RUNNING?b||"工作中":""'));
+    assert.ok(localized.includes('D=g||"工作中";'));
+    assert.ok(localized.includes('"正在总结通话…"'));
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});

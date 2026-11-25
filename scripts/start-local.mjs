@@ -6,6 +6,7 @@ import { resolveInteractiveInstallation } from "../src/lib/install-discovery.mjs
 import { ensureAutoShortcuts } from "../src/lib/auto-shortcuts.mjs";
 import { askFirstRunSettings, runSettingsMenu } from "../src/lib/settings-prompts.mjs";
 import { banner, failure, finish, formatElapsed, info, runTimedTask, step } from "../src/lib/console-ui.mjs";
+import { maybeShowCompletionDialog } from "../src/lib/completion-dialog.mjs";
 import { readUserSettings } from "../src/lib/user-settings.mjs";
 
 const packageVersion = JSON.parse(await readFile(path.join(projectRoot, "package.json"), "utf8")).version;
@@ -106,6 +107,7 @@ try {
       "需要修改设置时，双击“汉化设置”。",
       "觉得好用的话，欢迎去 GitHub 点一颗免费 Star 支持：https://github.com/Ace2025001/antigravity-desktop-zhcn",
     ]);
+    await maybeShowCompletionDialog({ action, exitCode: code, dryVerify });
   } else if (code === 0 && action === "restore") {
     finish(`已恢复英文原版（用时 ${totalElapsed}）`, ["想再用中文时，双击“启动中文”即可。"]);
   }

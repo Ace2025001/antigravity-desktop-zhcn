@@ -3508,6 +3508,66 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /([a-zA-Z0-9_$]+)\(`Turn \$\{([a-zA-Z0-9_$]+)\+\s*1\} of \$\{([a-zA-Z0-9_$]+)\.current\.turns\?\.length\}`,"polite"\)/g,
     '$1(`第 ${$2+1} 轮，共 ${$3.current.turns?.length} 轮`,"polite")'
   );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '?"Compacting":',
+    /([a-zA-Z0-9_$]+\.createElement\([a-zA-Z0-9_$]+,null,[a-zA-Z0-9_$]+\?\?[a-zA-Z0-9_$]+\?\?\([a-zA-Z0-9_$]+\?)"Compacting":([a-zA-Z0-9_$]+\?\?)"Working"\)/g,
+    '$1"正在压缩上下文":$2"工作中")'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '{context_summary:"Compacting"}',
+    /const ([a-zA-Z0-9_$]+)=\{context_summary:"Compacting"\};function ([a-zA-Z0-9_$]+)\(([a-zA-Z0-9_$]+)\)\{\3=Math\.floor\(\3\/1E3\);return \3<60\?`\$\{\3\}s`:`\$\{Math\.floor\(\3\/60\)\}m \$\{\3%60\}s`\}/g,
+    'const $1={context_summary:"正在压缩上下文"};function $2($3){$3=Math.floor($3/1E3);return $3<60?`${$3} 秒`:`${Math.floor($3/60)} 分 ${$3%60} 秒`}'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Model unavailable, retrying',
+    /([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)\.attempt;([a-zA-Z0-9_$]+)=\2\.maxAttempts;\1=\1>0&&\3>0\?` \(attempt \$\{\1\}\/\$\{\3\}\)`:"";([a-zA-Z0-9_$]+)=([a-zA-Z0-9_$]+)!==void 0\?Math\.max\(0,Math\.ceil\(\(\5-([a-zA-Z0-9_$]+)\)\/1E3\)\):0;return \4>0\?`Model unavailable, retrying in \$\{\4\}s\$\{\1\}`:`Model unavailable, retrying\$\{\1\}`/g,
+    '$1=$2.attempt;$3=$2.maxAttempts;$1=$1>0&&$3>0?`（第 ${$1}/${$3} 次重试）`:"";$4=$5!==void 0?Math.max(0,Math.ceil(($5-$6)/1E3)):0;return $4>0?`模型暂不可用，${$4} 秒后重试${$1}`:`模型暂不可用，正在重试${$1}`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '?"Waiting for your approval":',
+    /(\([a-zA-Z0-9_$]+=[a-zA-Z0-9_$]+&&![a-zA-Z0-9_$]+\)\?)"Waiting for your approval":([a-zA-Z0-9_$]+\.isSubagent\?[a-zA-Z0-9_$]+\.focus\|\|)"Working"/g,
+    '$1"正在等待你的批准":$2"工作中"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '.join(", "):"Done"',
+    /return ([a-zA-Z0-9_$]+)\.length>0\?\1\.join\(", "\):"Done"/g,
+    'return $1.length>0?$1.join("、"):"已完成"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'return null;',
+    /if\(([a-zA-Z0-9_$]+)&&([a-zA-Z0-9_$]+)\|\|!\1&&!([a-zA-Z0-9_$]+)\)return null;\2="Working";/g,
+    'if($1&&$2||!$1&&!$3)return null;$2="工作中";'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '?"Waiting for your approval":',
+    /([a-zA-Z0-9_$]+=[a-zA-Z0-9_$]+\?[a-zA-Z0-9_$]+:[a-zA-Z0-9_$]+\?[a-zA-Z0-9_$]+\?)"Waiting for your approval":([a-zA-Z0-9_$]+\?\?)"Working":/g,
+    '$1"正在等待你的批准":$2"工作中":'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'CortexStepStatus.RUNNING?',
+    /(CortexStepStatus\.RUNNING\?[a-zA-Z0-9_$]+\|\|)"Working":""/g,
+    '$1"工作中":""'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '||"Working";',
+    /([a-zA-Z0-9_$]+=([a-zA-Z0-9_$]+)&&[a-zA-Z0-9_$]+===void 0&&![a-zA-Z0-9_$]+&&\([a-zA-Z0-9_$]+\|\|!!([a-zA-Z0-9_$]+)\),[a-zA-Z0-9_$]+=\3\|\|)"Working";/g,
+    '$1"工作中";'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Summarizing call',
+    /([a-zA-Z0-9_$]+\.createElement\([a-zA-Z0-9_$]+,\{className:"text-muted-foreground"\},)"Summarizing call(?:\\u2026|…)"/g,
+    '$1"正在总结通话…"'
+  );
 
   // [核心修复 9] 插件页、气泡提示、终端空状态、工作区/项目选择器、MCP 搜索跨版本替换
   sourceText = sourceText.replace(/"Removing\.\.\.":([a-zA-Z0-9_$]+)\?"Enabling\.\.\.":"Adding\.\.\."/g, '"正在移除...":$1?"正在启用...":"正在添加..."');
