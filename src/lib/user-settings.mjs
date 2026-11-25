@@ -10,6 +10,7 @@ export const PACK_UPDATE_MODES = Object.freeze(["auto", "ask", "off"]);
 export const DEFAULT_SETTINGS = Object.freeze({
   autoFollow: "auto",
   packAutoUpdate: "auto",
+  onlineTranslate: true,
   titleAutoTranslate: true,
   titleWriteBack: false,
 });
@@ -53,6 +54,14 @@ export function normalizeSettings(raw = {}, { legacyExisting = null } = {}) {
   ) {
     settings.packAutoUpdate = "ask";
   }
+  // UI online fill-in. A settings file written before this switch existed (or by
+  // v3.1.4–v3.1.5, which dropped it) stays off until the user is asked once.
+  const online = parseBoolean(raw.onlineTranslate);
+  if (online !== undefined) {
+    settings.onlineTranslate = online;
+  } else if (legacyExisting === true || (legacyExisting === null && raw && typeof raw === "object" && Object.keys(raw).length > 0)) {
+    settings.onlineTranslate = false;
+  }
   const titleAuto = parseBoolean(raw.titleAutoTranslate);
   if (titleAuto !== undefined) {
     settings.titleAutoTranslate = titleAuto;
@@ -75,11 +84,13 @@ export function settingsFromEnv(env = process.env) {
   if (AUTO_FOLLOW_MODES.includes(mode)) overrides.autoFollow = mode;
   const packMode = String(env.AGY_PACK_AUTO_UPDATE ?? "").trim().toLowerCase();
   if (PACK_UPDATE_MODES.includes(packMode)) overrides.packAutoUpdate = packMode;
+  const online = parseBoolean(env.AGY_ONLINE_TRANSLATE);
+  if (online !== undefined) overrides.onlineTranslate = online;
   const titleAuto = parseBoolean(env.AGY_TITLE_AUTO_TRANSLATE);
   if (titleAuto !== undefined) {
     overrides.titleAutoTranslate = titleAuto;
   } else {
-    const legacyOnline = parseBoolean(env.AGY_ONLINE_TRANSLATE);
+    const legacyOnline = online;
     const legacyTitles = parseBoolean(env.AGY_AUTO_TRANSLATE_TITLES);
     if (legacyOnline !== undefined || legacyTitles !== undefined) {
       overrides.titleAutoTranslate = legacyOnline !== false && legacyTitles !== false;
@@ -88,7 +99,7 @@ export function settingsFromEnv(env = process.env) {
   return overrides;
 }
 
-/** Returns { settings, exists, needsPackAutoUpdatePrompt } — exists is false before the first-run questions. */
+/** Returns { settings, exists, needsPackAutoUpdatePrompt, needsOnlineTranslatePrompt } — exists is false before the first-run questions. */
 export async function readUserSettings({ env = process.env, platform = process.platform } = {}) {
   try {
     const raw = JSON.parse(await readFile(getSettingsPath(env, platform), "utf8"));
@@ -97,10 +108,11 @@ export async function readUserSettings({ env = process.env, platform = process.p
       settings: normalizeSettings(raw, { legacyExisting: true }),
       exists: true,
       needsPackAutoUpdatePrompt: !hasPackUpdate,
+      needsOnlineTranslatePrompt: parseBoolean(raw?.onlineTranslate) === undefined,
     };
   } catch (error) {
     if (error.code !== "ENOENT" && !(error instanceof SyntaxError)) throw error;
-    return { settings: { ...DEFAULT_SETTINGS }, exists: false, needsPackAutoUpdatePrompt: false };
+    return { settings: { ...DEFAULT_SETTINGS }, exists: false, needsPackAutoUpdatePrompt: false, needsOnlineTranslatePrompt: false };
   }
 }
 
@@ -120,6 +132,7 @@ export function describeSettings(settings, platform = process.platform) {
   const lines = [];
   if (platform === "win32") lines.push(`客户端更新后：${follow}`);
   lines.push(`汉化包自动更新：${packUpdate}`);
+  lines.push(`界面联网补充翻译：${settings.onlineTranslate ? "开启" : "关闭"}`);
   lines.push(`标题自动翻译：${settings.titleAutoTranslate ? "开启" : "关闭"}`);
   return lines;
 }
@@ -139,6 +152,14 @@ export const PACK_AUTO_UPDATE_QUESTION = [
   "  1. 自动更新：发现新版本时自动更新（推荐）",
   "  2. 先问我：检查到新版本后弹窗询问是否更新",
   "  3. 关闭：不联网检查汉化包更新",
+];
+
+export const ONLINE_TRANSLATE_QUESTION = [
+  "【设置】是否开启界面联网补充翻译？",
+  "  Antigravity 更新后常会多出新功能和新按钮，汉化包还没来得及收录时会显示英文。",
+  "  开启后，这些还没收录的界面文字会通过谷歌翻译临时显示成中文；等汉化包收录了人工译文，会自动换成人工译文。",
+  "  只发送界面上的按钮、菜单、提示文字；对话内容、代码、终端输出、文件名、链接、路径、账号信息和你输入的内容都不会发送。",
+  "  1. 开启（推荐）   2. 关闭（未收录的文字保持英文）",
 ];
 
 export const TITLE_AUTO_TRANSLATE_QUESTION = [

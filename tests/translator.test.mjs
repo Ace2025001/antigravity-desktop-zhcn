@@ -2557,11 +2557,11 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     };
     const eligible = sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__;
     const shortcutRow = makeEl("div", "shortcut-row-terminalSelectAll");
-    assert.equal(eligible("Terminal: Select All", makeEl("span", null, shortcutRow), false), false, "普通界面文案不再联网补译");
-    assert.equal(eligible("No terminals running yet", makeEl("p", "bottom-terminal-panel-empty"), false), false, "终端面板空状态也不再联网");
-    assert.equal(eligible("Message the agent here", makeEl("span", null, makeEl("div", "settings-error-messages-card")), false), false);
+    assert.equal(eligible("Terminal: Select All", makeEl("span", null, shortcutRow), false), true, "界面联网补充翻译：快捷键行不能因标识含 terminal 被误排除");
+    assert.equal(eligible("No terminals running yet", makeEl("p", "bottom-terminal-panel-empty"), false), true, "终端面板空状态属于界面文字");
+    assert.equal(eligible("Message the agent here", makeEl("span", null, makeEl("div", "settings-error-messages-card")), false), true);
     const hostInput = makeEl("input", null, makeEl("div", "ssh-host-picker"));
-    assert.equal(eligible("Search Hosts...", hostInput, false, true), false, "输入框占位符不再联网补译");
+    assert.equal(eligible("Search Hosts...", hostInput, false, true), true, "输入框自身的占位符可以联网补译");
     assert.equal(eligible("Search Hosts...", hostInput, false, false), false, "输入框内的文字不补译");
     for (const id of ["user-message-content", "live-transcript", "terminal-surface", "browser-subagent-thinking", "conversation-navigator-turn", "agent-response-message", "turn-12"]) {
       assert.equal(eligible("Please refactor the build script", makeEl("span", null, makeEl("div", id)), true), false, id + " 内的内容不得联网");
@@ -2614,10 +2614,10 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     }
   }
 
-  // 非标题调用一律跳过联网，仅标题翻译走四道防机翻流水线
+  // 界面联网补充翻译同样走防机翻流水线：命令和模型名占位保护，智能体 / 工作区预先锚定
   assert.equal(
     await sandbox.__AGY_ZHCN_AUTO_TRANSLATE__("Allow agents to run `/plan` with Gemini 4 Carbon in workspaces", { isTitle: false }),
-    null
+    "允许智能体在工作区中使用 Gemini 4 Carbon 运行 `/plan`"
   );
   const titleTranslated = await sandbox.__AGY_ZHCN_AUTO_TRANSLATE__(
     "Allow agents to run `/plan` with Gemini 4 Carbon in workspaces",
@@ -3196,8 +3196,9 @@ test("Case 154: 手动重命名对话永久保英文，且支持独立关闭 aut
             if (opts?.method === "POST") postedManual.push(JSON.parse(opts.body));
             return { ok: true, json: async () => ({ ok: true, ids: [], titles: [] }) };
           }
-          if (u.startsWith("agy-zhcn://translate?q=")) {
-            const q = decodeURIComponent(u.slice("agy-zhcn://translate?q=".length));
+          if (u.startsWith("agy-zhcn://translate?")) {
+            const params = new URLSearchParams(u.slice("agy-zhcn://translate?".length));
+            const q = params.get("q") || "";
             sentQueries.push(q);
             return { ok: true, json: async () => ({ ok: true, translated: `译_${q}` }) };
           }
@@ -3286,7 +3287,23 @@ test("Case 154: 手动重命名对话永久保英文，且支持独立关闭 aut
       closest: (sel) => (sel.includes("breadcrumb-segment") ? {} : null),
     };
     assert.equal(sbB.__AGY_ZHCN_IS_PROTECTED_ELEMENT__(breadcrumbEl, false, "Fix Payment Bug"), true);
-    assert.equal(sbB.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Manage workspace rules", null, false), false, "普通界面文案不再走联网翻译");
+    // 设置里没有 onlineTranslate（旧配置或未开启）时，界面文字一律不联网
+    assert.equal(await sbB.__AGY_ZHCN_AUTO_TRANSLATE__("Manage project rules", { isTitle: false }), null);
+    assert.equal(sentB.length, 0, "未开启界面联网补充翻译时不发送任何界面文字");
+
+    // 场景 C：开启 onlineTranslate 后，未收录的界面文字走 kind=ui 联网补译并记住结果；标题开关关闭不影响界面补译
+    const { sb: sbC, sentQueries: sentC } = await makeSandbox({
+      onlineTranslate: true,
+      titleAutoTranslate: false,
+      titleWriteBack: false,
+    });
+    assert.equal(await sbC.__AGY_ZHCN_AUTO_TRANSLATE__("Manage project rules", { isTitle: false }), "译_Manage project rules");
+    assert.deepEqual(sentC, ["Manage project rules"]);
+    assert.equal(sbC.__AGY_ZHCN_LOOKUP__("Manage project rules"), "译_Manage project rules");
+    assert.equal(await sbC.__AGY_ZHCN_AUTO_TRANSLATE__("Fix Payment Bug", { isTitle: true }), null, "标题开关关闭时标题仍不联网");
+    // 自定义项卡片（用户自己的技能、规则）里的说明属于用户内容，不送联网
+    const cardDesc = { closest: (sel) => (sel === "[data-testid='customization-card']" ? {} : null) };
+    assert.equal(sbC.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Provide fast helpers for daily workflows.", cardDesc, false), false);
 
     // 4. 2.35.1 轮次导航计数 (E.createElement) 本地直替 + 章节标题卡片联网翻译（普通轮次提示保留原文）
     const navBundle = createLocalizedBundle(

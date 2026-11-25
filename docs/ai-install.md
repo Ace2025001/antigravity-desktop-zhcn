@@ -78,17 +78,19 @@ $env:AGY_INSTALL_PATH = "$env:LOCALAPPDATA\Programs\Antigravity"   # 按实际�
 
 ### 首次运行的设置（运行前先告诉用户）
 
-首次运行时，交互终端里会问两个问题；自动化执行时没有交互，直接使用默认值。**请在运行前把默认值告诉用户，按用户意愿用环境变量预设**：
+首次运行时，交互终端里会逐项询问下面的设置；自动化执行时没有交互，直接使用默认值。**请在运行前把默认值告诉用户，按用户意愿用环境变量预设**：
 
 | 设置 | 默认值 | 环境变量 | 说明 |
 |---|---|---|---|
 | 客户端更新后怎么处理 | 自动汉化 | `AGY_AUTO_FOLLOW=auto\|ask\|off` | `auto`/`ask`：用户在客户端里点“重启以更新”后自动重新汉化或弹窗询问，不添加计划任务、不常驻后台；`off` 不处理 |
 | 汉化包自动更新 | 自动更新（默认） | `AGY_PACK_AUTO_UPDATE=auto\|ask\|off` | `auto`/`ask`：启动 Antigravity 时检查最新版汉化包并核对 SHA-256，自动更新或弹窗先问我（老版本升级前先按先问我处理）；`off` 不检查 |
-| 标题自动翻译 | 开启 | `AGY_TITLE_AUTO_TRANSLATE=on\|off` | 软件界面全部使用人工词库，仅自动翻译 Antigravity 生成的纯英文对话标题；对话内容、代码、终端、文件和用户输入不会发送 |
+| 界面联网补充翻译 | 开启 | `AGY_ONLINE_TRANSLATE=on\|off` | 界面优先用人工词库；客户端更新后出现汉化包还没收录的界面文字时，经谷歌翻译临时显示中文，收录人工译文后自动替换；对话内容、代码、终端、文件、账号信息和用户输入不会发送 |
+| 标题自动翻译 | 开启 | `AGY_TITLE_AUTO_TRANSLATE=on\|off` | 仅自动翻译 Antigravity 生成的纯英文对话标题，只在界面显示、不改对话记录 |
 
 ```powershell
 $env:AGY_AUTO_FOLLOW = 'auto'              # 用户不想要自动跟随汉化时改为 off
 $env:AGY_PACK_AUTO_UPDATE = 'auto'         # 用户不想要汉化包自动更新时改为 ask 或 off
+$env:AGY_ONLINE_TRANSLATE = 'on'           # 用户不想让未收录的界面文字联网补译时改为 off
 $env:AGY_TITLE_AUTO_TRANSLATE = 'on'       # 用户不想自动翻译英文对话标题时改为 off
 ```
 

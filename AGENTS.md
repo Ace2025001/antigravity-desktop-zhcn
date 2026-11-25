@@ -12,7 +12,7 @@ Simplified Chinese (zh-CN) localization for the **Google Antigravity Desktop** s
 - Ships its own Node.js runtime. No network install, no proxy/TUN changes.
 - Optional, user-chosen features (first-run questions, editable later via `汉化设置`):
   - **Auto-follow updates** (Windows): when the patched client quits (e.g. the user clicks “Restart to update”), it starts a short-lived helper that waits for the installer, then re-localizes the new version (or asks first). No scheduled task or resident process; the hook is removed on restore / uninstall, and any `AntigravityZhcnAutoFollow` task left by v3.0.0 is deleted.
-  - **Online supplementary translation**: untranslated UI strings and conversation titles are sent to Google Translate through the patched main process. Chat content, code, terminal output, files and user input are never sent.
+  - **Online fill-in** (`onlineTranslate`) and **title auto-translation** (`titleAutoTranslate`), two separate switches: UI strings not yet in the dictionary and AI-generated English conversation titles are sent to Google Translate through the patched main process. Chat content, code, terminal output, files, account details, the user's own customizations and user input are never sent. Existing installs stay off for `onlineTranslate` until asked once.
 
 ## Installing for a user / 为用户安装
 
@@ -27,10 +27,11 @@ Only install when the user has asked for it. Full step-by-step guide: [docs/ai-i
    - macOS: `mac启动/启动中文.command` (set `AGY_MAC_SOURCE` to the official `.app` to skip the picker). First run is interactive: open the official app, wait for the home screen, quit with ⌘Q, then press Enter.
 5. Restore English: `win启动\恢复英文.bat` or `mac启动/恢复英文.command`.
 
-First-run questions only appear in an interactive terminal. In unattended runs the defaults apply (auto-follow `auto`, pack auto-update `auto`, title auto-translate on). Tell the user about these defaults, or preset them with environment variables before running:
+First-run questions only appear in an interactive terminal. In unattended runs the defaults apply (auto-follow `auto`, pack auto-update `auto`, online fill-in on, title auto-translate on). Tell the user about these defaults, or preset them with environment variables before running:
 
 - `AGY_AUTO_FOLLOW=auto|ask|off`
 - `AGY_PACK_AUTO_UPDATE=auto|ask|off`
+- `AGY_ONLINE_TRANSLATE=on|off`
 - `AGY_TITLE_AUTO_TRANSLATE=on|off`
 
 Rules / 规则:
@@ -44,10 +45,10 @@ Rules / 规则:
 ### Red lines / 红线（日常补充词条时不得自行越过，需要时先征得维护者同意）
 
 1. **No new network access, background tasks or writes to user data without an explicit user setting.** Any new outbound request, scheduled task / daemon / autostart, or change to the user's Antigravity data (conversations, titles, settings) must be opt-in through `src/lib/user-settings.mjs`, shown in the first-run questions and `汉化设置`, removed on restore / uninstall, and documented in README. 不得未经用户设置就新增联网、常驻后台或修改用户数据。
-2. **Page code never calls the network directly.** Title auto-translation goes only through the `agy-zhcn://translate` proxy in `src/lib/patcher.mjs`, which checks `titleAutoTranslate` first, and startup pack update checks go through `agy_zhcn_pack_hook.json` / `src/lib/self-update.mjs` honoring `packAutoUpdate` with SHA-256 verification. Do not reintroduce direct `fetch("https://…")` or local translator ports in `createRuntimeOverlay`. 页面代码不得直接联网。
+2. **Page code never calls the network directly.** Online fill-in and title auto-translation go only through the `agy-zhcn://translate` proxy in `src/lib/patcher.mjs`, which checks `onlineTranslate` (`kind=ui`) or `titleAutoTranslate` (`kind=title`) first, and startup pack update checks go through `agy_zhcn_pack_hook.json` / `src/lib/self-update.mjs` honoring `packAutoUpdate` with SHA-256 verification. Do not reintroduce direct `fetch("https://…")` or local translator ports in `createRuntimeOverlay`. 页面代码不得直接联网。
 3. **Translation rules never shrink by accident.** `npm run validate` fails if the exact or pattern count drops below `config/translation-baseline.json`. Raise the baseline after adding rules; never lower it to make validation pass. 词条数量只增不减。
 4. **Behaviour changes update the docs in the same commit**: README, `docs/ai-install.md`, the FAQ page and this file. 行为变化必须同步更新说明。
-5. **Each change set is released on its own**: after `npm test` and `npm run validate` pass, bump `package.json`, update `src/lib/release-notes.mjs` and `docs/changelog/`, then push a `v*` tag. 每批修改单独发版。
+5. **Release only when the maintainer says so**: merge finished work into `main` without changing the version; when the maintainer asks for a release, bump only the patch number (3.1.9 → 3.1.10 …, never the minor unless asked), update `src/lib/release-notes.mjs` and `docs/changelog/`, then push a `v*` tag. 维护者确认后才发版，版本号只升第三位。
 
 ### Workflow
 
