@@ -27,6 +27,7 @@ test("Windows 完成弹窗脚本包含标题、拉赞文案、两个按钮及仓
   assert.ok(script.includes("汉化已完成！"));
   assert.ok(script.includes(COMPLETION_DIALOG_BUTTONS.star));
   assert.ok(script.includes(COMPLETION_DIALOG_BUTTONS.close));
+  assert.ok(script.includes("ShowWindow($form.Handle, 5)"));
   assert.ok(script.includes(`Start-Process '${REPO_URL}'`));
 });
 
