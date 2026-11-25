@@ -2955,3 +2955,44 @@ test("Case 150: 智能体状态栏 Working / Compacting / 重试倒计时 / 通�
     else process.env.AGY_LANGUAGE_PACK = savedPack;
   }
 });
+
+test("Case 151: 打开 SSH 主机弹窗全量源码级汉化与空列表自然语序", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+    assert.equal(translateDictionaryValue("Open SSH Host", current), "打开 SSH 主机");
+    assert.equal(translateDictionaryValue("Use Default", current), "恢复默认");
+    assert.equal(translateDictionaryValue("~/.ssh/config (default)", current), "~/.ssh/config（默认）");
+
+    const sampleSshDialog = [
+      'function wfc(a){return a.progress??`Connecting to ${a.host}\\u2026`}',
+      'tooltip:"Remove from Recent",\nlabel:`Remove ${ka.host} from Recent`',
+      'tooltip:ka?"Hide from this list":"Show in the list again",\nlabel:ka?`Hide ${xa.host} from this list`:`Show ${xa.host} in the list again`',
+      'E.createElement("div",{"data-testid":"ssh-connect-dialog",className:"flex flex-col gap-3"},E.createElement("p",{id:z},"Enter [user@]host[:port], or pick a host from your SSH config.",b==="newProject"&&" Then create the project in its window."),E.createElement("input",{ref:D,"data-testid":"ssh-connect-host-input",placeholder:"user@host:port","aria-label":"SSH host"}),E.createElement(lJ,{size:"md",variant:"primary","data-testid":"ssh-connect-button",onClick:Y},W?"Connecting\\u2026":"Connect"),E.createElement("span",null,"Couldn\'t connect to ",c.host),va("Recent",qa(M)),va(ca?`SSH Config (${ca})`:"SSH Config",qa(N)),E.createElement(lJ,null,ba.length===1?"1 hidden host":`${ba.length} hidden hosts`),E.createElement("div",{role:"group","aria-label":"Hidden hosts"}),"Loading hosts\\u2026","Couldn\'t load your SSH hosts. You can still type one.",ja&&E.createElement("p",null,"No hosts in ",ca??"~/.ssh/config"," yet. Type one above."))',
+      'E.createElement("span",{className:"shrink-0"},"SSH config: "),E.createElement("span",{"data-testid":"ssh-config-file-name"},a?lh(a):"~/.ssh/config (default)"),E.createElement(lJ,{size:"xs","data-testid":"ssh-config-file-choose",onClick:()=>{c||d()}},"Choose File\\u2026"),a&&E.createElement(lJ,{size:"xs","data-testid":"ssh-config-file-use-default",onClick:()=>{f()}},"Use Default")',
+    ].join("\n");
+
+    const localized = createLocalizedBundle(Buffer.from(sampleSshDialog, "utf8"), current, { skipCoverage: true }).buffer.toString("utf8");
+    assert.ok(localized.includes('return a.progress??`正在连接到 ${a.host}…`'));
+    assert.ok(localized.includes('tooltip:"从最近列表中移除",label:`从最近列表中移除 ${ka.host}`'));
+    assert.ok(localized.includes('tooltip:ka?"从列表中隐藏":"在列表中重新显示",label:ka?`从列表中隐藏 ${xa.host}`:`在列表中重新显示 ${xa.host}`'));
+    assert.ok(localized.includes('"请输入 [user@]host[:port]，或从你的 SSH 配置中选择主机。",b==="newProject"&&" 然后在其窗口中创建项目。"'));
+    assert.ok(localized.includes('"aria-label":"SSH 主机"'));
+    assert.ok(localized.includes('W?"正在连接…":"连接"'));
+    assert.ok(localized.includes('"无法连接到 ",c.host'));
+    assert.ok(localized.includes('va("最近使用",qa(M)),va(ca?`SSH 配置（${ca}）`:"SSH 配置",qa(N))'));
+    assert.ok(localized.includes('`${ba.length} 个已隐藏主机`'));
+    assert.ok(localized.includes('"aria-label":"已隐藏主机"'));
+    assert.ok(localized.includes('"正在加载主机…"'));
+    assert.ok(localized.includes('"无法加载 SSH 主机列表，你仍可直接输入一个。"'));
+    assert.ok(localized.includes('ca??"~/.ssh/config"," 中还没有主机，请在上方输入一个。"'));
+    assert.ok(localized.includes('"SSH 配置："'));
+    assert.ok(localized.includes('"~/.ssh/config（默认）"'));
+    assert.ok(localized.includes('"选择文件…"'));
+    assert.ok(localized.includes('"恢复默认"'));
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});

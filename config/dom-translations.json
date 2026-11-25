@@ -12873,7 +12873,22 @@
     "Waiting": "等待中",
     "Compacting...": "正在压缩上下文...",
     "Summarizing call…": "正在总结通话…",
-    "Summarizing call...": "正在总结通话..."
+    "Summarizing call...": "正在总结通话...",
+    "Open SSH Host": "打开 SSH 主机",
+    "Enter [user@]host[:port], or pick a host from your SSH config.": "请输入 [user@]host[:port]，或从你的 SSH 配置中选择主机。",
+    "Then create the project in its window.": "然后在其窗口中创建项目。",
+    "SSH config:": "SSH 配置：",
+    "~/.ssh/config (default)": "~/.ssh/config（默认）",
+    "Choose File…": "选择文件…",
+    "Choose File...": "选择文件...",
+    "Use Default": "恢复默认",
+    "SSH host": "SSH 主机",
+    "Loading hosts…": "正在加载主机…",
+    "Loading hosts...": "正在加载主机...",
+    "Couldn't load your SSH hosts. You can still type one.": "无法加载 SSH 主机列表，你仍可直接输入一个。",
+    "Hidden hosts": "已隐藏主机",
+    "Hide from this list": "从列表中隐藏",
+    "Show in the list again": "在列表中重新显示"
   },
   "patterns": [
     {

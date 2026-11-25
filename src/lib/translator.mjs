@@ -3796,6 +3796,112 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     '$1globalThis.__AGY_ZHCN_BIND_TITLE_WATCHER__?.($5,$2);$6'
   );
 
+  // =========================================================================
+  // 9.14 打开 SSH 主机弹窗（引导语、配置文件、连接进度、空状态与隐藏列表直替）
+  // =========================================================================
+  sourceText = fastAnchorReplace(
+    sourceText,
+    "or pick a host from your SSH config.",
+    /"Enter \[user@\]host\[:port\], or pick a host from your SSH config\.",([a-zA-Z0-9_$]+)==="newProject"&&" Then create the project in its window\."/g,
+    '"请输入 [user@]host[:port]，或从你的 SSH 配置中选择主机。",$1==="newProject"&&" 然后在其窗口中创建项目。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    "ssh-connect-host-input",
+    /(placeholder:"user@host:port","aria-label":)"SSH host"/g,
+    '$1"SSH 主机"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    "ssh-connect-button",
+    /("ssh-connect-button",[^}]{0,220}?\},)([a-zA-Z0-9_$]+)\?"Connecting(?:\\u2026|…)":"Connect"/g,
+    '$1$2?"正在连接…":"连接"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    "Connecting to ${",
+    /return ([a-zA-Z0-9_$]+)\.progress\?\?`Connecting to \$\{\1\.host\}(?:\\u2026|…)`/g,
+    'return $1.progress??`正在连接到 ${$1.host}…`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Couldn\'t connect to "',
+    /"Couldn't connect to ",([a-zA-Z0-9_$]+\.host)/g,
+    '"无法连接到 ",$1'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    "`SSH Config (${",
+    /([a-zA-Z0-9_$]+)\("Recent",([\s\S]{0,180}?)\),\1\(([a-zA-Z0-9_$]+)\?`SSH Config \(\$\{\3\}\)`:"SSH Config",/g,
+    '$1("最近使用",$2),$1($3?`SSH 配置（${$3}）`:"SSH 配置",'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    "hidden hosts`",
+    /([a-zA-Z0-9_$]+)\.length===1\?"1 hidden host":`\$\{\1\.length\} hidden hosts`/g,
+    '`${$1.length} 个已隐藏主机`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Hidden hosts"',
+    /role:"group","aria-label":"Hidden hosts"/g,
+    'role:"group","aria-label":"已隐藏主机"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Loading hosts',
+    /"Loading hosts(?:\\u2026|…)"/g,
+    '"正在加载主机…"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    "Couldn't load your SSH hosts",
+    /"Couldn't load your SSH hosts\. You can still type one\."/g,
+    '"无法加载 SSH 主机列表，你仍可直接输入一个。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"No hosts in "',
+    /"No hosts in ",([a-zA-Z0-9_$]+)\?\?"~\/\.ssh\/config"," yet\. Type one above\."/g,
+    '$1??"~/.ssh/config"," 中还没有主机，请在上方输入一个。"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"SSH config: "',
+    /"SSH config: "/g,
+    '"SSH 配置："'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"~/.ssh/config (default)"',
+    /"~\/\.ssh\/config \(default\)"/g,
+    '"~/.ssh/config（默认）"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    "ssh-config-file-choose",
+    /("ssh-config-file-choose"[^}]{0,180}?\},)"Choose File(?:\\u2026|…)"/g,
+    '$1"选择文件…"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    "ssh-config-file-use-default",
+    /("ssh-config-file-use-default"[^}]{0,180}?\},)"Use Default"/g,
+    '$1"恢复默认"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Remove from Recent"',
+    /tooltip:"Remove from Recent",[\s\r\n]*label:`Remove \$\{([a-zA-Z0-9_$]+)\.host\} from Recent`/g,
+    'tooltip:"从最近列表中移除",label:`从最近列表中移除 ${$1.host}`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Hide from this list"',
+    /tooltip:([a-zA-Z0-9_$]+)\?"Hide from this list":"Show in the list again",[\s\r\n]*label:\1\?`Hide \$\{([a-zA-Z0-9_$]+)\.host\} from this list`:`Show \$\{\2\.host\} in the list again`/g,
+    'tooltip:$1?"从列表中隐藏":"在列表中重新显示",label:$1?`从列表中隐藏 ${$2.host}`:`在列表中重新显示 ${$2.host}`'
+  );
+
   const overlay = createRuntimeOverlay(dictionary);
   const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
   return {
