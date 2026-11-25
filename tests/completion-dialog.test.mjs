@@ -79,3 +79,30 @@ test("Windows 弹窗异常时安全降级为 null，不抛出中断主流程", a
   });
   assert.equal(result, null);
 });
+
+test("全部 Windows 更新与跟进弹窗复用同一现代卡片组件且按钮明确", async () => {
+  const {
+    buildModernWindowsDialogScript,
+    getClientFollowDialogSpec,
+    getPackExitDialogSpec,
+    getPackStartupDialogSpec,
+    getRelaunchConfirmDialogSpec,
+    getWarnNotifyDialogSpec,
+  } = await import("../src/lib/modern-dialog.mjs");
+
+  const startup = buildModernWindowsDialogScript(getPackStartupDialogSpec({ currentVersion: "3.1.3", latestVersion: "3.1.4" }));
+  const exitPack = buildModernWindowsDialogScript(getPackExitDialogSpec({ currentVersion: "3.1.3", latestVersion: "3.1.4" }));
+  const follow = buildModernWindowsDialogScript(getClientFollowDialogSpec({ version: "2.36.0" }));
+  const relaunch = buildModernWindowsDialogScript(getRelaunchConfirmDialogSpec());
+  const warn = buildModernWindowsDialogScript(getWarnNotifyDialogSpec({ message: "测试提示" }));
+
+  for (const s of [startup, exitPack, follow, relaunch, warn]) {
+    assert.ok(s.includes("DwmSetWindowAttribute"), "统一使用圆角现代卡片窗口");
+    assert.ok(s.includes("ShowWindow($form.Handle, 5)"));
+  }
+  assert.ok(startup.includes("立即更新") && startup.includes("跳过此版本"));
+  assert.ok(exitPack.includes("立即更新") && exitPack.includes("跳过此版本"));
+  assert.ok(follow.includes("立即汉化") && follow.includes("此版本不提醒"));
+  assert.ok(relaunch.includes("立即重启并汉化") && relaunch.includes("暂不更新"));
+  assert.ok(warn.includes("知道了") && warn.includes("自动跟进未能完成"));
+});

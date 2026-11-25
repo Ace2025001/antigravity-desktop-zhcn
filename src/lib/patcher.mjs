@@ -60,11 +60,17 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             if (globalThis.__agyZhcnSettingsCache && now - globalThis.__agyZhcnSettingsCache.at < 3000) {
                 return globalThis.__agyZhcnSettingsCache.value;
             }
-            const value = { onlineTranslate: true, autoTranslateTitles: true, titleWriteBack: false };
+            const value = { titleAutoTranslate: true, packAutoUpdate: 'auto', titleWriteBack: false };
             try {
                 const raw = JSON.parse(await fsPromises.readFile(path.join(path.dirname(getAutoDictPath()), 'settings.json'), 'utf8'));
-                if (typeof raw.onlineTranslate === 'boolean') value.onlineTranslate = raw.onlineTranslate;
-                if (typeof raw.autoTranslateTitles === 'boolean') value.autoTranslateTitles = raw.autoTranslateTitles;
+                if (typeof raw.titleAutoTranslate === 'boolean') {
+                    value.titleAutoTranslate = raw.titleAutoTranslate;
+                } else if (raw.onlineTranslate === false || raw.autoTranslateTitles === false) {
+                    value.titleAutoTranslate = false;
+                }
+                if (raw.packAutoUpdate === 'auto' || raw.packAutoUpdate === 'ask' || raw.packAutoUpdate === 'off') {
+                    value.packAutoUpdate = raw.packAutoUpdate;
+                }
                 if (typeof raw.titleWriteBack === 'boolean') value.titleWriteBack = raw.titleWriteBack;
             } catch (_settingsErr) {}
             globalThis.__agyZhcnSettingsCache = { at: now, value };
@@ -152,12 +158,12 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                 });
             }
             if (reqUrl.hostname === 'translate') {
-                // The only network exit for supplementary translation; honours the user's switch.
-                if (!(await getZhcnSettings()).onlineTranslate) {
+                // The only translation network exit; honours the user's titleAutoTranslate switch.
+                if (!(await getZhcnSettings()).titleAutoTranslate) {
                     return new Response(JSON.stringify({ ok: false, disabled: true }), { status: 403, headers: { 'Content-Type': 'application/json; charset=utf-8' } });
                 }
                 const q = reqUrl.searchParams.get('q') || '';
-                if (!q.trim()) {
+                if (!q.trim() || q.trim().length > 200) {
                     return new Response(JSON.stringify({ ok: false }), { status: 400, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' } });
                 }
                 const targetUrl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=' + encodeURIComponent(q);
@@ -187,6 +193,138 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
     try {
         if (electron_1.app && !electron_1.app.__zhcnAutoFollowHooked) {
             electron_1.app.__zhcnAutoFollowHooked = true;
+            // Startup pack update check (works regardless of how Antigravity was launched on Windows/macOS).
+            const runStartupPackUpdateCheck = async () => {
+                try {
+                    const fsPromises = require('fs/promises');
+                    const path = require('path');
+                    const os = require('os');
+                    const cp = require('child_process');
+                    const getStateDir = () => {
+                        if (process.env.AGY_ZHCN_STATE_DIR) return path.resolve(process.env.AGY_ZHCN_STATE_DIR);
+                        if (process.platform === 'win32' && process.env.LOCALAPPDATA) return path.join(process.env.LOCALAPPDATA, 'AntigravityZhcn');
+                        if (process.platform === 'darwin') return path.join(os.homedir(), 'Library', 'Application Support', 'AntigravityZhcn');
+                        return path.join(os.homedir(), '.antigravity-zhcn');
+                    };
+                    const stateDir = getStateDir();
+                    let packMode = 'off';
+                    try {
+                        const rawSet = JSON.parse(await fsPromises.readFile(path.join(stateDir, 'settings.json'), 'utf8'));
+                        if (rawSet.packAutoUpdate === 'auto' || rawSet.packAutoUpdate === 'ask' || rawSet.packAutoUpdate === 'off') {
+                            packMode = rawSet.packAutoUpdate;
+                        } else if (rawSet && typeof rawSet === 'object') {
+                            // Existing installs created before packAutoUpdate stay interactive ("ask") rather than auto-downloading silently.
+                            packMode = 'ask';
+                        }
+                    } catch (_sErr) {}
+                    if (packMode === 'off') return;
+
+                    const hookPath = path.join(electron_1.app.getPath('userData'), 'agy_zhcn_pack_hook.json');
+                    let hook = null;
+                    try {
+                        hook = JSON.parse(await fsPromises.readFile(hookPath, 'utf8'));
+                    } catch (_hErr) {}
+                    if (!hook || !hook.nodePath || !hook.selfUpdateScript) return;
+                    try {
+                        await fsPromises.access(hook.selfUpdateScript);
+                    } catch (_aErr) { return; }
+
+                    let localVer = hook.currentVersion || '0.0.0';
+                    try {
+                        const pkg = JSON.parse(await fsPromises.readFile(path.join(hook.coreRoot, 'package.json'), 'utf8'));
+                        if (typeof pkg.version === 'string' && pkg.version.trim()) localVer = pkg.version.trim();
+                    } catch (_vErr) {}
+
+                    const packStatePath = path.join(stateDir, 'pack-update-state.json');
+                    let packState = {};
+                    try {
+                        packState = JSON.parse(await fsPromises.readFile(packStatePath, 'utf8'));
+                    } catch (_psErr) {}
+                    if (packState && packState.pendingMainUpdate && packState.pendingMainUpdate.version === localVer) return;
+
+                    const doFetch = (electron_1.net && typeof electron_1.net.fetch === 'function') ? electron_1.net.fetch.bind(electron_1.net) : fetch;
+                    const fetchOpts = {
+                        headers: { 'User-Agent': 'antigravity-desktop-zhcn-updater', 'Accept': 'application/vnd.github+json' },
+                        ...(typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function' ? { signal: AbortSignal.timeout(3500) } : {})
+                    };
+                    const resp = await doFetch('https://api.github.com/repos/Ace2025001/antigravity-desktop-zhcn/releases/latest', fetchOpts);
+                    if (!resp || !resp.ok) return;
+                    const rel = await resp.json().catch(() => null);
+                    if (!rel || typeof rel.tag_name !== 'string') return;
+                    const latestVer = rel.tag_name.trim().replace(/^v/i, '');
+                    const parseVer = (s) => { const m = String(s || '').match(/^(\\d+)\\.(\\d+)\\.(\\d+)/); return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null; };
+                    const a = parseVer(latestVer), b = parseVer(localVer);
+                    if (!a || !b) return;
+                    const hasNew = a[0] > b[0] || (a[0] === b[0] && (a[1] > b[1] || (a[1] === b[1] && a[2] > b[2])));
+                    if (!hasNew) return;
+                    if (packState && packState.pendingMainUpdate && packState.pendingMainUpdate.version === latestVer) return;
+
+                    const spawnSelfUpdate = (extraArgs) => {
+                        const child = cp.spawn(hook.nodePath, [hook.selfUpdateScript, '--from-client', '--quiet', ...extraArgs], {
+                            env: { ...process.env, AGY_LANGUAGE_PACK: hook.languagePackDir || '' },
+                            detached: true,
+                            stdio: 'ignore',
+                            windowsHide: true
+                        });
+                        child.unref();
+                    };
+
+                    if (packMode === 'auto') {
+                        spawnSelfUpdate([]);
+                        return;
+                    }
+                    if (packMode === 'ask') {
+                        if (packState && packState.skippedVersion === latestVer) return;
+                        if (packState && packState.snoozedVersion === latestVer && Number(packState.snoozedUntil) > Date.now()) return;
+                        let action = '';
+                        const showDialogScript = path.join(hook.coreRoot, 'scripts', 'show-dialog.mjs');
+                        if (process.platform === 'win32') {
+                            try {
+                                await fsPromises.access(showDialogScript);
+                                action = await new Promise((resolve) => {
+                                    cp.execFile(
+                                        hook.nodePath,
+                                        [showDialogScript, '--kind', 'pack-startup', '--current', localVer, '--latest', latestVer],
+                                        { windowsHide: true, encoding: 'utf8', timeout: 120000 },
+                                        (err, stdout) => resolve(err ? '' : String(stdout || '').trim())
+                                    );
+                                });
+                            } catch (_dlgErr) {}
+                        }
+                        if (!action) {
+                            const win = electron_1.BrowserWindow && electron_1.BrowserWindow.getFocusedWindow ? electron_1.BrowserWindow.getFocusedWindow() : undefined;
+                            const choice = await electron_1.dialog.showMessageBox(win, {
+                                type: 'info',
+                                title: 'Antigravity 汉化包有新版本',
+                                message: '发现 Antigravity 中文汉化包新版本 v' + latestVer,
+                                detail: '当前版本：v' + localVer + '\\n\\n是否立即在后台下载并验证更新？（更新包将进行 SHA-256 校验，不会强制关闭正在运行的客户端）',
+                                buttons: ['立即更新', '稍后再说', '跳过此版本'],
+                                defaultId: 0,
+                                cancelId: 1
+                            });
+                            action = choice && choice.response === 0 ? 'update' : choice && choice.response === 2 ? 'skip' : 'later';
+                        }
+                        if (action === 'update') {
+                            spawnSelfUpdate([]);
+                        } else if (action === 'skip') {
+                            packState.skippedVersion = latestVer;
+                            packState.updatedAt = new Date().toISOString();
+                            await fsPromises.mkdir(stateDir, { recursive: true });
+                            await fsPromises.writeFile(packStatePath, JSON.stringify(packState, null, 2) + '\\n', 'utf8');
+                        } else {
+                            // Snooze "稍后再说" / dialog dismissal for 24 hours so frequent daily releases do not nag repeatedly.
+                            packState.snoozedVersion = latestVer;
+                            packState.snoozedUntil = Date.now() + 24 * 60 * 60 * 1000;
+                            packState.updatedAt = new Date().toISOString();
+                            await fsPromises.mkdir(stateDir, { recursive: true });
+                            await fsPromises.writeFile(packStatePath, JSON.stringify(packState, null, 2) + '\\n', 'utf8');
+                        }
+                    }
+                } catch (_chkErr) {}
+            };
+            electron_1.app.whenReady().then(() => {
+                setTimeout(() => { runStartupPackUpdateCheck().catch(() => {}); }, 4000);
+            }).catch(() => {});
             electron_1.app.on('will-quit', () => {
                 try {
                     const fs = require('fs');

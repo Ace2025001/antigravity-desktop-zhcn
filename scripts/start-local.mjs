@@ -7,7 +7,9 @@ import { ensureAutoShortcuts } from "../src/lib/auto-shortcuts.mjs";
 import { askFirstRunSettings, runSettingsMenu } from "../src/lib/settings-prompts.mjs";
 import { banner, failure, finish, formatElapsed, info, runTimedTask, step } from "../src/lib/console-ui.mjs";
 import { maybeShowCompletionDialog } from "../src/lib/completion-dialog.mjs";
+import { checkLatestRelease, performSelfUpdate, readPackUpdateState, resolvePackRootFromCore, writePackUpdateState } from "../src/lib/self-update.mjs";
 import { readUserSettings } from "../src/lib/user-settings.mjs";
+import { createInterface } from "node:readline/promises";
 
 const packageVersion = JSON.parse(await readFile(path.join(projectRoot, "package.json"), "utf8")).version;
 
@@ -71,6 +73,53 @@ try {
 
   if (!dryVerify) banner(`Antigravity 汉化包 v${packageVersion}  ·  ${action === "start" ? "启动中文" : "恢复英文"}`);
   if (action === "start" && !dryVerify) await askFirstRunSettings();
+
+  if (action === "start" && !dryVerify && process.env.AGY_SELF_UPDATED !== "1") {
+    const packRoot = resolvePackRootFromCore(projectRoot);
+    const { settings } = await readUserSettings();
+    if (packRoot && settings.packAutoUpdate !== "off") {
+      const check = await checkLatestRelease({ currentVersion: packageVersion, timeoutMs: 3500 }).catch(() => ({ ok: false }));
+      if (check.ok && check.hasUpdate) {
+        const upState = await readPackUpdateState().catch(() => ({}));
+        let doUpdate = settings.packAutoUpdate === "auto";
+        if (settings.packAutoUpdate === "ask" && upState.skippedVersion !== check.latestVersion && process.stdin.isTTY && process.env.AGY_SILENT_LAUNCH !== "1") {
+          const rl = createInterface({ input: process.stdin, output: process.stdout });
+          try {
+            const ans = (await rl.question(`\n  发现汉化包新版本 v${check.latestVersion}（当前 v${packageVersion}），是否立即更新？[Y/n/skip] `)).trim().toLowerCase();
+            if (ans === "skip" || ans === "s") {
+              await writePackUpdateState({ skippedVersion: check.latestVersion }).catch(() => {});
+            } else if (ans === "" || ans === "y" || ans === "yes" || ans === "是") {
+              doUpdate = true;
+            }
+          } finally {
+            rl.close();
+          }
+        }
+        if (doUpdate) {
+          info(`发现汉化包新版 v${check.latestVersion}，正在安全校验并自动更新…`);
+          try {
+            const updated = await performSelfUpdate({ packRoot, coreRoot: projectRoot, timeoutMs: 4000 });
+            if (updated.status === "updated") {
+              info(`已更新到 v${updated.latestVersion}，正在使用新版继续启动…`);
+              const nextCode = await new Promise((resolve, reject) => {
+                const child = spawn(process.execPath, [path.join(packRoot, "语言包", "核心程序", "scripts", "start-local.mjs"), "start"], {
+                  env: { ...process.env, AGY_LANGUAGE_PACK: path.join(packRoot, "语言包"), AGY_SELF_UPDATED: "1" },
+                  stdio: "inherit",
+                  windowsHide: true,
+                });
+                child.once("error", reject);
+                child.once("exit", (v) => resolve(v ?? 1));
+              });
+              process.exitCode = nextCode;
+              process.exit(nextCode);
+            }
+          } catch (updErr) {
+            info(`汉化包自动更新未完成（${updErr.message}），继续使用当前版本启动。`);
+          }
+        }
+      }
+    }
+  }
 
   step("检查客户端");
   const selected = await runTimedTask({

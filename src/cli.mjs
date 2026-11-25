@@ -31,6 +31,7 @@ import {
 } from "./lib/translator.mjs";
 import { createLocalizedBundleWithProgress } from "./lib/localize-progress.mjs";
 import { removeAutoFollowDaemon } from "./lib/auto-follow-task.mjs";
+import { removePackHookMetadata, writePackHookMetadata } from "./lib/self-update.mjs";
 import { ok as uiOk, step as uiStep } from "./lib/console-ui.mjs";
 import {
   atomicReplaceFile,
@@ -454,6 +455,7 @@ async function updateInstalledLocalization({
       console.warn(`警告：旧中文文件临时副本未能清理：${error.message}`);
     });
     await syncDialogRulesToUserData();
+    await writePackHookMetadata().catch(() => {});
   } catch (error) {
     if (replacement) {
       try {
@@ -658,6 +660,7 @@ async function install({ assumeYes = false } = {}) {
       console.warn(`警告：旧文件临时副本未能清理：${error.message}`);
     });
     await syncDialogRulesToUserData();
+    await writePackHookMetadata().catch(() => {});
   } catch (error) {
     const rollbackErrors = [];
     if (bundleResult?.rollback) {
@@ -806,6 +809,7 @@ async function restore() {
   await removeVerifiedLocalizedBundle(state);
 
   const daemon = await removeAutoFollowDaemon().catch(() => ({ removed: false }));
+  await removePackHookMetadata().catch(() => {});
   if (daemon.removed) uiOk("已清理旧版的后台计划任务");
   uiOk("已恢复英文原版文件");
   return 0;
@@ -886,6 +890,7 @@ async function purge({ assumeYes = false } = {}) {
   const result = await removeCleanupTargets(refreshedTargets);
 
   await removeAutoFollowDaemon().catch(() => {});
+  await removePackHookMetadata().catch(() => {});
   const stateRoot = getStateRoot();
   // Files that are not regenerable cache but still belong to this tool.
   for (const name of ["daemon", "settings.json", "auto-learned-translations.json", "selected-installation.json"]) {

@@ -27,10 +27,11 @@ Only install when the user has asked for it. Full step-by-step guide: [docs/ai-i
    - macOS: `mac启动/启动中文.command` (set `AGY_MAC_SOURCE` to the official `.app` to skip the picker). First run is interactive: open the official app, wait for the home screen, quit with ⌘Q, then press Enter.
 5. Restore English: `win启动\恢复英文.bat` or `mac启动/恢复英文.command`.
 
-First-run questions only appear in an interactive terminal. In unattended runs the defaults apply (auto-follow `auto`, online translation on). Tell the user about these defaults, or preset them with environment variables before running:
+First-run questions only appear in an interactive terminal. In unattended runs the defaults apply (auto-follow `auto`, pack auto-update `auto`, title auto-translate on). Tell the user about these defaults, or preset them with environment variables before running:
 
 - `AGY_AUTO_FOLLOW=auto|ask|off`
-- `AGY_ONLINE_TRANSLATE=on|off`
+- `AGY_PACK_AUTO_UPDATE=auto|ask|off`
+- `AGY_TITLE_AUTO_TRANSLATE=on|off`
 
 Rules / 规则:
 - Ask the user to save their work before running. If the client is running, the tool waits 60 s, then requests a normal quit and force-closes it. Press `2` in the terminal if the user prefers to quit manually. Do not kill the client yourself outside the tool. 运行前先提醒用户保存工作，不要绕开工具自行结束客户端。
@@ -43,7 +44,7 @@ Rules / 规则:
 ### Red lines / 红线（日常补充词条时不得自行越过，需要时先征得维护者同意）
 
 1. **No new network access, background tasks or writes to user data without an explicit user setting.** Any new outbound request, scheduled task / daemon / autostart, or change to the user's Antigravity data (conversations, titles, settings) must be opt-in through `src/lib/user-settings.mjs`, shown in the first-run questions and `汉化设置`, removed on restore / uninstall, and documented in README. 不得未经用户设置就新增联网、常驻后台或修改用户数据。
-2. **Page code never calls the network directly.** Supplementary translation goes only through the `agy-zhcn://translate` proxy in `src/lib/patcher.mjs`, which checks `onlineTranslate` first. Do not reintroduce direct `fetch("https://…")` or local translator ports in `createRuntimeOverlay`. 页面代码不得直接联网。
+2. **Page code never calls the network directly.** Title auto-translation goes only through the `agy-zhcn://translate` proxy in `src/lib/patcher.mjs`, which checks `titleAutoTranslate` first, and startup pack update checks go through `agy_zhcn_pack_hook.json` / `src/lib/self-update.mjs` honoring `packAutoUpdate` with SHA-256 verification. Do not reintroduce direct `fetch("https://…")` or local translator ports in `createRuntimeOverlay`. 页面代码不得直接联网。
 3. **Translation rules never shrink by accident.** `npm run validate` fails if the exact or pattern count drops below `config/translation-baseline.json`. Raise the baseline after adding rules; never lower it to make validation pass. 词条数量只增不减。
 4. **Behaviour changes update the docs in the same commit**: README, `docs/ai-install.md`, the FAQ page and this file. 行为变化必须同步更新说明。
 5. **Each change set is released on its own**: after `npm test` and `npm run validate` pass, bump `package.json`, update `src/lib/release-notes.mjs` and `docs/changelog/`, then push a `v*` tag. 每批修改单独发版。

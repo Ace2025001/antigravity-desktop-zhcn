@@ -28,15 +28,17 @@ antigravity汉化包/
 
 ## First-run settings
 
-The first run asks two questions; press Enter to accept the recommended values. Change them later with `汉化设置`.
+The first run asks setup questions; press Enter to accept the recommended values. Change them later with `汉化设置`.
 
 | Setting | Options | Recommended |
 |---|---|---|
 | After the client updates (Windows) | Localize automatically / Ask me / Do nothing | Localize automatically |
-| Online fill-in translation | On / Off | On |
+| Language pack auto-update | Auto-update / Ask me / Off | Auto-update |
+| Title auto-translation (Antigravity generates English titles by default) | On / Off | On |
 
-- **Localize automatically**: after “Restart to update”, the new version is localized and reopened in Chinese in about 40 seconds. **Ask me** shows a Yes/No prompt. No scheduled task or resident process is installed.
-- **Online fill-in**: UI strings not yet in the dictionary, plus conversation titles, are translated with Google Translate. Chat content, code, terminal output, file names, links, paths and anything you type are never sent.
+- **Localize automatically**: after “Restart to update”, the new version is localized and reopened in Chinese in about 40 seconds. **Ask me** prompts with an update card. No scheduled task or resident process is installed.
+- **Language pack auto-update**: regardless of how Antigravity is launched, checks the latest GitHub release against SHA-256 `digest`. **Auto-update** updates translations and core scripts silently in the background; **Ask me** prompts first; **Off** disables pack update checks. Existing installs created before this setting default to **Ask me**.
+- **Title auto-translation**: all app UI strings use curated human translations only (no machine translation on UI buttons/menus). When enabled, only AI-generated English conversation titles are translated for display (without modifying stored chat records); manually renamed titles always stay English. Chat content, code, terminal output, file names, links, paths and anything you type are never sent.
 
 ## Features
 
@@ -58,7 +60,7 @@ The first run asks two questions; press Enter to accept the recommended values. 
 
 - **Restore English?** Save your work and run `恢复英文`; the official English client is restored and conversations are untouched.
 - **Full pack, language update or Source code?** First-time users need the full pack only. The language update is for existing users; Source code is for developers.
-- **Updating translations?** Download the latest release, replace the `语言包` folder and run `启动中文` again.
+- **Updating the pack?** Keep **Language pack auto-update** enabled to update automatically on launch/quit, run `scripts/self-update.mjs`, or download the latest release and overwrite the folder.
 - **Install with an AI agent?** Ask Claude Code, Codex, Cursor or another agent to follow [docs/ai-install.md](docs/ai-install.md).
 
 ## Development

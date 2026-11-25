@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { buildModernWindowsDialogScript } from "./modern-dialog.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -39,60 +40,18 @@ export function shouldShowCompletionDialog({
  * Clicking the Star CTA opens the repository URL in the default browser directly.
  */
 export function buildWindowsCompletionDialogScript(repoUrl = REPO_URL) {
-  const escapedUrl = String(repoUrl).replaceAll("'", "''");
-  return [
-    "Add-Type -AssemblyName System.Windows.Forms",
-    "Add-Type -AssemblyName System.Drawing",
-    "[System.Windows.Forms.Application]::EnableVisualStyles()",
-    "$form = New-Object System.Windows.Forms.Form",
-    `$form.Text = '${COMPLETION_DIALOG_TITLE}'`,
-    "$form.Size = New-Object System.Drawing.Size(450, 225)",
-    "$form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen",
-    "$form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog",
-    "$form.MaximizeBox = $false",
-    "$form.MinimizeBox = $false",
-    "$form.TopMost = $true",
-    "$form.ShowInTaskbar = $true",
-    "$label = New-Object System.Windows.Forms.Label",
-    "$label.Location = New-Object System.Drawing.Point(22, 20)",
-    "$label.Size = New-Object System.Drawing.Size(392, 102)",
-    "$label.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9.5)",
-    "$label.Text = \"汉化已完成！Antigravity 中文版已为您准备就绪。`r`n`r`n本项目开源免费维护，并持续跟进新版本词库与功能适配。`r`n如果觉得好用，欢迎去 GitHub 点一颗免费 Star 支持一下，让更多中文用户看到这个项目！\"",
-    "$btnStar = New-Object System.Windows.Forms.Button",
-    `$btnStar.Text = '${COMPLETION_DIALOG_BUTTONS.star}'`,
-    "$btnStar.Size = New-Object System.Drawing.Size(185, 34)",
-    "$btnStar.Location = New-Object System.Drawing.Point(132, 136)",
-    "$btnStar.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9, [System.Drawing.FontStyle]::Bold)",
-    "$btnStar.Tag = 'star'",
-    "$btnStar.Add_Click({",
-    `  try { Start-Process '${escapedUrl}' | Out-Null } catch {}`,
-    "  $form.Tag = 'star'",
-    "  $form.Close()",
-    "})",
-    "$btnClose = New-Object System.Windows.Forms.Button",
-    `$btnClose.Text = '${COMPLETION_DIALOG_BUTTONS.close}'`,
-    "$btnClose.Size = New-Object System.Drawing.Size(86, 34)",
-    "$btnClose.Location = New-Object System.Drawing.Point(328, 136)",
-    "$btnClose.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9)",
-    "$btnClose.Add_Click({ $form.Tag = 'close'; $form.Close() })",
-    "$form.AcceptButton = $btnStar",
-    "$form.CancelButton = $btnClose",
-    "$form.Controls.AddRange(@($label, $btnStar, $btnClose))",
-    // Node's windowsHide passes SW_HIDE to the process startup info, which makes the first WinForms form start hidden; ShowWindow(SW_SHOW=5) forces it visible without flashing a console.
-    "try {",
-    "  Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public class AgyZhcnWin32 { [DllImport(\"user32.dll\")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); [DllImport(\"user32.dll\")] public static extern bool SetForegroundWindow(IntPtr hWnd); }'",
-    "} catch {}",
-    "$form.Add_Shown({",
-    "  try {",
-    "    [void][AgyZhcnWin32]::ShowWindow($form.Handle, 5)",
-    "    [void][AgyZhcnWin32]::SetForegroundWindow($form.Handle)",
-    "  } catch {}",
-    "  $form.TopMost = $true",
-    "  $form.Activate()",
-    "})",
-    "$null = $form.ShowDialog()",
-    "[Console]::Write($form.Tag)",
-  ].join("\n");
+  return buildModernWindowsDialogScript({
+    title: COMPLETION_DIALOG_TITLE,
+    badge: COMPLETION_DIALOG_TITLE,
+    icon: "star",
+    headline: "汉化已完成！",
+    message: "Antigravity 中文版已为您准备就绪。\n本项目开源免费维护，并持续跟进新版本词库与功能适配。\n如果觉得好用，欢迎去 GitHub 点一颗免费 Star 支持一下！",
+    cancelId: "close",
+    buttons: [
+      { id: "close", text: COMPLETION_DIALOG_BUTTONS.close, style: "secondary" },
+      { id: "star", text: COMPLETION_DIALOG_BUTTONS.star, style: "primary", url: repoUrl, isAccept: true },
+    ],
+  });
 }
 
 /**

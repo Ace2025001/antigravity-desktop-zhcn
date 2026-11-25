@@ -5,16 +5,29 @@
 // A normal quit without an update just ends after the wait.
 import { execFile, spawn } from "node:child_process";
 import { appendFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { decideAutoFollow } from "../src/lib/auto-follow-decision.mjs";
-import { toVbsAsciiExpr } from "../src/lib/auto-follow-task.mjs";
 import { clientProcesses } from "../src/lib/close-client.mjs";
 import { inspectInstallation } from "../src/lib/installation.mjs";
+import {
+  getClientFollowDialogSpec,
+  getPackExitDialogSpec,
+  getWarnNotifyDialogSpec,
+  showModernWindowsDialog,
+} from "../src/lib/modern-dialog.mjs";
 import { getStateRoot, projectRoot } from "../src/lib/paths.mjs";
 import { readInstallState } from "../src/lib/state.mjs";
 import { readUserSettings } from "../src/lib/user-settings.mjs";
+import {
+  checkLatestRelease,
+  performSelfUpdate,
+  readLocalPackVersion,
+  readPackUpdateState,
+  resolvePackRootFromCore,
+  writePackUpdateState,
+} from "../src/lib/self-update.mjs";
 
 const execFileAsync = promisify(execFile);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -70,11 +83,7 @@ function runVisibleAutoFollowUpdate(extraArgs, installRoot) {
 }
 
 async function notify(message) {
-  const file = path.join(os.tmpdir(), `agy-zhcn-note-${process.pid}.vbs`);
-  const vbs = `MsgBox ${toVbsAsciiExpr(message)}, 48 + 4096, ${toVbsAsciiExpr("Antigravity 汉化包")}`;
-  await writeFile(file, `${vbs}\r\n`, "ascii");
-  await execFileAsync("wscript.exe", ["//NoLogo", file], { timeout: 24 * 60 * 60 * 1000 }).catch(() => {});
-  await rm(file, { force: true }).catch(() => {});
+  await showModernWindowsDialog(getWarnNotifyDialogSpec({ message })).catch(() => {});
 }
 
 function runAutoFollowUpdate(extraArgs, installRoot) {
@@ -86,21 +95,11 @@ function runAutoFollowUpdate(extraArgs, installRoot) {
   });
 }
 
-/** Yes/No dialog via WScript (pure-ASCII VBS so it works on any Windows locale). */
 async function askUser(version) {
-  const message = `已检测到 Antigravity 客户端更新${version ? `（${version}）` : ""}，界面变回了英文。\n\n是否现在一键汉化？\n\n选“是”会打开汉化窗口；如果客户端正在运行，会先提示你保存并退出。\n选“否”则这个版本不再提醒，需要时可双击“启动中文”。`;
-  const vbs = `WScript.Quit MsgBox(${toVbsAsciiExpr(message)}, 4 + 32 + 4096, ${toVbsAsciiExpr("Antigravity 汉化包")})\r\n`;
-  const file = path.join(os.tmpdir(), `agy-zhcn-ask-${process.pid}.vbs`);
-  await writeFile(file, vbs, "ascii");
   try {
-    await execFileAsync("wscript.exe", ["//NoLogo", file], { windowsHide: false, timeout: 24 * 60 * 60 * 1000 });
+    return await showModernWindowsDialog(getClientFollowDialogSpec({ version }));
+  } catch {
     return "error";
-  } catch (error) {
-    if (error.code === 6) return "yes"; // vbYes
-    if (error.code === 7) return "no"; // vbNo
-    return "error";
-  } finally {
-    await rm(file, { force: true }).catch(() => {});
   }
 }
 
@@ -134,15 +133,19 @@ async function asarStamp(state) {
 }
 
 /** Wait until the installer has replaced app.asar and the file stops changing. */
-async function waitForInstalledUpdate(state) {
-  const initial = await asarStamp(state);
+export async function waitForInstalledUpdate(
+  state,
+  initialStamp = null,
+  { getAsarStamp = asarStamp, pollMs = POLL_MS, maxWaitMs = INSTALL_WAIT_MS } = {},
+) {
+  const initial = initialStamp || (await getAsarStamp(state));
   let previous = initial;
-  const deadline = Date.now() + INSTALL_WAIT_MS;
+  const deadline = Date.now() + maxWaitMs;
   while (Date.now() < deadline) {
-    await sleep(POLL_MS);
-    const current = await asarStamp(state);
+    const current = await getAsarStamp(state);
     if (current !== initial && current !== "missing" && current === previous) return true;
     previous = current;
+    await sleep(pollMs);
   }
   return false;
 }
@@ -153,15 +156,111 @@ async function takeOver(state) {
   if (code !== 0) await notify("客户端已更新，但自动汉化没有完成。\n\n请双击 win启动 里的“启动中文”重新汉化。");
 }
 
+async function askPackUpdate(currentVersion, latestVersion) {
+  try {
+    return await showModernWindowsDialog(getPackExitDialogSpec({ currentVersion, latestVersion }));
+  } catch {
+    return "error";
+  }
+}
+
+export async function waitForClientsClosed(
+  state,
+  initialAsarStamp,
+  maxMs = 30_000,
+  { getAsarStamp = asarStamp, listProcesses = clientProcesses, pollMs = 1000 } = {},
+) {
+  const deadline = Date.now() + maxMs;
+  while (Date.now() < deadline) {
+    if (state?.installRoot && initialAsarStamp && (await getAsarStamp(state)) !== initialAsarStamp) {
+      return { closed: false, clientUpdatedDuringWait: true };
+    }
+    const procs = await listProcesses().catch(() => []);
+    if (procs.length === 0) return { closed: true, clientUpdatedDuringWait: false };
+    await sleep(pollMs);
+  }
+  const clientUpdatedDuringWait = Boolean(state?.installRoot && initialAsarStamp && (await getAsarStamp(state)) !== initialAsarStamp);
+  const procs = await listProcesses().catch(() => []);
+  return { closed: !clientUpdatedDuringWait && procs.length === 0, clientUpdatedDuringWait };
+}
+
+async function maybeApplyPendingOrRemotePackUpdate(settings, state, initialAsarStamp) {
+  const packState = await readPackUpdateState().catch(() => ({}));
+  if (packState?.pendingMainUpdate && state?.installRoot) {
+    const waitRes = await waitForClientsClosed(state, initialAsarStamp, 30_000);
+    if (waitRes.clientUpdatedDuringWait) {
+      await logDaemon("等待期间检测到客户端文件变化，优先交给客户端更新跟进。");
+      return false;
+    }
+    if (waitRes.closed) {
+      const code = await runAutoFollowUpdate(["--no-launch", "--abort-if-running"], state.installRoot);
+      await logDaemon(`退出后补齐待升级主进程补丁，退出码 ${code}`);
+      if (code === 0) {
+        await writePackUpdateState({ pendingMainUpdate: null }).catch(() => {});
+      }
+      return true;
+    }
+  }
+
+  const packMode = settings?.packAutoUpdate || "ask";
+  if (packMode === "off") return false;
+  const packRoot = resolvePackRootFromCore(projectRoot);
+  if (!packRoot) return false;
+  const lastQuitAt = packState?.lastQuitCheckAt ? Date.parse(packState.lastQuitCheckAt) : 0;
+  if (Number.isFinite(lastQuitAt) && Date.now() - lastQuitAt < 6 * 60 * 60 * 1000) return false;
+  if (state?.installRoot && initialAsarStamp && (await asarStamp(state)) !== initialAsarStamp) return false;
+
+  await writePackUpdateState({ lastQuitCheckAt: new Date().toISOString() }).catch(() => {});
+  const currentVersion = await readLocalPackVersion(projectRoot);
+  const check = await checkLatestRelease({ currentVersion, timeoutMs: 4000 }).catch(() => ({ ok: false }));
+  if (!check.ok || !check.hasUpdate) return false;
+  if (state?.installRoot && initialAsarStamp && (await asarStamp(state)) !== initialAsarStamp) return false;
+
+  if ((await clientProcesses().catch(() => [])).length > 0) return false;
+  if (packMode === "ask") {
+    if (packState?.skippedVersion === check.latestVersion) return false;
+    if (packState?.snoozedVersion === check.latestVersion && Number(packState?.snoozedUntil) > Date.now()) return false;
+    const answer = await askPackUpdate(currentVersion, check.latestVersion);
+    if (answer !== "yes") {
+      if (answer === "no") {
+        await writePackUpdateState({ skippedVersion: check.latestVersion }).catch(() => {});
+      } else {
+        await writePackUpdateState({
+          snoozedVersion: check.latestVersion,
+          snoozedUntil: Date.now() + 24 * 60 * 60 * 1000,
+        }).catch(() => {});
+      }
+      return false;
+    }
+  }
+
+  if (state?.installRoot && initialAsarStamp && (await asarStamp(state)) !== initialAsarStamp) return false;
+  const res = await performSelfUpdate({ packRoot, coreRoot: projectRoot }).catch((err) => ({ status: "error", reason: err.message }));
+  await logDaemon(`退出后检查汉化包更新结果：${JSON.stringify(res)}`);
+  if (state?.installRoot && initialAsarStamp && (await asarStamp(state)) !== initialAsarStamp) return false;
+  if (res?.status === "updated" && state?.installRoot && (await clientProcesses().catch(() => [])).length === 0) {
+    const code = await runAutoFollowUpdate(["--no-launch", "--abort-if-running"], state.installRoot);
+    await logDaemon(`汉化包升级至 v${res.latestVersion} 后后台应用完成，退出码 ${code}`);
+  }
+  return true;
+}
+
 async function main() {
   if (mode !== "--post-quit") return; // Only the client's quit hook starts this script.
   const { settings } = await readUserSettings();
+  let state = await readInstallState().catch(() => null);
+  const initialAsarStamp = state?.installRoot ? await asarStamp(state) : "missing";
+
+  if (state && state.status === "installed" && state.installRoot) {
+    await maybeApplyPendingOrRemotePackUpdate(settings, state, initialAsarStamp);
+    state = (await readInstallState().catch(() => null)) || state;
+  }
+
   if (settings.autoFollow === "off") return;
-  const state = await readInstallState().catch(() => null);
   if (!state || state.status !== "installed" || !state.installRoot || !state.patchedAsarSha256) return;
 
   // A quit without an update ends here once the wait is over.
-  if (!(await waitForInstalledUpdate(state))) return;
+  if (!(await waitForInstalledUpdate(state, initialAsarStamp))) return;
   await logDaemon("客户端退出后文件已被替换，开始检查新版本。");
   const update = await detectUpdate(state);
   if (!update) {
@@ -192,9 +291,11 @@ async function main() {
         await logDaemon(openVisibleLauncher() ? "用户选择一键汉化，已打开汉化窗口。" : "用户选择一键汉化，但未找到启动中文入口。");
       } else if (answer === "error") {
         await logDaemon("提示窗口未能正常显示。");
-      } else {
+      } else if (answer === "no") {
         await writeFile(declinedPath, JSON.stringify({ appAsarSha256: update.appAsarSha256, version: update.packageVersion, at: new Date().toISOString() }), "utf8").catch(() => {});
-        await logDaemon("用户选择暂不汉化，此版本不再提醒。");
+        await logDaemon("用户选择此版本不提醒，已记录。");
+      } else {
+        await logDaemon("用户选择稍后再说。");
       }
     }
   } finally {
@@ -202,7 +303,10 @@ async function main() {
   }
 }
 
-main().catch(async (error) => {
-  await logDaemon(`出错：${error?.message ?? error}`);
-  process.exitCode = 0;
-});
+const isEntrypoint = Boolean(process.argv[1]) && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isEntrypoint) {
+  main().catch(async (error) => {
+    await logDaemon(`出错：${error?.message ?? error}`);
+    process.exitCode = 0;
+  });
+}
