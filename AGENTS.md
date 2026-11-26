@@ -23,7 +23,7 @@ Only install when the user has asked for it. Full step-by-step guide: [docs/ai-i
    `gh api repos/Ace2025001/antigravity-desktop-zhcn/releases/latest --jq '.assets[] | select(.name=="Antigravity-Windows+Mac.zip") | .digest'`
 3. Extract fully. Root folder: `antigravity汉化包/` with `win启动/`, `mac启动/`, `语言包/`.
 4. Run:
-   - Windows: `win启动\启动中文.bat` (set `AGY_INSTALL_PATH` to the client folder to skip the picker dialog). Read-only check: `win启动\配套程序\node.exe 语言包\核心程序\src\cli.mjs check` with `AGY_LANGUAGE_PACK` set to the `语言包` folder.
+   - Windows: `win启动\启动中文.bat` (set `AGY_INSTALL_PATH` to the client folder to skip the picker dialog). Read-only check: `win启动\配套程序\node.exe 语言包\核心程序\src\cli.mjs check` with `AGY_LANGUAGE_PACK` set to the `语言包` folder. On clients newer than the offline whitelist, `check` prints “静态兼容性: 失败（当前版本尚未登记）” and exits 2; that is expected, continue with the install, which adapts to the running UI dynamically.
    - macOS: `mac启动/启动中文.command` (set `AGY_MAC_SOURCE` to the official `.app` to skip the picker). First run is interactive: keep the official app open until the home screen appears, press Enter in the terminal to read the UI, then quit with ⌘Q when prompted.
 5. Restore English: `win启动\卸载汉化.bat` or `mac启动/卸载汉化.command`.
 

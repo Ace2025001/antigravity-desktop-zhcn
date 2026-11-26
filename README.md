@@ -13,6 +13,8 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 ### [⬇ 下载完整汉化包（Windows + Mac）](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip)
 
 > 下载后请先右键“全部解压缩”，进入 `win启动` 或 `mac启动` 双击 **启动中文**（只需要这一个文件；具体目录与步骤见下方[使用步骤](#使用步骤)）。觉得好用的话，欢迎点右上角 ⭐ **Star** 支持！
+>
+> 想让 AI 助手代劳：把这句话发给豆包、DeepSeek、Claude Code、Codex 等 AI 助手——“帮我把 https://github.com/Ace2025001/antigravity-desktop-zhcn 安装到电脑上，按仓库里的 docs/ai-install.md 操作”
 
 ## 汉化效果与覆盖范围
 

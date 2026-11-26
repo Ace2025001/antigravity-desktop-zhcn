@@ -6,6 +6,43 @@
 
 [返回项目首页](../README.md) · [兼容说明](compatibility.md) · [Mac 详细说明](../macOS/README.md)
 
+## 快速通道：下载、校验、解压、只读检查
+
+下面两段命令一次完成第 2、3 步和只读检查，可以直接整段运行（已实测）。看完检查输出后，按第 4 节（Windows）或第 5 节（Mac）安装。
+
+Windows（PowerShell 5.1 及以上）：
+
+```powershell
+$dest = "$env:USERPROFILE\Downloads"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$ProgressPreference = 'SilentlyContinue'
+$zip = Join-Path $dest 'Antigravity-Windows+Mac.zip'
+Invoke-WebRequest 'https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip' -OutFile $zip
+$rel = Invoke-RestMethod 'https://api.github.com/repos/Ace2025001/antigravity-desktop-zhcn/releases/latest'
+$expected = ($rel.assets | Where-Object { $_.name -eq 'Antigravity-Windows+Mac.zip' }).digest -replace '^sha256:', ''
+$actual = (Get-FileHash -Algorithm SHA256 $zip).Hash
+if (-not $expected -or $actual -ne $expected) { throw "SHA-256 不一致，停止安装" }
+Expand-Archive -LiteralPath $zip -DestinationPath $dest -Force
+Set-Location (Join-Path $dest 'antigravity汉化包')
+$env:AGY_LANGUAGE_PACK = (Resolve-Path '.\语言包').Path
+& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\src\cli.mjs' check
+```
+
+Mac（终端）：
+
+```bash
+cd ~/Downloads
+curl -fL -o Antigravity-Windows+Mac.zip 'https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip'
+expected=$(curl -fsSL https://api.github.com/repos/Ace2025001/antigravity-desktop-zhcn/releases/latest | grep -A40 '"name": "Antigravity-Windows+Mac.zip"' | grep -m1 '"digest"' | sed -E 's/.*sha256:([0-9a-f]{64}).*/\1/')
+actual=$(shasum -a 256 Antigravity-Windows+Mac.zip | cut -d' ' -f1)
+[ -n "$expected" ] && [ "$expected" = "$actual" ] || { echo "SHA-256 不一致，停止安装"; exit 1; }
+ditto -x -k Antigravity-Windows+Mac.zip .
+cd antigravity汉化包
+AGY_LANGUAGE_PACK="$PWD/语言包" ./mac启动/配套程序/node ./语言包/核心程序/scripts/macos.mjs check
+```
+
+解压用 `Expand-Archive`、`tar` 或 `ditto` 都可以，压缩包内的中文文件名已按 UTF-8 标记。只读检查显示“静态兼容性：失败（当前版本尚未登记）”并返回 2 时，说明客户端比离线白名单新，安装时会读取当前界面动态适配，继续按第 4、5 节安装即可（详见第 7 节）。
+
 ## 1. 确认适用范围
 
 - 适用：Antigravity Desktop **独立桌面客户端**，Windows x64 或 Apple 芯片 Mac。
@@ -125,7 +162,7 @@ AGY_LANGUAGE_PACK="$PWD/语言包" ./mac启动/配套程序/node ./语言包/核
 ## 7. 判断结果
 
 - 读取完整输出，不要只看退出码。用户取消也可能返回 0。
-- `check` 返回 0：本次检查通过；客户端未运行时可能只是静态检查。返回 2：兼容性或运行时检查未通过。其他非零：停止并诊断。
+- `check` 返回 0：本次检查通过；客户端未运行时可能只是静态检查。返回 2：兼容性或运行时检查未通过。若输出是“静态兼容性：失败（当前版本尚未登记）”，表示客户端比离线白名单新，这是新版客户端的常见情况，继续运行安装命令即可，安装时会读取当前界面动态适配；其他原因的 2 先读完整输出再决定。其他非零：停止并诊断。
 - 打开客户端，确认设置页、对话面板等代表性界面显示中文后，才算安装成功。
 - 结构检查失败时保留完整输出并反馈，校验保持开启，等待新版本适配。
 
