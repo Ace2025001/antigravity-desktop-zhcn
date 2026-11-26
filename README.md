@@ -160,3 +160,7 @@ antigravity汉化包/
 需要 Node.js >= 22.12.0，执行 `npm ci --ignore-scripts`、`npm test`、`npm run validate`。参见 [系统架构](docs/architecture.md)、[构建与发布](docs/releasing.md)、[Mac 高级说明](macOS/README.md)、[AGENTS.md](AGENTS.md)、[贡献指南](CONTRIBUTING.md)。漏翻词条欢迎到 [Issue](https://github.com/Ace2025001/antigravity-desktop-zhcn/issues) 反馈。
 
 采用 [MIT License](LICENSE) 开源。
+
+## 友情链接
+
+- [LINUX DO](https://linux.do/)：真诚、友善、团结、专业的技术社区，本项目在这里交流与反馈。
