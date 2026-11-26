@@ -44,7 +44,7 @@ function buildSpec() {
       badge: COMPLETION_DIALOG_TITLE,
       icon: "star",
       headline: "汉化已完成！",
-      message: "Antigravity 中文版已为您准备就绪。\n本项目开源免费维护，持续跟进新版本词库与功能适配；如果觉得好用，欢迎去 GitHub 点一颗 Star 支持一下！",
+      message: "Antigravity 中文版已准备就绪。\n本项目开源免费维护，持续跟进新版本词库与功能适配；如果觉得好用，欢迎去 GitHub 点一颗 Star 支持一下！",
       cancelId: "close",
       buttons: [
         { id: "close", text: COMPLETION_DIALOG_BUTTONS.close, style: "secondary" },

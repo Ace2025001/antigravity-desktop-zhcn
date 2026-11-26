@@ -7,7 +7,7 @@ const execFileAsync = promisify(execFile);
 export const REPO_URL = "https://github.com/Ace2025001/antigravity-desktop-zhcn";
 export const COMPLETION_DIALOG_TITLE = "Antigravity 中文汉化包";
 export const COMPLETION_DIALOG_MESSAGE = [
-  "汉化已完成！Antigravity 中文版已为您准备就绪。",
+  "汉化已完成！Antigravity 中文版已准备就绪。",
   "",
   "本项目开源免费维护，并持续跟进新版本词库与功能适配。",
   "如果觉得好用，欢迎去 GitHub 点一颗免费 Star 支持一下，让更多中文用户看到这个项目！",
@@ -45,7 +45,7 @@ export function buildWindowsCompletionDialogScript(repoUrl = REPO_URL) {
     badge: COMPLETION_DIALOG_TITLE,
     icon: "star",
     headline: "汉化已完成！",
-    message: "Antigravity 中文版已为您准备就绪。\n本项目开源免费维护，并持续跟进新版本词库与功能适配。\n如果觉得好用，欢迎去 GitHub 点一颗免费 Star 支持一下！",
+    message: "Antigravity 中文版已准备就绪。\n本项目开源免费维护，并持续跟进新版本词库与功能适配。\n如果觉得好用，欢迎去 GitHub 点一颗免费 Star 支持一下！",
     cancelId: "close",
     buttons: [
       { id: "close", text: COMPLETION_DIALOG_BUTTONS.close, style: "secondary" },

@@ -384,7 +384,7 @@ async function updateInstalledLocalization({
     throw new Error("现有汉化状态无法对应到兼容性清单，请先卸载汉化。");
   }
 
-  printStep(2, 5, "读取原始运行时 UI，生成最新中文文件");
+  printStep(2, 5, "读取原版客户端界面，生成最新中文文件");
   const preparedBundlePath = path.join(
     getStateRoot(),
     "prepared",
@@ -404,7 +404,7 @@ async function updateInstalledLocalization({
   }
 
   printStep(3, 5, "等待汉化更新确认");
-  console.log("只会更新中文 UI 文件，不会重复修改 app.asar 或原版备份。");
+  console.log("只会更新中文界面文件，不会重复修改原版客户端或备份。");
   if (
     !(await askForConfirmation("检测到新的汉化规则，确认更新吗？", {
       assumeYes,
@@ -414,7 +414,7 @@ async function updateInstalledLocalization({
     return 0;
   }
 
-  printStep(4, 5, "确认 Antigravity 已彻底退出并原子更新中文文件");
+  printStep(4, 5, "确认 Antigravity 已彻底退出并更新中文文件");
   await askUserToCloseAntigravity(
     "最新中文文件已生成。请彻底关闭 Antigravity，然后按回车继续更新...",
   );
@@ -497,19 +497,19 @@ async function install({ assumeYes = false } = {}) {
       });
     }
     throw new Error(
-      "检测到已安装的 ASAR 补丁，但中文 UI 文件缺失或已变化；请先卸载汉化。",
+      "检测到已安装的客户端汉化，但中文界面文件缺失或已变化；请先卸载汉化。",
     );
   }
 
   printStaticReport(initialInspection);
   if (!initialInspection.target) {
     throw new Error(
-      `当前安装文件版本 (${initialInspection.packageVersion}) 尚未登记在离线白名单中。\n` +
-      `提示：您可以直接运行【启动 Antigravity（自动汉化）】自动汉化，或从 Releases 下载最新版本。`,
+      `当前安装文件版本 (${initialInspection.packageVersion}) 尚未登记在内置兼容列表中。\n` +
+      `提示：你可以直接运行“启动中文”自动汉化，或前往 GitHub 下载最新版本。`,
     );
   }
 
-  printStep(2, totalSteps, "获取并验证运行时 UI，生成中文文件");
+  printStep(2, totalSteps, "读取原版客户端界面，生成中文文件");
   const stateRoot = getStateRoot();
   const preparedBundlePath = path.join(stateRoot, "prepared", "zh_cn_ui_main.js");
   const resolvedUi = await prepareRuntimeUi(initialInspection);
@@ -552,9 +552,9 @@ async function install({ assumeYes = false } = {}) {
   }
 
   printStep(3, totalSteps, "等待安装确认");
-  console.log("下一步会先创建并验证原始 app.asar 备份，再安装汉化补丁。");
+  console.log("下一步会先备份原版客户端文件，再应用中文汉化。");
   if (localizedBundleAction === "replace") {
-    console.log("检测到由本工具安装的旧版中文 UI；安装时将验证并原子替换。");
+    console.log("检测到旧版中文界面文件，安装时会校验并自动更新。");
   }
   if (
     !(await askForConfirmation("确认继续安装吗？", {
@@ -600,7 +600,7 @@ async function install({ assumeYes = false } = {}) {
   let bundleCreatedThisRun = false;
 
   try {
-    printStep(6, totalSteps, "构建并原子安装汉化补丁");
+    printStep(6, totalSteps, "应用中文汉化");
     const built = await buildPatchedAsar({
       sourceAsarPath: inspection.appAsarPath,
       outputAsarPath: builtAsarPath,

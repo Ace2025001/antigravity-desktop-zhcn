@@ -103,6 +103,6 @@ test("全部 Windows 更新与跟进弹窗复用同一现代卡片组件且按�
   assert.ok(startup.includes("立即更新") && startup.includes("跳过此版本"));
   assert.ok(exitPack.includes("立即更新") && exitPack.includes("跳过此版本"));
   assert.ok(follow.includes("立即汉化") && follow.includes("此版本不提醒"));
-  assert.ok(relaunch.includes("立即重启并汉化") && relaunch.includes("暂不更新"));
+  assert.ok(relaunch.includes("立即重启并汉化") && relaunch.includes("稍后再说"));
   assert.ok(warn.includes("知道了") && warn.includes("自动跟进未能完成"));
 });

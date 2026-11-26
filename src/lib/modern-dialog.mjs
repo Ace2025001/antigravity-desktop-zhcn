@@ -211,7 +211,7 @@ export function getPackStartupDialogSpec({ currentVersion = "", latestVersion = 
     badge: "Antigravity 汉化包 · 启动检查",
     icon: "update",
     headline: `发现汉化包新版本 v${latestVersion}`,
-    message: `${currentVersion ? `当前版本：v${currentVersion}\n` : ""}确认后在后台下载并核对 SHA-256 摘要，客户端可以继续使用。`,
+    message: `${currentVersion ? `当前版本：v${currentVersion}\n` : ""}确认后在后台下载并安全校验，客户端可以继续使用。`,
     cancelId: "later",
     buttons: [
       { id: "skip", text: "跳过此版本", style: "subtle" },
@@ -243,11 +243,11 @@ export function getPackCheckErrorDialogSpec({ currentVersion = "", detail = "" }
     badge: "Antigravity 汉化包 · 检查失败",
     icon: "warn",
     headline: "暂时无法获取最新版本信息",
-    message: `${currentVersion ? `当前版本：v${currentVersion}\n` : ""}未能连接 GitHub 发布页${detail ? `（${detail}）` : ""}。请检查网络连接后重试，也可前往发布页查看。`,
+    message: `${currentVersion ? `当前版本：v${currentVersion}\n` : ""}未能连接 GitHub 下载页${detail ? `（${detail}）` : ""}。请检查网络连接后重试，也可前往下载页查看。`,
     cancelId: "close",
     buttons: [
       { id: "close", text: "关闭", style: "secondary" },
-      { id: "open", text: "打开发布页", style: "primary", isAccept: true },
+      { id: "open", text: "打开下载页", style: "primary", isAccept: true },
     ],
   };
 }
@@ -260,7 +260,7 @@ export function getPackUpdatedDialogSpec({ latestVersion = "", hotUpdated = true
     headline: `汉化包已更新至 v${latestVersion}`,
     message: hotUpdated
       ? "中文界面已更新，在客户端窗口按 Ctrl+R 刷新即可看到；其余部分在下次退出客户端时自动完成。"
-      : "已完成下载与 SHA-256 校验；退出后重新打开一次客户端（或运行“启动中文”）即可完成更新。",
+      : "已完成下载与安全校验；退出后重新打开一次客户端（或运行“启动中文”）即可完成更新。",
     cancelId: "ok",
     buttons: [
       { id: "ok", text: "知道了", style: "primary", isAccept: true },
@@ -274,7 +274,7 @@ export function getPackExitDialogSpec({ currentVersion = "", latestVersion = "" 
     badge: "Antigravity 汉化包 · 更新提醒",
     icon: "update",
     headline: `发现汉化包新版本 v${latestVersion}`,
-    message: `${currentVersion ? `当前版本：v${currentVersion}\n` : ""}确认后在后台下载、核对 SHA-256 并完成更新。`,
+    message: `${currentVersion ? `当前版本：v${currentVersion}\n` : ""}确认后在后台下载、校验并完成更新。`,
     cancelId: "later",
     buttons: [
       { id: "no", text: "跳过此版本", style: "subtle" },
@@ -290,7 +290,7 @@ export function getClientFollowDialogSpec({ version = "" } = {}) {
     badge: "Antigravity 汉化包 · 更新跟进",
     icon: "zhcn",
     headline: `检测到客户端已更新${version ? `（${version}）` : ""}，界面变回英文`,
-    message: "是否现在为你打开汉化窗口一键恢复中文？\n若客户端仍在运行会先提示保存并退出；选“此版本不提醒”可随时双击“启动中文”。",
+    message: "是否现在打开汉化窗口一键恢复中文？\n打开后会引导你保存工作并退出再汉化；选“此版本不提醒”后，以后随时可双击“启动中文”。",
     cancelId: "later",
     buttons: [
       { id: "no", text: "此版本不提醒", style: "subtle" },
@@ -309,7 +309,7 @@ export function getRelaunchConfirmDialogSpec() {
     message: "请先保存当前窗口中的工作。\n点击“立即重启并汉化”将关闭当前英文窗口并重新打开中文版。",
     cancelId: "cancel",
     buttons: [
-      { id: "cancel", text: "暂不更新", style: "secondary" },
+      { id: "cancel", text: "稍后再说", style: "secondary" },
       { id: "ok", text: "立即重启并汉化", style: "primary", isAccept: true },
     ],
   };

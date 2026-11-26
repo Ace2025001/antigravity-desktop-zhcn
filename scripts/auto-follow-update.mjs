@@ -61,7 +61,7 @@ async function waitForRuntimeUi(executablePath, setLabel) {
     }
     await sleep(1_000);
   }
-  throw new Error("两分钟内未能读取新版本运行时 UI，未修改 app.asar。");
+  throw new Error("两分钟内未能读取新版本客户端界面，未修改任何文件。");
 }
 
 async function ensureBackup(sourcePath, backupPath, expectedHash) {

@@ -54,11 +54,11 @@ async function capture(info) {
 
 async function verify(state) {
   if (!state || state.appPath !== macAppPath) throw new Error("没有当前工具创建的 Mac 中文版状态。");
-  if (await sha256File(path.join(macResources(macAppPath), "app.asar")) !== state.patchedAsarSha256) throw new Error("中文版资源已变化，请重新检查。");
-  if (await sha256File(state.bundlePath) !== state.localizedBundleSha256) throw new Error("中文版 UI 指纹不匹配。");
+  if (await sha256File(path.join(macResources(macAppPath), "app.asar")) !== state.patchedAsarSha256) throw new Error("中文版客户端文件已变化，请重新检查。");
+  if (await sha256File(state.bundlePath) !== state.localizedBundleSha256) throw new Error("中文版界面文件已变化，请重新检查。");
   const archive = await readFile(path.join(macResources(macAppPath), "app.asar"));
   const { stdout } = await exec("/usr/bin/plutil", ["-extract", "ElectronAsarIntegrity", "json", "-o", "-", path.join(macAppPath, "Contents", "Info.plist")]);
-  if (JSON.parse(stdout)["Resources/app.asar"].hash !== asarHeaderHash(archive)) throw new Error("ASAR 嵌入校验不匹配。");
+  if (JSON.parse(stdout)["Resources/app.asar"].hash !== asarHeaderHash(archive)) throw new Error("应用资源校验不匹配。");
   await exec("/usr/bin/codesign", ["--verify", "--deep", "--strict", macAppPath], { timeout: 120_000 });
   console.log(`Mac 中文版 ${state.version}：资源、中文 UI、ASAR 完整性和本地签名均通过检查。`);
 }
@@ -191,7 +191,7 @@ try {
         inspect: inspectOriginal,
         waitUntilClosed: closeClientForChanges,
         openOriginal: openMacApp,
-        ready: () => terminal.question("看到 Antigravity 首页后，请回到这里按回车继续："),
+        ready: () => terminal.question("看到 Antigravity 首页后（先保持应用开着），回到这里按回车继续："),
         capture,
         install,
         launch: async () => { await verify(await readState()); await requireMacAppsClosed(); await openMacApp(macAppPath); },
