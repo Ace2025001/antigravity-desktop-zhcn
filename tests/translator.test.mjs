@@ -3900,94 +3900,198 @@ test("2.35.2 /btw 提示、图标颜色选择器与 Swarm 扩展面板无宿主�
   }
 });
 
-test("左上角 Antigravity 菜单新增汉化包版本与检查汉化包更新，并在旧补丁回退时展示提示条", async () => {
+test("左上角 Antigravity 菜单包含五项入口，并可在旧补丁回退态与完整可控卡片态下工作", async () => {
   const current = await loadDomTranslations();
   const sampleReactMenu = Buffer.from(
     'k=(0,E.useMemo)(()=>{var v=[];c?.appVersion&&v.push({label:`Version ${c.appVersion}`,onClick:()=>{},nonSelectable:!0});c?.checkForUpdates&&v.push({label:"Check for Updates",onClick:()=>{c.checkForUpdates?.()}});return v},[c]);',
     "utf8",
   );
-  const localized = createLocalizedBundle(sampleReactMenu, { ...current, packVersion: "3.1.99" });
+  const localized = createLocalizedBundle(sampleReactMenu, { ...current, packVersion: "3.1.99", maxAppVersion: "2.35.9" });
   const text = localized.buffer.toString("utf8");
 
   assert.match(text, /label:`版本 \$\{c\.appVersion\}`/);
   assert.match(text, /label:"检查更新"/);
   assert.match(text, /label:"汉化包版本 v3\.1\.99"/);
   assert.match(text, /label:"检查汉化包更新"/);
+  assert.match(text, /label:"汉化设置"/);
   const idxAppVersion = text.indexOf("label:`版本 ${c.appVersion}`");
   const idxAppUpdate = text.indexOf('label:"检查更新"');
   const idxPackVersion = text.indexOf('label:"汉化包版本 v3.1.99"');
   const idxPackUpdate = text.indexOf('label:"检查汉化包更新"');
+  const idxPackSettings = text.indexOf('label:"汉化设置"');
   assert.ok(
-    idxAppVersion !== -1 && idxAppVersion < idxAppUpdate && idxAppUpdate < idxPackVersion && idxPackVersion < idxPackUpdate,
-    "顶部 Antigravity 菜单顺序应依次为：版本、检查更新、汉化包版本、检查汉化包更新",
+    idxAppVersion !== -1 &&
+      idxAppVersion < idxAppUpdate &&
+      idxAppUpdate < idxPackVersion &&
+      idxPackVersion < idxPackUpdate &&
+      idxPackUpdate < idxPackSettings,
+    "顶部 Antigravity 菜单顺序应依次为：版本、检查更新、汉化包版本、检查汉化包更新、汉化设置",
   );
   assert.match(text, /__AGY_ZHCN_CHECK_PACK_UPDATE__/);
+  assert.match(text, /__AGY_ZHCN_OPEN_PACK_PANEL__/);
   assert.ok(!text.includes('label:"Check for Updates"'), "原菜单项应已转为中文");
 
   const bIdx = text.indexOf("/* __AGY_ZHCN_SIDECAR_OVERLAY_BEGIN__ */");
   const eIdx = text.indexOf("/* __AGY_ZHCN_SIDECAR_OVERLAY_END__ */", bIdx);
   const overlay = text.slice(bIdx + "/* __AGY_ZHCN_SIDECAR_OVERLAY_BEGIN__ */".length, eIdx).trim();
 
-  let appendedToast = null;
-  const fakeToast = {
-    attrs: {},
-    style: {},
-    children: [],
-    setAttribute(k, v) { this.attrs[k] = v; },
-    appendChild(c) { this.children.push(c); },
-    remove() { appendedToast = null; },
-  };
-  const timers = new Set();
-  const sb = {
-    Node: { TEXT_NODE: 3, ELEMENT_NODE: 1 },
-    NodeFilter: { SHOW_ELEMENT: 1, SHOW_TEXT: 4, SHOW_ALL: 0xffffffff },
-    Element: class {},
-    HTMLElement: class {},
-    SVGElement: class {},
-    document: {
-      readyState: "complete",
-      documentElement: { nodeType: 1, tagName: "HTML", childNodes: [], hasAttribute: () => false, getAttribute: () => null, closest: () => null, querySelector: () => null, querySelectorAll: () => [] },
-      body: {
-        nodeType: 1,
-        tagName: "BODY",
-        childNodes: [],
-        hasAttribute: () => false,
-        getAttribute: () => null,
-        closest: () => null,
-        querySelector: () => null,
+  function makeMockSandbox(fetchHandler) {
+    const timers = new Set();
+    const allElements = [];
+    let bodyChild = null;
+    const makeEl = (tagName = "DIV") => {
+      const el = {
+        tagName: String(tagName).toUpperCase(),
+        attrs: {},
+        style: {},
+        children: [],
+        textContent: "",
+        href: "",
+        disabled: false,
+        onclick: null,
+        setAttribute(k, v) { this.attrs[k] = String(v); },
+        appendChild(c) { this.children.push(c); return c; },
+        remove() { if (bodyChild === this) bodyChild = null; },
+      };
+      allElements.push(el);
+      return el;
+    };
+    const sb = {
+      Node: { TEXT_NODE: 3, ELEMENT_NODE: 1 },
+      NodeFilter: { SHOW_ELEMENT: 1, SHOW_TEXT: 4, SHOW_ALL: 0xffffffff },
+      Element: class {},
+      HTMLElement: class {},
+      SVGElement: class {},
+      document: {
+        readyState: "complete",
+        documentElement: { nodeType: 1, tagName: "HTML", childNodes: [], hasAttribute: () => false, getAttribute: () => null, closest: () => null, querySelector: () => null, querySelectorAll: () => [] },
+        body: {
+          nodeType: 1,
+          tagName: "BODY",
+          childNodes: [],
+          hasAttribute: () => false,
+          getAttribute: () => null,
+          closest: () => null,
+          querySelector: () => null,
+          querySelectorAll: () => [],
+          appendChild(el) { bodyChild = el; return el; },
+        },
+        createElement: (tag) => makeEl(tag),
+        createTreeWalker: () => ({ nextNode: () => null }),
+        querySelector: (sel) => (sel.includes("data-agy-zhcn-pack-toast") ? bodyChild : null),
         querySelectorAll: () => [],
-        appendChild(el) { appendedToast = el; },
+        addEventListener: () => {},
       },
-      createElement: () => ({ ...fakeToast, style: {}, children: [], attrs: {} }),
-      createTreeWalker: () => ({ nextNode: () => null }),
-      querySelector: () => null,
-      querySelectorAll: () => [],
-      addEventListener: () => {},
-    },
-    MutationObserver: class { observe() {} disconnect() {} },
-    fetch: async () => ({
-      headers: { get: () => "application/javascript; charset=utf-8" },
-    }),
-    setTimeout: (fn, ms) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); return id; },
-    clearTimeout: (id) => { timers.delete(id); clearTimeout(id); },
-    setInterval: () => 0,
-    clearInterval: () => {},
-    requestAnimationFrame: () => 0,
-    location: { protocol: "vscode-file:", hostname: "", href: "vscode-file://vscode-app/" },
-    localStorage: { getItem: () => null, setItem: () => {} },
-    __AGY_ZHCN_DISABLE_AUTO_TRANSLATE__: true,
-    console,
-  };
-  sb.window = sb;
-  sb.self = sb;
-  sb.globalThis = sb;
-  try {
-    new vm.Script(overlay).runInContext(vm.createContext(sb));
-    assert.equal(sb.__AGY_ZHCN_PACK_VERSION__, "3.1.99");
-    await sb.__AGY_ZHCN_CHECK_PACK_UPDATE__();
-    assert.ok(appendedToast && appendedToast.attrs["data-agy-zhcn-pack-toast"] === "1", "旧补丁回退时应弹出友好提示卡片");
-  } finally {
-    timers.forEach((id) => clearTimeout(id));
-    timers.clear();
+      MutationObserver: class { observe() {} disconnect() {} },
+      fetch: fetchHandler,
+      setTimeout: (fn, ms) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); return id; },
+      clearTimeout: (id) => { timers.delete(id); clearTimeout(id); },
+      setInterval: () => 0,
+      clearInterval: () => {},
+      requestAnimationFrame: () => 0,
+      location: { protocol: "vscode-file:", hostname: "", href: "vscode-file://vscode-app/", reload: () => {} },
+      localStorage: { getItem: () => null, setItem: () => {} },
+      __AGY_ZHCN_DISABLE_AUTO_TRANSLATE__: true,
+      console,
+    };
+    sb.window = sb;
+    sb.self = sb;
+    sb.globalThis = sb;
+    return { sb, timers, allElements, getPanel: () => bodyChild };
+  }
+
+  // 场景 1：旧版 app.asar（只读 settings 可用、无 pack-update-check）回退提示
+  {
+    const { sb, timers, allElements, getPanel } = makeMockSandbox(async (url) => {
+      if (String(url).includes("agy-zhcn://settings")) {
+        return {
+          headers: { get: () => "application/json; charset=utf-8" },
+          json: async () => ({ packAutoUpdate: "ask", autoFollow: "auto", onlineTranslate: false, titleAutoTranslate: true, platform: "win32" }),
+        };
+      }
+      return { headers: { get: () => "application/javascript; charset=utf-8" } };
+    });
+    try {
+      new vm.Script(overlay).runInContext(vm.createContext(sb));
+      assert.equal(sb.__AGY_ZHCN_PACK_VERSION__, "3.1.99");
+      assert.equal(sb.__AGY_ZHCN_MAX_APP_VERSION__, "2.35.9");
+      await sb.__AGY_ZHCN_CHECK_PACK_UPDATE__();
+      const panel = getPanel();
+      assert.ok(panel && panel.attrs["data-agy-zhcn-pack-toast"] === "1", "应弹出汉化中心控制卡片");
+      const texts = allElements.map((e) => e.textContent).join("\n");
+      assert.match(texts, /当前版本：v3\.1\.99\s+·\s+已适配最高客户端：2\.35\.9/);
+      assert.match(texts, /旧版主程序补丁/);
+    } finally {
+      timers.forEach((id) => clearTimeout(id));
+      timers.clear();
+    }
+  }
+
+  // 场景 2：新版主进程代理完整闭环（从“汉化设置”打开不自动联网 -> 点击检查发现新版 -> 点击更新 -> 切换设置保存）
+  {
+    const calls = [];
+    const savedState = { packAutoUpdate: "auto", autoFollow: "auto", onlineTranslate: false, titleAutoTranslate: true, writable: true, platform: "win32", hasHook: true };
+    const { sb, timers, allElements, getPanel } = makeMockSandbox(async (url, opts = {}) => {
+      const u = String(url);
+      calls.push(`${opts.method || "GET"} ${u}`);
+      if (u.startsWith("agy-zhcn://settings")) {
+        if (opts.method === "POST") {
+          const patch = JSON.parse(opts.body);
+          Object.assign(savedState, patch);
+          return { headers: { get: () => "application/json" }, json: async () => ({ ok: true, handled: true, ...savedState }) };
+        }
+        return { headers: { get: () => "application/json" }, json: async () => ({ ...savedState }) };
+      }
+      if (u.startsWith("agy-zhcn://pack-update-check")) {
+        return {
+          headers: { get: () => "application/json" },
+          json: async () => ({
+            ok: true,
+            handled: true,
+            status: "update-available",
+            currentVersion: "3.1.99",
+            latestVersion: "3.2.0",
+            notes: "- 新增可控汉化中心面板",
+            maxAppVersion: "2.35.9",
+            releaseUrl: "https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/tag/v3.2.0",
+            hasHook: true,
+            platform: "win32",
+          }),
+        };
+      }
+      if (u.startsWith("agy-zhcn://pack-update-apply")) {
+        return {
+          headers: { get: () => "application/json" },
+          json: async () => ({ ok: true, handled: true, status: "updated", currentVersion: "3.2.0", latestVersion: "3.2.0", maxAppVersion: "2.35.10", hot: true }),
+        };
+      }
+      return { headers: { get: () => "application/json" }, json: async () => ({ ok: true }) };
+    });
+    try {
+      new vm.Script(overlay).runInContext(vm.createContext(sb));
+      await sb.__AGY_ZHCN_OPEN_PACK_PANEL__("settings");
+      assert.ok(getPanel(), "应弹出卡片");
+      assert.ok(!calls.some((c) => c.includes("pack-update-check")), "从汉化设置打开不得自动联网检查版本（守住红线 1）");
+
+      const findBtn = (txt) => allElements.find((e) => e.tagName === "BUTTON" && e.textContent.includes(txt));
+      await findBtn("检查更新").onclick();
+      assert.match(allElements.map((e) => e.textContent).join("\n"), /发现新版本 v3\.2\.0/);
+
+      await findBtn("立即更新").onclick();
+      const textsAfterUpdate = allElements.map((e) => e.textContent).join("\n");
+      assert.match(textsAfterUpdate, /已更新至 v3\.2\.0/);
+      assert.match(textsAfterUpdate, /当前版本：v3\.2\.0\s+·\s+已适配最高客户端：2\.35\.10/);
+
+      // 切换配置按钮：“汉化包自动更新 -> 关闭” 与 “界面联网补充 -> 开启”
+      const packOffBtn = allElements.find((e) => e.attrs["data-setting-key"] === "packAutoUpdate" && e.attrs["data-setting-val"] === "off");
+      await packOffBtn.onclick();
+      assert.equal(savedState.packAutoUpdate, "off", "应成功提交并写入设置到主进程");
+      const onlineOnBtn = allElements.find((e) => e.attrs["data-setting-key"] === "onlineTranslate" && e.attrs["data-setting-val"] === "true");
+      await onlineOnBtn.onclick();
+      assert.equal(savedState.onlineTranslate, true, "界面联网补充开关应成功提交并写入");
+    } finally {
+      timers.forEach((id) => clearTimeout(id));
+      timers.clear();
+    }
   }
 });

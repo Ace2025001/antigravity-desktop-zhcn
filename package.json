@@ -1,6 +1,7 @@
 {
   "name": "antigravity-desktop-zhcn",
   "version": "3.1.7",
+  "maxSupportedClientVersion": "2.35.2",
   "private": true,
   "description": "Windows and macOS Chinese localization patcher for Antigravity Desktop",
   "type": "module",

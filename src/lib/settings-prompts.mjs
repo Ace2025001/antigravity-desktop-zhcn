@@ -11,6 +11,7 @@ import {
   checkLatestRelease,
   performSelfUpdate,
   readLocalPackVersion,
+  readMaxCompatibleAppVersion,
   resolvePackRootFromCore,
 } from "./self-update.mjs";
 import {
@@ -164,6 +165,7 @@ export async function runSettingsMenu({
   }
   let { settings } = await readUserSettings();
   let currentVersion = await readLocalPackVersion(coreRoot);
+  let maxAppVersion = readMaxCompatibleAppVersion(coreRoot);
   const packRoot = resolvePackRootFromCore(coreRoot);
   const checkOptionIndex = platform === "win32" ? 5 : 4;
   let versionNotice =
@@ -178,6 +180,7 @@ export async function runSettingsMenu({
     for (;;) {
       banner(`Antigravity 汉化设置${currentVersion ? `  ·  当前 v${currentVersion}` : ""}`);
       console.log("");
+      if (maxAppVersion) note(`已适配最高客户端版本：${maxAppVersion}`);
       if (versionNotice.kind === "ok") ok(versionNotice.text);
       else if (versionNotice.kind === "warn") warn(versionNotice.text);
       else note(versionNotice.text);
@@ -214,6 +217,7 @@ export async function runSettingsMenu({
               const result = await runSelfUpdate({ packRoot, coreRoot, platform, fetchImpl });
               if (result?.status === "updated") {
                 currentVersion = result.latestVersion || currentVersion;
+                maxAppVersion = readMaxCompatibleAppVersion(coreRoot) || maxAppVersion;
                 updatedPack = true;
                 versionNotice = { kind: "ok", text: `汉化包已更新至最新版本 v${currentVersion}。` };
                 ok(versionNotice.text);

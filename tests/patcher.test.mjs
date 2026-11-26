@@ -143,9 +143,15 @@ test("patchCustomSchemeSource injects scoped sidecar iframe overlay hook with va
   assert.doesNotThrow(() => new Function(patched));
 });
 
-test("patchCustomSchemeSource injects pack-update-check proxy handler", () => {
+test("patchCustomSchemeSource injects pack-update-check, settings write, apply/skip and macOS menu hooks", () => {
   const patched = patchCustomSchemeSource(fixture);
   assert.match(patched, /reqUrl\.hostname === 'pack-update-check'/);
+  assert.match(patched, /reqUrl\.hostname === 'pack-update-apply'/);
+  assert.match(patched, /reqUrl\.hostname === 'pack-update-skip'/);
+  assert.match(patched, /mode === 'panel'/);
+  assert.match(patched, /sync-autofollow/);
+  assert.match(patched, /_zhAttachMacAppMenu/);
+  assert.match(patched, /agy-zhcn-pack-settings/);
   assert.match(patched, /__agyZhcnManualCheckRunning/);
   assert.match(patched, /pack-latest/);
   assert.match(patched, /pack-check-error/);

@@ -5,6 +5,7 @@ import { projectRoot } from "./paths.mjs";
 import { sha256Buffer } from "./hash.mjs";
 import { languageFile } from "./language-pack.mjs";
 import { KEEP_ORIGINAL_NAMES } from "./auto-learned-dict.mjs";
+import { readMaxCompatibleAppVersion } from "./self-update.mjs";
 
 const DEFAULT_PACK_VERSION = (() => {
   try {
@@ -14,6 +15,8 @@ const DEFAULT_PACK_VERSION = (() => {
     return "3.1.7";
   }
 })();
+
+const DEFAULT_MAX_APP_VERSION = readMaxCompatibleAppVersion() || "";
 
 export async function loadDomTranslations() {
   const filePath = languageFile("dom-translations.json");
@@ -321,6 +324,7 @@ export function countBundleDictionaryHits(bundleText, dictionary) {
 
 export function createRuntimeOverlay(dictionary) {
   const packVersion = (typeof dictionary?.packVersion === "string" && dictionary.packVersion.trim()) || DEFAULT_PACK_VERSION;
+  const maxAppVersion = (typeof dictionary?.maxAppVersion === "string" && dictionary.maxAppVersion.trim()) || DEFAULT_MAX_APP_VERSION;
   const serialized = JSON.stringify(dictionary.exact);
   const patternsList = dictionary.patterns ?? dictionary.dynamic ?? [];
   const normalizedPatterns = patternsList.map((p) => ({
@@ -1049,74 +1053,371 @@ export function createRuntimeOverlay(dictionary) {
   globalThis.__AGY_ZHCN_TRANSLATE_DUR__ = __fmtDurToZh;
   globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__ = __translateModelTagDesc;
   globalThis.__AGY_ZHCN_PACK_VERSION__ = ${JSON.stringify(packVersion)};
-  let __packUpdateCheckRunning = false;
-  const __showPackUpdateNotice = (titleText, bodyText) => {
+  globalThis.__AGY_ZHCN_MAX_APP_VERSION__ = ${JSON.stringify(maxAppVersion)};
+  let __packPanelBusy = false;
+  let __packPanelState = {
+    cur: ${JSON.stringify(packVersion)},
+    maxApp: ${JSON.stringify(maxAppVersion)},
+    releaseUrl: "https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest",
+    latestVer: "",
+    notes: "",
+    statusText: "",
+    statusKind: "idle",
+    hasHook: false,
+    hot: true,
+    platform: "",
+    writable: false,
+    settingsLoaded: false,
+    settingsMsg: "",
+    settings: { packAutoUpdate: "auto", autoFollow: "auto", onlineTranslate: false, titleAutoTranslate: true },
+  };
+  let __packUiRefs = null;
+  const __renderPackPanel = () => {
+    if (!__packUiRefs) return;
+    const r = __packUiRefs;
+    const st = __packPanelState;
+    r.verLine.textContent = st.maxApp
+      ? ("当前版本：v" + (st.cur || "未知") + "  ·  已适配最高客户端：" + st.maxApp)
+      : ("当前版本：v" + (st.cur || "未知"));
+    r.statusLine.textContent = st.statusText;
+    if (st.notes && st.statusKind === "available") {
+      r.notesBox.style.display = "block";
+      r.notesBox.textContent = st.notes;
+    } else {
+      r.notesBox.style.display = "none";
+      r.notesBox.textContent = "";
+    }
+    const busy = __packPanelBusy;
+    r.btnCheck.style.display = (st.statusKind === "legacy" || st.statusKind === "updating") ? "none" : "inline-flex";
+    r.btnCheck.disabled = busy;
+    r.btnCheck.textContent = st.statusKind === "idle" ? "检查更新" : "重新检查";
+    const showAvail = st.statusKind === "available" && st.hasHook;
+    r.btnApply.style.display = showAvail ? "inline-flex" : "none";
+    r.btnApply.disabled = busy;
+    r.btnSkip.style.display = showAvail ? "inline-flex" : "none";
+    r.btnSkip.disabled = busy;
+    r.btnReload.style.display = (st.statusKind === "updated" && st.hot) ? "inline-flex" : "none";
+    r.linkRelease.href = st.releaseUrl || "https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest";
+
+    if (!st.settingsLoaded) {
+      r.settingsTip.textContent = "正在读取设置…";
+    } else if (st.settingsMsg) {
+      r.settingsTip.textContent = st.settingsMsg;
+    } else {
+      r.settingsTip.textContent = st.writable ? "点击即可保存生效" : "只读预览（更新补丁并重启后可改）";
+    }
+    const isWin = !st.platform || st.platform === "win32";
+    r.rowAutoFollow.style.display = isWin ? "flex" : "none";
+    for (const grp of r.settingButtons) {
+      const active = st.settings[grp.key] === grp.val;
+      grp.btn.disabled = !st.writable || busy;
+      grp.btn.style.opacity = st.writable ? "1" : "0.55";
+      grp.btn.style.cursor = st.writable ? "pointer" : "default";
+      grp.btn.style.background = active ? "var(--primary,#2563eb)" : "transparent";
+      grp.btn.style.color = active ? "#ffffff" : "inherit";
+      grp.btn.style.borderColor = active ? "var(--primary,#2563eb)" : "var(--border,rgba(127,127,127,.28))";
+    }
+  };
+  const __ensurePackPanel = () => {
     try {
-      if (!document?.body) return;
-      const old = document.querySelector("[data-agy-zhcn-pack-toast]");
-      if (old) old.remove();
+      if (!document?.body) return null;
+      const existing = document.querySelector("[data-agy-zhcn-pack-toast]");
+      if (existing && __packUiRefs && __packUiRefs.wrap === existing) return __packUiRefs;
+      if (existing) existing.remove();
       const wrap = document.createElement("div");
       wrap.setAttribute("data-agy-zhcn-pack-toast", "1");
-      wrap.style.cssText = "position:fixed;right:20px;bottom:20px;z-index:2147483647;max-width:340px;padding:12px 14px;border-radius:10px;border:1px solid var(--border,rgba(127,127,127,.28));background:var(--background,#ffffff);color:var(--foreground,#18181b);box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:13px;line-height:1.5;";
-      const h = document.createElement("div");
-      h.style.cssText = "font-weight:600;margin-bottom:4px;";
-      h.textContent = titleText;
-      const p = document.createElement("div");
-      p.style.cssText = "opacity:.85;margin-bottom:10px;white-space:pre-line;";
-      p.textContent = bodyText;
+      wrap.setAttribute("data-agy-zhcn-pack-panel", "1");
+      wrap.style.cssText = "position:fixed;right:20px;bottom:20px;z-index:2147483647;width:392px;max-width:calc(100vw - 32px);padding:14px 16px;border-radius:12px;border:1px solid var(--border,rgba(127,127,127,.28));background:var(--background,#ffffff);color:var(--foreground,#18181b);box-shadow:0 12px 34px rgba(0,0,0,.22);font-size:13px;line-height:1.5;";
+
+      const head = document.createElement("div");
+      head.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;";
+      const title = document.createElement("div");
+      title.style.cssText = "font-weight:600;font-size:14px;";
+      title.textContent = "Antigravity 汉化中心";
+      const btnClose = document.createElement("button");
+      btnClose.type = "button";
+      btnClose.textContent = "×";
+      btnClose.style.cssText = "border:none;background:transparent;color:inherit;font-size:18px;line-height:1;cursor:pointer;opacity:.7;padding:0 4px;";
+      btnClose.onclick = () => { wrap.remove(); __packUiRefs = null; };
+      head.appendChild(title);
+      head.appendChild(btnClose);
+
+      const verLine = document.createElement("div");
+      verLine.style.cssText = "font-size:12px;opacity:.82;margin-bottom:10px;";
+
+      const updCard = document.createElement("div");
+      updCard.style.cssText = "padding:10px 12px;border-radius:8px;border:1px solid var(--border,rgba(127,127,127,.22));margin-bottom:10px;";
+      const statusLine = document.createElement("div");
+      statusLine.style.cssText = "font-size:12.5px;white-space:pre-line;";
+      const notesBox = document.createElement("div");
+      notesBox.style.cssText = "display:none;margin-top:8px;padding:6px 8px;border-radius:6px;border:1px solid var(--border,rgba(127,127,127,.18));font-size:11.5px;opacity:.85;max-height:96px;overflow-y:auto;white-space:pre-wrap;";
       const actions = document.createElement("div");
-      actions.style.cssText = "display:flex;gap:8px;justify-content:flex-end;align-items:center;";
-      const link = document.createElement("a");
-      link.href = "https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest";
-      link.target = "_blank";
-      link.rel = "noreferrer";
-      link.textContent = "打开 GitHub 发布页";
-      link.style.cssText = "color:var(--link,#2563eb);text-decoration:none;font-size:12px;margin-right:auto;";
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = "关闭";
-      btn.style.cssText = "padding:4px 10px;border-radius:6px;border:1px solid var(--border,rgba(127,127,127,.28));background:transparent;color:inherit;cursor:pointer;font-size:12px;";
-      btn.onclick = () => wrap.remove();
-      actions.appendChild(link);
-      actions.appendChild(btn);
-      wrap.appendChild(h);
-      wrap.appendChild(p);
-      wrap.appendChild(actions);
+      actions.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;";
+
+      const mkBtn = (label, primary = false) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = label;
+        b.style.cssText = primary
+          ? "padding:4px 10px;border-radius:6px;border:1px solid var(--primary,#2563eb);background:var(--primary,#2563eb);color:#ffffff;cursor:pointer;font-size:12px;"
+          : "padding:4px 10px;border-radius:6px;border:1px solid var(--border,rgba(127,127,127,.28));background:transparent;color:inherit;cursor:pointer;font-size:12px;";
+        return b;
+      };
+      const btnCheck = mkBtn("检查更新", false);
+      const btnApply = mkBtn("立即更新（校验）", true);
+      const btnSkip = mkBtn("跳过此版本", false);
+      const btnReload = mkBtn("立即刷新生效", true);
+      const linkRelease = document.createElement("a");
+      linkRelease.target = "_blank";
+      linkRelease.rel = "noreferrer";
+      linkRelease.textContent = "发布页";
+      linkRelease.style.cssText = "color:var(--link,#2563eb);text-decoration:none;font-size:12px;margin-left:auto;";
+      actions.appendChild(btnCheck);
+      actions.appendChild(btnApply);
+      actions.appendChild(btnSkip);
+      actions.appendChild(btnReload);
+      actions.appendChild(linkRelease);
+      updCard.appendChild(statusLine);
+      updCard.appendChild(notesBox);
+      updCard.appendChild(actions);
+
+      const setBox = document.createElement("div");
+      setBox.style.cssText = "padding-top:4px;";
+      const setHead = document.createElement("div");
+      setHead.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;";
+      const setTitle = document.createElement("div");
+      setTitle.style.cssText = "font-weight:600;font-size:12.5px;";
+      setTitle.textContent = "汉化设置";
+      const settingsTip = document.createElement("div");
+      settingsTip.style.cssText = "font-size:11px;opacity:.7;";
+      setHead.appendChild(setTitle);
+      setHead.appendChild(settingsTip);
+      setBox.appendChild(setHead);
+
+      const settingButtons = [];
+      const mkRow = (labelText, key, opts) => {
+        const row = document.createElement("div");
+        row.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;";
+        const lbl = document.createElement("span");
+        lbl.style.cssText = "font-size:12px;opacity:.9;";
+        lbl.textContent = labelText;
+        const grp = document.createElement("div");
+        grp.style.cssText = "display:flex;gap:4px;";
+        for (const [val, txt] of opts) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = txt;
+          b.setAttribute("data-setting-key", key);
+          b.setAttribute("data-setting-val", String(val));
+          b.style.cssText = "padding:2px 7px;border-radius:5px;border:1px solid var(--border,rgba(127,127,127,.28));background:transparent;color:inherit;font-size:11.5px;cursor:pointer;";
+          b.onclick = () => __savePackSetting(key, val, txt);
+          grp.appendChild(b);
+          settingButtons.push({ key, val, btn: b });
+        }
+        row.appendChild(lbl);
+        row.appendChild(grp);
+        setBox.appendChild(row);
+        return row;
+      };
+      mkRow("汉化包自动更新", "packAutoUpdate", [["auto", "自动"], ["ask", "先问"], ["off", "关闭"]]);
+      const rowAutoFollow = mkRow("客户端更新后", "autoFollow", [["auto", "自动"], ["ask", "先问"], ["off", "不处理"]]);
+      mkRow("界面联网补充", "onlineTranslate", [[true, "开启"], [false, "关闭"]]);
+      mkRow("对话标题翻译", "titleAutoTranslate", [[true, "开启"], [false, "关闭"]]);
+
+      wrap.appendChild(head);
+      wrap.appendChild(verLine);
+      wrap.appendChild(updCard);
+      wrap.appendChild(setBox);
       document.body.appendChild(wrap);
-      setTimeout(() => { try { wrap.remove(); } catch {} }, 12000);
-    } catch {}
+
+      btnCheck.onclick = () => __runPanelCheck();
+      btnApply.onclick = () => __runPanelApply();
+      btnSkip.onclick = () => __runPanelSkip();
+      btnReload.onclick = () => { try { location.reload(); } catch {} };
+
+      __packUiRefs = {
+        wrap, verLine, statusLine, notesBox, btnCheck, btnApply, btnSkip, btnReload, linkRelease,
+        settingsTip, rowAutoFollow, settingButtons,
+      };
+      return __packUiRefs;
+    } catch {
+      return null;
+    }
   };
-  globalThis.__AGY_ZHCN_CHECK_PACK_UPDATE__ = async function() {
-    if (__packUpdateCheckRunning) return;
-    __packUpdateCheckRunning = true;
+  const __loadPackSettings = async () => {
     try {
-      const cur = globalThis.__AGY_ZHCN_PACK_VERSION__ || "";
-      const resp = await fetch("agy-zhcn://pack-update-check?current=" + encodeURIComponent(cur), { method: "POST" });
+      const resp = await fetch("agy-zhcn://settings");
+      const ct = resp?.headers?.get?.("content-type") || "";
+      if (!ct.includes("application/json")) return;
+      const data = await resp.json().catch(() => null);
+      if (!data || typeof data !== "object") return;
+      __packPanelState.settingsLoaded = true;
+      __packPanelState.writable = Boolean(data.writable);
+      if (data.platform) __packPanelState.platform = data.platform;
+      if (typeof data.hasHook === "boolean") __packPanelState.hasHook = data.hasHook;
+      __packPanelState.settings = {
+        packAutoUpdate: data.packAutoUpdate || "auto",
+        autoFollow: data.autoFollow || "auto",
+        onlineTranslate: Boolean(data.onlineTranslate),
+        titleAutoTranslate: data.titleAutoTranslate !== false,
+      };
+    } catch {}
+    __renderPackPanel();
+  };
+  const __savePackSetting = async (key, val, txt) => {
+    if (__packPanelBusy || !__packPanelState.writable) return;
+    __packPanelBusy = true;
+    __packPanelState.settingsMsg = "正在保存…";
+    __renderPackPanel();
+    try {
+      const payload = {};
+      payload[key] = val;
+      const resp = await fetch("agy-zhcn://settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json().catch(() => null);
+      if (data && data.ok) {
+        __packPanelState.settings[key] = val;
+        __packPanelState.settingsMsg = (key === "onlineTranslate" || key === "titleAutoTranslate")
+          ? ("已设为「" + txt + "」（部分已开页面刷新后生效）")
+          : ("已保存：「" + txt + "」");
+      } else {
+        __packPanelState.settingsMsg = "保存失败，请改用目录中“汉化设置”重试";
+      }
+    } catch {
+      __packPanelState.settingsMsg = "保存失败，请改用目录中“汉化设置”重试";
+    } finally {
+      __packPanelBusy = false;
+      __renderPackPanel();
+    }
+  };
+  const __runPanelCheck = async () => {
+    if (__packPanelBusy) return;
+    __packPanelBusy = true;
+    __packPanelState.statusKind = "checking";
+    __packPanelState.statusText = "正在连接 GitHub 检查最新版本…";
+    __packPanelState.notes = "";
+    __renderPackPanel();
+    try {
+      const cur = __packPanelState.cur || globalThis.__AGY_ZHCN_PACK_VERSION__ || "";
+      const resp = await fetch("agy-zhcn://pack-update-check?mode=panel&current=" + encodeURIComponent(cur), { method: "POST" });
       const ct = resp?.headers?.get?.("content-type") || "";
       if (!ct.includes("application/json")) {
-        __showPackUpdateNotice(
-          "汉化包版本 v" + (cur || "未知"),
-          "主程序更新检查接口需要新版补丁重启后生效。请先通过“汉化设置”检查更新，或前往 GitHub 发布页查看最新版本。"
-        );
+        __packPanelState.statusKind = "legacy";
+        __packPanelState.statusText = "当前运行着旧版主程序补丁，内置检查与界面修改需重启并应用新版补丁后启用。请先通过“汉化设置”检查更新，或前往发布页下载。";
         return;
       }
       const data = await resp.json().catch(() => null);
       if (!data || !data.handled) {
-        __showPackUpdateNotice(
-          "汉化包版本 v" + (cur || "未知"),
-          "未能完成更新检查，请稍后通过“汉化设置”或 GitHub 发布页查看最新版本。"
-        );
+        __packPanelState.statusKind = "error";
+        __packPanelState.statusText = "未能完成更新检查，请稍后重试或前往发布页查看。";
+        return;
+      }
+      if (data.currentVersion) {
+        __packPanelState.cur = data.currentVersion;
+        globalThis.__AGY_ZHCN_PACK_VERSION__ = data.currentVersion;
+      }
+      if (data.maxAppVersion) {
+        __packPanelState.maxApp = data.maxAppVersion;
+        globalThis.__AGY_ZHCN_MAX_APP_VERSION__ = data.maxAppVersion;
+      }
+      if (data.releaseUrl) __packPanelState.releaseUrl = data.releaseUrl;
+      if (typeof data.hasHook === "boolean") __packPanelState.hasHook = data.hasHook;
+      if (data.platform) __packPanelState.platform = data.platform;
+      if (data.status === "up-to-date") {
+        __packPanelState.statusKind = "latest";
+        __packPanelState.statusText = "当前汉化包已是最新版本 v" + (__packPanelState.cur || data.latestVersion);
+      } else if (data.status === "update-available") {
+        __packPanelState.statusKind = "available";
+        __packPanelState.latestVer = data.latestVersion || "";
+        __packPanelState.notes = data.notes || "";
+        __packPanelState.statusText = data.hasHook
+          ? ("发现新版本 v" + data.latestVersion + "，可点击下方按钮下载校验并更新。")
+          : ("发现新版本 v" + data.latestVersion + "（当前未绑定独立包目录，请点右侧发布页下载覆盖）。");
+      } else {
+        __packPanelState.statusKind = "error";
+        __packPanelState.statusText = "暂时无法获取最新版本（" + (data.reason || "网络异常") + "），请稍后重试。";
       }
     } catch {
-      const cur = globalThis.__AGY_ZHCN_PACK_VERSION__ || "";
-      __showPackUpdateNotice(
-        "汉化包版本 v" + (cur || "未知"),
-        "暂时无法唤起更新检查，请在“汉化设置”中查看当前版本并检查更新，或前往 GitHub 发布页确认。"
-      );
+      __packPanelState.statusKind = "legacy";
+      __packPanelState.statusText = "暂时无法唤起内置更新检查，请通过目录中“汉化设置”或发布页查看。";
     } finally {
-      __packUpdateCheckRunning = false;
+      __packPanelBusy = false;
+      __renderPackPanel();
     }
   };
+  const __runPanelApply = async () => {
+    if (__packPanelBusy) return;
+    __packPanelBusy = true;
+    __packPanelState.statusKind = "updating";
+    __packPanelState.statusText = "正在下载并校验 SHA-256，请勿关闭窗口…";
+    __renderPackPanel();
+    try {
+      const resp = await fetch("agy-zhcn://pack-update-apply", { method: "POST" });
+      const data = await resp.json().catch(() => null);
+      if (data && data.ok && data.status === "updated") {
+        if (data.currentVersion) {
+          __packPanelState.cur = data.currentVersion;
+          globalThis.__AGY_ZHCN_PACK_VERSION__ = data.currentVersion;
+        }
+        if (data.maxAppVersion) {
+          __packPanelState.maxApp = data.maxAppVersion;
+          globalThis.__AGY_ZHCN_MAX_APP_VERSION__ = data.maxAppVersion;
+        }
+        __packPanelState.hot = Boolean(data.hot);
+        __packPanelState.statusKind = "updated";
+        __packPanelState.statusText = data.hot
+          ? ("已更新至 v" + (__packPanelState.cur || "") + "！中文界面已无感热更新，点下方按钮立即刷新（主程序补丁将在下次退出时自动补齐）。")
+          : ("已更新至 v" + (__packPanelState.cur || "") + "！已完成 SHA-256 校验，请按 ⌘Q 退出并重开一次“启动中文.command”完成重签。");
+      } else {
+        __packPanelState.statusKind = "error";
+        __packPanelState.statusText = "未能完成更新，请改用目录中“启动中文”重试或打开发布页下载。";
+      }
+    } catch {
+      __packPanelState.statusKind = "error";
+      __packPanelState.statusText = "更新请求异常，请改用目录中“启动中文”重试或打开发布页下载。";
+    } finally {
+      __packPanelBusy = false;
+      __renderPackPanel();
+    }
+  };
+  const __runPanelSkip = async () => {
+    if (__packPanelBusy || !__packPanelState.latestVer) return;
+    __packPanelBusy = true;
+    try {
+      await fetch("agy-zhcn://pack-update-skip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ version: __packPanelState.latestVer }),
+      });
+      __packPanelState.statusKind = "idle";
+      __packPanelState.notes = "";
+      __packPanelState.statusText = "已跳过 v" + __packPanelState.latestVer + "（启动时不再提醒此版本，你随时可点下方重新检查）。";
+    } catch {} finally {
+      __packPanelBusy = false;
+      __renderPackPanel();
+    }
+  };
+  const __openPackControlPanel = async (tab = "update") => {
+    if (!__ensurePackPanel()) return;
+    __packPanelState.cur = globalThis.__AGY_ZHCN_PACK_VERSION__ || __packPanelState.cur;
+    __packPanelState.maxApp = globalThis.__AGY_ZHCN_MAX_APP_VERSION__ || __packPanelState.maxApp;
+    __packPanelState.settingsMsg = "";
+    if (tab === "settings" && !__packPanelBusy) {
+      __packPanelState.statusKind = "idle";
+      __packPanelState.notes = "";
+      __packPanelState.statusText = "可点击下方“检查更新”核对最新版，或直接在下方调整汉化设置。";
+    }
+    __renderPackPanel();
+    await __loadPackSettings();
+    if (tab !== "settings") {
+      await __runPanelCheck();
+    }
+  };
+  globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__ = __openPackControlPanel;
+  globalThis.__AGY_ZHCN_CHECK_PACK_UPDATE__ = () => __openPackControlPanel("update");
 
   const collectorRecords = [];
   const collector = {
@@ -2468,7 +2769,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   let sourceText = sourceBuffer.toString("utf8");
   const resolvedPackVersion = (typeof dictionary?.packVersion === "string" && dictionary.packVersion.trim()) || DEFAULT_PACK_VERSION;
 
-  // 左上角 Antigravity 下拉菜单增加“汉化包版本”与“检查汉化包更新”
+  // 左上角 Antigravity 下拉菜单：版本、检查更新、汉化包版本、检查汉化包更新、汉化设置
   sourceText = fastAnchorReplace(
     sourceText,
     '"Check for Updates"',
@@ -2478,6 +2779,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
       `${objVar}?.checkForUpdates&&${arrVar}.push({label:"检查更新",onClick:()=>{${objVar}.checkForUpdates?.()}});` +
       `${arrVar}.push({label:"汉化包版本 v${resolvedPackVersion}",onClick:()=>{},nonSelectable:!0});` +
       `${arrVar}.push({label:"检查汉化包更新",onClick:()=>{globalThis.__AGY_ZHCN_CHECK_PACK_UPDATE__?.()}});` +
+      `${arrVar}.push({label:"汉化设置",onClick:()=>{globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__?.("settings")}});` +
       `return ${arrVar}`
   );
 

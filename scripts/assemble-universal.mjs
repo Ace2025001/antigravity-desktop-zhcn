@@ -1,6 +1,7 @@
 import {cp,mkdir,writeFile,chmod,access,unlink,readFile} from "node:fs/promises";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
+import {readMaxCompatibleAppVersion} from "../src/lib/self-update.mjs";
 const source=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 const [windowsPackage,macPackage,destination]=process.argv.slice(2);
 if(!windowsPackage||!macPackage||!destination)throw new Error("需要 Windows 运行包、Mac 运行包和新的输出目录。");
@@ -29,6 +30,8 @@ for(const [index,platform] of ["win","mac"].entries()){
   }
 }
 const pkg=JSON.parse(await readFile(path.join(source,"package.json"),"utf8"));
+const maxAppVer=readMaxCompatibleAppVersion(source);
+const verLabel=maxAppVer?`当前版本：v${pkg.version} · 已适配最高客户端版本：${maxAppVer}`:`当前版本：v${pkg.version}`;
 const usageText=await readFile(path.join(source,"docs/package-usage.txt"),"utf8");
-await writeFile(path.join(language,"使用说明.txt"),usageText.replace(/^Antigravity 汉化包/m,`Antigravity 汉化包（当前版本：v${pkg.version}）`),"utf8");
+await writeFile(path.join(language,"使用说明.txt"),usageText.replace(/^Antigravity 汉化包/m,`Antigravity 汉化包（${verLabel}）`),"utf8");
 console.log(`已生成：${output}；共用核心只保留一份，两端运行环境分别存放。`);

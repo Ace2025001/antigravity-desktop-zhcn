@@ -23,7 +23,7 @@ for item in macOS src config scripts tests docs package.json package-lock.json R
 done
 cp ./*.command "$STAGE/"
 PACK_VER="$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")"
-node -e "const fs=require('fs'),v=process.argv[1];fs.writeFileSync(process.argv[2],fs.readFileSync('使用说明.txt','utf8').replace(/^Antigravity 汉化包/,'Antigravity 汉化包（当前版本：v'+v+'）'));" "$PACK_VER" "$STAGE/使用说明.txt"
+node --input-type=module -e "import fs from 'node:fs'; import { readMaxCompatibleAppVersion } from './src/lib/self-update.mjs'; const v=process.argv[1], m=readMaxCompatibleAppVersion(process.cwd()); const label = m ? '当前版本：v'+v+' · 已适配最高客户端版本：'+m : '当前版本：v'+v; fs.writeFileSync(process.argv[2], fs.readFileSync('使用说明.txt','utf8').replace(/^Antigravity 汉化包/, 'Antigravity 汉化包（'+label+'）'));" "$PACK_VER" "$STAGE/使用说明.txt"
 cp "$TEMP/node-v$VERSION-darwin-$ARCH/bin/node" "$STAGE/runtime/node"
 cp "$TEMP/node-v$VERSION-darwin-$ARCH/LICENSE" "$STAGE/runtime/NODE_LICENSE.txt"
 (cd "$STAGE"; npm ci --omit=dev --ignore-scripts --no-audit --no-fund)
