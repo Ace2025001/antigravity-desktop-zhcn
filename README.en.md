@@ -18,18 +18,18 @@ A **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google 
 
 1. Download [**Antigravity-Windows+Mac.zip**](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest/download/Antigravity-Windows%2BMac.zip) and extract it, then run it from the extracted folder.
 2. Open `win启动` (Windows) or `mac启动` (macOS).
-3. Run **`启动中文`** (Start Chinese). Use **`卸载汉化`** (uninstall) to restore English and **`汉化设置`** to change settings.
+3. Run **`启动中文`** (Start Chinese). Use **`卸载汉化`** (uninstall) to restore English, and manage settings or check updates from **汉化中心** in the top-left `Antigravity` menu inside the client.
 
 ```text
 antigravity汉化包/
-├─ win启动/     Windows entry points: 启动中文.bat, 卸载汉化.bat, 汉化设置.bat
+├─ win启动/     Windows entry points: 启动中文.bat, 卸载汉化.bat
 ├─ mac启动/     macOS entry points (.command), same usage
 └─ 语言包/      translation data and shared code — keep it
 ```
 
 ## First-run settings
 
-The first run asks setup questions; press Enter to accept the recommended values. Change them later from **汉化中心** in the top-left `Antigravity` menu or `汉化设置` in the folder.
+The first run asks setup questions; press Enter to accept the recommended values. Change them later anytime from **汉化中心** in the top-left `Antigravity` menu (or the macOS app menu).
 
 | Setting | Options | Recommended |
 |---|---|---|
@@ -39,7 +39,7 @@ The first run asks setup questions; press Enter to accept the recommended values
 | Title auto-translation (Antigravity generates English titles by default) | On / Off | On |
 
 - **Localize automatically**: after “Restart to update”, the new version is localized and reopened in Chinese in about 40 seconds. **Ask me** prompts with an update card.
-- **Language pack auto-update**: regardless of how Antigravity is launched, checks the latest GitHub release against SHA-256 `digest`. **Auto-update** updates the language pack cleanly in the background; **Ask me** prompts first; **Off** keeps the current version. Check version info, inspect updates, or switch any setting anytime from **汉化中心** in the top-left `Antigravity` menu or `汉化设置`.
+- **Language pack auto-update**: regardless of how Antigravity is launched, checks the latest GitHub release against SHA-256 `digest`. **Auto-update** updates the language pack cleanly in the background; **Ask me** prompts first; **Off** keeps the current version. Check version info, inspect updates, or switch any setting anytime from **汉化中心** in the top-left `Antigravity` menu.
 - **Online fill-in**: the UI uses curated human translations first. When a client update adds buttons, menus or hints the dictionary does not cover yet, they are shown in Chinese via Google Translate until a curated translation ships, which then replaces it. Existing installs are asked once on the next `启动中文` run and stay off until they answer.
 - **Title auto-translation**: when enabled, only AI-generated English conversation titles are translated for display, and stored chat records stay as they are; manually renamed titles keep the name you gave them.
 - Only UI text and conversation titles are sent for translation; chat content, code, terminal output, file names, links, paths, account details, your own skills and rules, and anything you type stay on your computer. Language pack auto-update reads the GitHub release page and downloads the package.

@@ -1284,10 +1284,10 @@ export function createRuntimeOverlay(dictionary) {
           ? ("已设为「" + txt + "」（部分已开页面刷新后生效）")
           : ("已保存：「" + txt + "」");
       } else {
-        __packPanelState.settingsMsg = "保存失败，请改用目录中“汉化设置”重试";
+        __packPanelState.settingsMsg = "保存失败，请重新打开客户端后再试";
       }
     } catch {
-      __packPanelState.settingsMsg = "保存失败，请改用目录中“汉化设置”重试";
+      __packPanelState.settingsMsg = "保存失败，请重新打开客户端后再试";
     } finally {
       __packPanelBusy = false;
       __renderPackPanel();
@@ -1306,7 +1306,7 @@ export function createRuntimeOverlay(dictionary) {
       const ct = resp?.headers?.get?.("content-type") || "";
       if (!ct.includes("application/json")) {
         __packPanelState.statusKind = "legacy";
-        __packPanelState.statusText = "当前运行着旧版汉化文件，面板内的检查与改设置功能将在更新并重启客户端后启用。请先用目录里的“汉化设置”检查更新，或前往 GitHub 主页下载。";
+        __packPanelState.statusText = "当前运行着旧版汉化文件，面板内的检查与改设置功能将在重新运行“启动中文”更新后启用，也可前往 GitHub 主页下载。";
         return;
       }
       const data = await resp.json().catch(() => null);
@@ -1342,7 +1342,7 @@ export function createRuntimeOverlay(dictionary) {
       }
     } catch {
       __packPanelState.statusKind = "legacy";
-      __packPanelState.statusText = "请通过目录中“汉化设置”检查更新，或点右侧 GitHub 主页查看。";
+      __packPanelState.statusText = "暂时无法在当前窗口检查更新，请重新运行“启动中文”或点右侧 GitHub 主页查看。";
     } finally {
       __packPanelBusy = false;
       __renderPackPanel();

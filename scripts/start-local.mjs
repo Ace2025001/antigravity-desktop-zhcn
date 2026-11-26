@@ -161,7 +161,7 @@ try {
     const { settings } = await readUserSettings();
     finish(`完成！Antigravity 已切换为中文（总用时 ${totalElapsed}）`, [
       process.platform === "win32" ? FOLLOW_SUMMARY[settings.autoFollow] : "以后客户端更新后，双击“启动中文”即可重新汉化。",
-      "需要修改设置时，双击“汉化设置”。",
+      "以后可在客户端左上角 Antigravity 菜单点“汉化中心”修改设置或检查更新。",
       "觉得好用的话，欢迎去 GitHub 点一颗免费 Star 支持：https://github.com/Ace2025001/antigravity-desktop-zhcn",
     ]);
     await maybeShowCompletionDialog({ action, exitCode: code, dryVerify });

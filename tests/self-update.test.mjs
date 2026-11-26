@@ -249,7 +249,7 @@ test("退出跟进竞态防护：自更新等待期间客户端替换会立即�
   assert.equal(detected, true);
 });
 
-test("入口改名：新入口就位时删除旧的“恢复英文”，新入口保留；只有旧入口时保留旧入口", async () => {
+test("入口精简：新入口就位时删除旧的“恢复英文”和旧版“汉化设置”，新入口保留；只有旧入口时保留旧入口", async () => {
   const pack = await mkdtemp(path.join(os.tmpdir(), "agy-launchers-"));
   try {
     const win = path.join(pack, "win启动");
@@ -259,14 +259,17 @@ test("入口改名：新入口就位时删除旧的“恢复英文”，新入�
     for (const name of ["启动中文.bat", "卸载汉化.bat", "恢复英文.bat", "汉化设置.bat"]) await writeFile(path.join(win, name), "@echo off\r\n");
     // Mac 目录只有旧入口（模拟没升级到新入口的情况）
     await writeFile(path.join(mac, "恢复英文.command"), "#!/bin/bash\n");
+    await writeFile(path.join(mac, "汉化设置.command"), "#!/bin/bash\n");
 
     await finalizePackLaunchers(pack, "win32");
 
     const exists = (p) => readFile(p).then(() => true, () => false);
-    assert.equal(await exists(path.join(win, "恢复英文.bat")), false, "旧入口应删除");
+    assert.equal(await exists(path.join(win, "恢复英文.bat")), false, "旧恢复英文入口应删除");
+    assert.equal(await exists(path.join(win, "汉化设置.bat")), false, "旧版汉化设置入口应删除");
     assert.equal(await exists(path.join(win, "卸载汉化.bat")), true, "新入口必须保留");
     assert.equal(await exists(path.join(win, "启动中文.bat")), true);
     assert.equal(await exists(path.join(mac, "恢复英文.command")), true, "新入口不在时保留旧入口");
+    assert.equal(await exists(path.join(mac, "汉化设置.command")), true, "新入口不在时保留旧入口");
 
     await finalizePackLaunchers(null);
   } finally {
