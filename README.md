@@ -57,8 +57,6 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 
 ![Antigravity 客户端内汉化中心：从左上角 Antigravity 菜单打开，支持查看版本、检查更新与调整设置](docs/images/zhcn-pack-center.png)
 
-> 发布页上的文件名是 `Antigravity-完整汉化包-Windows+Mac.zip`，下载后显示为 `Antigravity-Windows+Mac.zip`，是同一个文件。
-
 解压后的目录如下，你只需要用到各自系统文件夹里的两个入口：
 
 ```text
@@ -66,12 +64,12 @@ antigravity汉化包/
 ├─ win启动/                 ← Windows 用这里
 │  ├─ 启动中文.bat           汉化并打开客户端
 │  ├─ 卸载汉化.bat           还原官方英文原版
-│  └─ 配套程序/              内置运行环境，请保留
+│  └─ 配套程序/              内置运行环境
 ├─ mac启动/                 ← Mac 用这里
 │  ├─ 启动中文.command       首次汉化并生成独立中文版应用与桌面快捷入口
-│  ├─ 卸载汉化.command       还原为官方英文原版
-│  └─ 配套程序/              内置运行环境，请保留
-└─ 语言包/                  翻译词库和共用程序，请保留
+│  ├─ 卸载汉化.command       还原官方英文原版
+│  └─ 配套程序/              内置运行环境
+└─ 语言包/                  翻译词库和共用程序
 ```
 
 - **Windows**：平时直接从原来的桌面或开始菜单图标打开 Antigravity 即可；客户端更新后会自动跟着重新汉化。
