@@ -13753,7 +13753,159 @@
     "Workspaces are not available for this project": "此项目不支持工作区",
     "Requesting your permission to open URL:": "正在请求你的许可以打开网址：",
     "Unnamed resource": "未命名资源",
-    "Copy Workspace Name": "复制工作区名称"
+    "Copy Workspace Name": "复制工作区名称",
+    "Applies to /btw and messages sent after this turn": "适用于 /btw 与本轮结束后的消息",
+    "Applies to messages sent after this turn": "适用于本轮结束后的消息",
+    "Connection is secure. View site information": "连接安全，查看站点信息",
+    "Model cannot be changed while the agent is running": "智能体运行期间无法切换模型",
+    "For speed and efficiency in execution tasks": "面向执行任务的速度与效率优化",
+    "Directory Viewer header": "目录查看器标题栏",
+    "Icon": "图标",
+    "Color": "颜色",
+    "Looking for this conversation's swarm…": "正在查找此对话中的蜂群…",
+    "Looking for this conversation’s swarm…": "正在查找此对话中的蜂群…",
+    "Board": "留言板",
+    "Graph": "关系图",
+    "overview · from the narrator’s notes": "概览 · 来自旁白员记录",
+    "overview · from the narrator's notes": "概览 · 来自旁白员记录",
+    "Narrator’s page": "旁白员页面",
+    "Narrator's page": "旁白员页面",
+    "Want this view different? Tell the coordinator.": "想调整此视图的展示方式？请直接告诉协调者。",
+    "Open coordinator chat": "打开协调者对话",
+    "From anyone": "来自任意成员",
+    "To anyone": "发送给任意成员",
+    "All channels": "全部频道",
+    "Follow": "自动跟随",
+    "Latest": "最新消息",
+    "Hive": "蜂巢视图",
+    "Hide inactive": "隐藏非活跃成员",
+    "Expand @all": "展开 @all 连线",
+    "Even pacing": "匀速播放",
+    "Real-time gaps": "按真实间隔",
+    "Export GIF": "导出 GIF",
+    "via @all": "通过 @all 广播",
+    "posted with no mention": "未提及任何人",
+    "No swarm in this conversation": "当前对话暂无蜂群",
+    "Watching for a swarm": "正在监听蜂群动态",
+    "Right-click image to save, or open in a new tab.": "右键图片可保存，或在新标签页中打开。",
+    "Updates automatically": "自动更新",
+    "Swarm views": "蜂群视图",
+    "System alerts": "系统告警",
+    "Search posts": "搜索留言",
+    "Channels": "频道",
+    "Filter by poster": "按发送者筛选",
+    "Show posts by one member": "仅显示指定成员发送的留言",
+    "Filter by recipient": "按接收者筛选",
+    "Show posts that call on one member": "仅显示提及指定成员的留言",
+    "Filter by channel": "按频道筛选",
+    "Show posts in one channel": "仅显示指定频道中的留言",
+    "Keep the newest post in view": "保持最新留言始终可见",
+    "Show or hide each member": "显示或隐藏各个成员",
+    "Replay": "回放",
+    "Jump to start": "跳至开头",
+    "Previous post (←)": "上一条留言 (←)",
+    "Previous post": "上一条留言",
+    "Play / pause replay (space)": "播放/暂停回放（空格）",
+    "Play replay": "播放回放",
+    "Next post (→)": "下一条留言 (→)",
+    "Next post": "下一条留言",
+    "Replay position": "回放位置",
+    "Scrub through board posts": "拖动滑块浏览留言记录",
+    "Show everything and follow live": "显示全部并保持实时跟随",
+    "Graph view": "关系图视图",
+    "Threads as cells, with each worker where it works": "以线程为蜂房单元，展示各工作者的当前所在位置",
+    "Who @mentions whom": "成员 @提及关系网",
+    "Hide killed and inactive members from the graph": "在关系图中隐藏已终止与非活跃成员",
+    "Draw @all as an edge to every member": "将 @all 广播绘制为指向所有成员的连线",
+    "Replay pacing": "回放节奏",
+    "Replay speed": "回放速度",
+    "Export graph replay as an animated GIF": "将关系图回放导出为动态 GIF",
+    "Close preview": "关闭预览",
+    "Exported swarm graph replay": "导出的蜂群关系图回放",
+    "Active: mid-turn (thinking, running a tool, or waiting on the model)": "运行中：正处于当前回合（思考、调用工具或等待模型响应）",
+    "Waiting: turn ended, asleep on the board until a post wakes it": "等待中：本回合已结束，正在留言板待命直到被新消息唤醒",
+    "Killed: removed from the swarm": "已终止：已从蜂群中移除",
+    "Reconnecting": "正在重新连接",
+    "Lost contact with the swarm sidecar; retrying": "与蜂群扩展服务断开连接，正在重试",
+    "Could not load earlier posts": "无法加载更早的留言",
+    "Untitled swarm": "未命名蜂群",
+    "Hidden from the board; click to show": "当前已在留言板中隐藏，点击恢复显示",
+    "Click to hide from the board": "点击在留言板中隐藏此成员",
+    "To no one": "无指定对象",
+    "To @all": "发送给 @all",
+    "Posts in every channel": "查看所有频道中的留言",
+    "main: the whole swarm reads it": "main：整个蜂群成员均可读取",
+    "Filters (active)": "筛选（已启用）",
+    "Not on the roster": "不在成员名册中",
+    "not on roster": "不在名册中",
+    "Click to open conversation": "点击打开对话",
+    "Exporting…": "正在导出…",
+    "Nothing to export yet.": "暂无可导出的内容。",
+    "Canvas 2D context unavailable": "无法获取 Canvas 2D 上下文",
+    "Could not download GIF from embedded pane.": "无法在嵌入式面板中直接下载 GIF。",
+    "Could not export GIF.": "导出 GIF 失败。",
+    "No narrator in this swarm. Ask the coordinator to add one.": "当前蜂群没有旁白员，请让协调者添加一个。",
+    "The narrator's view.json is over 64 KB, so it isn't shown.": "旁白员的 view.json 超过 64 KB，暂未显示。",
+    "The narrator's view.json isn't valid JSON yet.": "旁白员的 view.json 尚不是有效的 JSON。",
+    "The narrator hasn't published an overview yet.": "旁白员尚未发布概览。",
+    "updating": "正在更新",
+    "watching": "监听中",
+    "The narrator is updating the overview": "旁白员正在更新概览",
+    "The narrator is waiting for new board posts": "旁白员正在等待新的留言板消息",
+    "The narrator was killed; the overview no longer updates": "旁白员已终止，概览不再更新",
+    "paused: quota": "已暂停：配额耗尽",
+    "paused: error": "已暂停：出错",
+    "stale": "已过期",
+    "system:": "系统：",
+    "Showing the last good view.json; the current file is over 64 KB.": "当前文件超过 64 KB，正在显示上一次正常的 view.json。",
+    "Showing the last good view.json; the current file is not valid JSON.": "当前文件不是有效的 JSON，正在显示上一次正常的 view.json。",
+    "view.html is over 64 KB": "view.html 超过 64 KB",
+    "no view.html yet": "尚无 view.html",
+    "loading the narrator view": "正在加载旁白员视图",
+    "Retry narrator's page": "重试加载旁白员页面",
+    "narrator's page · AI-generated": "旁白员页面 · AI 生成",
+    "That link isn't allowed here.": "此处不允许打开该链接。",
+    "Opening files needs the app.": "打开文件需要在主应用中操作。",
+    "it navigated away": "页面已发生跳转",
+    "Click a link in the view to open it.": "点击视图中的链接即可打开。",
+    "Copy failed": "复制失败",
+    "The team": "团队成员",
+    "Coordinator": "协调者",
+    "Planned next": "下一步计划",
+    "Threads": "线程",
+    "Progress": "进度",
+    "Compare with now": "与当前对比",
+    "Open full timeline": "展开完整时间线",
+    "Nothing blocked": "暂无阻塞项",
+    "Needs you": "需要你处理",
+    "Stuck": "已卡住",
+    "Nothing waiting": "暂无等待项",
+    "Nothing stuck": "暂无卡住项",
+    "Nothing needs you": "暂无需要你处理的事项",
+    "Nothing running": "暂无运行中任务",
+    "Nothing planned": "暂无后续计划",
+    "No tasks completed yet.": "暂未完成任何任务。",
+    "Hide compare": "收起对比",
+    "Compare then and now": "对比过去与现在",
+    "Scrub through progress": "拖动查看进度",
+    "Moving": "推进中",
+    "No one is on this thread yet.": "暂无成员在此线程上工作。",
+    "Swarm stalled — no agents working": "蜂群已停滞 — 当前没有智能体在工作",
+    "seen just now": "刚刚活跃",
+    "Coordinator · Working": "协调者 · 工作中",
+    "Retired": "已退出",
+    "Standing by": "待命中",
+    "Team": "团队",
+    "All workers": "全部工作者",
+    "Filter by worker": "按工作者筛选",
+    "Waiting on": "正在等待",
+    "Tasks done": "任务完成",
+    "Message just sent": "刚发送消息",
+    "Fit the whole swarm": "缩放以适配整个蜂群",
+    "Where each worker is, by thread": "按线程展示每位工作者的位置",
+    "No posts yet": "暂无留言",
+    "The coordinator asked. Answer it in its chat.": "协调者已发起提问，请前往其对话窗口回复。",
+    "Resting": "休息中"
   },
   "patterns": [
     {
@@ -14794,6 +14946,16 @@
     {
       "source": "^Worked for\\s+(.+)$",
       "target": "工作耗时 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Working for (@.+)$",
+      "target": "正在为 $1 工作",
+      "flags": "u"
+    },
+    {
+      "source": "^Waiting on (\\d+)$",
+      "target": "正在等待 $1 项",
       "flags": "u"
     },
     {
@@ -30884,6 +31046,396 @@
     {
       "source": "^Web app: (.+)$",
       "target": "Web 应用：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^From ([A-Za-z0-9_.-]+)$",
+      "target": "来自 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^To ([A-Za-z0-9_.-]+)$",
+      "target": "发送给 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Open @([A-Za-z0-9_.-]+)$",
+      "target": "打开 @$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Open ([a-z][a-z0-9_-]*)$",
+      "target": "打开 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Go to #(\\d+) \\(([^)]+)\\)$",
+      "target": "跳至 #$1（$2）",
+      "flags": "u"
+    },
+    {
+      "source": "^Go to #(\\d+) on the Board$",
+      "target": "前往留言板查看 #$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Go to #(\\d+)$",
+      "target": "跳至 #$1",
+      "flags": "u"
+    },
+    {
+      "source": "^#([A-Za-z0-9_.-]+) \\(archived\\)$",
+      "target": "#$1（已归档）",
+      "flags": "u"
+    },
+    {
+      "source": "^Posted in #([^;]+); click to show only #([^;]+)$",
+      "target": "发布于 #$1；点击仅查看 #$2",
+      "flags": "u"
+    },
+    {
+      "source": "^#([^\\s]+) is archived: this addresses nobody$",
+      "target": "#$1 已归档：此消息不会通知任何人",
+      "flags": "u"
+    },
+    {
+      "source": "^Everyone in #([^\\s]+)$",
+      "target": "#$1 频道中的所有成员",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) runs on (.+?); open it there\\.$",
+      "target": "$1 运行在 $2；请在该机器上打开。",
+      "flags": "u"
+    },
+    {
+      "source": "^Opening (.+?)'s conversation needs the app\\.$",
+      "target": "打开 $1 的对话需要在主应用中操作。",
+      "flags": "u"
+    },
+    {
+      "source": "^Post #(\\d+) was not found$",
+      "target": "未找到第 #$1 条留言",
+      "flags": "u"
+    },
+    {
+      "source": "^Loading earlier posts… \\((\\d+) older\\)$",
+      "target": "正在加载更早的留言…（还有 $1 条更早消息）",
+      "flags": "u"
+    },
+    {
+      "source": "^Retry loading (\\d+) earlier posts?$",
+      "target": "重试加载更早的 $1 条留言",
+      "flags": "u"
+    },
+    {
+      "source": "^Show (\\d+) earlier posts? \\((\\d+) older\\)$",
+      "target": "显示更早的 $1 条留言（共 $2 条较早消息）",
+      "flags": "u"
+    },
+    {
+      "source": "^Exporting (\\d+)%$",
+      "target": "正在导出 $1%",
+      "flags": "u"
+    },
+    {
+      "source": "^Exporting (.+?)…$",
+      "target": "正在导出 $1…",
+      "flags": "u"
+    },
+    {
+      "source": "^Rendering (.+?)…$",
+      "target": "正在渲染 $1…",
+      "flags": "u"
+    },
+    {
+      "source": "^Download (.+?)$",
+      "target": "下载 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Exported ([^\\s(]+) \\(([^)]+)\\)$",
+      "target": "已导出 $1（$2）",
+      "flags": "u"
+    },
+    {
+      "source": "^GIF ready \\(([^)]+)\\) — right-click image to save\\.$",
+      "target": "GIF 已就绪（$1）— 请右键保存图片。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) graph replay$",
+      "target": "$1 关系图回放",
+      "flags": "u"
+    },
+    {
+      "source": "^The narrator's last step failed: (.+)$",
+      "target": "旁白员上一步执行失败：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) posts? since the view was updated$",
+      "target": "自视图更新以来已有 $1 条新留言",
+      "flags": "u"
+    },
+    {
+      "source": "^Narrator read up to #(\\d+) of (\\d+)$",
+      "target": "旁白员已读取至 #$1 / 共 $2 条",
+      "flags": "u"
+    },
+    {
+      "source": "^read #(\\d+) · updated (\\d+)h\\s+(\\d+)m ago$",
+      "target": "已读 #$1 · $2 小时 $3 分前更新",
+      "flags": "u"
+    },
+    {
+      "source": "^read #(\\d+) · updated (\\d+)m\\s+(\\d+)s ago$",
+      "target": "已读 #$1 · $2 分 $3 秒前更新",
+      "flags": "u"
+    },
+    {
+      "source": "^read #(\\d+) · updated (\\d+)s ago$",
+      "target": "已读 #$1 · $2 秒前更新",
+      "flags": "u"
+    },
+    {
+      "source": "^read #(\\d+) · updated (.+)$",
+      "target": "已读 #$1 · 更新于 $2",
+      "flags": "u"
+    },
+    {
+      "source": "^read #(\\d+)$",
+      "target": "已读 #$1",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) posts? · (\\d+) members?$",
+      "target": "$1 条留言 · $2 名成员",
+      "flags": "u"
+    },
+    {
+      "source": "^Swarm start · (\\d+) members?$",
+      "target": "蜂群启动 · $1 名成员",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) frames?, ([^,]+)$",
+      "target": "$1 帧，$2",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) frames? · (.+)$",
+      "target": "$1 帧 · $2",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) \\(not on the roster\\)$",
+      "target": "$1（不在成员名册中）",
+      "flags": "u"
+    },
+    {
+      "source": "^overview · from the narrator's notes · (.+)$",
+      "target": "概览 · 来自旁白员记录 · $1",
+      "flags": "u"
+    },
+    {
+      "source": "^overview · from the narrator’s notes · (.+)$",
+      "target": "概览 · 来自旁白员记录 · $1",
+      "flags": "u"
+    },
+    {
+      "source": "^the narrator's view failed \\(([^)]+)\\)$",
+      "target": "旁白员视图加载失败（$1）",
+      "flags": "u"
+    },
+    {
+      "source": "^Tell the coordinator: “(.+?)”$",
+      "target": "请告知协调者：“$1”",
+      "flags": "u"
+    },
+    {
+      "source": "^Copied “(.+?)”\\. Paste it to the coordinator and say what you want changed\\.$",
+      "target": "已复制“$1”。请粘贴给协调者并说明希望修改的内容。",
+      "flags": "u"
+    },
+    {
+      "source": "^Tell it “(.+?)” to the coordinator on (.+?)\\.$",
+      "target": "请通过位于 $2 的协调者告知它“$1”。",
+      "flags": "u"
+    },
+    {
+      "source": "^Copied “(.+?)”\\. Paste it to the coordinator on (.+?)\\.$",
+      "target": "已复制“$1”。请粘贴给位于 $2 的协调者。",
+      "flags": "u"
+    },
+    {
+      "source": "^\\+(\\d+) more$",
+      "target": "另有 $1 项",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) stuck$",
+      "target": "$1 项卡住",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) needs? you$",
+      "target": "$1 项需要你处理",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) in review$",
+      "target": "$1 项审核中",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) threads? open$",
+      "target": "$1 个线程进行中",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) active$",
+      "target": "$1 项运行中",
+      "flags": "u"
+    },
+    {
+      "source": "^Up next · (\\d+)$",
+      "target": "待处理 · $1",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) of (\\d+) tasks? done$",
+      "target": "已完成 $1 / $2 项任务",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) of (\\d+) done$",
+      "target": "已完成 $1 / $2",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+)\\/(\\d+) done$",
+      "target": "$1/$2 已完成",
+      "flags": "u"
+    },
+    {
+      "source": "^Coordinator · (\\d+) of (\\d+) done · Needs you$",
+      "target": "协调者 · 已完成 $1 / $2 · 需要你处理",
+      "flags": "u"
+    },
+    {
+      "source": "^Coordinator · (\\d+) of (\\d+) done$",
+      "target": "协调者 · 已完成 $1 / $2",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) bees?$",
+      "target": "$1 名成员",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) threads?$",
+      "target": "$1 个线程",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) working$",
+      "target": "$1 工作中",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) waiting$",
+      "target": "$1 等待中",
+      "flags": "u"
+    },
+    {
+      "source": "^(\\d+) done$",
+      "target": "$1 已完成",
+      "flags": "u"
+    },
+    {
+      "source": "^@([A-Za-z0-9_-]+) ran out of quota$",
+      "target": "@$1 配额已耗尽",
+      "flags": "u"
+    },
+    {
+      "source": "^@([A-Za-z0-9_-]+) looks stuck$",
+      "target": "@$1 似乎已卡住",
+      "flags": "u"
+    },
+    {
+      "source": "^@([A-Za-z0-9_-]+) hit an error$",
+      "target": "@$1 执行出错",
+      "flags": "u"
+    },
+    {
+      "source": "^#(\\d+) from @([A-Za-z0-9_-]+): (.+)$",
+      "target": "来自 @$2 的 #$1：$3",
+      "flags": "u"
+    },
+    {
+      "source": "^#(\\d+) from @([A-Za-z0-9_-]+)$",
+      "target": "来自 @$2 的 #$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Thinking: (.+)$",
+      "target": "思考：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Latest action: (.+)$",
+      "target": "最近操作：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) · (\\d+) machines?$",
+      "target": "$1 · $2 台机器",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) · reconnecting$",
+      "target": "$1 · 正在重连",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) · connecting$",
+      "target": "$1 · 正在连接",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?) · unavailable$",
+      "target": "$1 · 不可用",
+      "flags": "u"
+    },
+    {
+      "source": "^Runs on (.+)$",
+      "target": "运行在 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^last seen (\\d+)m ago$",
+      "target": "$1 分钟前活跃",
+      "flags": "u"
+    },
+    {
+      "source": "^last seen (\\d+)h ago$",
+      "target": "$1 小时前活跃",
+      "flags": "u"
+    },
+    {
+      "source": "^last seen (\\d+)d ago$",
+      "target": "$1 天前活跃",
+      "flags": "u"
+    },
+    {
+      "source": "^Shared (.+?) board(.*)$",
+      "target": "共享的 $1 留言板$2",
+      "flags": "u"
+    },
+    {
+      "source": "^([A-Za-z0-9_-]+) \\(you\\)$",
+      "target": "$1（你）",
       "flags": "u"
     }
   ],

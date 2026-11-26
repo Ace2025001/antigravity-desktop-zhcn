@@ -131,3 +131,15 @@ test("patchCustomSchemeSource injects native dialog interception and localizatio
   assert.match(patched, /agy_zhcn_dialog\.json/);
 });
 
+test("patchCustomSchemeSource injects scoped sidecar iframe overlay hook with valid syntax", () => {
+  const patched = patchCustomSchemeSource(fixture);
+  assert.match(patched, /web-contents-created/);
+  assert.match(patched, /did-frame-finish-load/);
+  assert.match(patched, /contents\.getType\(\)\s*!==\s*'window'/);
+  assert.match(patched, /webFrameMain\.fromId/);
+  assert.match(patched, /__AGY_ZHCN_SIDECAR_OVERLAY_BEGIN__/);
+  assert.match(patched, /__AGY_ZHCN_SIDECAR_APPLIED__/);
+  assert.match(patched, /__AGY_ZHCN_DISABLE_AUTO_TRANSLATE__/);
+  assert.doesNotThrow(() => new Function(patched));
+});
+
