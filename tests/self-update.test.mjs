@@ -274,9 +274,10 @@ test("入口改名：新入口就位时删除旧的“恢复英文”，新入�
   }
 });
 
-test("第一层版本曝光：汉化设置可查看当前版本并触发检查/更新，弹窗规格齐全", async () => {
+test("第一层版本曝光：汉化设置可查看当前版本、已适配最高客户端版本并触发检查/更新，弹窗规格齐全", async () => {
   const { PassThrough } = await import("node:stream");
   const { runSettingsMenu } = await import("../src/lib/settings-prompts.mjs");
+  const { readMaxCompatibleAppVersion } = await import("../src/lib/self-update.mjs");
   const { getPackLatestDialogSpec, getPackCheckErrorDialogSpec, getPackUpdatedDialogSpec } = await import("../src/lib/modern-dialog.mjs");
 
   const latestSpec = getPackLatestDialogSpec({ currentVersion: "3.1.7", latestVersion: "3.1.7" });
@@ -292,8 +293,11 @@ test("第一层版本曝光：汉化设置可查看当前版本并触发检查/�
   try {
     process.env.AGY_ZHCN_STATE_DIR = stateDir;
     const coreDir = path.join(packDir, "语言包", "核心程序");
-    await mkdir(coreDir, { recursive: true });
-    await writeFile(path.join(coreDir, "package.json"), JSON.stringify({ version: "3.1.7" }), "utf8");
+    await mkdir(path.join(coreDir, "config", "compatibility", "2.23.1"), { recursive: true });
+    assert.equal(readMaxCompatibleAppVersion(coreDir), "2.23.1");
+    await writeFile(path.join(coreDir, "package.json"), JSON.stringify({ version: "3.1.7", maxSupportedClientVersion: "2.35.2" }), "utf8");
+    assert.equal(readMaxCompatibleAppVersion(coreDir), "2.35.2");
+    assert.equal(readMaxCompatibleAppVersion(), "2.35.2", "仓库默认配置最高适配客户端应为 2.35.2");
 
     const stdin = new PassThrough();
     const stdout = new PassThrough();
@@ -356,6 +360,7 @@ test("第一层版本曝光：汉化设置可查看当前版本并触发检查/�
     assert.equal(updatedCalled, true);
     const allLogs = logs.join("\n");
     assert.match(allLogs, /当前 v3\.1\.7/);
+    assert.match(allLogs, /已适配最高客户端版本：2\.35\.2/);
     assert.match(allLogs, /立即检查并更新汉化包/);
     assert.match(allLogs, /已更新至最新版本 v3\.1\.8/);
   } finally {

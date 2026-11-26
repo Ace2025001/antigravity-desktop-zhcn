@@ -5,6 +5,7 @@ import { getStateRoot, projectRoot } from "../src/lib/paths.mjs";
 import { resolveInteractiveInstallation } from "../src/lib/install-discovery.mjs";
 import { ensureAutoShortcuts } from "../src/lib/auto-shortcuts.mjs";
 import { askFirstRunSettings, runSettingsMenu } from "../src/lib/settings-prompts.mjs";
+import { applyAutoFollowSetting } from "../src/lib/auto-follow-task.mjs";
 import { banner, failure, finish, formatElapsed, info, runTimedTask, step } from "../src/lib/console-ui.mjs";
 import { maybeShowCompletionDialog } from "../src/lib/completion-dialog.mjs";
 import { checkLatestRelease, finalizePackLaunchers, performSelfUpdate, readPackUpdateState, resolvePackRootFromCore, writePackUpdateState } from "../src/lib/self-update.mjs";
@@ -58,9 +59,14 @@ const launchStartedAt = Date.now();
 try {
   const action = process.argv[2];
   const dryVerify = process.argv.includes("--dry-verify");
-  if (!["start", "restore", "settings"].includes(action)) throw new Error("请使用启动中文、卸载汉化或汉化设置入口。");
+  if (!["start", "restore", "settings", "sync-autofollow"].includes(action)) throw new Error("请使用启动中文、卸载汉化或汉化设置入口。");
   // 整理升级后残留的旧入口。卸载流程跳过：用户可能正是从旧入口进来的，批处理运行中不能删除自身。
-  if (action !== "restore") await finalizePackLaunchers(resolvePackRootFromCore(projectRoot)).catch(() => {});
+  if (action !== "restore" && action !== "sync-autofollow") await finalizePackLaunchers(resolvePackRootFromCore(projectRoot)).catch(() => {});
+  if (action === "sync-autofollow") {
+    const { settings } = await readUserSettings();
+    await applyAutoFollowSetting(settings, { coreRoot: projectRoot });
+    process.exit(0);
+  }
   if (action === "settings") {
     process.exitCode = await runSettingsMenu();
     process.exit(process.exitCode);

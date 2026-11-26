@@ -114,9 +114,20 @@ try {
     )) {
         Copy-Item -LiteralPath (Join-Path $ProjectRoot $file) -Destination $StagingRoot
     }
-    $packVer = (Get-Content -Raw -LiteralPath (Join-Path $ProjectRoot "package.json") -Encoding UTF8 | ConvertFrom-Json).version
+    $pkgJson = Get-Content -Raw -LiteralPath (Join-Path $ProjectRoot "package.json") -Encoding UTF8 | ConvertFrom-Json
+    $packVer = $pkgJson.version
+    $verCandidates = @()
+    if ($pkgJson.maxSupportedClientVersion -match '^\d+\.\d+\.\d+$') {
+        $verCandidates += $pkgJson.maxSupportedClientVersion
+    }
+    $compatVers = Get-ChildItem -LiteralPath (Join-Path $ProjectRoot "config\compatibility") -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -match '^\d+\.\d+\.\d+$' } |
+        Select-Object -ExpandProperty Name
+    if ($compatVers) { $verCandidates += $compatVers }
+    $maxAppVer = $verCandidates | Sort-Object { [version]$_ } -Descending | Select-Object -First 1
+    $verLabel = if ($maxAppVer) { "当前版本：v$packVer · 已适配最高客户端版本：$maxAppVer" } else { "当前版本：v$packVer" }
     $usageContent = Get-Content -Raw -LiteralPath (Join-Path $ProjectRoot "使用说明.txt") -Encoding UTF8
-    $usageContent = $usageContent -replace '^Antigravity 汉化包', "Antigravity 汉化包（当前版本：v$packVer）"
+    $usageContent = $usageContent -replace '^Antigravity 汉化包', "Antigravity 汉化包（$verLabel）"
     [System.IO.File]::WriteAllText((Join-Path $StagingRoot "使用说明.txt"), $usageContent, (New-Object System.Text.UTF8Encoding($false)))
     Copy-Item -LiteralPath (Join-Path $nodeRoot "node.exe") -Destination (Join-Path $StagingRoot "runtime")
     Copy-Item -LiteralPath (Join-Path $nodeRoot "LICENSE") -Destination (Join-Path $StagingRoot "runtime\NODE_LICENSE")

@@ -102,6 +102,119 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
         await _zhFs.writeFile(_zhPath.join(stateDir, 'pack-update-state.json'), JSON.stringify(next, null, 2) + '\\n', 'utf8');
         return next;
     };
+    const _zhGetSettingsFile = () => _zhPath.join(_zhGetStateDir(), 'settings.json');
+    const _zhReadSettingsState = async () => {
+        const now = Date.now();
+        if (globalThis.__agyZhcnSettingsCache && now - globalThis.__agyZhcnSettingsCache.at < 3000) {
+            return globalThis.__agyZhcnSettingsCache;
+        }
+        // onlineTranslate (UI fill-in) is off unless the settings file explicitly turns it on.
+        const value = { onlineTranslate: false, titleAutoTranslate: true, packAutoUpdate: 'auto', autoFollow: 'auto', titleWriteBack: false };
+        let exists = false;
+        let startupPackMode = 'off';
+        let raw = {};
+        try {
+            raw = JSON.parse(await _zhFs.readFile(_zhGetSettingsFile(), 'utf8')) || {};
+            if (raw && typeof raw === 'object') {
+                exists = true;
+                if (typeof raw.onlineTranslate === 'boolean') value.onlineTranslate = raw.onlineTranslate;
+                if (typeof raw.titleAutoTranslate === 'boolean') {
+                    value.titleAutoTranslate = raw.titleAutoTranslate;
+                } else if (raw.onlineTranslate === false || raw.autoTranslateTitles === false) {
+                    value.titleAutoTranslate = false;
+                }
+                if (raw.packAutoUpdate === 'auto' || raw.packAutoUpdate === 'ask' || raw.packAutoUpdate === 'off') {
+                    value.packAutoUpdate = raw.packAutoUpdate;
+                    startupPackMode = raw.packAutoUpdate;
+                } else {
+                    // Existing installs created before packAutoUpdate stay interactive ("ask") rather than auto-downloading silently.
+                    startupPackMode = 'ask';
+                }
+                if (raw.autoFollow === 'auto' || raw.autoFollow === 'ask' || raw.autoFollow === 'off') {
+                    value.autoFollow = raw.autoFollow;
+                }
+                if (typeof raw.titleWriteBack === 'boolean') value.titleWriteBack = raw.titleWriteBack;
+            }
+        } catch (_settingsErr) {}
+        const snapshot = { at: now, value, exists, startupPackMode, raw };
+        globalThis.__agyZhcnSettingsCache = snapshot;
+        return snapshot;
+    };
+    const _zhReadMaxAppVer = async (hook) => {
+        if (!hook || !hook.coreRoot) return '';
+        const candidates = [];
+        try {
+            const pkg = JSON.parse(await _zhFs.readFile(_zhPath.join(hook.coreRoot, 'package.json'), 'utf8'));
+            const metaVer = typeof pkg?.maxSupportedClientVersion === 'string' ? pkg.maxSupportedClientVersion.trim() : '';
+            if (/^\\d+\\.\\d+\\.\\d+$/.test(metaVer)) candidates.push(metaVer);
+        } catch (_pkgErr) {}
+        try {
+            const entries = await _zhFs.readdir(_zhPath.join(hook.coreRoot, 'config', 'compatibility'), { withFileTypes: true });
+            for (const e of entries) {
+                if (e && typeof e.isDirectory === 'function' && e.isDirectory() && /^\\d+\\.\\d+\\.\\d+$/.test(e.name)) {
+                    candidates.push(e.name);
+                }
+            }
+        } catch (_mErr) {}
+        candidates.sort((a, b) => _zhCompareSemver(b, a));
+        return candidates[0] || '';
+    };
+    const _zhSyncAutoFollowHook = (hook) => new Promise((resolve) => {
+        if (process.platform !== 'win32' || !hook || !hook.nodePath || !hook.coreRoot) return resolve(false);
+        const startScript = _zhPath.join(hook.coreRoot, 'scripts', 'start-local.mjs');
+        _zhCp.execFile(
+            hook.nodePath,
+            [startScript, 'sync-autofollow'],
+            { env: { ...process.env, AGY_LANGUAGE_PACK: hook.languagePackDir || '' }, windowsHide: true, encoding: 'utf8', timeout: 15000 },
+            (err) => resolve(!err)
+        );
+    });
+    const _zhWriteSettings = async (patch, hook) => {
+        const current = await _zhReadSettingsState();
+        const prev = (current && current.raw && typeof current.raw === 'object') ? current.raw : {};
+        const next = {
+            schemaVersion: 1,
+            autoFollow: current.value.autoFollow,
+            packAutoUpdate: current.value.packAutoUpdate,
+            onlineTranslate: current.value.onlineTranslate,
+            titleAutoTranslate: current.value.titleAutoTranslate,
+            titleWriteBack: Boolean(prev.titleWriteBack),
+        };
+        let autoFollowChanged = false;
+        if (patch && (patch.autoFollow === 'auto' || patch.autoFollow === 'ask' || patch.autoFollow === 'off')) {
+            autoFollowChanged = next.autoFollow !== patch.autoFollow;
+            next.autoFollow = patch.autoFollow;
+        }
+        if (patch && (patch.packAutoUpdate === 'auto' || patch.packAutoUpdate === 'ask' || patch.packAutoUpdate === 'off')) {
+            next.packAutoUpdate = patch.packAutoUpdate;
+        }
+        if (patch && typeof patch.onlineTranslate === 'boolean') next.onlineTranslate = patch.onlineTranslate;
+        if (patch && typeof patch.titleAutoTranslate === 'boolean') next.titleAutoTranslate = patch.titleAutoTranslate;
+        next.updatedAt = new Date().toISOString();
+        const settingsFile = _zhGetSettingsFile();
+        await _zhFs.mkdir(_zhPath.dirname(settingsFile), { recursive: true });
+        const tmpFile = settingsFile + '.' + process.pid + '.' + Date.now() + '.tmp';
+        await _zhFs.writeFile(tmpFile, JSON.stringify(next, null, 2) + '\\n', 'utf8');
+        await _zhFs.rename(tmpFile, settingsFile);
+        globalThis.__agyZhcnSettingsCache = null;
+        if (autoFollowChanged && process.platform === 'win32') {
+            await _zhSyncAutoFollowHook(hook).catch(() => false);
+        }
+        return next;
+    };
+    const _zhUpdateMacPackMenuVersion = (newVer) => {
+        if (process.platform !== 'darwin' || !newVer || !electron_1.Menu || typeof electron_1.Menu.getApplicationMenu !== 'function') return;
+        try {
+            const appMenu = electron_1.Menu.getApplicationMenu();
+            const appSub = appMenu && appMenu.items && appMenu.items[0] && appMenu.items[0].submenu;
+            if (!appSub || !Array.isArray(appSub.items)) return;
+            const item = appSub.items.find((it) => it && it.id === 'agy-zhcn-pack-version');
+            if (item) {
+                item.label = '汉化包版本 v' + newVer;
+                electron_1.Menu.setApplicationMenu(appMenu);
+            }
+        } catch (_muErr) {}
+    };
     const _zhFetchLatestRelease = async (localVer, timeoutMs = 4500) => {
         try {
             const doFetch = (electron_1.net && typeof electron_1.net.fetch === 'function') ? electron_1.net.fetch.bind(electron_1.net) : fetch;
@@ -117,7 +230,9 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             if (!_zhParseSemver(latestVer)) return { ok: false, reason: 'invalid-semver' };
             const hasNew = _zhCompareSemver(latestVer, localVer) > 0;
             const releaseUrl = (typeof rel.html_url === 'string' && rel.html_url) ? rel.html_url : _zhRepoReleaseUrl;
-            return { ok: true, localVer, latestVer, hasNew, releaseUrl };
+            const rawBody = typeof rel.body === 'string' ? rel.body.replace(/\\r\\n/g, '\\n').trim() : '';
+            const notes = rawBody.length > 600 ? rawBody.slice(0, 600) + '...' : rawBody;
+            return { ok: true, localVer, latestVer, hasNew, releaseUrl, notes };
         } catch (err) {
             return { ok: false, reason: (err && err.name === 'TimeoutError') ? 'timeout' : ((err && err.message) || 'network-error') };
         }
@@ -176,6 +291,122 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             (err) => resolve(!err)
         );
     });
+    const _zhRunManualDialogCheck = async (hook, fallbackVer) => {
+        const stateDir = _zhGetStateDir();
+        const localVer = await _zhResolveLocalVer(hook, fallbackVer || '0.0.0');
+        const rel = await _zhFetchLatestRelease(localVer, 5000);
+        if (!rel.ok) {
+            const action = await _zhShowModernOrNativeDialog(hook, {
+                kind: 'pack-check-error',
+                current: localVer,
+                detail: rel.reason,
+                type: 'warning',
+                title: '检查汉化包更新',
+                message: '暂时无法获取最新版本信息',
+                boxDetail: '当前版本：v' + localVer + '\\n\\n未能连接 GitHub 发布页（' + rel.reason + '），请检查网络或代理后重试。',
+                buttons: ['关闭', '打开发布页'],
+                defaultId: 1,
+                cancelId: 0,
+                actionMap: ['close', 'open']
+            });
+            if (action === 'open' && electron_1.shell && typeof electron_1.shell.openExternal === 'function') {
+                electron_1.shell.openExternal(_zhRepoReleaseUrl).catch(() => {});
+            }
+            return { ok: false, status: 'check-failed', currentVersion: localVer, handled: true };
+        }
+        if (!rel.hasNew) {
+            await _zhShowModernOrNativeDialog(hook, {
+                kind: 'pack-latest',
+                current: localVer,
+                latest: rel.latestVer,
+                type: 'info',
+                title: '检查汉化包更新',
+                message: '当前汉化包已是最新版本 v' + localVer,
+                boxDetail: '当前安装版本：v' + localVer + '\\nGitHub 最新版本：v' + rel.latestVer + '\\n\\n无需更新。',
+                buttons: ['确定'],
+                defaultId: 0,
+                cancelId: 0,
+                actionMap: ['ok']
+            });
+            return { ok: true, status: 'up-to-date', currentVersion: localVer, latestVersion: rel.latestVer, handled: true };
+        }
+        if (!hook) {
+            const action = await _zhShowModernOrNativeDialog(null, {
+                kind: 'pack-startup',
+                current: localVer,
+                latest: rel.latestVer,
+                type: 'info',
+                title: '发现汉化包新版本',
+                message: '发现 Antigravity 中文汉化包新版本 v' + rel.latestVer,
+                boxDetail: '当前版本：v' + localVer + '\\n最新版本：v' + rel.latestVer + '\\n\\n未检测到独立汉化包更新目录，请前往发布页下载覆盖。',
+                buttons: ['打开下载页', '关闭'],
+                defaultId: 0,
+                cancelId: 1,
+                actionMap: ['open', 'close']
+            });
+            if (action === 'open' && electron_1.shell && typeof electron_1.shell.openExternal === 'function') {
+                electron_1.shell.openExternal(rel.releaseUrl).catch(() => {});
+            }
+            return { ok: true, status: 'update-available', currentVersion: localVer, latestVersion: rel.latestVer, handled: true };
+        }
+        const action = await _zhShowModernOrNativeDialog(hook, {
+            kind: 'pack-startup',
+            current: localVer,
+            latest: rel.latestVer,
+            type: 'info',
+            title: 'Antigravity 汉化包有新版本',
+            message: '发现 Antigravity 中文汉化包新版本 v' + rel.latestVer,
+            boxDetail: '当前版本：v' + localVer + '\\n\\n是否立即在后台下载并验证更新？（更新包将进行 SHA-256 校验，不会强制关闭正在运行的客户端）',
+            buttons: ['立即更新', '稍后再说', '跳过此版本'],
+            defaultId: 0,
+            cancelId: 1,
+            actionMap: ['update', 'later', 'skip']
+        });
+        if (action === 'update') {
+            await _zhWritePackState(stateDir, { skippedVersion: null, snoozedVersion: null, snoozedUntil: 0 }).catch(() => {});
+            const okUpd = await _zhRunSelfUpdateWait(hook, []);
+            if (okUpd) {
+                _zhUpdateMacPackMenuVersion(rel.latestVer);
+                await _zhShowModernOrNativeDialog(hook, {
+                    kind: 'pack-updated',
+                    latest: rel.latestVer,
+                    hot: process.platform === 'win32',
+                    type: 'info',
+                    title: '汉化包更新完成',
+                    message: '汉化包已更新至 v' + rel.latestVer,
+                    boxDetail: process.platform === 'win32'
+                        ? '中文界面已无感热更新。现在在客户端窗口按 Ctrl+R 刷新即可立即生效，主进程补丁会在下次退出客户端时自动补齐。'
+                        : '已完成下载与 SHA-256 校验；请按 ⌘Q 退出并重新打开一次“启动中文.command”以完成副本重签。',
+                    buttons: ['知道了'],
+                    defaultId: 0,
+                    cancelId: 0,
+                    actionMap: ['ok']
+                });
+            } else {
+                const errAct = await _zhShowModernOrNativeDialog(hook, {
+                    kind: 'pack-check-error',
+                    current: localVer,
+                    detail: '更新执行失败',
+                    type: 'warning',
+                    title: '汉化包更新未完成',
+                    message: '下载或应用更新包时未能完成，请重试或前往发布页手动更新。',
+                    boxDetail: '请双击“启动中文”重试，或前往 GitHub 发布页下载完整汉化包。',
+                    buttons: ['关闭', '打开发布页'],
+                    defaultId: 0,
+                    cancelId: 0,
+                    actionMap: ['close', 'open']
+                });
+                if (errAct === 'open' && electron_1.shell && typeof electron_1.shell.openExternal === 'function') {
+                    electron_1.shell.openExternal(rel.releaseUrl).catch(() => {});
+                }
+            }
+            return { ok: okUpd, status: okUpd ? 'updated' : 'update-failed', currentVersion: localVer, latestVersion: rel.latestVer, handled: true };
+        }
+        if (action === 'skip') {
+            await _zhWritePackState(stateDir, { skippedVersion: rel.latestVer }).catch(() => {});
+        }
+        return { ok: true, status: action || 'cancelled', currentVersion: localVer, latestVersion: rel.latestVer, handled: true };
+    };
     electron_1.protocol.handle('agy-zhcn', async (request) => {
         const path = _zhPath;
         const os = _zhOs;
@@ -187,35 +418,35 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             return path.join(electron_1.app.getPath('userData'), 'auto-learned-translations.json');
         };
         // User switches written by “汉化设置” (src/lib/user-settings.mjs), next to the learned dictionary.
-        const getZhcnSettings = async () => {
-            const now = Date.now();
-            if (globalThis.__agyZhcnSettingsCache && now - globalThis.__agyZhcnSettingsCache.at < 3000) {
-                return globalThis.__agyZhcnSettingsCache.value;
-            }
-            // onlineTranslate (UI fill-in) is off unless the settings file explicitly turns it on.
-            const value = { onlineTranslate: false, titleAutoTranslate: true, packAutoUpdate: 'auto', titleWriteBack: false };
-            try {
-                const raw = JSON.parse(await fsPromises.readFile(path.join(path.dirname(getAutoDictPath()), 'settings.json'), 'utf8'));
-                if (typeof raw.onlineTranslate === 'boolean') value.onlineTranslate = raw.onlineTranslate;
-                if (typeof raw.titleAutoTranslate === 'boolean') {
-                    value.titleAutoTranslate = raw.titleAutoTranslate;
-                } else if (raw.onlineTranslate === false || raw.autoTranslateTitles === false) {
-                    value.titleAutoTranslate = false;
-                }
-                if (raw.packAutoUpdate === 'auto' || raw.packAutoUpdate === 'ask' || raw.packAutoUpdate === 'off') {
-                    value.packAutoUpdate = raw.packAutoUpdate;
-                }
-                if (typeof raw.titleWriteBack === 'boolean') value.titleWriteBack = raw.titleWriteBack;
-            } catch (_settingsErr) {}
-            globalThis.__agyZhcnSettingsCache = { at: now, value };
-            return value;
-        };
+        const getZhcnSettings = async () => (await _zhReadSettingsState()).value;
         try {
             const reqUrl = new URL(request.url);
             if (reqUrl.hostname === 'settings') {
-                return new Response(JSON.stringify(await getZhcnSettings()), {
+                const hook = await _zhReadPackHook();
+                if (request.method === 'POST') {
+                    const body = await request.json().catch(() => ({}));
+                    const saved = await _zhWriteSettings(body, hook);
+                    return new Response(JSON.stringify({
+                        ok: true,
+                        handled: true,
+                        writable: true,
+                        platform: process.platform,
+                        hasHook: Boolean(hook),
+                        ...saved
+                    }), {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
+                    });
+                }
+                const current = await getZhcnSettings();
+                return new Response(JSON.stringify({
+                    ...current,
+                    writable: true,
+                    platform: process.platform,
+                    hasHook: Boolean(hook)
+                }), {
                     status: 200,
-                    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }
+                    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
                 });
             }
             if (reqUrl.hostname === 'manual-titles') {
@@ -315,6 +546,63 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                 });
             }
             if (reqUrl.hostname === 'pack-update-check') {
+                const mode = reqUrl.searchParams.get('mode') || '';
+                const hook = await _zhReadPackHook();
+                const fallbackVer = (reqUrl.searchParams.get('current') || '').trim() || '0.0.0';
+                if (mode === 'panel') {
+                    const localVer = await _zhResolveLocalVer(hook, fallbackVer);
+                    const rel = await _zhFetchLatestRelease(localVer, 5000);
+                    const maxAppVersion = await _zhReadMaxAppVer(hook);
+                    if (!rel.ok) {
+                        return new Response(JSON.stringify({
+                            ok: false,
+                            handled: true,
+                            status: 'check-failed',
+                            reason: rel.reason,
+                            currentVersion: localVer,
+                            maxAppVersion,
+                            releaseUrl: _zhRepoReleaseUrl,
+                            hasHook: Boolean(hook),
+                            platform: process.platform
+                        }), {
+                            status: 200,
+                            headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
+                        });
+                    }
+                    return new Response(JSON.stringify({
+                        ok: true,
+                        handled: true,
+                        status: rel.hasNew ? 'update-available' : 'up-to-date',
+                        currentVersion: localVer,
+                        latestVersion: rel.latestVer,
+                        notes: rel.notes || '',
+                        maxAppVersion,
+                        releaseUrl: rel.releaseUrl,
+                        hasHook: Boolean(hook),
+                        platform: process.platform
+                    }), {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
+                    });
+                }
+                if (globalThis.__agyZhcnManualCheckRunning) {
+                    return new Response(JSON.stringify({ ok: true, busy: true, handled: true }), {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
+                    });
+                }
+                globalThis.__agyZhcnManualCheckRunning = true;
+                try {
+                    const res = await _zhRunManualDialogCheck(hook, fallbackVer);
+                    return new Response(JSON.stringify(res), {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
+                    });
+                } finally {
+                    globalThis.__agyZhcnManualCheckRunning = false;
+                }
+            }
+            if (reqUrl.hostname === 'pack-update-apply' && request.method === 'POST') {
                 if (globalThis.__agyZhcnManualCheckRunning) {
                     return new Response(JSON.stringify({ ok: true, busy: true, handled: true }), {
                         status: 200,
@@ -325,137 +613,46 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                 try {
                     const stateDir = _zhGetStateDir();
                     const hook = await _zhReadPackHook();
-                    const fallbackVer = (reqUrl.searchParams.get('current') || '').trim() || '0.0.0';
-                    const localVer = await _zhResolveLocalVer(hook, fallbackVer);
-                    const rel = await _zhFetchLatestRelease(localVer, 5000);
-                    if (!rel.ok) {
-                        const action = await _zhShowModernOrNativeDialog(hook, {
-                            kind: 'pack-check-error',
-                            current: localVer,
-                            detail: rel.reason,
-                            type: 'warning',
-                            title: '检查汉化包更新',
-                            message: '暂时无法获取最新版本信息',
-                            boxDetail: '当前版本：v' + localVer + '\\n\\n未能连接 GitHub 发布页（' + rel.reason + '），请检查网络或代理后重试。',
-                            buttons: ['关闭', '打开发布页'],
-                            defaultId: 1,
-                            cancelId: 0,
-                            actionMap: ['close', 'open']
-                        });
-                        if (action === 'open' && electron_1.shell && typeof electron_1.shell.openExternal === 'function') {
-                            electron_1.shell.openExternal(_zhRepoReleaseUrl).catch(() => {});
-                        }
-                        return new Response(JSON.stringify({ ok: false, status: 'check-failed', currentVersion: localVer, handled: true }), {
-                            status: 200,
-                            headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
-                        });
-                    }
-                    if (!rel.hasNew) {
-                        await _zhShowModernOrNativeDialog(hook, {
-                            kind: 'pack-latest',
-                            current: localVer,
-                            latest: rel.latestVer,
-                            type: 'info',
-                            title: '检查汉化包更新',
-                            message: '当前汉化包已是最新版本 v' + localVer,
-                            boxDetail: '当前安装版本：v' + localVer + '\\nGitHub 最新版本：v' + rel.latestVer + '\\n\\n无需更新。',
-                            buttons: ['确定'],
-                            defaultId: 0,
-                            cancelId: 0,
-                            actionMap: ['ok']
-                        });
-                        return new Response(JSON.stringify({ ok: true, status: 'up-to-date', currentVersion: localVer, latestVersion: rel.latestVer, handled: true }), {
-                            status: 200,
-                            headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
-                        });
-                    }
                     if (!hook) {
-                        const action = await _zhShowModernOrNativeDialog(null, {
-                            kind: 'pack-startup',
-                            current: localVer,
-                            latest: rel.latestVer,
-                            type: 'info',
-                            title: '发现汉化包新版本',
-                            message: '发现 Antigravity 中文汉化包新版本 v' + rel.latestVer,
-                            boxDetail: '当前版本：v' + localVer + '\\n最新版本：v' + rel.latestVer + '\\n\\n未检测到独立汉化包更新目录，请前往发布页下载覆盖。',
-                            buttons: ['打开下载页', '关闭'],
-                            defaultId: 0,
-                            cancelId: 1,
-                            actionMap: ['open', 'close']
-                        });
-                        if (action === 'open' && electron_1.shell && typeof electron_1.shell.openExternal === 'function') {
-                            electron_1.shell.openExternal(rel.releaseUrl).catch(() => {});
-                        }
-                        return new Response(JSON.stringify({ ok: true, status: 'update-available', currentVersion: localVer, latestVersion: rel.latestVer, handled: true }), {
+                        return new Response(JSON.stringify({ ok: false, handled: true, status: 'no-hook', releaseUrl: _zhRepoReleaseUrl }), {
                             status: 200,
                             headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
                         });
                     }
-                    const action = await _zhShowModernOrNativeDialog(hook, {
-                        kind: 'pack-startup',
-                        current: localVer,
-                        latest: rel.latestVer,
-                        type: 'info',
-                        title: 'Antigravity 汉化包有新版本',
-                        message: '发现 Antigravity 中文汉化包新版本 v' + rel.latestVer,
-                        boxDetail: '当前版本：v' + localVer + '\\n\\n是否立即在后台下载并验证更新？（更新包将进行 SHA-256 校验，不会强制关闭正在运行的客户端）',
-                        buttons: ['立即更新', '稍后再说', '跳过此版本'],
-                        defaultId: 0,
-                        cancelId: 1,
-                        actionMap: ['update', 'later', 'skip']
-                    });
-                    if (action === 'update') {
-                        await _zhWritePackState(stateDir, { skippedVersion: null, snoozedVersion: null, snoozedUntil: 0 }).catch(() => {});
-                        const okUpd = await _zhRunSelfUpdateWait(hook, []);
-                        if (okUpd) {
-                            await _zhShowModernOrNativeDialog(hook, {
-                                kind: 'pack-updated',
-                                latest: rel.latestVer,
-                                hot: process.platform === 'win32',
-                                type: 'info',
-                                title: '汉化包更新完成',
-                                message: '汉化包已更新至 v' + rel.latestVer,
-                                boxDetail: process.platform === 'win32'
-                                    ? '中文界面已无感热更新。现在在客户端窗口按 Ctrl+R 刷新即可立即生效，主进程补丁会在下次退出客户端时自动补齐。'
-                                    : '已完成下载与 SHA-256 校验；请按 ⌘Q 退出并重新打开一次“启动中文.command”以完成副本重签。',
-                                buttons: ['知道了'],
-                                defaultId: 0,
-                                cancelId: 0,
-                                actionMap: ['ok']
-                            });
-                        } else {
-                            const errAct = await _zhShowModernOrNativeDialog(hook, {
-                                kind: 'pack-check-error',
-                                current: localVer,
-                                detail: '更新执行失败',
-                                type: 'warning',
-                                title: '汉化包更新未完成',
-                                message: '下载或应用更新包时未能完成，请重试或前往发布页手动更新。',
-                                boxDetail: '请双击“启动中文”重试，或前往 GitHub 发布页下载完整汉化包。',
-                                buttons: ['关闭', '打开发布页'],
-                                defaultId: 0,
-                                cancelId: 0,
-                                actionMap: ['close', 'open']
-                            });
-                            if (errAct === 'open' && electron_1.shell && typeof electron_1.shell.openExternal === 'function') {
-                                electron_1.shell.openExternal(rel.releaseUrl).catch(() => {});
-                            }
-                        }
-                        return new Response(JSON.stringify({ ok: okUpd, status: okUpd ? 'updated' : 'update-failed', currentVersion: localVer, latestVersion: rel.latestVer, handled: true }), {
-                            status: 200,
-                            headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
-                        });
-                    }
-                    if (action === 'skip') {
-                        await _zhWritePackState(stateDir, { skippedVersion: rel.latestVer }).catch(() => {});
-                    }
-                    return new Response(JSON.stringify({ ok: true, status: action || 'cancelled', currentVersion: localVer, latestVersion: rel.latestVer, handled: true }), {
+                    await _zhWritePackState(stateDir, { skippedVersion: null, snoozedVersion: null, snoozedUntil: 0 }).catch(() => {});
+                    const okUpd = await _zhRunSelfUpdateWait(hook, []);
+                    const newHook = await _zhReadPackHook();
+                    const newVer = await _zhResolveLocalVer(newHook || hook, '');
+                    const maxAppVersion = await _zhReadMaxAppVer(newHook || hook);
+                    if (okUpd && newVer) _zhUpdateMacPackMenuVersion(newVer);
+                    return new Response(JSON.stringify({
+                        ok: okUpd,
+                        handled: true,
+                        status: okUpd ? 'updated' : 'update-failed',
+                        currentVersion: newVer,
+                        latestVersion: newVer,
+                        maxAppVersion,
+                        hot: process.platform === 'win32',
+                        releaseUrl: _zhRepoReleaseUrl,
+                        platform: process.platform
+                    }), {
                         status: 200,
                         headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
                     });
                 } finally {
                     globalThis.__agyZhcnManualCheckRunning = false;
                 }
+            }
+            if (reqUrl.hostname === 'pack-update-skip' && request.method === 'POST') {
+                const body = await request.json().catch(() => ({}));
+                const ver = String((body && body.version) || reqUrl.searchParams.get('version') || '').trim().replace(/^v/i, '');
+                if (ver) {
+                    await _zhWritePackState(_zhGetStateDir(), { skippedVersion: ver }).catch(() => {});
+                }
+                return new Response(JSON.stringify({ ok: Boolean(ver), handled: true, skippedVersion: ver }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
+                });
             }
         } catch (_routeErr) {}
 
@@ -477,17 +674,9 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             const runStartupPackUpdateCheck = async () => {
                 try {
                     const stateDir = _zhGetStateDir();
-                    let packMode = 'off';
-                    try {
-                        const rawSet = JSON.parse(await _zhFs.readFile(_zhPath.join(stateDir, 'settings.json'), 'utf8'));
-                        if (rawSet.packAutoUpdate === 'auto' || rawSet.packAutoUpdate === 'ask' || rawSet.packAutoUpdate === 'off') {
-                            packMode = rawSet.packAutoUpdate;
-                        } else if (rawSet && typeof rawSet === 'object') {
-                            // Existing installs created before packAutoUpdate stay interactive ("ask") rather than auto-downloading silently.
-                            packMode = 'ask';
-                        }
-                    } catch (_sErr) {}
-                    if (packMode === 'off') return;
+                    const sSnap = await _zhReadSettingsState();
+                    if (!sSnap.exists || sSnap.startupPackMode === 'off') return;
+                    const packMode = sSnap.startupPackMode;
 
                     const hook = await _zhReadPackHook();
                     if (!hook) return;
@@ -533,7 +722,51 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                     }
                 } catch (_chkErr) {}
             };
+            const _zhOpenMacPanel = async (tab) => {
+                try {
+                    const wins = (electron_1.BrowserWindow && typeof electron_1.BrowserWindow.getAllWindows === 'function') ? electron_1.BrowserWindow.getAllWindows() : [];
+                    const focused = (electron_1.BrowserWindow && typeof electron_1.BrowserWindow.getFocusedWindow === 'function') ? electron_1.BrowserWindow.getFocusedWindow() : null;
+                    const target = (focused && !focused.isDestroyed()) ? focused : wins.find((w) => w && !w.isDestroyed());
+                    if (target && target.webContents && !target.webContents.isDestroyed()) {
+                        if (typeof target.isMinimized === 'function' && target.isMinimized()) target.restore();
+                        if (typeof target.focus === 'function') target.focus();
+                        const called = await target.webContents.executeJavaScript(
+                            '(typeof globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__==="function")?(globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__(' + JSON.stringify(tab) + '),true):false',
+                            true
+                        ).catch(() => false);
+                        if (called) return;
+                    }
+                    if (tab === 'update') {
+                        const hook = await _zhReadPackHook();
+                        await _zhRunManualDialogCheck(hook, '0.0.0');
+                    }
+                } catch (_macPanelErr) {}
+            };
+            const _zhAttachMacAppMenu = async (attempt = 0) => {
+                if (process.platform !== 'darwin' || !electron_1.Menu || typeof electron_1.Menu.getApplicationMenu !== 'function' || typeof electron_1.MenuItem !== 'function') return;
+                try {
+                    const appMenu = electron_1.Menu.getApplicationMenu();
+                    const appSub = appMenu && appMenu.items && appMenu.items[0] && appMenu.items[0].submenu;
+                    if (!appSub || !Array.isArray(appSub.items)) {
+                        if (attempt < 15) setTimeout(() => { _zhAttachMacAppMenu(attempt + 1).catch(() => {}); }, 400);
+                        return;
+                    }
+                    if (appSub.items.some((it) => it && it.id === 'agy-zhcn-pack-version')) return;
+                    const hook = await _zhReadPackHook();
+                    const localVer = await _zhResolveLocalVer(hook, '');
+                    const checkIdx = appSub.items.findIndex((it) => it && (it.id === 'check-for-updates' || it.label === 'Check for Updates' || it.label === '检查更新'));
+                    const insertPos = checkIdx >= 0 ? checkIdx + 1 : Math.min(2, appSub.items.length);
+                    const verLabel = localVer ? ('汉化包版本 v' + localVer) : '汉化包版本';
+                    appSub.insert(insertPos, new electron_1.MenuItem({ id: 'agy-zhcn-pack-version', label: verLabel, enabled: false }));
+                    appSub.insert(insertPos + 1, new electron_1.MenuItem({ id: 'agy-zhcn-pack-check', label: '检查汉化包更新', click: () => { _zhOpenMacPanel('update').catch(() => {}); } }));
+                    appSub.insert(insertPos + 2, new electron_1.MenuItem({ id: 'agy-zhcn-pack-settings', label: '汉化设置', click: () => { _zhOpenMacPanel('settings').catch(() => {}); } }));
+                    electron_1.Menu.setApplicationMenu(appMenu);
+                } catch (_macMenuErr) {}
+            };
             electron_1.app.whenReady().then(() => {
+                if (process.platform === 'darwin') {
+                    setTimeout(() => { _zhAttachMacAppMenu(0).catch(() => {}); }, 1200);
+                }
                 setTimeout(() => { runStartupPackUpdateCheck().catch(() => {}); }, 4000);
             }).catch(() => {});
             electron_1.app.on('will-quit', () => {

@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { readdirSync, readFileSync } from "node:fs";
 import { access, chmod, copyFile, cp, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -36,6 +37,29 @@ export async function readLocalPackVersion(coreRoot = projectRoot) {
   } catch {
     return null;
   }
+}
+
+export function readMaxCompatibleAppVersion(coreRoot = projectRoot) {
+  const candidates = [];
+  try {
+    const pkg = JSON.parse(readFileSync(path.join(coreRoot, "package.json"), "utf8"));
+    const metaVer = typeof pkg?.maxSupportedClientVersion === "string" ? pkg.maxSupportedClientVersion.trim() : "";
+    if (/^\d+\.\d+\.\d+$/.test(metaVer)) candidates.push(metaVer);
+  } catch {
+    // Ignore missing package.json
+  }
+  try {
+    const entries = readdirSync(path.join(coreRoot, "config", "compatibility"), { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory() && /^\d+\.\d+\.\d+$/.test(entry.name)) {
+        candidates.push(entry.name);
+      }
+    }
+  } catch {
+    // Ignore missing compatibility directory
+  }
+  candidates.sort((left, right) => compareSemver(right, left));
+  return candidates[0] || null;
 }
 
 export function resolvePackRootFromCore(coreRoot = projectRoot) {
