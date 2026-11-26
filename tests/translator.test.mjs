@@ -3900,7 +3900,7 @@ test("2.35.2 /btw 提示、图标颜色选择器与 Swarm 扩展面板无宿主�
   }
 });
 
-test("左上角 Antigravity 菜单包含五项入口，并可在旧补丁回退态与完整可控卡片态下工作", async () => {
+test("左上角 Antigravity 菜单合并为三项极简入口，并可在旧补丁回退态与完整可控卡片态下工作", async () => {
   const current = await loadDomTranslations();
   const sampleReactMenu = Buffer.from(
     'k=(0,E.useMemo)(()=>{var v=[];c?.appVersion&&v.push({label:`Version ${c.appVersion}`,onClick:()=>{},nonSelectable:!0});c?.checkForUpdates&&v.push({label:"Check for Updates",onClick:()=>{c.checkForUpdates?.()}});return v},[c]);',
@@ -3911,22 +3911,18 @@ test("左上角 Antigravity 菜单包含五项入口，并可在旧补丁回退�
 
   assert.match(text, /label:`版本 \$\{c\.appVersion\}`/);
   assert.match(text, /label:"检查更新"/);
-  assert.match(text, /label:"汉化包版本 v3\.1\.99"/);
-  assert.match(text, /label:"检查汉化包更新"/);
-  assert.match(text, /label:"汉化设置"/);
+  assert.match(text, /label:"汉化中心 v3\.1\.99"/);
   const idxAppVersion = text.indexOf("label:`版本 ${c.appVersion}`");
   const idxAppUpdate = text.indexOf('label:"检查更新"');
-  const idxPackVersion = text.indexOf('label:"汉化包版本 v3.1.99"');
-  const idxPackUpdate = text.indexOf('label:"检查汉化包更新"');
-  const idxPackSettings = text.indexOf('label:"汉化设置"');
+  const idxPackCenter = text.indexOf('label:"汉化中心 v3.1.99"');
   assert.ok(
     idxAppVersion !== -1 &&
       idxAppVersion < idxAppUpdate &&
-      idxAppUpdate < idxPackVersion &&
-      idxPackVersion < idxPackUpdate &&
-      idxPackUpdate < idxPackSettings,
-    "顶部 Antigravity 菜单顺序应依次为：版本、检查更新、汉化包版本、检查汉化包更新、汉化设置",
+      idxAppUpdate < idxPackCenter,
+    "顶部 Antigravity 菜单顺序应依次为：版本、检查更新、汉化中心 v3.1.99",
   );
+  assert.ok(!text.includes('label:"汉化包版本 '), "不应再有单独的汉化包版本只读项");
+  assert.ok(!text.includes('label:"检查汉化包更新"'), "不应再有重复的检查更新入口");
   assert.match(text, /__AGY_ZHCN_CHECK_PACK_UPDATE__/);
   assert.match(text, /__AGY_ZHCN_OPEN_PACK_PANEL__/);
   assert.ok(!text.includes('label:"Check for Updates"'), "原菜单项应已转为中文");
@@ -4027,10 +4023,10 @@ test("左上角 Antigravity 菜单包含五项入口，并可在旧补丁回退�
     }
   }
 
-  // 场景 2：新版主进程代理完整闭环（从“汉化设置”打开不自动联网 -> 点击检查发现新版 -> 点击更新 -> 切换设置保存）
+  // 场景 2：新版主进程代理完整闭环（自动检查设为 off 时打开不自动联网 -> 点击检查发现新版 -> 点击更新 -> 切换设置保存）
   {
     const calls = [];
-    const savedState = { packAutoUpdate: "auto", autoFollow: "auto", onlineTranslate: false, titleAutoTranslate: true, writable: true, platform: "win32", hasHook: true };
+    const savedState = { packAutoUpdate: "off", autoFollow: "auto", onlineTranslate: false, titleAutoTranslate: true, writable: true, platform: "win32", hasHook: true };
     const { sb, timers, allElements, getPanel } = makeMockSandbox(async (url, opts = {}) => {
       const u = String(url);
       calls.push(`${opts.method || "GET"} ${u}`);
@@ -4069,9 +4065,9 @@ test("左上角 Antigravity 菜单包含五项入口，并可在旧补丁回退�
     });
     try {
       new vm.Script(overlay).runInContext(vm.createContext(sb));
-      await sb.__AGY_ZHCN_OPEN_PACK_PANEL__("settings");
+      await sb.__AGY_ZHCN_OPEN_PACK_PANEL__();
       assert.ok(getPanel(), "应弹出卡片");
-      assert.ok(!calls.some((c) => c.includes("pack-update-check")), "从汉化设置打开不得自动联网检查版本（守住红线 1）");
+      assert.ok(!calls.some((c) => c.includes("pack-update-check")), "设为关闭时打开面板不得自动联网检查版本（守住红线 1）");
 
       const findBtn = (txt) => allElements.find((e) => e.tagName === "BUTTON" && e.textContent.includes(txt));
       await findBtn("检查更新").onclick();
@@ -4082,10 +4078,10 @@ test("左上角 Antigravity 菜单包含五项入口，并可在旧补丁回退�
       assert.match(textsAfterUpdate, /已更新至 v3\.2\.0/);
       assert.match(textsAfterUpdate, /当前版本：v3\.2\.0\s+·\s+已适配最高客户端：2\.35\.10/);
 
-      // 切换配置按钮：“汉化包自动更新 -> 关闭” 与 “界面联网补充 -> 开启”
-      const packOffBtn = allElements.find((e) => e.attrs["data-setting-key"] === "packAutoUpdate" && e.attrs["data-setting-val"] === "off");
-      await packOffBtn.onclick();
-      assert.equal(savedState.packAutoUpdate, "off", "应成功提交并写入设置到主进程");
+      // 切换配置按钮：“汉化包自动更新 -> 自动” 与 “界面联网补充 -> 开启”
+      const packAutoBtn = allElements.find((e) => e.attrs["data-setting-key"] === "packAutoUpdate" && e.attrs["data-setting-val"] === "auto");
+      await packAutoBtn.onclick();
+      assert.equal(savedState.packAutoUpdate, "auto", "应成功提交并写入设置到主进程");
       const onlineOnBtn = allElements.find((e) => e.attrs["data-setting-key"] === "onlineTranslate" && e.attrs["data-setting-val"] === "true");
       await onlineOnBtn.onclick();
       assert.equal(savedState.onlineTranslate, true, "界面联网补充开关应成功提交并写入");

@@ -208,9 +208,9 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             const appMenu = electron_1.Menu.getApplicationMenu();
             const appSub = appMenu && appMenu.items && appMenu.items[0] && appMenu.items[0].submenu;
             if (!appSub || !Array.isArray(appSub.items)) return;
-            const item = appSub.items.find((it) => it && it.id === 'agy-zhcn-pack-version');
+            const item = appSub.items.find((it) => it && it.id === 'agy-zhcn-pack-center');
             if (item) {
-                item.label = '汉化包版本 v' + newVer;
+                item.label = '汉化中心 v' + newVer;
                 electron_1.Menu.setApplicationMenu(appMenu);
             }
         } catch (_muErr) {}
@@ -751,15 +751,13 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                         if (attempt < 15) setTimeout(() => { _zhAttachMacAppMenu(attempt + 1).catch(() => {}); }, 400);
                         return;
                     }
-                    if (appSub.items.some((it) => it && it.id === 'agy-zhcn-pack-version')) return;
+                    if (appSub.items.some((it) => it && it.id === 'agy-zhcn-pack-center')) return;
                     const hook = await _zhReadPackHook();
                     const localVer = await _zhResolveLocalVer(hook, '');
                     const checkIdx = appSub.items.findIndex((it) => it && (it.id === 'check-for-updates' || it.label === 'Check for Updates' || it.label === '检查更新'));
                     const insertPos = checkIdx >= 0 ? checkIdx + 1 : Math.min(2, appSub.items.length);
-                    const verLabel = localVer ? ('汉化包版本 v' + localVer) : '汉化包版本';
-                    appSub.insert(insertPos, new electron_1.MenuItem({ id: 'agy-zhcn-pack-version', label: verLabel, enabled: false }));
-                    appSub.insert(insertPos + 1, new electron_1.MenuItem({ id: 'agy-zhcn-pack-check', label: '检查汉化包更新', click: () => { _zhOpenMacPanel('update').catch(() => {}); } }));
-                    appSub.insert(insertPos + 2, new electron_1.MenuItem({ id: 'agy-zhcn-pack-settings', label: '汉化设置', click: () => { _zhOpenMacPanel('settings').catch(() => {}); } }));
+                    const centerLabel = localVer ? ('汉化中心 v' + localVer) : '汉化中心';
+                    appSub.insert(insertPos, new electron_1.MenuItem({ id: 'agy-zhcn-pack-center', label: centerLabel, click: () => { _zhOpenMacPanel('update').catch(() => {}); } }));
                     electron_1.Menu.setApplicationMenu(appMenu);
                 } catch (_macMenuErr) {}
             };
