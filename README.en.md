@@ -20,6 +20,8 @@ A **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google 
 2. Open `win启动` (Windows) or `mac启动` (macOS).
 3. Run **`启动中文`** (Start Chinese). Use **`卸载汉化`** (uninstall) to restore English, and manage settings or check updates from **汉化中心** in the top-left `Antigravity` menu inside the client.
 
+![Antigravity localization center inside the client: open from the top-left Antigravity menu to check version, inspect updates, and change settings](docs/images/zhcn-pack-center.png)
+
 ```text
 antigravity汉化包/
 ├─ win启动/     Windows entry points: 启动中文.bat, 卸载汉化.bat
