@@ -26,7 +26,6 @@
 - 中文 UI：`~/Library/Application Support/Antigravity/agy_zhcn_ui_main.js`。
 - 构建失败会尝试回退，更新时保留上一版副本。不要删除恢复所需状态。
 - Mac 菜单的更新动作保留英文，以维持原有操作。
-- 不修改系统代理、节点、TUN 或模型配置。
 
 ## 构建
 

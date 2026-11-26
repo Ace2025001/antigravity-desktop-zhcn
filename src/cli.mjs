@@ -505,7 +505,7 @@ async function install({ assumeYes = false } = {}) {
   if (!initialInspection.target) {
     throw new Error(
       `当前安装文件版本 (${initialInspection.packageVersion}) 尚未登记在离线白名单中。\n` +
-      `提示：您可以直接运行【启动 Antigravity（自动汉化）】进行自适应无感安装，或从 Releases 下载最新版本。`,
+      `提示：您可以直接运行【启动 Antigravity（自动汉化）】自动汉化，或从 Releases 下载最新版本。`,
     );
   }
 

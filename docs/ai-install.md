@@ -55,7 +55,7 @@ antigravity汉化包/
    └─ 核心程序/                 共用代码与依赖
 ```
 
-正式包已内置运行环境，不需要安装 Node.js，也不需要联网安装依赖。
+正式包已内置运行环境，解压即可运行。
 
 ## 4. Windows 安装
 
@@ -84,7 +84,7 @@ $env:AGY_INSTALL_PATH = "$env:LOCALAPPDATA\Programs\Antigravity"   # 按实际�
 |---|---|---|---|
 | 客户端更新后怎么处理 | 自动汉化 | `AGY_AUTO_FOLLOW=auto\|ask\|off` | `auto`/`ask`：用户在客户端里点“重启以更新”后自动重新汉化或弹窗询问，不添加计划任务、不常驻后台；`off` 不处理 |
 | 汉化包自动更新 | 自动更新（默认） | `AGY_PACK_AUTO_UPDATE=auto\|ask\|off` | `auto`/`ask`：启动 Antigravity 时检查最新版汉化包并核对 SHA-256，自动更新或弹窗先问我（老版本升级前先按先问我处理）；`off` 不检查 |
-| 界面联网补充翻译 | 开启 | `AGY_ONLINE_TRANSLATE=on\|off` | 界面优先用人工词库；客户端更新后出现汉化包还没收录的界面文字时，经谷歌翻译临时显示中文，收录人工译文后自动替换；对话内容、代码、终端、文件、账号信息和用户输入不会发送 |
+| 界面联网补充翻译 | 开启 | `AGY_ONLINE_TRANSLATE=on\|off` | 界面优先用人工词库；客户端更新后出现汉化包还没收录的界面文字时，经谷歌翻译临时显示中文，收录人工译文后自动替换；只发送界面文字，对话内容、代码、终端、文件、账号信息和用户输入都留在本机 |
 | 标题自动翻译 | 开启 | `AGY_TITLE_AUTO_TRANSLATE=on\|off` | 仅自动翻译 Antigravity 生成的纯英文对话标题，只在界面显示、不改对话记录 |
 
 ```powershell
