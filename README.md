@@ -16,9 +16,9 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 
 ## 汉化效果与覆盖范围
 
-| 登录页 | 首页 | 插件市场 |
-|---|---|---|
-| ![Antigravity 汉化后的登录页：欢迎使用 Antigravity、通过 Google 继续](docs/images/zhcn-login.jpg) | ![Antigravity 汉化后的首页：中文问候语、侧边栏与输入框](docs/images/zhcn-home.webp) | ![Antigravity 汉化后的插件市场：分类、搜索与官方插件说明](docs/images/zhcn-marketplace.webp) |
+| 登录页 | 插件市场 |
+|---|---|
+| ![Antigravity 汉化后的登录页：欢迎使用 Antigravity、通过 Google 继续](docs/images/zhcn-login.jpg) | ![Antigravity 汉化后的插件市场：分类、搜索与官方插件说明](docs/images/zhcn-marketplace.webp) |
 
 **智能体执行过程（完整展示）**
 
@@ -51,6 +51,8 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 3. 双击 **启动中文**，按提示完成。第一次运行会问设置，直接回车用推荐值即可。
 
 想换回官方英文原版，双击 **卸载汉化**；想改设置、查看版本或检查更新，直接在客户端左上角 `Antigravity` 菜单（Mac 在顶部系统菜单栏）点 **汉化中心**。
+
+![Antigravity 客户端内汉化中心：从左上角 Antigravity 菜单打开，支持查看版本、检查更新与调整设置](docs/images/zhcn-pack-center.png)
 
 > 发布页上的文件名是 `Antigravity-完整汉化包-Windows+Mac.zip`，下载后显示为 `Antigravity-Windows+Mac.zip`，是同一个文件。
 
