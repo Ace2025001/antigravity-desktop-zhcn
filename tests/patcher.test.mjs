@@ -143,3 +143,13 @@ test("patchCustomSchemeSource injects scoped sidecar iframe overlay hook with va
   assert.doesNotThrow(() => new Function(patched));
 });
 
+test("patchCustomSchemeSource injects pack-update-check proxy handler", () => {
+  const patched = patchCustomSchemeSource(fixture);
+  assert.match(patched, /reqUrl\.hostname === 'pack-update-check'/);
+  assert.match(patched, /__agyZhcnManualCheckRunning/);
+  assert.match(patched, /pack-latest/);
+  assert.match(patched, /pack-check-error/);
+  assert.match(patched, /pack-updated/);
+  assert.doesNotThrow(() => new Function(patched));
+});
+

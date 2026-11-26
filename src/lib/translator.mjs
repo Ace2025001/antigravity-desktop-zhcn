@@ -1,9 +1,19 @@
+import { readFileSync } from "node:fs";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { projectRoot } from "./paths.mjs";
 import { sha256Buffer } from "./hash.mjs";
 import { languageFile } from "./language-pack.mjs";
 import { KEEP_ORIGINAL_NAMES } from "./auto-learned-dict.mjs";
+
+const DEFAULT_PACK_VERSION = (() => {
+  try {
+    const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+    return typeof pkg?.version === "string" && pkg.version.trim() ? pkg.version.trim() : "3.1.7";
+  } catch {
+    return "3.1.7";
+  }
+})();
 
 export async function loadDomTranslations() {
   const filePath = languageFile("dom-translations.json");
@@ -310,6 +320,7 @@ export function countBundleDictionaryHits(bundleText, dictionary) {
 }
 
 export function createRuntimeOverlay(dictionary) {
+  const packVersion = (typeof dictionary?.packVersion === "string" && dictionary.packVersion.trim()) || DEFAULT_PACK_VERSION;
   const serialized = JSON.stringify(dictionary.exact);
   const patternsList = dictionary.patterns ?? dictionary.dynamic ?? [];
   const normalizedPatterns = patternsList.map((p) => ({
@@ -876,7 +887,7 @@ export function createRuntimeOverlay(dictionary) {
       "UI Extension": "UI 扩展",
       "Swarm": "Swarm 蜂群协作",
       "a11y-debugging": "无障碍调试",
-      "chrome-devtools": "Chrome 开发者工具",
+      "chrome-devtools": "Chrome DevTools",
       "cookie-debugging": "Cookie 调试",
       "debug-optimize-lcp": "LCP 性能调优",
       "memory-leak-debugging": "内存泄漏排查",
@@ -1037,6 +1048,75 @@ export function createRuntimeOverlay(dictionary) {
   globalThis.__AGY_ZHCN_TRANSLATE_CHAPTER__ = __translateChapterTitle;
   globalThis.__AGY_ZHCN_TRANSLATE_DUR__ = __fmtDurToZh;
   globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__ = __translateModelTagDesc;
+  globalThis.__AGY_ZHCN_PACK_VERSION__ = ${JSON.stringify(packVersion)};
+  let __packUpdateCheckRunning = false;
+  const __showPackUpdateNotice = (titleText, bodyText) => {
+    try {
+      if (!document?.body) return;
+      const old = document.querySelector("[data-agy-zhcn-pack-toast]");
+      if (old) old.remove();
+      const wrap = document.createElement("div");
+      wrap.setAttribute("data-agy-zhcn-pack-toast", "1");
+      wrap.style.cssText = "position:fixed;right:20px;bottom:20px;z-index:2147483647;max-width:340px;padding:12px 14px;border-radius:10px;border:1px solid var(--border,rgba(127,127,127,.28));background:var(--background,#ffffff);color:var(--foreground,#18181b);box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:13px;line-height:1.5;";
+      const h = document.createElement("div");
+      h.style.cssText = "font-weight:600;margin-bottom:4px;";
+      h.textContent = titleText;
+      const p = document.createElement("div");
+      p.style.cssText = "opacity:.85;margin-bottom:10px;white-space:pre-line;";
+      p.textContent = bodyText;
+      const actions = document.createElement("div");
+      actions.style.cssText = "display:flex;gap:8px;justify-content:flex-end;align-items:center;";
+      const link = document.createElement("a");
+      link.href = "https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest";
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      link.textContent = "打开 GitHub 发布页";
+      link.style.cssText = "color:var(--link,#2563eb);text-decoration:none;font-size:12px;margin-right:auto;";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "关闭";
+      btn.style.cssText = "padding:4px 10px;border-radius:6px;border:1px solid var(--border,rgba(127,127,127,.28));background:transparent;color:inherit;cursor:pointer;font-size:12px;";
+      btn.onclick = () => wrap.remove();
+      actions.appendChild(link);
+      actions.appendChild(btn);
+      wrap.appendChild(h);
+      wrap.appendChild(p);
+      wrap.appendChild(actions);
+      document.body.appendChild(wrap);
+      setTimeout(() => { try { wrap.remove(); } catch {} }, 12000);
+    } catch {}
+  };
+  globalThis.__AGY_ZHCN_CHECK_PACK_UPDATE__ = async function() {
+    if (__packUpdateCheckRunning) return;
+    __packUpdateCheckRunning = true;
+    try {
+      const cur = globalThis.__AGY_ZHCN_PACK_VERSION__ || "";
+      const resp = await fetch("agy-zhcn://pack-update-check?current=" + encodeURIComponent(cur), { method: "POST" });
+      const ct = resp?.headers?.get?.("content-type") || "";
+      if (!ct.includes("application/json")) {
+        __showPackUpdateNotice(
+          "汉化包版本 v" + (cur || "未知"),
+          "主程序更新检查接口需要新版补丁重启后生效。请先通过“汉化设置”检查更新，或前往 GitHub 发布页查看最新版本。"
+        );
+        return;
+      }
+      const data = await resp.json().catch(() => null);
+      if (!data || !data.handled) {
+        __showPackUpdateNotice(
+          "汉化包版本 v" + (cur || "未知"),
+          "未能完成更新检查，请稍后通过“汉化设置”或 GitHub 发布页查看最新版本。"
+        );
+      }
+    } catch {
+      const cur = globalThis.__AGY_ZHCN_PACK_VERSION__ || "";
+      __showPackUpdateNotice(
+        "汉化包版本 v" + (cur || "未知"),
+        "暂时无法唤起更新检查，请在“汉化设置”中查看当前版本并检查更新，或前往 GitHub 发布页确认。"
+      );
+    } finally {
+      __packUpdateCheckRunning = false;
+    }
+  };
 
   const collectorRecords = [];
   const collector = {
@@ -1887,12 +1967,12 @@ export function createRuntimeOverlay(dictionary) {
       const swarmEmptyBody = parent.closest("[data-testid='swarm-empty-body']");
       if (swarmEmptyBody) {
         const txt = (swarmEmptyBody.textContent || "").replace(/\\s+/g, " ").trim();
-        if (txt.startsWith("Swarms started in this conversation appear here automatically")) {
+        if (/^Swarms started in this conversation appear here automatically\\b/.test(txt)) {
           swarmEmptyBody.innerHTML = "在此对话中启动的蜂群会自动显示在这里，包含留言板、成员与 @提及关系图。使用 <code>/swarm</code> 启动。";
           stats.translatedTextNodes += 1;
           return;
         }
-        if (txt.startsWith("Open this pane from a conversation to see its swarm.")) {
+        if (/^Open this pane from a conversation to see its swarm\\./.test(txt)) {
           swarmEmptyBody.innerHTML = "请从某个对话中打开此面板以查看对应的蜂群。在对话中启动的蜂群会自动显示在这里；使用 <code>/swarm</code> 启动。";
           stats.translatedTextNodes += 1;
           return;
@@ -1904,12 +1984,12 @@ export function createRuntimeOverlay(dictionary) {
           .replace(/(\\d+)m\\s*(\\d+)s/g, "$1 分 $2 秒")
           .replace(/(\\d+)s\\b/g, "$1 秒");
         if (parent.closest("#ov-notice")) {
-          if (rawVal === "The narrator (") {
+          if (/^The narrator \\($/.test(rawVal)) {
             node.nodeValue = "旁白员 (";
             stats.translatedTextNodes += 1;
             return;
           }
-          if (rawVal === ") was stopped. Ask the coordinator to add a new one (") {
+          if (/^\\) was stopped\\. Ask the coordinator to add a new one \\($/.test(rawVal)) {
             node.nodeValue = ") 已停止。请让协调者新增一个 (";
             stats.translatedTextNodes += 1;
             return;
@@ -2386,6 +2466,20 @@ export function createRuntimeOverlay(dictionary) {
 
 export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage = false } = {}) {
   let sourceText = sourceBuffer.toString("utf8");
+  const resolvedPackVersion = (typeof dictionary?.packVersion === "string" && dictionary.packVersion.trim()) || DEFAULT_PACK_VERSION;
+
+  // 左上角 Antigravity 下拉菜单增加“汉化包版本”与“检查汉化包更新”
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Check for Updates"',
+    /([a-zA-Z0-9_$]+)\?\.appVersion&&([a-zA-Z0-9_$]+)\.push\(\{label:`Version \$\{\1\.appVersion\}`,onClick:\(\)=>\s*\{\},nonSelectable:!0\}\);\1\?\.checkForUpdates&&\2\.push\(\{label:"Check for Updates",onClick:\(\)=>\{\s*\1\.checkForUpdates\?\.\(\)\}\}\);return \2/g,
+    (_, objVar, arrVar) =>
+      `${objVar}?.appVersion&&${arrVar}.push({label:\`版本 \${${objVar}.appVersion}\`,onClick:()=>{},nonSelectable:!0});` +
+      `${arrVar}.push({label:"汉化包版本 v${resolvedPackVersion}",onClick:()=>{},nonSelectable:!0});` +
+      `${objVar}?.checkForUpdates&&${arrVar}.push({label:"检查更新",onClick:()=>{${objVar}.checkForUpdates?.()}});` +
+      `${arrVar}.push({label:"检查汉化包更新",onClick:()=>{globalThis.__AGY_ZHCN_CHECK_PACK_UPDATE__?.()}});` +
+      `return ${arrVar}`
+  );
 
   // =========================================================================
   // 9. Antigravity 2.31.0 全端与 1–4 级子页面、悬浮窗、菜单深度原生本地化

@@ -144,4 +144,4 @@ AGY_LANGUAGE_PACK="$PWD/语言包" ./mac启动/配套程序/node ./语言包/核
 
 ## 10. 更新语言包
 
-开启“汉化包自动更新”后，启动或退出 Antigravity 时会按设置自动检查、校验 SHA-256 并升级词库与核心脚本。也可以运行 `& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\scripts\self-update.mjs'` 立即手动更新，或到[最新发布页](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)下载覆盖。
+开启“汉化包自动更新”后，启动或退出 Antigravity 时会按设置自动检查、校验 SHA-256 并升级词库与核心脚本。用户也可以在客户端左上角 `Antigravity` 菜单或双击 `汉化设置` 中查看当前汉化包版本并手动检查更新，或者运行 `& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\scripts\self-update.mjs'` 立即更新，或到[最新发布页](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)下载覆盖。

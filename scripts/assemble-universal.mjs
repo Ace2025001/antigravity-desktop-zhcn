@@ -28,5 +28,7 @@ for(const [index,platform] of ["win","mac"].entries()){
     for(const name of ["启动中文.command","卸载汉化.command","汉化设置.command","配套程序/node"])await chmod(path.join(entry,name),0o755);
   }
 }
-await cp(path.join(source,"docs/package-usage.txt"),path.join(language,"使用说明.txt"));
+const pkg=JSON.parse(await readFile(path.join(source,"package.json"),"utf8"));
+const usageText=await readFile(path.join(source,"docs/package-usage.txt"),"utf8");
+await writeFile(path.join(language,"使用说明.txt"),usageText.replace(/^Antigravity 汉化包/m,`Antigravity 汉化包（当前版本：v${pkg.version}）`),"utf8");
 console.log(`已生成：${output}；共用核心只保留一份，两端运行环境分别存放。`);

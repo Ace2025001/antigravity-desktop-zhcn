@@ -3577,10 +3577,10 @@ test("Case 156: 插件市场全量目录/截断/Gemini 2.9.0 与 chrome-devtools
     const mdCellResult = sb.__AGY_ZHCN_TRANSLATE_MD__(`| \`gemini-api-dev\` | ${geminiDevCell} |`);
     assert.ok(mdCellResult.includes("语音重混"), `Gemini 2.9.0 单元格应完整汉化: ${mdCellResult}`);
 
-    // 4. chrome-devtools-plugin 技能标题在技能列表内汉化为中文
+    // 4. chrome-devtools-plugin 技能标题在技能列表内规范命名（Chrome DevTools 统一保持英文专有名词）
     for (const [skillId, zhName] of [
       ["a11y-debugging", "无障碍调试"],
-      ["chrome-devtools", "Chrome 开发者工具"],
+      ["chrome-devtools", "Chrome DevTools"],
       ["cookie-debugging", "Cookie 调试"],
       ["debug-optimize-lcp", "LCP 性能调优"],
       ["memory-leak-debugging", "内存泄漏排查"],
@@ -3897,5 +3897,89 @@ test("2.35.2 /btw 提示、图标颜色选择器与 Swarm 扩展面板无宿主�
   } finally {
     pendingTimers.forEach((id) => clearTimeout(id));
     pendingTimers.clear();
+  }
+});
+
+test("左上角 Antigravity 菜单新增汉化包版本与检查汉化包更新，并在旧补丁回退时展示提示条", async () => {
+  const current = await loadDomTranslations();
+  const sampleReactMenu = Buffer.from(
+    'k=(0,E.useMemo)(()=>{var v=[];c?.appVersion&&v.push({label:`Version ${c.appVersion}`,onClick:()=>{},nonSelectable:!0});c?.checkForUpdates&&v.push({label:"Check for Updates",onClick:()=>{c.checkForUpdates?.()}});return v},[c]);',
+    "utf8",
+  );
+  const localized = createLocalizedBundle(sampleReactMenu, { ...current, packVersion: "3.1.99" });
+  const text = localized.buffer.toString("utf8");
+
+  assert.match(text, /label:`版本 \$\{c\.appVersion\}`/);
+  assert.match(text, /label:"汉化包版本 v3\.1\.99"/);
+  assert.match(text, /label:"检查更新"/);
+  assert.match(text, /label:"检查汉化包更新"/);
+  assert.match(text, /__AGY_ZHCN_CHECK_PACK_UPDATE__/);
+  assert.ok(!text.includes('label:"Check for Updates"'), "原菜单项应已转为中文");
+
+  const bIdx = text.indexOf("/* __AGY_ZHCN_SIDECAR_OVERLAY_BEGIN__ */");
+  const eIdx = text.indexOf("/* __AGY_ZHCN_SIDECAR_OVERLAY_END__ */", bIdx);
+  const overlay = text.slice(bIdx + "/* __AGY_ZHCN_SIDECAR_OVERLAY_BEGIN__ */".length, eIdx).trim();
+
+  let appendedToast = null;
+  const fakeToast = {
+    attrs: {},
+    style: {},
+    children: [],
+    setAttribute(k, v) { this.attrs[k] = v; },
+    appendChild(c) { this.children.push(c); },
+    remove() { appendedToast = null; },
+  };
+  const timers = new Set();
+  const sb = {
+    Node: { TEXT_NODE: 3, ELEMENT_NODE: 1 },
+    NodeFilter: { SHOW_ELEMENT: 1, SHOW_TEXT: 4, SHOW_ALL: 0xffffffff },
+    Element: class {},
+    HTMLElement: class {},
+    SVGElement: class {},
+    document: {
+      readyState: "complete",
+      documentElement: { nodeType: 1, tagName: "HTML", childNodes: [], hasAttribute: () => false, getAttribute: () => null, closest: () => null, querySelector: () => null, querySelectorAll: () => [] },
+      body: {
+        nodeType: 1,
+        tagName: "BODY",
+        childNodes: [],
+        hasAttribute: () => false,
+        getAttribute: () => null,
+        closest: () => null,
+        querySelector: () => null,
+        querySelectorAll: () => [],
+        appendChild(el) { appendedToast = el; },
+      },
+      createElement: () => ({ ...fakeToast, style: {}, children: [], attrs: {} }),
+      createTreeWalker: () => ({ nextNode: () => null }),
+      querySelector: () => null,
+      querySelectorAll: () => [],
+      addEventListener: () => {},
+    },
+    MutationObserver: class { observe() {} disconnect() {} },
+    fetch: async () => ({
+      headers: { get: () => "application/javascript; charset=utf-8" },
+    }),
+    setTimeout: (fn, ms) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); return id; },
+    clearTimeout: (id) => { timers.delete(id); clearTimeout(id); },
+    setInterval: () => 0,
+    clearInterval: () => {},
+    requestAnimationFrame: () => 0,
+    location: { protocol: "vscode-file:", hostname: "", href: "vscode-file://vscode-app/" },
+    localStorage: { getItem: () => null, setItem: () => {} },
+    __AGY_ZHCN_DISABLE_AUTO_TRANSLATE__: true,
+    console,
+  };
+  sb.window = sb;
+  sb.self = sb;
+  sb.globalThis = sb;
+  try {
+    new vm.Script(overlay).runInContext(vm.createContext(sb));
+    assert.equal(sb.__AGY_ZHCN_PACK_VERSION__, "3.1.99");
+    await sb.__AGY_ZHCN_CHECK_PACK_UPDATE__();
+    assert.ok(appendedToast && appendedToast.attrs["data-agy-zhcn-pack-toast"] === "1", "旧补丁回退时应弹出友好提示卡片");
+  } finally {
+    timers.forEach((id) => clearTimeout(id));
+    timers.clear();
   }
 });

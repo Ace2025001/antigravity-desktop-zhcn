@@ -273,3 +273,95 @@ test("入口改名：新入口就位时删除旧的“恢复英文”，新入�
     await rm(pack, { recursive: true, force: true });
   }
 });
+
+test("第一层版本曝光：汉化设置可查看当前版本并触发检查/更新，弹窗规格齐全", async () => {
+  const { PassThrough } = await import("node:stream");
+  const { runSettingsMenu } = await import("../src/lib/settings-prompts.mjs");
+  const { getPackLatestDialogSpec, getPackCheckErrorDialogSpec, getPackUpdatedDialogSpec } = await import("../src/lib/modern-dialog.mjs");
+
+  const latestSpec = getPackLatestDialogSpec({ currentVersion: "3.1.7", latestVersion: "3.1.7" });
+  assert.match(latestSpec.headline, /v3\.1\.7/);
+  const errSpec = getPackCheckErrorDialogSpec({ currentVersion: "3.1.7", detail: "timeout" });
+  assert.match(errSpec.message, /timeout/);
+  const updSpec = getPackUpdatedDialogSpec({ latestVersion: "3.1.8", hotUpdated: true });
+  assert.match(updSpec.message, /Ctrl\+R/);
+
+  const stateDir = await mkdtemp(path.join(os.tmpdir(), "agy-menu-ver-"));
+  const packDir = await mkdtemp(path.join(os.tmpdir(), "agy-pack-ver-"));
+  const savedState = process.env.AGY_ZHCN_STATE_DIR;
+  try {
+    process.env.AGY_ZHCN_STATE_DIR = stateDir;
+    const coreDir = path.join(packDir, "语言包", "核心程序");
+    await mkdir(coreDir, { recursive: true });
+    await writeFile(path.join(coreDir, "package.json"), JSON.stringify({ version: "3.1.7" }), "utf8");
+
+    const stdin = new PassThrough();
+    const stdout = new PassThrough();
+    stdin.isTTY = true;
+    stdout.isTTY = true;
+    let promptBuf = "";
+    let step = 0;
+    stdout.on("data", (chunk) => {
+      promptBuf += chunk.toString("utf8");
+      if (step === 0 && promptBuf.includes("请输入要修改的序号")) {
+        step = 1;
+        promptBuf = "";
+        setImmediate(() => stdin.write("5\n"));
+      } else if (step === 1 && promptBuf.includes("是否立即下载校验并更新")) {
+        step = 2;
+        promptBuf = "";
+        setImmediate(() => stdin.write("y\n"));
+      } else if (step === 2 && promptBuf.includes("请输入要修改的序号")) {
+        step = 3;
+        promptBuf = "";
+        setImmediate(() => stdin.write("0\n"));
+      }
+    });
+
+    let checkedCount = 0;
+    let updatedCalled = false;
+    const logs = [];
+    const origLog = console.log;
+    console.log = (...args) => logs.push(args.join(" "));
+    try {
+      const code = await runSettingsMenu({
+        platform: "win32",
+        coreRoot: coreDir,
+        input: stdin,
+        output: stdout,
+        checkRelease: async ({ currentVersion }) => {
+          checkedCount += 1;
+          return {
+            ok: true,
+            hasUpdate: true,
+            currentVersion,
+            latestVersion: "3.1.8",
+            releaseUrl: "https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/tag/v3.1.8",
+          };
+        },
+        runSelfUpdate: async ({ packRoot }) => {
+          updatedCalled = true;
+          assert.equal(packRoot, packDir);
+          return { status: "updated", latestVersion: "3.1.8", packRoot };
+        },
+        applyUpdatedClient: async () => ({ mode: "hot", ok: true }),
+      });
+      stdin.end();
+      assert.equal(code, 0);
+    } finally {
+      console.log = origLog;
+    }
+
+    assert.ok(checkedCount >= 2);
+    assert.equal(updatedCalled, true);
+    const allLogs = logs.join("\n");
+    assert.match(allLogs, /当前 v3\.1\.7/);
+    assert.match(allLogs, /立即检查并更新汉化包/);
+    assert.match(allLogs, /已更新至最新版本 v3\.1\.8/);
+  } finally {
+    if (savedState === undefined) delete process.env.AGY_ZHCN_STATE_DIR;
+    else process.env.AGY_ZHCN_STATE_DIR = savedState;
+    await rm(stateDir, { recursive: true, force: true });
+    await rm(packDir, { recursive: true, force: true });
+  }
+});

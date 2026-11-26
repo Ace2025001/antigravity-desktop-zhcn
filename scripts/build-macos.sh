@@ -21,7 +21,9 @@ mkdir -p "$STAGE/runtime"
 for item in macOS src config scripts tests docs package.json package-lock.json README.md README.en.md LICENSE; do
   cp -R "$item" "$STAGE/"
 done
-cp ./*.command 使用说明.txt "$STAGE/"
+cp ./*.command "$STAGE/"
+PACK_VER="$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")"
+node -e "const fs=require('fs'),v=process.argv[1];fs.writeFileSync(process.argv[2],fs.readFileSync('使用说明.txt','utf8').replace(/^Antigravity 汉化包/,'Antigravity 汉化包（当前版本：v'+v+'）'));" "$PACK_VER" "$STAGE/使用说明.txt"
 cp "$TEMP/node-v$VERSION-darwin-$ARCH/bin/node" "$STAGE/runtime/node"
 cp "$TEMP/node-v$VERSION-darwin-$ARCH/LICENSE" "$STAGE/runtime/NODE_LICENSE.txt"
 (cd "$STAGE"; npm ci --omit=dev --ignore-scripts --no-audit --no-fund)
