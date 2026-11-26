@@ -127,8 +127,8 @@ export async function writeUserSettings(settings, { env = process.env, platform 
 }
 
 export function describeSettings(settings, platform = process.platform) {
-  const follow = { auto: "自动汉化", ask: "先问我", off: "不处理" }[settings.autoFollow];
-  const packUpdate = { auto: "自动更新", ask: "先问我", off: "关闭" }[settings.packAutoUpdate];
+  const follow = { auto: "自动汉化", ask: "询问", off: "不处理" }[settings.autoFollow];
+  const packUpdate = { auto: "自动更新", ask: "询问", off: "关闭" }[settings.packAutoUpdate];
   const lines = [];
   if (platform === "win32") lines.push(`客户端更新后：${follow}`);
   lines.push(`汉化包自动更新：${packUpdate}`);
@@ -141,16 +141,16 @@ export const AUTO_FOLLOW_QUESTION = [
   "【设置】客户端更新后怎么处理？",
   "  Antigravity 自动更新后会变回英文。",
   "  1. 自动汉化：在客户端里点更新后，自动跟着重新汉化（推荐）",
-  "  2. 先问我：更新完成后弹窗问你是否一键汉化",
+  "  2. 询问：更新完成后弹窗询问是否一键汉化",
   "  3. 不处理：需要时自己双击“启动中文”",
 ];
 
 export const PACK_AUTO_UPDATE_QUESTION = [
   "【设置】是否自动检查并更新汉化包？",
-  "  打开或退出 Antigravity 时自动核对 GitHub 最新汉化包并做 SHA-256 校验。",
+  "  打开或退出 Antigravity 时自动核对 GitHub 最新汉化包并校验文件安全。",
   "  界面词库全部来自人工精校汉化包，更新后可第一时间补齐新版本翻译。",
   "  1. 自动更新：发现新版本时自动更新（推荐）",
-  "  2. 先问我：检查到新版本后弹窗询问是否更新",
+  "  2. 询问：检查到新版本后弹窗确认是否更新",
   "  3. 关闭：不联网检查汉化包更新",
 ];
 

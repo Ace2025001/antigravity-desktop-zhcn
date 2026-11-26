@@ -50,7 +50,7 @@ test("菜单输入：空回车取默认，非法输入返回 undefined", () => {
   assert.equal(parseChoice("9", map, true), undefined);
 });
 
-test("首次运行前没有设置文件；保存后可读回；旧配置缺少 packAutoUpdate 时标记需补问并先走先问我", async () => {
+test("首次运行前没有设置文件；保存后可读回；旧配置缺少 packAutoUpdate 时标记需补问并先走询问", async () => {
   const dir = await mkdtemp(path.join(os.tmpdir(), "agy-settings-"));
   const env = { AGY_ZHCN_STATE_DIR: dir };
   try {

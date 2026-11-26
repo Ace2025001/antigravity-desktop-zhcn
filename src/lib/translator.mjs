@@ -1219,8 +1219,8 @@ export function createRuntimeOverlay(dictionary) {
         setBox.appendChild(row);
         return row;
       };
-      mkRow("汉化包自动更新", "packAutoUpdate", [["auto", "自动"], ["ask", "先问"], ["off", "关闭"]]);
-      const rowAutoFollow = mkRow("客户端更新后", "autoFollow", [["auto", "自动"], ["ask", "先问"], ["off", "不处理"]]);
+      mkRow("汉化包自动更新", "packAutoUpdate", [["auto", "自动"], ["ask", "询问"], ["off", "关闭"]]);
+      const rowAutoFollow = mkRow("客户端更新后", "autoFollow", [["auto", "自动"], ["ask", "询问"], ["off", "不处理"]]);
       mkRow("界面联网补充", "onlineTranslate", [[true, "开启"], [false, "关闭"]]);
       mkRow("对话标题翻译", "titleAutoTranslate", [[true, "开启"], [false, "关闭"]]);
 
