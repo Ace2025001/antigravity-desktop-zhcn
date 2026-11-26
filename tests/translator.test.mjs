@@ -4072,6 +4072,8 @@ test("左上角 Antigravity 菜单合并为三项极简入口，并可在旧补�
       const findBtn = (txt) => allElements.find((e) => e.tagName === "BUTTON" && e.textContent.includes(txt));
       await findBtn("检查更新").onclick();
       assert.match(allElements.map((e) => e.textContent).join("\n"), /发现新版本 v3\.2\.0/);
+      const homeLink = allElements.find((e) => e.tagName === "A" && e.textContent === "GitHub 主页");
+      assert.ok(homeLink && homeLink.href === "https://github.com/Ace2025001/antigravity-desktop-zhcn", "卡片链接应指向 GitHub 项目主页");
 
       await findBtn("立即更新").onclick();
       const textsAfterUpdate = allElements.map((e) => e.textContent).join("\n");

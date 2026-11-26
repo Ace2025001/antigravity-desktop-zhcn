@@ -1058,7 +1058,7 @@ export function createRuntimeOverlay(dictionary) {
   let __packPanelState = {
     cur: ${JSON.stringify(packVersion)},
     maxApp: ${JSON.stringify(maxAppVersion)},
-    releaseUrl: "https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest",
+    releaseUrl: "https://github.com/Ace2025001/antigravity-desktop-zhcn",
     latestVer: "",
     notes: "",
     statusText: "",
@@ -1097,7 +1097,7 @@ export function createRuntimeOverlay(dictionary) {
     r.btnSkip.style.display = showAvail ? "inline-flex" : "none";
     r.btnSkip.disabled = busy;
     r.btnReload.style.display = (st.statusKind === "updated" && st.hot) ? "inline-flex" : "none";
-    r.linkRelease.href = st.releaseUrl || "https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest";
+    r.linkRelease.href = "https://github.com/Ace2025001/antigravity-desktop-zhcn";
 
     if (!st.settingsLoaded) {
       r.settingsTip.textContent = "正在读取设置…";
@@ -1170,7 +1170,7 @@ export function createRuntimeOverlay(dictionary) {
       const linkRelease = document.createElement("a");
       linkRelease.target = "_blank";
       linkRelease.rel = "noreferrer";
-      linkRelease.textContent = "发布页";
+      linkRelease.textContent = "GitHub 主页";
       linkRelease.style.cssText = "color:var(--link,#2563eb);text-decoration:none;font-size:12px;margin-left:auto;";
       actions.appendChild(btnCheck);
       actions.appendChild(btnApply);
