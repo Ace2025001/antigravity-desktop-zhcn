@@ -23,7 +23,7 @@ A **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google 
 ```text
 antigravity汉化包/
 ├─ win启动/     Windows entry points: 启动中文.bat, 卸载汉化.bat
-├─ mac启动/     macOS entry points (.command), same usage
+├─ mac启动/     macOS entry points: 启动中文.command (builds Antigravity 中文.app and Desktop shortcut Antigravity自动汉化.command), 卸载汉化.command
 └─ 语言包/      translation data and shared code — keep it
 ```
 

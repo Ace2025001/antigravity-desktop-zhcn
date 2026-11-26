@@ -98,7 +98,7 @@ $env:AGY_TITLE_AUTO_TRANSLATE = 'on'       # 用户不想自动翻译英文对�
 
 ## 5. Mac 安装（Apple 芯片）
 
-Mac 方案**保留官方原版**，在 `~/Applications/Antigravity 中文.app` 创建中文副本并本地签名。首次安装需要交互：工具会打开官方原版，用户看到首页后先保持应用开着、回到终端按回车读取界面，随后按提示正常退出（⌘Q）继续安装。
+Mac 方案**保留官方原版**，在 `~/Applications/Antigravity 中文.app` 创建中文副本并本地签名，同时在桌面和 `mac启动` 目录创建 `Antigravity自动汉化.command` 快捷入口供日常打开使用。首次安装需要交互：工具会打开官方原版，用户看到首页后先保持应用开着、回到终端按回车读取界面，随后按提示正常退出（⌘Q）继续安装。
 
 ```bash
 cd antigravity汉化包/mac启动
