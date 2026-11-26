@@ -1,4 +1,4 @@
-# Antigravity Desktop 汉化包（反重力中文）｜Windows / Mac 简体中文语言包
+# Antigravity 2.0 汉化包（反重力中文）｜Windows / Mac 简体中文语言包
 
 [![最新版本](https://img.shields.io/github/v/release/Ace2025001/antigravity-desktop-zhcn?label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)
 [![下载量](https://img.shields.io/github/downloads/Ace2025001/antigravity-desktop-zhcn/total?label=%E4%B8%8B%E8%BD%BD%E9%87%8F)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases)
@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![已适配客户端](https://img.shields.io/badge/%E5%B7%B2%E9%80%82%E9%85%8D%E5%AE%A2%E6%88%B7%E7%AB%AF-2.35.2-brightgreen)](#支持范围)
 
-Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉化包（Antigravity 中文语言包）。Windows 和 Apple 芯片 Mac 通用，解压即用，在客户端里点更新后自动跟着重新汉化，随时可以一键卸载汉化、回到官方原版。
+Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉化包（Antigravity 中文语言包，也常被叫作汉化插件）。Windows 和 Apple 芯片 Mac 通用，解压即用，在客户端里点更新后自动跟着重新汉化，随时可以一键卸载汉化、回到官方原版。
 
 [安装教程](https://ace2025001.github.io/antigravity-desktop-zhcn/) · [常见问题](https://ace2025001.github.io/antigravity-desktop-zhcn/faq/) · [更新日志](https://ace2025001.github.io/antigravity-desktop-zhcn/changelog/) · [AI 助手安装指南](docs/ai-install.md) · [English](README.en.md)
 
@@ -41,6 +41,7 @@ Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉
 
 - **解压即用**：内置运行环境，无需安装 Node.js；自动找到客户端，找不到时弹窗选择。
 - **更新后自动汉化**：在客户端里点“重启以更新”后，自动跟着重新汉化；也可以设为询问。
+- **汉化中心**：客户端左上角 `Antigravity` 菜单（Mac 在系统顶部菜单栏）打开，查看版本、检查更新、调整全部设置，悬停有说明，点一下就保存。
 - **汉化包自动更新**：启动客户端时按设置自动检查新版本并校验 SHA-256，可自动升级或弹窗提醒。
 - **翻译全面**：1.7 万条人工整理的译文，用语统一，告别中英混杂；支持纯英文对话标题自动翻译。
 - **新功能也有中文**：Antigravity 更新出了汉化包还没收录的新文字时，可以先用联网补充翻译临时显示中文，等收录了人工译文自动替换。
@@ -139,7 +140,7 @@ antigravity汉化包/
 
 ### 怎么更新语言包？
 
-默认会自动更新：“汉化包自动更新”设为“自动更新”或“询问”时，打开或退出客户端都会检查新版本，校验后自动替换，全程自动完成。
+默认会自动更新：“汉化包自动更新”设为“自动更新”时，打开或退出客户端都会检查新版本，校验后在后台自动替换；设为“询问”时会先弹窗确认，点“立即更新”后同样自动完成。也可以在“汉化中心”里随时手动检查更新。
 
 关闭了自动更新、或想手动更新时，在[最新发布页](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)下载完整包，解压后覆盖原来的汉化包文件夹（位置不要变），再双击“启动中文”。
 
