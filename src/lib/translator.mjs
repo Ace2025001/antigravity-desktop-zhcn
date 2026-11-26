@@ -1884,6 +1884,71 @@ export function createRuntimeOverlay(dictionary) {
           return;
         }
       }
+      const swarmEmptyBody = parent.closest("[data-testid='swarm-empty-body']");
+      if (swarmEmptyBody) {
+        const txt = (swarmEmptyBody.textContent || "").replace(/\\s+/g, " ").trim();
+        if (txt.startsWith("Swarms started in this conversation appear here automatically")) {
+          swarmEmptyBody.innerHTML = "在此对话中启动的蜂群会自动显示在这里，包含留言板、成员与 @提及关系图。使用 <code>/swarm</code> 启动。";
+          stats.translatedTextNodes += 1;
+          return;
+        }
+        if (txt.startsWith("Open this pane from a conversation to see its swarm.")) {
+          swarmEmptyBody.innerHTML = "请从某个对话中打开此面板以查看对应的蜂群。在对话中启动的蜂群会自动显示在这里；使用 <code>/swarm</code> 启动。";
+          stats.translatedTextNodes += 1;
+          return;
+        }
+      }
+      if (parent.closest("#ov-notice, #replay-label, #ov-ack")) {
+        const fmtSwarmDur = (s) => String(s || "")
+          .replace(/(\\d+)h\\s*(\\d+)m/g, "$1 小时 $2 分")
+          .replace(/(\\d+)m\\s*(\\d+)s/g, "$1 分 $2 秒")
+          .replace(/(\\d+)s\\b/g, "$1 秒");
+        if (parent.closest("#ov-notice")) {
+          if (rawVal === "The narrator (") {
+            node.nodeValue = "旁白员 (";
+            stats.translatedTextNodes += 1;
+            return;
+          }
+          if (rawVal === ") was stopped. Ask the coordinator to add a new one (") {
+            node.nodeValue = ") 已停止。请让协调者新增一个 (";
+            stats.translatedTextNodes += 1;
+            return;
+          }
+        }
+        if (parent.closest("#replay-label")) {
+          const overMatch = rawVal.match(/^\\s*over\\s+(.+)$/);
+          if (overMatch) {
+            node.nodeValue = "，历时 " + fmtSwarmDur(overMatch[1]);
+            stats.translatedTextNodes += 1;
+            return;
+          }
+          const ofMatch = rawVal.match(/^\\s*of\\s+(\\d+)\\s*·\\s*(#\\d+)\\s+at\\s+(.+?)\\s*\\(\\+([^)]+)\\)$/);
+          if (ofMatch) {
+            node.nodeValue = " / " + ofMatch[1] + " · " + ofMatch[2] + " 于 " + ofMatch[3] + " (+" + fmtSwarmDur(ofMatch[4]) + ")";
+            stats.translatedTextNodes += 1;
+            return;
+          }
+          const ofSimple = rawVal.match(/^\\s*of\\s+(\\d+)$/);
+          if (ofSimple) {
+            node.nodeValue = " / " + ofSimple[1];
+            stats.translatedTextNodes += 1;
+            return;
+          }
+        }
+        if (parent.closest("#ov-ack")) {
+          const ackMatch = rawVal.match(/^Last change:\\s*(.+)$/);
+          if (ackMatch) {
+            node.nodeValue = "最近修改：" + ackMatch[1];
+            stats.translatedTextNodes += 1;
+            return;
+          }
+        }
+      }
+      if ((rawVal || "").trim() === "Now" && ((parent.tagName === "SPAN" && parent.parentElement?.classList?.contains?.("o2-thn")) || parent.classList?.contains?.("o2-rtag"))) {
+        node.nodeValue = rawVal.replace("Now", "当前");
+        stats.translatedTextNodes += 1;
+        return;
+      }
       const effortTarget = parent.closest("[data-testid='model-selector-effort-option'], [data-effort], [data-testid='model-selector-trigger'], [data-testid='model-selector-effort-group']");
       const isEffortBadge = !effortTarget && (parent.classList?.contains?.("opacity-70") && parent.parentElement?.closest?.("[data-testid='model-selector-trigger'], [data-testid='model-selector-item'], div[role='menuitem']"));
       if (effortTarget || isEffortBadge) {
@@ -1975,18 +2040,87 @@ export function createRuntimeOverlay(dictionary) {
     }
   }
 
+  const coordinatorIconLabels = {
+    Hub: "枢纽",
+    Sliders: "滑块",
+    "Terminal window": "终端窗口",
+    "Command prompt": "命令提示符",
+    Code: "代码",
+    Sparkles: "星光",
+    Wrench: "扳手",
+    Shield: "盾牌",
+    Speedometer: "速度表",
+    Gauge: "仪表盘",
+    Eye: "眼睛",
+    Flask: "烧瓶",
+    Radar: "雷达",
+    Bot: "机器人",
+  };
+  const coordinatorColorLabels = {
+    Blue: "蓝色",
+    Purple: "紫色",
+    Teal: "青色",
+    Green: "绿色",
+    Amber: "琥珀色",
+    Orange: "橙色",
+    Red: "红色",
+    Indigo: "靛蓝色",
+  };
+
+  function translateSwarmTooltipLines(value) {
+    if (typeof value !== "string" || !value.includes("\\n")) return null;
+    const lines = value.split("\\n");
+    let changed = false;
+    const next = lines.map((line) => {
+      const hit = translateValue(line);
+      if (hit !== null && hit !== line) {
+        changed = true;
+        return hit;
+      }
+      return line;
+    });
+    return changed ? next.join("\\n") : null;
+  }
+
   function translateElementAttributes(element) {
     if (isAttributeBlocked(element)) return;
+    const elTestId = element.getAttribute?.("data-testid") || "";
+    if (element.tagName === "IMG" && elTestId === "swarm-gif-modal-img" && element.getAttribute?.("alt") === "Exported swarm graph replay") {
+      element.setAttribute("alt", "导出的蜂群关系图回放");
+      stats.translatedAttributes += 1;
+    }
+    const isSwarmScopedEl =
+      elTestId.startsWith("swarm-") ||
+      Boolean(element.classList?.contains?.("hv-bee") || element.classList?.contains?.("hv-cell"));
     for (const attribute of translatedAttributes) {
       if (!element.hasAttribute(attribute)) continue;
       const current = element.getAttribute(attribute);
+      if (attribute === "aria-label" && elTestId.startsWith("coordinator-icon-option-")) {
+        const iconZh = coordinatorIconLabels[(current || "").trim()];
+        if (iconZh && iconZh !== current) {
+          element.setAttribute(attribute, iconZh);
+          stats.translatedAttributes += 1;
+        }
+        continue;
+      }
+      if (attribute === "aria-label" && elTestId.startsWith("coordinator-color-option-")) {
+        const colorZh = coordinatorColorLabels[(current || "").trim()];
+        if (colorZh && colorZh !== current) {
+          element.setAttribute(attribute, colorZh);
+          stats.translatedAttributes += 1;
+        }
+        continue;
+      }
       if (
         __isProtectedNativeIdentifier(element, true, current) &&
         !(attribute === "aria-label" && /^(?:Select project|Select model), current:\\s*.+$/i.test((current || "").trim()))
       ) {
         continue;
       }
-      const translated = translateValue(current);
+      let translated = translateValue(current);
+      if ((translated === null || translated === current) && attribute === "title" && isSwarmScopedEl) {
+        translated = translateSwarmTooltipLines(current);
+      }
       if (translated !== null && translated !== current) {
         element.setAttribute(attribute, translated);
         stats.translatedAttributes += 1;
@@ -5108,7 +5242,10 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   );
 
   const overlay = createRuntimeOverlay(dictionary);
-  const localized = Buffer.from(`${sourceText}\n${overlay}`, "utf8");
+  const localized = Buffer.from(
+    `${sourceText}\n/* __AGY_ZHCN_SIDECAR_OVERLAY_BEGIN__ */\n${overlay}\n/* __AGY_ZHCN_SIDECAR_OVERLAY_END__ */`,
+    "utf8",
+  );
   return {
     buffer: localized,
     sha256: sha256Buffer(localized),

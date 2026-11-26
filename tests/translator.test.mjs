@@ -3631,3 +3631,271 @@ test("变量赋值、三元表达式、模板字符串和 JSX 拆段里的界面
   assert.equal(t("Move to Project"), "移动到项目");
   assert.equal(t("Confirm & Save"), "确认并保存");
 });
+
+test("2.35.2 /btw 提示、图标颜色选择器与 Swarm 扩展面板无宿主沙箱翻译回归", async () => {
+  const current = await loadDomTranslations();
+  const t = (s) => translateDictionaryValue(s, current);
+
+  // 1. 2.35.2 模型选择器新文案与 Swarm 常用静态/动态文案
+  assert.equal(
+    t("Applies to /btw and messages sent after this turn"),
+    "适用于 /btw 与本轮结束后的消息",
+  );
+  assert.equal(
+    t("Applies to messages sent after this turn"),
+    "适用于本轮结束后的消息",
+  );
+  assert.equal(t("No swarm in this conversation"), "当前对话暂无蜂群");
+  assert.equal(t("Watching for a swarm"), "正在监听蜂群动态");
+  assert.equal(t("Board"), "留言板");
+  assert.equal(t("Graph"), "关系图");
+  assert.equal(t("Hive"), "蜂巢视图");
+  assert.equal(t("Working for @researcher"), "正在为 @researcher 工作");
+  assert.equal(t("Working for 5 minutes"), "已工作 5 minutes");
+  assert.equal(t("Waiting on 3"), "正在等待 3 项");
+  assert.equal(t("Waiting on @coordinator"), "正在等待 @coordinator");
+  assert.equal(t("read #12 · updated 2m 10s ago"), "已读 #12 · 2 分 10 秒前更新");
+  assert.equal(t("3 of 5 tasks done"), "已完成 3 / 5 项任务");
+
+  // 2. 验证 createLocalizedBundle 注入侧面板边界标记，并能在无 electronNative 的本地侧面板环境中安全运行
+  const bundle = createLocalizedBundle(Buffer.from("console.log('main');", "utf8"), current)
+    .buffer.toString("utf8");
+  const beginMarker = "/* __AGY_ZHCN_SIDECAR_OVERLAY_BEGIN__ */";
+  const endMarker = "/* __AGY_ZHCN_SIDECAR_OVERLAY_END__ */";
+  const bIdx = bundle.indexOf(beginMarker);
+  const eIdx = bundle.indexOf(endMarker);
+  assert.ok(bIdx >= 0 && eIdx > bIdx, "构建产物缺少侧面板边界标记");
+  const sidecarOverlay = bundle.slice(bIdx + beginMarker.length, eIdx).trim();
+
+  class MockNode {
+    constructor(nodeType, tagName = "") {
+      this.nodeType = nodeType;
+      this.tagName = tagName.toUpperCase();
+      this.attributes = new Map();
+      this.childNodes = [];
+      this.parentElement = null;
+      this.id = "";
+      this.dataset = {};
+      this._classes = new Set();
+      this.classList = {
+        add: (c) => this._classes.add(c),
+        contains: (c) => this._classes.has(c),
+      };
+    }
+    appendChild(child) {
+      child.parentElement = this.nodeType === 1 ? this : this.parentElement;
+      this.childNodes.push(child);
+      return child;
+    }
+    get firstChild() {
+      return this.childNodes[0] || null;
+    }
+    setAttribute(name, val) {
+      this.attributes.set(name, String(val));
+      if (name === "id") this.id = String(val);
+    }
+    getAttribute(name) {
+      return this.attributes.has(name) ? this.attributes.get(name) : null;
+    }
+    hasAttribute(name) {
+      return this.attributes.has(name);
+    }
+    matches(selector) {
+      return selector.split(",").some((part) => {
+        const p = part.trim();
+        if (!p) return false;
+        if (p === this.tagName.toLowerCase()) return true;
+        if (p.startsWith("#") && this.id === p.slice(1)) return true;
+        if (p.startsWith(".") && this._classes.has(p.slice(1))) return true;
+        const tid = p.match(/^\[data-testid=['"]([^'"]+)['"]\]$/);
+        if (tid && this.getAttribute("data-testid") === tid[1]) return true;
+        return false;
+      });
+    }
+    closest(selector) {
+      let cur = this;
+      while (cur) {
+        if (cur.nodeType === 1 && cur.matches(selector)) return cur;
+        cur = cur.parentElement;
+      }
+      return null;
+    }
+    querySelector() {
+      return null;
+    }
+    querySelectorAll() {
+      return [];
+    }
+    get textContent() {
+      return this.childNodes
+        .map((c) => (c.nodeType === 3 ? c.nodeValue : c.textContent))
+        .join("");
+    }
+    set textContent(v) {
+      this.childNodes = [];
+      this.appendChild(new MockText(String(v)));
+    }
+    set innerHTML(html) {
+      this._innerHTML = html;
+      this.childNodes = [new MockText(html.replace(/<[^>]+>/g, ""))];
+    }
+    get innerHTML() {
+      return this._innerHTML || "";
+    }
+  }
+  class MockText extends MockNode {
+    constructor(v) {
+      super(3);
+      this.nodeValue = v;
+    }
+  }
+
+  const body = new MockNode(1, "body");
+  // 空状态段落（含内联 <code>/swarm</code>）
+  const emptyP = new MockNode(1, "p");
+  emptyP.setAttribute("id", "empty-body");
+  emptyP.setAttribute("data-testid", "swarm-empty-body");
+  emptyP.appendChild(new MockText("Open this pane from a conversation to see its swarm. Swarms started there appear here automatically; start one with "));
+  const codeEl = new MockNode(1, "code");
+  codeEl.appendChild(new MockText("/swarm"));
+  emptyP.appendChild(codeEl);
+  emptyP.appendChild(new MockText("."));
+  body.appendChild(emptyP);
+
+  // 图标选择器与颜色选择器
+  const iconFlask = new MockNode(1, "button");
+  iconFlask.setAttribute("data-testid", "coordinator-icon-option-science");
+  iconFlask.setAttribute("aria-label", "Flask");
+  body.appendChild(iconFlask);
+
+  const iconBot = new MockNode(1, "button");
+  iconBot.setAttribute("data-testid", "coordinator-icon-option-bot");
+  iconBot.setAttribute("aria-label", "Bot");
+  body.appendChild(iconBot);
+
+  const globalFlask = new MockNode(1, "button");
+  globalFlask.setAttribute("aria-label", "Flask");
+  body.appendChild(globalFlask);
+
+  const colorTeal = new MockNode(1, "button");
+  colorTeal.setAttribute("data-testid", "coordinator-color-option-teal");
+  colorTeal.setAttribute("aria-label", "Teal");
+  body.appendChild(colorTeal);
+
+  // GIF 预览图片 alt 与成员多行 tooltip、回放分段、Now 徽章
+  const gifImg = new MockNode(1, "img");
+  gifImg.setAttribute("data-testid", "swarm-gif-modal-img");
+  gifImg.setAttribute("alt", "Exported swarm graph replay");
+  body.appendChild(gifImg);
+
+  const memberChip = new MockNode(1, "button");
+  memberChip.setAttribute("data-testid", "swarm-member-chip");
+  memberChip.setAttribute("title", "worker-1\nHidden from the board; click to show");
+  body.appendChild(memberChip);
+
+  const replayLabel = new MockNode(1, "span");
+  replayLabel.setAttribute("id", "replay-label");
+  const overText = new MockText(" over 2m 10s");
+  replayLabel.appendChild(overText);
+  body.appendChild(replayLabel);
+
+  const nowTag = new MockNode(1, "span");
+  nowTag.classList.add("o2-rtag");
+  const nowText = new MockText("Now");
+  nowTag.appendChild(nowText);
+  body.appendChild(nowTag);
+
+  const pendingTimers = new Set();
+  const sb = {
+    Node: { TEXT_NODE: 3, ELEMENT_NODE: 1 },
+    NodeFilter: { SHOW_ELEMENT: 1, SHOW_TEXT: 4, SHOW_ALL: 0xffffffff },
+    Element: MockNode,
+    HTMLElement: MockNode,
+    SVGElement: MockNode,
+    document: {
+      readyState: "complete",
+      documentElement: body,
+      body,
+      querySelectorAll: () => [],
+      querySelector: () => null,
+      createTreeWalker: (root) => {
+        const list = [];
+        (function walk(n) {
+          for (const c of n.childNodes) {
+            list.push(c);
+            walk(c);
+          }
+        })(root);
+        let idx = -1;
+        return { nextNode: () => (++idx < list.length ? list[idx] : null) };
+      },
+      addEventListener: () => {},
+    },
+    MutationObserver: class {
+      observe() {}
+      disconnect() {}
+    },
+    setTimeout: (fn, ms, ...args) => {
+      const id = setTimeout(() => {
+        pendingTimers.delete(id);
+        fn(...args);
+      }, ms);
+      pendingTimers.add(id);
+      return id;
+    },
+    clearTimeout: (id) => {
+      pendingTimers.delete(id);
+      clearTimeout(id);
+    },
+    setInterval: () => 0,
+    clearInterval: () => {},
+    requestAnimationFrame: () => 0,
+    location: { protocol: "http:", hostname: "127.0.0.1", port: "49999", href: "http://127.0.0.1:49999/" },
+    localStorage: { getItem: () => null, setItem: () => {} },
+    __AGY_ZHCN_DISABLE_AUTO_TRANSLATE__: true,
+    console,
+  };
+  sb.window = sb;
+  sb.self = sb;
+  sb.globalThis = sb;
+  try {
+    new vm.Script(sidecarOverlay).runInContext(vm.createContext(sb));
+
+    assert.ok(emptyP.innerHTML.includes("<code>/swarm</code>"), "Swarm 空状态应保留 /swarm 代码块");
+    assert.ok(emptyP.innerHTML.includes("请从某个对话中打开此面板以查看对应的蜂群"));
+
+    const emptyConvP = new MockNode(1, "p");
+    emptyConvP.setAttribute("id", "empty-body");
+    emptyConvP.setAttribute("data-testid", "swarm-empty-body");
+    emptyConvP.appendChild(new MockText("Swarms started in this conversation appear here automatically, with their board, members and @mention graph. Start one with "));
+    const codeConvEl = new MockNode(1, "code");
+    codeConvEl.appendChild(new MockText("/swarm"));
+    emptyConvP.appendChild(codeConvEl);
+    emptyConvP.appendChild(new MockText("."));
+    const convBundleSb = {
+      ...sb,
+      document: {
+        ...sb.document,
+        documentElement: emptyConvP,
+        body: emptyConvP,
+      },
+    };
+    convBundleSb.window = convBundleSb;
+    convBundleSb.self = convBundleSb;
+    convBundleSb.globalThis = convBundleSb;
+    new vm.Script(sidecarOverlay).runInContext(vm.createContext(convBundleSb));
+    assert.ok(emptyConvP.innerHTML.includes("<code>/swarm</code>"));
+    assert.ok(emptyConvP.innerHTML.includes("在此对话中启动的蜂群会自动显示在这里"));
+    assert.equal(iconFlask.getAttribute("aria-label"), "烧瓶");
+    assert.equal(iconBot.getAttribute("aria-label"), "机器人");
+    assert.equal(globalFlask.getAttribute("aria-label"), "Flask 框架");
+    assert.equal(colorTeal.getAttribute("aria-label"), "青色");
+    assert.equal(gifImg.getAttribute("alt"), "导出的蜂群关系图回放");
+    assert.equal(memberChip.getAttribute("title"), "worker-1\n当前已在留言板中隐藏，点击恢复显示");
+    assert.equal(overText.nodeValue, "，历时 2 分 10 秒");
+    assert.equal(nowText.nodeValue, "当前");
+  } finally {
+    pendingTimers.forEach((id) => clearTimeout(id));
+    pendingTimers.clear();
+  }
+});

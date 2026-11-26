@@ -356,6 +356,53 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                     }
                 } catch (_quitErr) {}
             });
+            try {
+                if (typeof electron_1.app.on === 'function') {
+                    const scFs = require('fs/promises');
+                    const scPath = require('path');
+                    const scBegin = '/* __AGY_ZHCN_SIDECAR_OVERLAY_BEGIN__ */';
+                    const scEnd = '/* __AGY_ZHCN_SIDECAR_OVERLAY_END__ */';
+                    let sidecarOverlayCache = null;
+                    const loadSidecarOverlayScript = async () => {
+                        try {
+                            const bundlePath = scPath.join(electron_1.app.getPath('userData'), 'agy_zhcn_ui_main.js');
+                            const st = await scFs.stat(bundlePath);
+                            if (sidecarOverlayCache && sidecarOverlayCache.mtimeMs === st.mtimeMs && sidecarOverlayCache.size === st.size) {
+                                return sidecarOverlayCache.body;
+                            }
+                            const raw = await scFs.readFile(bundlePath, 'utf8');
+                            const sIdx = raw.lastIndexOf(scBegin);
+                            const eIdx = sIdx >= 0 ? raw.indexOf(scEnd, sIdx + scBegin.length) : -1;
+                            if (sIdx < 0 || eIdx < 0) return '';
+                            const overlay = raw.slice(sIdx + scBegin.length, eIdx).trim();
+                            if (!overlay) return '';
+                            const body = '(function(){try{if(globalThis.__AGY_ZHCN_SIDECAR_APPLIED__)return;if(!globalThis.sidecar&&!document.getElementById("swarm-title")&&!document.getElementById("empty-body"))return;globalThis.__AGY_ZHCN_SIDECAR_APPLIED__=true;globalThis.__AGY_ZHCN_DISABLE_AUTO_TRANSLATE__=true;\\n' + overlay + '\\n}catch(_scErr){}})();';
+                            sidecarOverlayCache = { mtimeMs: st.mtimeMs, size: st.size, body };
+                            return body;
+                        } catch (_ovErr) {
+                            return '';
+                        }
+                    };
+                    electron_1.app.on('web-contents-created', (_wcEvent, contents) => {
+                        try {
+                            if (!contents || typeof contents.getType !== 'function' || contents.getType() !== 'window') return;
+                            contents.on('did-frame-finish-load', (event, isMainFrame, frameProcessId, frameRoutingId) => {
+                                try {
+                                    if (isMainFrame) return;
+                                    const frame = (event && event.senderFrame) || (electron_1.webFrameMain && typeof electron_1.webFrameMain.fromId === 'function' && Number.isInteger(frameProcessId) && Number.isInteger(frameRoutingId) ? electron_1.webFrameMain.fromId(frameProcessId, frameRoutingId) : null);
+                                    if (!frame || !frame.parent || (typeof frame.isDestroyed === 'function' && frame.isDestroyed()) || typeof frame.executeJavaScript !== 'function') return;
+                                    const frameUrl = typeof frame.url === 'string' ? frame.url : '';
+                                    if (!/^https?:\\/\\/(?:127\\.0\\.0\\.1|localhost)(?::\\d+)?\\//i.test(frameUrl)) return;
+                                    Promise.resolve(loadSidecarOverlayScript()).then((script) => {
+                                        if (!script || (typeof contents.isDestroyed === 'function' && contents.isDestroyed()) || (typeof frame.isDestroyed === 'function' && frame.isDestroyed())) return;
+                                        return frame.executeJavaScript(script, false);
+                                    }).catch(() => {});
+                                } catch (_frameErr) {}
+                            });
+                        } catch (_wcErr) {}
+                    });
+                }
+            } catch (_sidecarErr) {}
         }
     } catch (_hookErr) {}
     electron_1.session.defaultSession.webRequest.onBeforeRequest(
