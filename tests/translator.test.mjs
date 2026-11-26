@@ -4016,7 +4016,7 @@ test("左上角 Antigravity 菜单合并为三项极简入口，并可在旧补�
       assert.ok(panel && panel.attrs["data-agy-zhcn-pack-toast"] === "1", "应弹出汉化中心控制卡片");
       const texts = allElements.map((e) => e.textContent).join("\n");
       assert.match(texts, /当前版本：v3\.1\.99\s+·\s+已适配最高客户端：2\.35\.9/);
-      assert.match(texts, /旧版主程序补丁/);
+      assert.match(texts, /旧版汉化文件/);
     } finally {
       timers.forEach((id) => clearTimeout(id));
       timers.clear();
