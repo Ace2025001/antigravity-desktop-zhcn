@@ -151,7 +151,8 @@ test("patchCustomSchemeSource injects pack-update-check, settings write, apply/s
   assert.match(patched, /mode === 'panel'/);
   assert.match(patched, /sync-autofollow/);
   assert.match(patched, /_zhAttachMacAppMenu/);
-  assert.match(patched, /agy-zhcn-pack-settings/);
+  assert.match(patched, /agy-zhcn-pack-center/);
+  assert.match(patched, /汉化中心/);
   assert.match(patched, /__agyZhcnManualCheckRunning/);
   assert.match(patched, /pack-latest/);
   assert.match(patched, /pack-check-error/);

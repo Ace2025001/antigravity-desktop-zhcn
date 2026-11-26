@@ -94,7 +94,7 @@ $env:AGY_ONLINE_TRANSLATE = 'on'           # 用户不想让未收录的界面�
 $env:AGY_TITLE_AUTO_TRANSLATE = 'on'       # 用户不想自动翻译英文对话标题时改为 off
 ```
 
-之后用户可以随时在客户端左上角 `Antigravity` 菜单点“汉化设置”，或双击 `win启动\汉化设置.bat`（Mac 为 `mac启动/汉化设置.command`）修改。
+之后用户可以随时在客户端左上角 `Antigravity` 菜单点“汉化中心”，或双击 `win启动\汉化设置.bat`（Mac 为 `mac启动/汉化设置.command`）修改。
 
 ## 5. Mac 安装（Apple 芯片）
 
@@ -144,4 +144,4 @@ AGY_LANGUAGE_PACK="$PWD/语言包" ./mac启动/配套程序/node ./语言包/核
 
 ## 10. 更新语言包
 
-开启“汉化包自动更新”后，启动或退出 Antigravity 时会按设置自动检查、校验 SHA-256 并升级词库与核心脚本。用户也可以在客户端左上角 `Antigravity` 菜单（含“汉化包版本”“检查汉化包更新”“汉化设置”）或双击目录中的 `汉化设置` 查看当前版本、已适配最高客户端版本、调整开关并手动检查更新，或者运行 `& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\scripts\self-update.mjs'` 立即更新，或到[最新发布页](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)下载覆盖。
+开启“汉化包自动更新”后，启动或退出 Antigravity 时会按设置自动检查、校验 SHA-256 并升级词库与核心脚本。用户也可以在客户端左上角 `Antigravity` 菜单点“汉化中心”或双击目录中的 `汉化设置` 查看当前版本、已适配最高客户端版本、调整开关并手动检查更新，或者运行 `& '.\win启动\配套程序\node.exe' '.\语言包\核心程序\scripts\self-update.mjs'` 立即更新，或到[最新发布页](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases/latest)下载覆盖。

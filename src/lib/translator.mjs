@@ -1400,24 +1400,29 @@ export function createRuntimeOverlay(dictionary) {
       __renderPackPanel();
     }
   };
-  const __openPackControlPanel = async (tab = "update") => {
+  const __openPackControlPanel = async () => {
     if (!__ensurePackPanel()) return;
     __packPanelState.cur = globalThis.__AGY_ZHCN_PACK_VERSION__ || __packPanelState.cur;
     __packPanelState.maxApp = globalThis.__AGY_ZHCN_MAX_APP_VERSION__ || __packPanelState.maxApp;
     __packPanelState.settingsMsg = "";
-    if (tab === "settings" && !__packPanelBusy) {
+    if (!__packPanelBusy) {
       __packPanelState.statusKind = "idle";
       __packPanelState.notes = "";
-      __packPanelState.statusText = "可点击下方“检查更新”核对最新版，或直接在下方调整汉化设置。";
+      __packPanelState.statusText = "正在读取设置与版本状态…";
     }
     __renderPackPanel();
     await __loadPackSettings();
-    if (tab !== "settings") {
-      await __runPanelCheck();
+    if (__packPanelState.settings.packAutoUpdate === "off") {
+      if (!__packPanelBusy && __packPanelState.statusKind === "idle") {
+        __packPanelState.statusText = "已关闭自动检查更新，可点击下方“检查更新”手动核对，或直接在下方调整汉化设置。";
+        __renderPackPanel();
+      }
+      return;
     }
+    await __runPanelCheck();
   };
   globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__ = __openPackControlPanel;
-  globalThis.__AGY_ZHCN_CHECK_PACK_UPDATE__ = () => __openPackControlPanel("update");
+  globalThis.__AGY_ZHCN_CHECK_PACK_UPDATE__ = () => __openPackControlPanel();
 
   const collectorRecords = [];
   const collector = {
@@ -2769,7 +2774,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   let sourceText = sourceBuffer.toString("utf8");
   const resolvedPackVersion = (typeof dictionary?.packVersion === "string" && dictionary.packVersion.trim()) || DEFAULT_PACK_VERSION;
 
-  // 左上角 Antigravity 下拉菜单：版本、检查更新、汉化包版本、检查汉化包更新、汉化设置
+  // 左上角 Antigravity 下拉菜单：版本、检查更新、汉化中心 v...
   sourceText = fastAnchorReplace(
     sourceText,
     '"Check for Updates"',
@@ -2777,9 +2782,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     (_, objVar, arrVar) =>
       `${objVar}?.appVersion&&${arrVar}.push({label:\`版本 \${${objVar}.appVersion}\`,onClick:()=>{},nonSelectable:!0});` +
       `${objVar}?.checkForUpdates&&${arrVar}.push({label:"检查更新",onClick:()=>{${objVar}.checkForUpdates?.()}});` +
-      `${arrVar}.push({label:"汉化包版本 v${resolvedPackVersion}",onClick:()=>{},nonSelectable:!0});` +
-      `${arrVar}.push({label:"检查汉化包更新",onClick:()=>{globalThis.__AGY_ZHCN_CHECK_PACK_UPDATE__?.()}});` +
-      `${arrVar}.push({label:"汉化设置",onClick:()=>{globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__?.("settings")}});` +
+      `${arrVar}.push({label:"汉化中心 v${resolvedPackVersion}",onClick:()=>{globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__?.()}});` +
       `return ${arrVar}`
   );
 
