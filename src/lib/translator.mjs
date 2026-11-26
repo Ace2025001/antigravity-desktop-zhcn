@@ -1104,7 +1104,7 @@ export function createRuntimeOverlay(dictionary) {
     } else if (st.settingsMsg) {
       r.settingsTip.textContent = st.settingsMsg;
     } else {
-      r.settingsTip.textContent = st.writable ? "点击即可保存生效" : "只读预览（更新补丁并重启后可改）";
+      r.settingsTip.textContent = st.writable ? "点击即可保存生效" : "只读预览（更新并重启后可改）";
     }
     const isWin = !st.platform || st.platform === "win32";
     r.rowAutoFollow.style.display = isWin ? "flex" : "none";
@@ -1306,13 +1306,13 @@ export function createRuntimeOverlay(dictionary) {
       const ct = resp?.headers?.get?.("content-type") || "";
       if (!ct.includes("application/json")) {
         __packPanelState.statusKind = "legacy";
-        __packPanelState.statusText = "当前运行着旧版主程序补丁，内置检查与界面修改需重启并应用新版补丁后启用。请先通过“汉化设置”检查更新，或前往发布页下载。";
+        __packPanelState.statusText = "当前运行着旧版汉化文件，面板内的检查与改设置功能将在更新并重启客户端后启用。请先用目录里的“汉化设置”检查更新，或前往 GitHub 主页下载。";
         return;
       }
       const data = await resp.json().catch(() => null);
       if (!data || !data.handled) {
         __packPanelState.statusKind = "error";
-        __packPanelState.statusText = "未能完成更新检查，请稍后重试或前往发布页查看。";
+        __packPanelState.statusText = "未能完成更新检查，请稍后重试或点右侧 GitHub 主页查看。";
         return;
       }
       if (data.currentVersion) {
@@ -1335,14 +1335,14 @@ export function createRuntimeOverlay(dictionary) {
         __packPanelState.notes = data.notes || "";
         __packPanelState.statusText = data.hasHook
           ? ("发现新版本 v" + data.latestVersion + "，可点击下方按钮下载校验并更新。")
-          : ("发现新版本 v" + data.latestVersion + "（当前未绑定独立包目录，请点右侧发布页下载覆盖）。");
+          : ("发现新版本 v" + data.latestVersion + "（请点右侧 GitHub 主页下载新版覆盖）。");
       } else {
         __packPanelState.statusKind = "error";
         __packPanelState.statusText = "暂时无法获取最新版本（" + (data.reason || "网络异常") + "），请稍后重试。";
       }
     } catch {
       __packPanelState.statusKind = "legacy";
-      __packPanelState.statusText = "暂时无法唤起内置更新检查，请通过目录中“汉化设置”或发布页查看。";
+      __packPanelState.statusText = "请通过目录中“汉化设置”检查更新，或点右侧 GitHub 主页查看。";
     } finally {
       __packPanelBusy = false;
       __renderPackPanel();
@@ -1369,15 +1369,15 @@ export function createRuntimeOverlay(dictionary) {
         __packPanelState.hot = Boolean(data.hot);
         __packPanelState.statusKind = "updated";
         __packPanelState.statusText = data.hot
-          ? ("已更新至 v" + (__packPanelState.cur || "") + "！中文界面已无感热更新，点下方按钮立即刷新（主程序补丁将在下次退出时自动补齐）。")
-          : ("已更新至 v" + (__packPanelState.cur || "") + "！已完成 SHA-256 校验，请按 ⌘Q 退出并重开一次“启动中文.command”完成重签。");
+          ? ("已更新至 v" + (__packPanelState.cur || "") + "！中文界面已更新，点下方按钮立即刷新（其余部分在下次退出客户端时自动完成）。")
+          : ("已更新至 v" + (__packPanelState.cur || "") + "！已完成 SHA-256 校验，按 ⌘Q 退出后，重新打开一次“启动中文.command”即可完成更新。");
       } else {
         __packPanelState.statusKind = "error";
-        __packPanelState.statusText = "未能完成更新，请改用目录中“启动中文”重试或打开发布页下载。";
+        __packPanelState.statusText = "这次更新没有完成，可以运行“启动中文”重试，或点右侧 GitHub 主页下载。";
       }
     } catch {
       __packPanelState.statusKind = "error";
-      __packPanelState.statusText = "更新请求异常，请改用目录中“启动中文”重试或打开发布页下载。";
+      __packPanelState.statusText = "更新请求异常，可以运行“启动中文”重试，或点右侧 GitHub 主页下载。";
     } finally {
       __packPanelBusy = false;
       __renderPackPanel();
