@@ -3910,9 +3910,17 @@ test("左上角 Antigravity 菜单新增汉化包版本与检查汉化包更新�
   const text = localized.buffer.toString("utf8");
 
   assert.match(text, /label:`版本 \$\{c\.appVersion\}`/);
-  assert.match(text, /label:"汉化包版本 v3\.1\.99"/);
   assert.match(text, /label:"检查更新"/);
+  assert.match(text, /label:"汉化包版本 v3\.1\.99"/);
   assert.match(text, /label:"检查汉化包更新"/);
+  const idxAppVersion = text.indexOf("label:`版本 ${c.appVersion}`");
+  const idxAppUpdate = text.indexOf('label:"检查更新"');
+  const idxPackVersion = text.indexOf('label:"汉化包版本 v3.1.99"');
+  const idxPackUpdate = text.indexOf('label:"检查汉化包更新"');
+  assert.ok(
+    idxAppVersion !== -1 && idxAppVersion < idxAppUpdate && idxAppUpdate < idxPackVersion && idxPackVersion < idxPackUpdate,
+    "顶部 Antigravity 菜单顺序应依次为：版本、检查更新、汉化包版本、检查汉化包更新",
+  );
   assert.match(text, /__AGY_ZHCN_CHECK_PACK_UPDATE__/);
   assert.ok(!text.includes('label:"Check for Updates"'), "原菜单项应已转为中文");
 

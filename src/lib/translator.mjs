@@ -2475,8 +2475,8 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     /([a-zA-Z0-9_$]+)\?\.appVersion&&([a-zA-Z0-9_$]+)\.push\(\{label:`Version \$\{\1\.appVersion\}`,onClick:\(\)=>\s*\{\},nonSelectable:!0\}\);\1\?\.checkForUpdates&&\2\.push\(\{label:"Check for Updates",onClick:\(\)=>\{\s*\1\.checkForUpdates\?\.\(\)\}\}\);return \2/g,
     (_, objVar, arrVar) =>
       `${objVar}?.appVersion&&${arrVar}.push({label:\`版本 \${${objVar}.appVersion}\`,onClick:()=>{},nonSelectable:!0});` +
-      `${arrVar}.push({label:"汉化包版本 v${resolvedPackVersion}",onClick:()=>{},nonSelectable:!0});` +
       `${objVar}?.checkForUpdates&&${arrVar}.push({label:"检查更新",onClick:()=>{${objVar}.checkForUpdates?.()}});` +
+      `${arrVar}.push({label:"汉化包版本 v${resolvedPackVersion}",onClick:()=>{},nonSelectable:!0});` +
       `${arrVar}.push({label:"检查汉化包更新",onClick:()=>{globalThis.__AGY_ZHCN_CHECK_PACK_UPDATE__?.()}});` +
       `return ${arrVar}`
   );
