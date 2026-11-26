@@ -1117,6 +1117,7 @@ export function createRuntimeOverlay(dictionary) {
       grp.btn.style.color = active ? "#ffffff" : "inherit";
       grp.btn.style.borderColor = active ? "var(--primary,#2563eb)" : "var(--border,rgba(127,127,127,.28))";
     }
+    if (r.hideTipIfTargetHidden) r.hideTipIfTargetHidden();
   };
   const __ensurePackPanel = () => {
     try {
@@ -1129,6 +1130,70 @@ export function createRuntimeOverlay(dictionary) {
       wrap.setAttribute("data-agy-zhcn-pack-panel", "1");
       wrap.style.cssText = "position:fixed;right:20px;bottom:20px;z-index:2147483647;width:392px;max-width:calc(100vw - 32px);padding:14px 16px;border-radius:12px;border:1px solid var(--border,rgba(127,127,127,.28));background:var(--background,#ffffff);color:var(--foreground,#18181b);box-shadow:0 12px 34px rgba(0,0,0,.22);font-size:13px;line-height:1.5;";
 
+      const tipBox = document.createElement("div");
+      tipBox.setAttribute("data-agy-zhcn-pack-tooltip", "1");
+      tipBox.style.cssText = "position:fixed;left:0;top:0;z-index:2147483647;display:none;max-width:260px;padding:6px 10px;border-radius:8px;border:1px solid var(--border,rgba(127,127,127,.28));background:var(--foreground,#18181b);color:var(--background,#ffffff);box-shadow:0 8px 22px rgba(0,0,0,.22);font-size:11.5px;line-height:1.45;white-space:normal;pointer-events:none;";
+      tipBox.style.display = "none";
+      let __tipTarget = null;
+      const __hidePackTip = () => {
+        __tipTarget = null;
+        tipBox.style.display = "none";
+        tipBox.textContent = "";
+      };
+      const __showPackTip = (el, tipText) => {
+        if (!tipText) {
+          __hidePackTip();
+          return;
+        }
+        __tipTarget = el;
+        tipBox.textContent = tipText;
+        tipBox.style.display = "block";
+        try {
+          const r = el.getBoundingClientRect?.();
+          if (!r || (!r.width && !r.height)) return;
+          const tr = tipBox.getBoundingClientRect?.() || { width: 220, height: 36 };
+          const vw = globalThis.innerWidth || document.documentElement?.clientWidth || 1280;
+          const vh = globalThis.innerHeight || document.documentElement?.clientHeight || 800;
+          const tipW = tr.width || 220;
+          const tipH = tr.height || 36;
+          let left = r.left + r.width / 2 - tipW / 2;
+          left = Math.max(8, Math.min(left, vw - tipW - 8));
+          let top = r.top - tipH - 8;
+          if (top < 8) top = Math.min(vh - tipH - 8, r.bottom + 8);
+          tipBox.style.left = Math.round(left) + "px";
+          tipBox.style.top = Math.round(top) + "px";
+        } catch {}
+      };
+      const __bindPackTip = (el, tipTextOrFn) => {
+        const getTip = () => {
+          const t = typeof tipTextOrFn === "function" ? tipTextOrFn() : tipTextOrFn;
+          return typeof t === "string" ? t.trim() : "";
+        };
+        const syncMeta = () => {
+          const t = getTip();
+          if (!t) return "";
+          el.setAttribute("data-agy-tip", t);
+          el.setAttribute("aria-label", t);
+          return t;
+        };
+        syncMeta();
+        el.onmouseenter = () => {
+          const t = syncMeta();
+          if (t) __showPackTip(el, t);
+        };
+        el.onmouseleave = () => {
+          if (__tipTarget === el) __hidePackTip();
+        };
+        el.onfocus = () => {
+          const t = syncMeta();
+          if (t) __showPackTip(el, t);
+        };
+        el.onblur = () => {
+          if (__tipTarget === el) __hidePackTip();
+        };
+      };
+      wrap.onmouseleave = __hidePackTip;
+
       const head = document.createElement("div");
       head.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;";
       const title = document.createElement("div");
@@ -1138,7 +1203,8 @@ export function createRuntimeOverlay(dictionary) {
       btnClose.type = "button";
       btnClose.textContent = "×";
       btnClose.style.cssText = "border:none;background:transparent;color:inherit;font-size:18px;line-height:1;cursor:pointer;opacity:.7;padding:0 4px;";
-      btnClose.onclick = () => { wrap.remove(); __packUiRefs = null; };
+      __bindPackTip(btnClose, "关闭汉化中心面板");
+      btnClose.onclick = () => { __hidePackTip(); wrap.remove(); __packUiRefs = null; };
       head.appendChild(title);
       head.appendChild(btnClose);
 
@@ -1154,24 +1220,26 @@ export function createRuntimeOverlay(dictionary) {
       const actions = document.createElement("div");
       actions.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;";
 
-      const mkBtn = (label, primary = false) => {
+      const mkBtn = (label, primary = false, tip = "") => {
         const b = document.createElement("button");
         b.type = "button";
         b.textContent = label;
         b.style.cssText = primary
           ? "padding:4px 10px;border-radius:6px;border:1px solid var(--primary,#2563eb);background:var(--primary,#2563eb);color:#ffffff;cursor:pointer;font-size:12px;"
           : "padding:4px 10px;border-radius:6px;border:1px solid var(--border,rgba(127,127,127,.28));background:transparent;color:inherit;cursor:pointer;font-size:12px;";
+        if (tip) __bindPackTip(b, tip);
         return b;
       };
-      const btnCheck = mkBtn("检查更新", false);
-      const btnApply = mkBtn("立即更新（校验）", true);
-      const btnSkip = mkBtn("跳过此版本", false);
-      const btnReload = mkBtn("立即刷新生效", true);
+      const btnCheck = mkBtn("检查更新", false, "联网核对 GitHub 最新汉化包版本与适配说明");
+      const btnApply = mkBtn("立即更新（校验）", true, "从 GitHub 下载最新汉化包并校验 SHA-256 后自动更新");
+      const btnSkip = mkBtn("跳过此版本", false, "忽略当前新版本提醒，之后打开不再提示此版本，仍可随时手动检查");
+      const btnReload = mkBtn("立即刷新生效", true, "重新加载当前窗口界面，使新版汉化文案立刻生效");
       const linkRelease = document.createElement("a");
       linkRelease.target = "_blank";
       linkRelease.rel = "noreferrer";
       linkRelease.textContent = "GitHub 主页";
       linkRelease.style.cssText = "color:var(--link,#2563eb);text-decoration:none;font-size:12px;margin-left:auto;";
+      __bindPackTip(linkRelease, "在浏览器打开项目 GitHub 主页，查看完整说明与安装包");
       actions.appendChild(btnCheck);
       actions.appendChild(btnApply);
       actions.appendChild(btnSkip);
@@ -1195,21 +1263,23 @@ export function createRuntimeOverlay(dictionary) {
       setBox.appendChild(setHead);
 
       const settingButtons = [];
-      const mkRow = (labelText, key, opts) => {
+      const mkRow = (labelText, labelTip, key, opts) => {
         const row = document.createElement("div");
         row.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;";
         const lbl = document.createElement("span");
-        lbl.style.cssText = "font-size:12px;opacity:.9;";
+        lbl.style.cssText = "font-size:12px;opacity:.9;cursor:help;";
         lbl.textContent = labelText;
+        if (labelTip) __bindPackTip(lbl, labelTip);
         const grp = document.createElement("div");
         grp.style.cssText = "display:flex;gap:4px;";
-        for (const [val, txt] of opts) {
+        for (const [val, txt, btnTip] of opts) {
           const b = document.createElement("button");
           b.type = "button";
           b.textContent = txt;
           b.setAttribute("data-setting-key", key);
           b.setAttribute("data-setting-val", String(val));
           b.style.cssText = "padding:2px 7px;border-radius:5px;border:1px solid var(--border,rgba(127,127,127,.28));background:transparent;color:inherit;font-size:11.5px;cursor:pointer;";
+          if (btnTip) __bindPackTip(b, btnTip);
           b.onclick = () => __savePackSetting(key, val, txt);
           grp.appendChild(b);
           settingButtons.push({ key, val, btn: b });
@@ -1219,15 +1289,50 @@ export function createRuntimeOverlay(dictionary) {
         setBox.appendChild(row);
         return row;
       };
-      mkRow("汉化包自动更新", "packAutoUpdate", [["auto", "自动"], ["ask", "询问"], ["off", "关闭"]]);
-      const rowAutoFollow = mkRow("客户端更新后", "autoFollow", [["auto", "自动"], ["ask", "询问"], ["off", "不处理"]]);
-      mkRow("界面联网补充", "onlineTranslate", [[true, "开启"], [false, "关闭"]]);
-      mkRow("对话标题翻译", "titleAutoTranslate", [[true, "开启"], [false, "关闭"]]);
+      mkRow(
+        "汉化包自动更新",
+        "控制打开或退出客户端时是否联网核对并更新汉化包",
+        "packAutoUpdate",
+        [
+          ["auto", "自动", "发现新版本汉化包时自动下载、校验 SHA-256 并更新（推荐）"],
+          ["ask", "询问", "检查到新版本汉化包时先弹窗询问，由你确认后再下载更新"],
+          ["off", "关闭", "不自动联网检查汉化包更新，仅在点击检查更新时手动核对"],
+        ],
+      );
+      const rowAutoFollow = mkRow(
+        "客户端更新后",
+        "设置 Antigravity 客户端自身升级后如何重新应用中文",
+        "autoFollow",
+        [
+          ["auto", "自动", "Antigravity 客户端更新覆盖回英文后，自动重新应用中文（推荐）"],
+          ["ask", "询问", "检测到客户端更新并恢复英文后，弹窗询问是否一键重新汉化"],
+          ["off", "不处理", "客户端更新后不做自动处理，需要时可自行双击“启动中文”"],
+        ],
+      );
+      mkRow(
+        "界面联网补充",
+        "客户端出现词典尚未收录的新英文界面文字时是否临时联网补充中文",
+        "onlineTranslate",
+        [
+          [true, "开启", "遇到尚未收录的新增按钮或菜单时自动联网补充中文，不上传对话与代码（推荐）"],
+          [false, "关闭", "仅使用本地人工校对词库，尚未收录的新增英文界面文字保持英文"],
+        ],
+      );
+      mkRow(
+        "对话标题翻译",
+        "控制是否把右侧或列表中的纯英文新对话标题自动译为中文展示",
+        "titleAutoTranslate",
+        [
+          [true, "开启", "自动把纯英文新对话标题译成中文显示，手动改过名的对话保留原名（推荐）"],
+          [false, "关闭", "保持所有对话标题的原始显示，不自动翻译"],
+        ],
+      );
 
       wrap.appendChild(head);
       wrap.appendChild(verLine);
       wrap.appendChild(updCard);
       wrap.appendChild(setBox);
+      wrap.appendChild(tipBox);
       document.body.appendChild(wrap);
 
       btnCheck.onclick = () => __runPanelCheck();
@@ -1237,7 +1342,10 @@ export function createRuntimeOverlay(dictionary) {
 
       __packUiRefs = {
         wrap, verLine, statusLine, notesBox, btnCheck, btnApply, btnSkip, btnReload, linkRelease,
-        settingsTip, rowAutoFollow, settingButtons,
+        settingsTip, rowAutoFollow, settingButtons, tipBox,
+        hideTipIfTargetHidden: () => {
+          if (__tipTarget && (__tipTarget.style?.display === "none" || __tipTarget.disabled)) __hidePackTip();
+        },
       };
       return __packUiRefs;
     } catch {
@@ -1284,10 +1392,10 @@ export function createRuntimeOverlay(dictionary) {
           ? ("已设为「" + txt + "」（部分已开页面刷新后生效）")
           : ("已保存：「" + txt + "」");
       } else {
-        __packPanelState.settingsMsg = "保存失败，请改用目录中“汉化设置”重试";
+        __packPanelState.settingsMsg = "保存失败，请重新打开客户端后再试";
       }
     } catch {
-      __packPanelState.settingsMsg = "保存失败，请改用目录中“汉化设置”重试";
+      __packPanelState.settingsMsg = "保存失败，请重新打开客户端后再试";
     } finally {
       __packPanelBusy = false;
       __renderPackPanel();
@@ -1306,7 +1414,7 @@ export function createRuntimeOverlay(dictionary) {
       const ct = resp?.headers?.get?.("content-type") || "";
       if (!ct.includes("application/json")) {
         __packPanelState.statusKind = "legacy";
-        __packPanelState.statusText = "当前运行着旧版汉化文件，面板内的检查与改设置功能将在更新并重启客户端后启用。请先用目录里的“汉化设置”检查更新，或前往 GitHub 主页下载。";
+        __packPanelState.statusText = "当前运行着旧版汉化文件，面板内的检查与改设置功能将在重新运行“启动中文”更新后启用，也可前往 GitHub 主页下载。";
         return;
       }
       const data = await resp.json().catch(() => null);
@@ -1342,7 +1450,7 @@ export function createRuntimeOverlay(dictionary) {
       }
     } catch {
       __packPanelState.statusKind = "legacy";
-      __packPanelState.statusText = "请通过目录中“汉化设置”检查更新，或点右侧 GitHub 主页查看。";
+      __packPanelState.statusText = "暂时无法在当前窗口检查更新，请重新运行“启动中文”或点右侧 GitHub 主页查看。";
     } finally {
       __packPanelBusy = false;
       __renderPackPanel();

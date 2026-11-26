@@ -26,7 +26,7 @@ for(const [index,platform] of ["win","mac"].entries()){
   await cp(path.join(source,"launchers",`${platform}启动`),entry,{recursive:true});
   await cp(runtimeDirs[index],path.join(entry,"配套程序"),{recursive:true});
   if(platform==="mac"){
-    for(const name of ["启动中文.command","卸载汉化.command","汉化设置.command","配套程序/node"])await chmod(path.join(entry,name),0o755);
+    for(const name of ["启动中文.command","卸载汉化.command","配套程序/node"])await chmod(path.join(entry,name),0o755);
   }
 }
 const pkg=JSON.parse(await readFile(path.join(source,"package.json"),"utf8"));
