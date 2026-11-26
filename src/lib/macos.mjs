@@ -84,7 +84,7 @@ export async function runningMacApps() {
 
 export async function requireMacAppsClosed() {
   if ((await runningMacApps()).length) {
-    throw new Error("请先保存工作并通过 ⌘Q 退出 Antigravity，再重试；不会强制结束任何任务。");
+    throw new Error("请先保存工作并通过 ⌘Q 退出 Antigravity，再重试。");
   }
 }
 

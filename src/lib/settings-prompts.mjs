@@ -223,13 +223,13 @@ export async function runSettingsMenu({
                 ok(versionNotice.text);
                 const applied = await applyUpdatedClient({ packRoot, platform }).catch(() => null);
                 if (applied?.mode === "hot" && applied.ok) {
-                  ok("已无感热更新客户端中文界面，在客户端窗口按 Ctrl+R 刷新即可生效。");
+                  ok("客户端中文界面已更新，在客户端窗口按 Ctrl+R 刷新即可看到。");
                 } else if (applied?.mode === "full" && applied.ok) {
                   ok("已同步更新本机客户端中文界面。");
                 } else if (applied?.mode === "mac-running") {
-                  info("请按 ⌘Q 退出中文版客户端后，重新运行一次“启动中文.command”完成重签。");
+                  info("按 ⌘Q 退出中文版客户端后，重新运行一次“启动中文.command”即可完成更新。");
                 } else if (applied?.mode === "mac-full" && applied.ok) {
-                  ok("Mac 中文副本已同步更新并完成重签。");
+                  ok("Mac 中文版已同步更新。");
                 }
               } else {
                 info(`当前状态：${result?.status || "无需更新"}。`);

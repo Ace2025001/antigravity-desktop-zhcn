@@ -4,7 +4,7 @@
 [![下载量](https://img.shields.io/github/downloads/Ace2025001/antigravity-desktop-zhcn/total?label=%E4%B8%8B%E8%BD%BD%E9%87%8F)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases)
 [![平台](https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%20x64%20%7C%20macOS%20Apple%20%E8%8A%AF%E7%89%87-blue)](#支持范围)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![已适配客户端](https://img.shields.io/badge/%E5%B7%B2%E9%80%82%E9%85%8D%E5%AE%A2%E6%88%B7%E7%AB%AF-2.35.1-brightgreen)](#支持范围)
+[![已适配客户端](https://img.shields.io/badge/%E5%B7%B2%E9%80%82%E9%85%8D%E5%AE%A2%E6%88%B7%E7%AB%AF-2.35.2-brightgreen)](#支持范围)
 
 Google Antigravity（反重力）Desktop 桌面客户端的开源简体中文汉化包（Antigravity 中文语言包）。Windows 和 Apple 芯片 Mac 通用，解压即用，在客户端里点更新后自动跟着重新汉化，随时可以一键卸载汉化、回到官方原版。
 
@@ -101,7 +101,7 @@ antigravity汉化包/
 
 | 项目 | 说明 |
 |---|---|
-| Windows x64 | 已在 Antigravity Desktop 2.32.2、2.33.0、2.34.0、2.35.1 实测，支持更新后自动汉化 |
+| Windows x64 | 已在 Antigravity Desktop 2.32.2、2.33.0、2.34.0、2.35.1、2.35.2 实测，支持更新后自动汉化 |
 | Apple 芯片 Mac | 保留官方原版，另建一份本地签名的中文副本；Intel Mac 未验证 |
 | 适用对象 | Antigravity Desktop 独立桌面客户端 |
 | 兼容方式 | 每次汉化前都会检查客户端文件结构；新版本会先尝试自动适配，结构对不上时停下并提示你 |
@@ -126,7 +126,7 @@ antigravity汉化包/
 
 ### 支持哪些系统版本？
 
-支持 Windows x64（已在 Google Antigravity Desktop 2.32.2、2.33.0、2.34.0、2.35.1 实测）和 Apple 芯片 Mac（保留官方原版并生成本地中文版），Intel Mac 未验证。只适用于反重力（Antigravity Desktop）独立桌面客户端。
+支持 Windows x64（已在 Google Antigravity Desktop 2.32.2、2.33.0、2.34.0、2.35.1、2.35.2 实测）和 Apple 芯片 Mac（保留官方原版并生成本地中文版），Intel Mac 未验证。只适用于反重力（Antigravity Desktop）独立桌面客户端。
 
 ### 怎么更新语言包？
 

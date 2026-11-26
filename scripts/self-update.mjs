@@ -139,9 +139,9 @@ async function main() {
       pendingMainUpdate: { version: result.latestVersion, at: new Date().toISOString() },
     }, getStateRoot()).catch(() => {});
     if (hotCode === 0) {
-      log("已无感热更新中文界面（在客户端按 Ctrl+R 刷新后立即可见）；主进程补丁已预约在下次退出客户端时后台自动完成。");
+      log("中文界面已更新，在客户端按 Ctrl+R 刷新即可看到；其余部分在下次退出客户端时自动完成。");
     } else {
-      log("当前未能热更新（可能客户端刚升级了大版本）；已预约在下次退出客户端时自动全量升级，或手动双击“启动中文”。");
+      log("中文界面将在下次退出客户端时自动完成更新，也可以手动双击“启动中文”立即更新。");
     }
     return;
   }
@@ -152,9 +152,9 @@ async function main() {
     if (!running) {
       const code = await runNodeScript(nodePath, path.join(newCoreRoot, "scripts", "macos.mjs"), ["install-auto"], env);
       if (code === 0) {
-        log(`Mac 中文副本已更新并重签至 v${result.latestVersion}。`);
+        log(`Mac 中文版已更新至 v${result.latestVersion}。`);
       } else {
-        log(`本地包已更新至 v${result.latestVersion}；请运行 mac启动/启动中文.command 完成安装或重签。`);
+        log(`本地包已更新至 v${result.latestVersion}；运行 mac启动/启动中文.command 即可完成更新。`);
       }
       return;
     }
@@ -162,7 +162,7 @@ async function main() {
       pendingMainUpdate: { version: result.latestVersion, at: new Date().toISOString() },
     }, getStateRoot()).catch(() => {});
     if (fromClient || !restartRequested) {
-      log(`本地汉化包已更新至 v${result.latestVersion}，请按 ⌘Q 退出并重新打开一次“启动中文.command”以完成副本重签。`);
+      log(`本地汉化包已更新至 v${result.latestVersion}，按 ⌘Q 退出后，重新打开一次“启动中文.command”即可完成更新。`);
     }
   }
 }

@@ -171,7 +171,7 @@ try {
       const apps = await runningMacApps();
       if (apps.some(app => app.executable !== path.join(macAppPath, "Contents", "MacOS", "Antigravity"))) await closeClientForChanges();
       await exec("/usr/bin/open", [macAppPath]);
-      console.log(autoReused ? "已复用本地缓存完成中文重签，已打开应用。" : "中文已就绪，已打开应用。");
+      console.log(autoReused ? "中文已就绪，已打开应用。" : "中文已就绪，已打开应用。");
     }
   }
   if (command === "install-auto") {
