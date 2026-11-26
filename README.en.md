@@ -48,6 +48,7 @@ The first run asks setup questions; press Enter to accept the recommended values
 
 ## Features
 
+- **汉化中心 (Pack Center)**: open it from the top-left `Antigravity` menu (the system menu bar on Mac) to see versions, check for updates and change every setting; hover for hints, one click saves.
 - **Ready to run**: bundled runtime, no Node.js needed; finds the client automatically.
 - **Thorough**: 17,000+ curated translations: menus, tray, settings, agent execution traces and tool calls (file edits, shell commands with exit codes, MCP tools, image generation), the Swarm side panel, the plugin marketplace (100+ plugins), quotas and input shortcuts. Names such as `agy` CLI, Catppuccin and Dracula are kept.
 - **Reversible**: one click restores the official English client; on Mac the official app is kept and a Chinese copy is built alongside.
