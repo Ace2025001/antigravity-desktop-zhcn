@@ -106,7 +106,6 @@ try {
         "安装中文.bat",
         "启动中文.bat",
         "卸载汉化.bat",
-        "使用说明.txt",
         "README.md",
         "README.en.md",
         "LICENSE",
@@ -115,6 +114,10 @@ try {
     )) {
         Copy-Item -LiteralPath (Join-Path $ProjectRoot $file) -Destination $StagingRoot
     }
+    $packVer = (Get-Content -Raw -LiteralPath (Join-Path $ProjectRoot "package.json") -Encoding UTF8 | ConvertFrom-Json).version
+    $usageContent = Get-Content -Raw -LiteralPath (Join-Path $ProjectRoot "使用说明.txt") -Encoding UTF8
+    $usageContent = $usageContent -replace '^Antigravity 汉化包', "Antigravity 汉化包（当前版本：v$packVer）"
+    [System.IO.File]::WriteAllText((Join-Path $StagingRoot "使用说明.txt"), $usageContent, (New-Object System.Text.UTF8Encoding($false)))
     Copy-Item -LiteralPath (Join-Path $nodeRoot "node.exe") -Destination (Join-Path $StagingRoot "runtime")
     Copy-Item -LiteralPath (Join-Path $nodeRoot "LICENSE") -Destination (Join-Path $StagingRoot "runtime\NODE_LICENSE")
 

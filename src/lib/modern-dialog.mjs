@@ -221,6 +221,53 @@ export function getPackStartupDialogSpec({ currentVersion = "", latestVersion = 
   };
 }
 
+export function getPackLatestDialogSpec({ currentVersion = "", latestVersion = "" } = {}) {
+  const cur = currentVersion || latestVersion || "未知";
+  const latest = latestVersion || currentVersion || "未知";
+  return {
+    title: "检查汉化包更新",
+    badge: "Antigravity 汉化包 · 版本检查",
+    icon: "zhcn",
+    headline: `当前汉化包已是最新版本 v${cur}`,
+    message: `当前安装版本：v${cur}\nGitHub 最新版本：v${latest}\n\n无需更新。`,
+    cancelId: "ok",
+    buttons: [
+      { id: "ok", text: "确定", style: "primary", isAccept: true },
+    ],
+  };
+}
+
+export function getPackCheckErrorDialogSpec({ currentVersion = "", detail = "" } = {}) {
+  return {
+    title: "检查汉化包更新",
+    badge: "Antigravity 汉化包 · 检查失败",
+    icon: "warn",
+    headline: "暂时无法获取最新版本信息",
+    message: `${currentVersion ? `当前版本：v${currentVersion}\n` : ""}未能连接 GitHub 发布页${detail ? `（${detail}）` : ""}。请检查网络或代理后重试，也可前往发布页查看。`,
+    cancelId: "close",
+    buttons: [
+      { id: "close", text: "关闭", style: "secondary" },
+      { id: "open", text: "打开发布页", style: "primary", isAccept: true },
+    ],
+  };
+}
+
+export function getPackUpdatedDialogSpec({ latestVersion = "", hotUpdated = true } = {}) {
+  return {
+    title: "汉化包更新完成",
+    badge: "Antigravity 汉化包 · 已升级",
+    icon: "zhcn",
+    headline: `汉化包已更新至 v${latestVersion}`,
+    message: hotUpdated
+      ? "中文界面已无感热更新。现在在客户端窗口按 Ctrl+R 刷新即可立即生效，主进程补丁会在下次退出客户端时自动补齐。"
+      : "已完成下载与 SHA-256 校验；请退出后重新打开一次客户端（或运行“启动中文”）以应用完整补丁。",
+    cancelId: "ok",
+    buttons: [
+      { id: "ok", text: "知道了", style: "primary", isAccept: true },
+    ],
+  };
+}
+
 export function getPackExitDialogSpec({ currentVersion = "", latestVersion = "" } = {}) {
   return {
     title: "Antigravity 汉化包有新版本",

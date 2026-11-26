@@ -1,7 +1,10 @@
 import {
   getClientFollowDialogSpec,
+  getPackCheckErrorDialogSpec,
   getPackExitDialogSpec,
+  getPackLatestDialogSpec,
   getPackStartupDialogSpec,
+  getPackUpdatedDialogSpec,
   getRelaunchConfirmDialogSpec,
   getWarnNotifyDialogSpec,
   showModernWindowsDialog,
@@ -25,6 +28,9 @@ const previewOnly = process.argv.includes("--preview");
 
 function buildSpec() {
   if (kind === "pack-exit") return getPackExitDialogSpec({ currentVersion: args.current || "", latestVersion: args.latest || "" });
+  if (kind === "pack-latest") return getPackLatestDialogSpec({ currentVersion: args.current || "", latestVersion: args.latest || "" });
+  if (kind === "pack-check-error") return getPackCheckErrorDialogSpec({ currentVersion: args.current || "", detail: args.detail || "" });
+  if (kind === "pack-updated") return getPackUpdatedDialogSpec({ latestVersion: args.latest || "", hotUpdated: args.hot !== "0" });
   if (kind === "client-follow") return getClientFollowDialogSpec({ version: args.version || "" });
   if (kind === "relaunch-confirm") return getRelaunchConfirmDialogSpec();
   if (kind === "warn") {
