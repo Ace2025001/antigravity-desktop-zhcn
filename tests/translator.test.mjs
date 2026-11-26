@@ -4080,7 +4080,11 @@ test("左上角 Antigravity 菜单合并为三项极简入口，并可在旧补�
       assert.match(textsAfterUpdate, /已更新至 v3\.2\.0/);
       assert.match(textsAfterUpdate, /当前版本：v3\.2\.0\s+·\s+已适配最高客户端：2\.35\.10/);
 
-      // 切换配置按钮：“汉化包自动更新 -> 自动” 与 “界面联网补充 -> 开启”
+      // 切换配置按钮：“汉化包自动更新 -> 自动” 与 “界面联网补充 -> 开启”（验证“询问”文案生效）
+      const askPackBtn = allElements.find((e) => e.attrs["data-setting-key"] === "packAutoUpdate" && e.attrs["data-setting-val"] === "ask");
+      const askFollowBtn = allElements.find((e) => e.attrs["data-setting-key"] === "autoFollow" && e.attrs["data-setting-val"] === "ask");
+      assert.equal(askPackBtn?.textContent, "询问");
+      assert.equal(askFollowBtn?.textContent, "询问");
       const packAutoBtn = allElements.find((e) => e.attrs["data-setting-key"] === "packAutoUpdate" && e.attrs["data-setting-val"] === "auto");
       await packAutoBtn.onclick();
       assert.equal(savedState.packAutoUpdate, "auto", "应成功提交并写入设置到主进程");
