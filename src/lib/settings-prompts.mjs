@@ -71,7 +71,7 @@ export async function askFirstRunSettings({ platform = process.platform } = {}) 
     const updated = { ...settings, ...presets };
     try {
       console.log("");
-      console.log(`  ${color.bold("汉化包新增了设置")}  ${color.dim("直接回车即用推荐值，之后随时可在“汉化设置”里修改")}`);
+      console.log(`  ${color.bold("汉化包新增了设置")}  ${color.dim("直接回车即用推荐值，之后随时可在客户端“汉化中心”或目录里的“汉化设置”修改")}`);
       if (askPack) {
         updated.packAutoUpdate = await ask(rl, PACK_AUTO_UPDATE_QUESTION, "请输入 1、2 或 3，直接回车选 1：", AUTO_OR_ASK_CHOICES, "auto");
       }
@@ -91,7 +91,7 @@ export async function askFirstRunSettings({ platform = process.platform } = {}) 
     const rl = createInterface({ input: process.stdin, output: process.stdout });
     try {
       console.log("");
-      console.log(`  ${color.bold("首次使用，先确认设置")}  ${color.dim("直接回车即用推荐值，之后可在“汉化设置”里修改")}`);
+      console.log(`  ${color.bold("首次使用，先确认设置")}  ${color.dim("直接回车即用推荐值，之后随时可在客户端“汉化中心”或目录里的“汉化设置”修改")}`);
       if (platform === "win32") {
         chosen.autoFollow = await ask(rl, AUTO_FOLLOW_QUESTION, "请输入 1、2 或 3，直接回车选 1：", AUTO_OR_ASK_CHOICES, chosen.autoFollow);
       }

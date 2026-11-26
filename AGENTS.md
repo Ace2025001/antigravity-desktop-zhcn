@@ -10,7 +10,7 @@ Simplified Chinese (zh-CN) localization for the **Google Antigravity Desktop** s
 - Platforms: Windows x64, Apple Silicon macOS. Intel Mac and Linux are not verified.
 - Not for the Antigravity **IDE extension**.
 - Ships its own Node.js runtime. No network install, no proxy/TUN changes.
-- Optional, user-chosen features (first-run questions, editable via `汉化设置` or the top-left `Antigravity` menu inside the client):
+- Optional, user-chosen features (first-run questions, editable via **汉化中心** in the top-left `Antigravity` menu inside the client, or `汉化设置` in the pack folder):
   - **Auto-follow updates** (Windows): when the patched client quits (e.g. the user clicks “Restart to update”), it starts a short-lived helper that waits for the installer, then re-localizes the new version (or asks first). No scheduled task or resident process; the hook is removed on restore / uninstall, and any `AntigravityZhcnAutoFollow` task left by v3.0.0 is deleted.
   - **Online fill-in** (`onlineTranslate`) and **title auto-translation** (`titleAutoTranslate`), two separate switches: UI strings not yet in the dictionary and AI-generated English conversation titles are sent to Google Translate through the patched main process. Chat content, code, terminal output, files, account details, the user's own customizations and user input are never sent. Existing installs stay off for `onlineTranslate` until asked once.
 
@@ -24,7 +24,7 @@ Only install when the user has asked for it. Full step-by-step guide: [docs/ai-i
 3. Extract fully. Root folder: `antigravity汉化包/` with `win启动/`, `mac启动/`, `语言包/`.
 4. Run:
    - Windows: `win启动\启动中文.bat` (set `AGY_INSTALL_PATH` to the client folder to skip the picker dialog). Read-only check: `win启动\配套程序\node.exe 语言包\核心程序\src\cli.mjs check` with `AGY_LANGUAGE_PACK` set to the `语言包` folder.
-   - macOS: `mac启动/启动中文.command` (set `AGY_MAC_SOURCE` to the official `.app` to skip the picker). First run is interactive: open the official app, wait for the home screen, quit with ⌘Q, then press Enter.
+   - macOS: `mac启动/启动中文.command` (set `AGY_MAC_SOURCE` to the official `.app` to skip the picker). First run is interactive: keep the official app open until the home screen appears, press Enter in the terminal to read the UI, then quit with ⌘Q when prompted.
 5. Restore English: `win启动\卸载汉化.bat` or `mac启动/卸载汉化.command`.
 
 First-run questions only appear in an interactive terminal. In unattended runs the defaults apply (auto-follow `auto`, pack auto-update `auto`, online fill-in on, title auto-translate on). Tell the user about these defaults, or preset them with environment variables before running:
