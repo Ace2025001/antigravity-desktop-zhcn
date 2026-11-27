@@ -1636,10 +1636,14 @@ export function createRuntimeOverlay(dictionary) {
   // 三层漏斗智能兜底引擎：四道防机翻护栏 + 硬盘级永久自学习词库 + 对话标题持久化
   // =========================================================================
   const __autoPendingKeys = new Set();
-  const __autoFailedKeys = new Set();
+  const __autoFailedRetryAt = new Map();
+  const __AUTO_RETRY_COOLDOWN_MS = 15000;
   const __autoNodeSubscribers = new Map();
   let __autoPersistQueue = {};
+  let __titlePersistQueue = {};
   let __autoPersistTimer = null;
+  let __supportsTitleBucket = false;
+  let __autoDictChecked = false;
   const __LOCAL_STORAGE_DICT_KEY = "__agy_zhcn_auto_learned_v1__";
 
   const __PROTECTED_BRAND_PHRASES = [
@@ -1918,6 +1922,13 @@ export function createRuntimeOverlay(dictionary) {
     if (el.closest("[data-testid='conversation-navigator-group-card-header']") && el.closest("[data-titled='true']")) {
       return true;
     }
+    if (!isAttribute && el.tagName === "SPAN" && el.classList?.contains?.("truncate") && el.classList?.contains?.("text-secondary-foreground")) {
+      const listBox = el.closest(".overflow-y-auto");
+      const headingText = listBox?.parentElement?.firstElementChild?.textContent?.trim();
+      if (headingText === "对话历史" || headingText === "Conversation History" || el.closest("[data-testid='recent-conversation-list']")) {
+        return true;
+      }
+    }
     return false;
   }
   function __lookupLearnedTitle(value) {
@@ -1926,7 +1937,7 @@ export function createRuntimeOverlay(dictionary) {
     const trailing = value.match(/\\s*$/u)?.[0] ?? "";
     const core = value.slice(leading.length, value.length - trailing.length);
     if (!core || __manualTitleTexts.has(core)) return null;
-    const hit = __learnedTitleTranslations.get(core);
+    const hit = __learnedTitleTranslations.get(core) ?? __learnedUiTranslations.get(core);
     return typeof hit === "string" && hit !== core ? leading + hit + trailing : null;
   }
   async function __loadZhcnSettings() {
@@ -1973,18 +1984,37 @@ export function createRuntimeOverlay(dictionary) {
     return __canAutoTranslateRuntime("title");
   }
 
+  function __isAccountCardElement(el) {
+    if (!el || typeof el.closest !== "function") return false;
+    const card = el.closest(".flex-col, button, [role='button'], div");
+    if (card && card.querySelector && card.querySelector(".rounded-full, [class*='avatar'], [data-tooltip-id*='account']")) {
+      const text = card.textContent || "";
+      if (/[^\\s@]+@[^\\s@]+\\.[^\\s@]+/.test(text)) return true;
+    }
+    return false;
+  }
+
+  // 对话标题独立规则：只看标题本身开关与手动重命名，不与界面防误翻的后缀/域名/产品名限制混用。
+  function __isEligibleTitleForAutoTranslate(core, parentEl = null) {
+    if (typeof core !== "string") return false;
+    const t = core.trim();
+    if (t.length < 2 || t.length > 300) return false;
+    if (!/[A-Za-z]/.test(t) || /[\\u4e00-\\u9fff]/.test(t)) return false;
+    if (/^Conversation\\s+[0-9a-f]{6,}$/i.test(t) || /^[0-9a-f]{8}-[0-9a-f-]{12,}$/i.test(t)) return false;
+    if (__manualTitleTexts.has(t)) return false;
+    if (parentEl && (__isInsideUserContent(parentEl, false) || __isAccountCardElement(parentEl) || (typeof parentEl.closest === "function" && parentEl.closest("[data-testid='customization-card']")))) return false;
+    return true;
+  }
+
   function __isEligibleForAutoTranslate(core, parentEl, isTitle, isAttribute = false) {
+    if (isTitle === true) return __isEligibleTitleForAutoTranslate(core, parentEl);
     if (typeof core !== "string") return false;
     // The main-process proxy rejects queries over 200 characters.
-    if (!isTitle && core.trim().length > 200) return false;
+    if (core.trim().length > 200) return false;
     const t = core.trim();
-    if (isTitle ? (t.length < 3 || t.length > 160) : (t.length < 6 || t.length > 600)) return false;
+    if (t.length < 6 || t.length > 600) return false;
     if (!/[A-Za-z]/.test(t) || /[\\u4e00-\\u9fff]/.test(t)) return false;
-    if (isTitle) {
-      if (!/[A-Za-z]{4,}/.test(t) && !/[A-Za-z]{2,}[\\s\\-/]+[A-Za-z]{2,}/.test(t)) return false;
-    } else {
-      if (!/[A-Za-z]{2,}[\\s\\-/]+[A-Za-z]{2,}/.test(t)) return false;
-    }
+    if (!/[A-Za-z]{2,}[\\s\\-/]+[A-Za-z]{2,}/.test(t)) return false;
     if (/^Conversation\\s+[0-9a-f]{6,}$/i.test(t)) return false;
     if (/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(t)) return false;
     if (/^(?:https?|file|agy|ws|wss|vscode|chrome-extension):\\/\\//i.test(t)) return false;
@@ -2010,7 +2040,7 @@ export function createRuntimeOverlay(dictionary) {
     return true;
   }
 
-  function __prepareAntiMtPayload(core) {
+  function __prepareAntiMtPayload(core, isTitle = false) {
     const placeholders = [];
     const putToken = (val) => {
       const idx = placeholders.length;
@@ -2019,6 +2049,11 @@ export function createRuntimeOverlay(dictionary) {
     };
     let text = core;
     text = text.replace(/\\x60[^\\x60]+\\x60/g, (m) => putToken(m));
+    if (isTitle) {
+      text = text.replace(/https?:\\/\\/[^\\s)）\\]]+/gi, (m) => putToken(m));
+      text = text.replace(/\\b[A-Za-z0-9_.-]+\\.(?:txt|md|log|json|ya?ml|toml|lock|vbs|bat|cmd|ps1|sh|py|js|mjs|cjs|ts|tsx|jsx|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\\b/gi, (m) => putToken(m));
+      text = text.replace(/\\b[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.(?:com|org|net|io|dev|ai|cn)\\b/gi, (m) => putToken(m));
+    }
     text = text.replace(/(?:^|\\s)(\\/[a-z][a-z0-9_-]*)/g, (m, cmd) => m.slice(0, m.length - cmd.length) + putToken(cmd));
     text = text.replace(/\\bv\\d+\\.\\d+(?:\\.\\d+)?(?:-[0-9A-Za-z.-]+)?\\b/g, (m) => putToken(m));
 
@@ -2092,20 +2127,36 @@ export function createRuntimeOverlay(dictionary) {
     (isTitle ? __learnedTitleTranslations : __learnedUiTranslations).set(enKey, zhVal);
     // The on-disk dictionary (agy-zhcn://auto-dict) is the only store, so entries
     // removed or filtered there cannot come back from a browser-side copy.
-    __autoPersistQueue[enKey] = zhVal;
+    if (isTitle) __titlePersistQueue[enKey] = zhVal;
+    else __autoPersistQueue[enKey] = zhVal;
     if (!__autoPersistTimer) {
       __autoPersistTimer = setTimeout(async () => {
-        const batch = __autoPersistQueue;
+        const uiBatch = __autoPersistQueue;
+        const titleBatch = __titlePersistQueue;
         __autoPersistQueue = {};
+        __titlePersistQueue = {};
         __autoPersistTimer = null;
         try {
           if (typeof globalThis.__AGY_ZHCN_ON_PERSIST_DICT__ === "function") {
-            await globalThis.__AGY_ZHCN_ON_PERSIST_DICT__(batch);
+            await globalThis.__AGY_ZHCN_ON_PERSIST_DICT__({ ...uiBatch, ...titleBatch }, { entries: uiBatch, titles: titleBatch });
           } else if (typeof fetch === "function") {
+            if (!__autoDictChecked) {
+              __autoDictChecked = true;
+              const probeResp = await fetch("agy-zhcn://auto-dict").catch(() => null);
+              if (probeResp && probeResp.ok) {
+                const probeData = await probeResp.json().catch(() => null);
+                if (probeData && (probeData.supportsTitleBucket === true || (probeData.titles && typeof probeData.titles === "object"))) {
+                  __supportsTitleBucket = true;
+                }
+              }
+            }
+            const payload = __supportsTitleBucket
+              ? { entries: uiBatch, titles: titleBatch }
+              : { entries: { ...uiBatch, ...titleBatch }, titles: titleBatch };
             await fetch("agy-zhcn://auto-dict", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ entries: batch })
+              body: JSON.stringify(payload)
             }).catch(() => {});
           }
         } catch (_) {}
@@ -2159,27 +2210,40 @@ export function createRuntimeOverlay(dictionary) {
       if (typeof fetch === "function" && typeof window !== "undefined") {
         const resp = await fetch("agy-zhcn://auto-dict").catch(() => null);
         if (resp && resp.ok) {
+          __autoDictChecked = true;
           const data = await resp.json().catch(() => null);
-          if (data && data.exact && typeof data.exact === "object") {
+          if (data && typeof data === "object") {
+            if (data.supportsTitleBucket === true || (data.titles && typeof data.titles === "object")) {
+              __supportsTitleBucket = true;
+            }
             const titlesOn = __isTitleAutoTranslateEnabled(__zhcnSettings);
             const uiOn = __isUiOnlineTranslateEnabled(__zhcnSettings);
-            for (const [k, v] of Object.entries(data.exact)) {
-              if (
-                typeof k !== "string" ||
-                typeof v !== "string" ||
-                exactTranslations.has(k) ||
-                __manualTitleTexts.has(k) ||
-                __isObsoleteLearnedKey(k)
-              ) continue;
-              // One shared file: an entry is usable as a title and/or as UI text depending
-              // on which switches are on and which eligibility rules it passes.
-              if (titlesOn && __isEligibleForAutoTranslate(k, null, true)) {
-                __learnedTitleTranslations.set(k, v);
-                loadedAny = true;
+            if (titlesOn && data.titles && typeof data.titles === "object") {
+              for (const [k, v] of Object.entries(data.titles)) {
+                if (typeof k !== "string" || typeof v !== "string" || exactTranslations.has(k) || __manualTitleTexts.has(k)) continue;
+                if (__isEligibleTitleForAutoTranslate(k)) {
+                  __learnedTitleTranslations.set(k, v);
+                  loadedAny = true;
+                }
               }
-              if (uiOn && __isEligibleForAutoTranslate(k, null, false)) {
-                __learnedUiTranslations.set(k, v);
-                loadedAny = true;
+            }
+            if (data.exact && typeof data.exact === "object") {
+              for (const [k, v] of Object.entries(data.exact)) {
+                if (
+                  typeof k !== "string" ||
+                  typeof v !== "string" ||
+                  exactTranslations.has(k) ||
+                  __manualTitleTexts.has(k) ||
+                  __isObsoleteLearnedKey(k)
+                ) continue;
+                if (uiOn && __isEligibleForAutoTranslate(k, null, false)) {
+                  __learnedUiTranslations.set(k, v);
+                  loadedAny = true;
+                }
+                if (titlesOn && !__learnedTitleTranslations.has(k) && __isEligibleTitleForAutoTranslate(k)) {
+                  __learnedTitleTranslations.set(k, v);
+                  loadedAny = true;
+                }
               }
             }
           }
@@ -2198,7 +2262,13 @@ export function createRuntimeOverlay(dictionary) {
     const normalized = core.trim().replace(/\\s+/g, " ");
     if (exactTranslations.has(normalized)) return exactTranslations.get(normalized);
     if (learned.has(normalized)) return learned.get(normalized);
-    if (!__canAutoTranslateRuntime(kind) || __autoFailedKeys.has(normalized)) return null;
+    if (kind === "title" && __learnedUiTranslations.has(normalized) && !__manualTitleTexts.has(normalized)) {
+      const reused = __learnedUiTranslations.get(normalized);
+      __learnedTitleTranslations.set(normalized, reused);
+      return reused;
+    }
+    const retryAt = __autoFailedRetryAt.get(normalized);
+    if (!__canAutoTranslateRuntime(kind) || (retryAt && Date.now() < retryAt)) return null;
     if (__autoPendingKeys.has(normalized)) {
       return new Promise((resolve) => {
         const list = __autoNodeSubscribers.get(normalized) || [];
@@ -2208,10 +2278,11 @@ export function createRuntimeOverlay(dictionary) {
     }
     __autoPendingKeys.add(normalized);
     try {
-      const { prepared, placeholders } = __prepareAntiMtPayload(normalized);
+      const { prepared, placeholders } = __prepareAntiMtPayload(normalized, isTitle === true);
       const rawTranslated = await __requestRemoteTranslate(prepared, kind);
       const polished = __polishTranslatedZh(rawTranslated, normalized, placeholders, isTitle);
       if (polished && polished !== normalized) {
+        __autoFailedRetryAt.delete(normalized);
         __persistAutoLearnedEntry(normalized, polished, kind === "title");
         if (core.trim() !== normalized) {
           __persistAutoLearnedEntry(core.trim(), polished, kind === "title");
@@ -2221,9 +2292,9 @@ export function createRuntimeOverlay(dictionary) {
         for (const fn of waiters) fn(polished);
         return polished;
       }
-      __autoFailedKeys.add(normalized);
+      __autoFailedRetryAt.set(normalized, Date.now() + __AUTO_RETRY_COOLDOWN_MS);
     } catch (_) {
-      __autoFailedKeys.add(normalized);
+      __autoFailedRetryAt.set(normalized, Date.now() + __AUTO_RETRY_COOLDOWN_MS);
     } finally {
       __autoPendingKeys.delete(normalized);
       const waiters = __autoNodeSubscribers.get(normalized);
@@ -2238,6 +2309,7 @@ export function createRuntimeOverlay(dictionary) {
   globalThis.__AGY_ZHCN_AUTO_TRANSLATE__ = __translateAndLearnAsync;
   globalThis.__AGY_ZHCN_LOAD_SETTINGS__ = __loadZhcnSettings;
   globalThis.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__ = __isEligibleForAutoTranslate;
+  globalThis.__AGY_ZHCN_IS_TITLE_ELIGIBLE__ = __isEligibleTitleForAutoTranslate;
   globalThis.__AGY_ZHCN_IS_PROTECTED_ELEMENT__ = __isProtectedNativeIdentifier;
   globalThis.__AGY_ZHCN_TRANSLATE_VALUE__ = translateValue;
   globalThis.__AGY_ZHCN_LOOKUP__ = (text) => exactTranslations.get(text) ?? __learnedTitleTranslations.get(text) ?? __learnedUiTranslations.get(text);
@@ -2246,6 +2318,7 @@ export function createRuntimeOverlay(dictionary) {
 
   let __titleWatcherBoundStore = null;
   const __processedConvTitleMap = new Map();
+  const __titleInFlightSet = new Set();
   let __titleRefreshTimer = null;
   function __scheduleTitleRefresh() {
     if (__titleRefreshTimer || typeof document === "undefined") return;
@@ -2285,50 +2358,55 @@ export function createRuntimeOverlay(dictionary) {
     const scanSummaries = () => {
       try {
         const st = store.getState();
-        const summaries = st?.trajectorySummaries?.summaries;
-        if (!summaries || typeof summaries !== "object") return;
-        for (const [cascadeId, item] of Object.entries(summaries)) {
-          if (!item) continue;
-          const rawTitle = (item.annotations?.title?.trim() || item.summary?.trim() || "");
-          if (!rawTitle || /[\\u4e00-\\u9fff]/.test(rawTitle)) continue;
-          if (__manualTitleIds.has(cascadeId) || (__zhcnSettings && !__isTitleAutoTranslateEnabled(__zhcnSettings))) {
-            __observedNonTranslatedTitles.add(rawTitle);
-            continue;
-          }
-          if (__processedConvTitleMap.get(cascadeId) === rawTitle) continue;
-          if (!__isEligibleForAutoTranslate(rawTitle, null, true)) continue;
-
-          const localTry = exactTranslations.get(rawTitle) || __translateChapterTitle(rawTitle);
-          const applyTitle = (zhTitle) => {
-            if (!zhTitle || !/[\\u4e00-\\u9fff]/.test(zhTitle) || zhTitle === rawTitle) return;
-            if (__manualTitleIds.has(cascadeId) || (__zhcnSettings && !__isTitleAutoTranslateEnabled(__zhcnSettings))) return;
-            __processedConvTitleMap.set(cascadeId, zhTitle);
-            if (!__zhcnSettings || __zhcnSettings.titleWriteBack !== true) {
-              // Default: display only. The stored conversation title is untouched,
-              // so restoring English brings the original title back.
-              __learnedTitleTranslations.set(rawTitle, zhTitle);
-              __scheduleTitleRefresh();
-              return;
+        const buckets = [st?.trajectorySummaries?.summaries, st?.trajectorySummaries?.externalSummaries];
+        for (const summaries of buckets) {
+          if (!summaries || typeof summaries !== "object") continue;
+          for (const [cascadeId, item] of Object.entries(summaries)) {
+            if (!item) continue;
+            const rawTitle = (item.annotations?.title?.trim() || item.summary?.trim() || "");
+            if (!rawTitle || /[\\u4e00-\\u9fff]/.test(rawTitle)) continue;
+            if (__manualTitleIds.has(cascadeId) || (__zhcnSettings && !__isTitleAutoTranslateEnabled(__zhcnSettings))) {
+              __observedNonTranslatedTitles.add(rawTitle);
+              continue;
             }
-            try {
-              const helpers = globalThis.__AGY_ZHCN_ANNOT_HELPERS__;
-              if (helpers && typeof helpers.localAction === "function") {
-                store.dispatch(helpers.localAction({ cascadeId, annotations: { title: zhTitle } }));
-              }
-              if (typeof updateAnnotationsFn === "function" && helpers && typeof helpers.makeProto === "function") {
-                updateAnnotationsFn(cascadeId, helpers.makeProto({ title: zhTitle }), true).catch?.(() => {});
-              }
-            } catch (_) {}
-          };
+            if (__processedConvTitleMap.get(cascadeId) === rawTitle) continue;
+            if (!__isEligibleTitleForAutoTranslate(rawTitle)) continue;
 
-          if (localTry && localTry !== rawTitle && !/[A-Za-z]{4,}/.test(localTry.replace(/\\b(?:Chrome|Google|Gemini|Claude|Antigravity|GitHub|Swarm|MCP|Remotion|CAD|PPT|YouTube|AI|UI|CLI|IDE)\\b/gi, ""))) {
-            __processedConvTitleMap.set(cascadeId, rawTitle);
-            applyTitle(localTry);
-          } else if (__canAutoTranslateTitlesRuntime()) {
-            __processedConvTitleMap.set(cascadeId, rawTitle);
-            __translateAndLearnAsync(rawTitle, { isTitle: true }).then((zhTitle) => {
-              if (zhTitle) applyTitle(zhTitle);
-            });
+            const localTry = exactTranslations.get(rawTitle) || __translateChapterTitle(rawTitle);
+            const applyTitle = (zhTitle) => {
+              if (!zhTitle || !/[\\u4e00-\\u9fff]/.test(zhTitle) || zhTitle === rawTitle) return;
+              if (__manualTitleIds.has(cascadeId) || (__zhcnSettings && !__isTitleAutoTranslateEnabled(__zhcnSettings))) return;
+              __processedConvTitleMap.set(cascadeId, rawTitle);
+              if (!__zhcnSettings || __zhcnSettings.titleWriteBack !== true) {
+                // Default: display only. The stored conversation title is untouched,
+                // so restoring English brings the original title back.
+                __learnedTitleTranslations.set(rawTitle, zhTitle);
+                __scheduleTitleRefresh();
+                return;
+              }
+              try {
+                const helpers = globalThis.__AGY_ZHCN_ANNOT_HELPERS__;
+                if (helpers && typeof helpers.localAction === "function") {
+                  store.dispatch(helpers.localAction({ cascadeId, annotations: { title: zhTitle } }));
+                }
+                if (typeof updateAnnotationsFn === "function" && helpers && typeof helpers.makeProto === "function") {
+                  updateAnnotationsFn(cascadeId, helpers.makeProto({ title: zhTitle }), true).catch?.(() => {});
+                }
+              } catch (_) {}
+            };
+
+            if (localTry && localTry !== rawTitle && !/[A-Za-z]{4,}/.test(localTry.replace(/\\b(?:Chrome|Google|Gemini|Claude|Antigravity|GitHub|Swarm|MCP|Remotion|CAD|PPT|YouTube|AI|UI|CLI|IDE)\\b/gi, ""))) {
+              applyTitle(localTry);
+            } else if (__canAutoTranslateTitlesRuntime()) {
+              const flightKey = cascadeId + "::" + rawTitle;
+              if (__titleInFlightSet.has(flightKey)) continue;
+              __titleInFlightSet.add(flightKey);
+              __translateAndLearnAsync(rawTitle, { isTitle: true }).then((zhTitle) => {
+                if (zhTitle) applyTitle(zhTitle);
+              }).finally(() => {
+                __titleInFlightSet.delete(flightKey);
+              });
+            }
           }
         }
       } catch (_) {}
@@ -2496,10 +2574,8 @@ export function createRuntimeOverlay(dictionary) {
           stats.translatedTextNodes += 1;
         } else if (
           titleHit === null &&
-          parent.closest?.("[data-testid='conversation-navigator-group-card-header']") &&
-          parent.closest?.("[data-titled='true']") &&
           __canAutoTranslateTitlesRuntime() &&
-          __isEligibleForAutoTranslate(rawVal, parent, true)
+          __isEligibleTitleForAutoTranslate(rawVal, parent)
         ) {
           const leading = rawVal.match(/^\\s*/u)?.[0] ?? "";
           const trailing = rawVal.match(/\\s*$/u)?.[0] ?? "";

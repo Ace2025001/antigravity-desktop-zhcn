@@ -487,11 +487,14 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                 if (request.method === 'POST') {
                     const body = await request.json().catch(() => ({}));
                     const entries = (body && typeof body.entries === 'object' && body.entries) ? body.entries : {};
+                    const titleEntries = (body && typeof body.titles === 'object' && body.titles) ? body.titles : {};
                     let existing = {};
+                    let existingTitles = {};
                     try {
                         const raw = await fsPromises.readFile(dictPath, 'utf8');
                         const parsed = JSON.parse(raw);
                         existing = (parsed && typeof parsed.exact === 'object') ? parsed.exact : {};
+                        existingTitles = (parsed && typeof parsed.titles === 'object') ? parsed.titles : {};
                     } catch (_e) {}
                     let changed = 0;
                     for (const [k, v] of Object.entries(entries)) {
@@ -500,24 +503,40 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                             changed++;
                         }
                     }
+                    for (const [k, v] of Object.entries(titleEntries)) {
+                        if (typeof k === 'string' && typeof v === 'string' && k.trim() && v.trim() && existingTitles[k] !== v) {
+                            existingTitles[k] = v;
+                            changed++;
+                        }
+                    }
                     if (changed > 0) {
                         await fsPromises.mkdir(path.dirname(dictPath), { recursive: true });
                         const tmp = dictPath + '.' + process.pid + '.' + Date.now() + '.tmp';
-                        await fsPromises.writeFile(tmp, JSON.stringify({ schemaVersion: 1, updatedAt: new Date().toISOString(), count: Object.keys(existing).length, exact: existing }, null, 2) + '\\n', 'utf8');
+                        const payload = {
+                            schemaVersion: 1,
+                            updatedAt: new Date().toISOString(),
+                            count: Object.keys(existing).length,
+                            titleCount: Object.keys(existingTitles).length,
+                            exact: existing,
+                            titles: existingTitles
+                        };
+                        await fsPromises.writeFile(tmp, JSON.stringify(payload, null, 2) + '\\n', 'utf8');
                         await fsPromises.rename(tmp, dictPath);
                     }
-                    return new Response(JSON.stringify({ ok: true, changed, total: Object.keys(existing).length }), {
+                    return new Response(JSON.stringify({ ok: true, changed, total: Object.keys(existing).length, titleTotal: Object.keys(existingTitles).length }), {
                         status: 200,
                         headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
                     });
                 }
                 let exact = {};
+                let titles = {};
                 try {
                     const raw = await fsPromises.readFile(dictPath, 'utf8');
                     const parsed = JSON.parse(raw);
                     exact = (parsed && typeof parsed.exact === 'object') ? parsed.exact : {};
+                    titles = (parsed && typeof parsed.titles === 'object') ? parsed.titles : {};
                 } catch (_e) {}
-                return new Response(JSON.stringify({ ok: true, exact }), {
+                return new Response(JSON.stringify({ ok: true, supportsTitleBucket: true, exact, titles }), {
                     status: 200,
                     headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' }
                 });

@@ -91,6 +91,26 @@ export async function readAutoLearnedDict() {
   return {};
 }
 
+export async function readAutoLearnedTitles() {
+  const filePath = getAutoLearnedDictPath();
+  try {
+    const raw = await readFile(filePath, "utf8");
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && parsed.titles && typeof parsed.titles === "object") {
+      const clean = {};
+      for (const [k, v] of Object.entries(parsed.titles)) {
+        if (typeof k === "string" && typeof v === "string" && k.trim() && v.trim()) {
+          clean[k] = v;
+        }
+      }
+      return clean;
+    }
+  } catch {
+    // Return empty dict if file doesn't exist yet or is malformed
+  }
+  return {};
+}
+
 export async function mergeAutoLearnedEntries(newEntries) {
   if (!newEntries || typeof newEntries !== "object") return 0;
   const validEntries = Object.entries(newEntries).filter(
@@ -101,6 +121,7 @@ export async function mergeAutoLearnedEntries(newEntries) {
   const filePath = getAutoLearnedDictPath();
   await mkdir(path.dirname(filePath), { recursive: true });
   const current = await readAutoLearnedDict();
+  const currentTitles = await readAutoLearnedTitles();
   let addedOrUpdated = 0;
   for (const [k, v] of validEntries) {
     if (current[k] !== v) {
@@ -110,16 +131,17 @@ export async function mergeAutoLearnedEntries(newEntries) {
   }
   if (addedOrUpdated === 0) return 0;
 
-  const payload = JSON.stringify(
-    {
-      schemaVersion: 1,
-      updatedAt: new Date().toISOString(),
-      count: Object.keys(current).length,
-      exact: current,
-    },
-    null,
-    2
-  );
+  const payloadObj = {
+    schemaVersion: 1,
+    updatedAt: new Date().toISOString(),
+    count: Object.keys(current).length,
+    exact: current,
+  };
+  if (Object.keys(currentTitles).length > 0) {
+    payloadObj.titleCount = Object.keys(currentTitles).length;
+    payloadObj.titles = currentTitles;
+  }
+  const payload = JSON.stringify(payloadObj, null, 2);
   const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
   try {
     await writeFile(tempPath, `${payload}\n`, "utf8");
