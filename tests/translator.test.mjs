@@ -4241,6 +4241,111 @@ test("对话标题独立规则：带后缀/域名/产品名照常翻译，分桶
     assert.equal(typeof patchCustomSchemeSource, "function");
     assert.equal(typeof readAutoLearnedTitles, "function");
     assert.equal(typeof mergeAutoLearnedEntries, "function");
+    // 5. 验证无 .md/.com 修饰的常规英文标题（如 X Operations Skill Optimization）同样通过并翻译
+    await sb.__AGY_ZHCN_AUTO_TRANSLATE__("X Operations Skill Optimization", { isTitle: true });
+    assert.equal(sb.__AGY_ZHCN_LOOKUP__("X Operations Skill Optimization"), "译_X Operations Skill Optimization");
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
+  }
+});
+
+test("冷启动/Ctrl+R 重载竞态：先加载已保存标题词典再扫描摘要并重扫 DOM", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+    const overlay = createRuntimeOverlay(current);
+    const sentQueries = [];
+    const spanTextNode = {
+      nodeType: 3,
+      nodeValue: "X Operations Skill Optimization",
+      parentElement: null,
+    };
+    const spanEl = {
+      nodeType: 1,
+      tagName: "SPAN",
+      classList: { contains: (c) => c === "truncate" || c === "inline-block" },
+      getAttribute: () => null,
+      closest: (sel) => {
+        if (sel.includes("conversation-row-'") || sel.includes("data-cascade-id")) return {
+          nodeType: 1,
+          getAttribute: (k) => (k === "data-cascade-id" ? "conv-cold" : k === "data-testid" ? "conversation-row-sidebar" : null),
+          closest: () => null,
+          parentElement: null,
+          querySelector: () => null,
+        };
+        if (sel === ".truncate") return spanEl;
+        return null;
+      },
+      querySelector: () => null,
+      parentElement: null,
+    };
+    spanTextNode.parentElement = spanEl;
+
+    const fakeDoc = {
+      readyState: "complete",
+      documentElement: {
+        nodeType: 1,
+        lang: "en",
+        dataset: {},
+        closest: () => null,
+        querySelector: () => null,
+        getAttribute: () => null,
+        hasAttribute: () => false,
+        setAttribute() {},
+      },
+      addEventListener() {},
+      createTreeWalker: () => {
+        let step = 0;
+        return {
+          nextNode() {
+            step += 1;
+            return step === 1 ? spanTextNode : null;
+          },
+        };
+      },
+    };
+    const fakeStore = {
+      getState: () => ({
+        trajectorySummaries: {
+          summaries: { "conv-cold": { summary: "X Operations Skill Optimization", annotations: {} } },
+        },
+      }),
+      subscribe: () => () => {},
+    };
+    const sb = {
+      window: { location: { protocol: "https:" } },
+      document: fakeDoc,
+      Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 },
+      NodeFilter: { SHOW_ELEMENT: 1, SHOW_TEXT: 4 },
+      MutationObserver: class { observe() {} },
+      fetch: async (url) => {
+        const u = String(url);
+        if (u === "agy-zhcn://settings") {
+          await new Promise((r) => setTimeout(r, 30));
+          return { ok: true, json: async () => ({ onlineTranslate: false, titleAutoTranslate: true, titleWriteBack: false }) };
+        }
+        if (u === "agy-zhcn://manual-titles") return { ok: true, json: async () => ({ ok: true, ids: [], titles: [] }) };
+        if (u === "agy-zhcn://auto-dict") {
+          await new Promise((r) => setTimeout(r, 30));
+          return { ok: true, json: async () => ({ ok: true, supportsTitleBucket: true, exact: {}, titles: { "X Operations Skill Optimization": "X 操作技能优化" } }) };
+        }
+        if (u.startsWith("agy-zhcn://translate?")) {
+          sentQueries.push(u);
+          return { ok: true, json: async () => ({ ok: true, translated: "不应重复联网" }) };
+        }
+        return { ok: false };
+      },
+      setTimeout, clearTimeout, queueMicrotask, Set, Map, WeakMap, RegExp, Object, Array, String, Number, Boolean, Math, Date, Promise, URLSearchParams,
+    };
+    sb.globalThis = sb;
+    new vm.Script(overlay).runInContext(vm.createContext(sb));
+    sb.__AGY_ZHCN_BIND_TITLE_WATCHER__(fakeStore, null);
+    await new Promise((r) => setTimeout(r, 150));
+
+    assert.equal(spanTextNode.nodeValue, "X 操作技能优化", "设置与缓存字典就绪后应自动回填已保存标题");
+    assert.equal(sentQueries.length, 0, "已持久化的标题不应在重扫阶段重复发起联网翻译");
   } finally {
     if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
     else process.env.AGY_LANGUAGE_PACK = savedPack;
