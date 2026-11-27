@@ -1940,7 +1940,7 @@ export function createRuntimeOverlay(dictionary) {
     const hit = __learnedTitleTranslations.get(core) ?? __learnedUiTranslations.get(core);
     return typeof hit === "string" && hit !== core ? leading + hit + trailing : null;
   }
-  async function __loadZhcnSettings() {
+  async function __loadZhcnSettings({ rescan = true } = {}) {
     try {
       if (typeof fetch === "function") {
         const [resp, manualResp] = await Promise.all([
@@ -1962,7 +1962,7 @@ export function createRuntimeOverlay(dictionary) {
     if (!__zhcnSettings || typeof __zhcnSettings !== "object") {
       __zhcnSettings = { onlineTranslate: false, titleAutoTranslate: false, titleWriteBack: false };
     }
-    if (__isTitleAutoTranslateEnabled(__zhcnSettings) && typeof __rescanConvTitlesFn === "function") {
+    if (rescan && __isTitleAutoTranslateEnabled(__zhcnSettings) && typeof __rescanConvTitlesFn === "function") {
       try { __rescanConvTitlesFn(); } catch (_) {}
     }
     return __zhcnSettings;
@@ -2915,8 +2915,18 @@ export function createRuntimeOverlay(dictionary) {
     hookNativeContextMenu();
     translateTree(document.documentElement);
     // Persisted title translations are only applied while title auto-translation is on.
-    __loadZhcnSettings().then((settings) => {
-      if (__isTitleAutoTranslateEnabled(settings) || __isUiOnlineTranslateEnabled(settings)) __loadPersistedAutoDict();
+    // Wait for persisted dictionary before rescanning DOM and summaries so cached titles
+    // apply immediately without duplicate remote translation requests.
+    __loadZhcnSettings({ rescan: false }).then(async (settings) => {
+      if (__isTitleAutoTranslateEnabled(settings) || __isUiOnlineTranslateEnabled(settings)) {
+        await __loadPersistedAutoDict();
+      }
+      if (typeof document !== "undefined" && document.documentElement) {
+        translateTree(document.documentElement);
+      }
+      if (__isTitleAutoTranslateEnabled(settings) && typeof __rescanConvTitlesFn === "function") {
+        try { __rescanConvTitlesFn(); } catch (_) {}
+      }
     });
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
