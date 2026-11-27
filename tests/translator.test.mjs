@@ -2568,10 +2568,27 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     }
     assert.equal(eligible("Please refactor the build script", makeEl("span", null, makeEl("div", "x", null, { class: "xterm" })), true), false);
     assert.equal(eligible("Analyzing Doubao Video Script with Gemini", null, true), true, "纯英文会话标题允许自动翻译");
-    // 文件名、链接、路径、行内代码不论出现在标题中何处都不联网
+    // 界面联网补充（isTitle=false）：文件名、链接、路径、行内代码一律不联网
     for (const s of ["Close package-usage.txt", "Opens external link: https://127.0", "`/Applications/Ant", "Open report in /tmp/out", "Edited silent-auto-follow.vbs"]) {
-      assert.equal(eligible(s, null, true, false), false, s + " 不得联网");
+      assert.equal(eligible(s, null, false, false), false, s + " 界面文本不得联网");
     }
+    // 对话标题独立规则（isTitle=true）：不与界面防误翻限令混用，带文件名、域名或产品词的标题一律放行，仅保护消息/输入框/个人卡片容器与未命名占位
+    for (const s of [
+      "X Operations Skill Optimization",
+      "X Operations Skill Optimization (SKILL.md)",
+      "Growing on x.com Strategy",
+      "Antigravity Title Issue",
+      "Close package-usage.txt",
+      "Hi",
+    ]) {
+      assert.equal(sandbox.__AGY_ZHCN_IS_TITLE_ELIGIBLE__(s, null), true, s + " 对话标题应按独立规则放行");
+      assert.equal(eligible(s, null, true, false), true, s + " isTitle=true 应委托独立标题规则");
+    }
+    for (const placeholder of ["Conversation a1b2c3d4", "5b662c5a-0395-48a7-a040-9de6afbbd3af", "问候和你好", "A"]) {
+      assert.equal(sandbox.__AGY_ZHCN_IS_TITLE_ELIGIBLE__(placeholder, null), false, placeholder + " 占位或已含中文/单字符跳过");
+    }
+    const { prepared: prepTitle, placeholders: titlePh } = sandbox.__AGY_ZHCN_PREPARE_ANTI_MT__("X Operations Skill Optimization (SKILL.md)", true);
+    assert.ok(titlePh.includes("SKILL.md") && !prepTitle.includes("SKILL.md"), "标题送翻前应占位保护 SKILL.md 原词");
   }
 
   // 组合标签：变量部分查词库后套句式，旧的联网机翻结果不再覆盖
@@ -2600,7 +2617,7 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     assert.equal(isObsoleteLearnedKey("Fixing bugs, 2 turns"), true);
     assert.equal(isObsoleteLearnedKey("Copied sign-in link to clipboard"), false);
     assert.equal(isObsoleteLearnedKey("Better Stack"), true, "品牌名的旧机翻要丢弃");
-    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Grafana Cloud", null, true, false), false, "品牌名不联网");
+    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Grafana Cloud", null, false, false), false, "界面文本中的品牌名不联网");
     // 账号卡片（头像 + 邮箱）里的姓名不联网；用虚构姓名测试，公开仓库不写真实个人信息
     {
       const card = {
@@ -2881,10 +2898,10 @@ test("Case 148: Paid Pro 模型徽章汉化为“付费 Pro”与第三方插件
     new vm.Script(overlay).runInContext(vm.createContext(sandbox));
     const isEligible = sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__;
 
-    // 连字符开源项目名/作用域包名不允许送去联网
+    // 连字符开源项目名/作用域包名在界面补充中不允许送去联网
     assert.equal(isEligible("agy-fast", null, false), false);
-    assert.equal(isEligible("agy-capsule", null, true), false);
-    assert.equal(isEligible("@org/custom-plugin", null, true), false);
+    assert.equal(isEligible("agy-capsule", null, false), false);
+    assert.equal(isEligible("@org/custom-plugin", null, false), false);
 
     // 插件卡片标题区（.font-medium）和普通说明区（.text-muted-foreground）都不送去联网翻译
     const cardTitleEl = { closest: (sel) => (sel === "[data-testid='customization-card']" || sel === ".font-medium" ? {} : null) };
@@ -4110,5 +4127,122 @@ test("左上角 Antigravity 菜单合并为三项极简入口，并可在旧补�
       timers.forEach((id) => clearTimeout(id));
       timers.clear();
     }
+  }
+});
+
+test("对话标题独立规则：带后缀/域名/产品名照常翻译，分桶存储不污染 UI，覆盖 externalSummaries 且失败不永久锁死", async () => {
+  const savedPack = process.env.AGY_LANGUAGE_PACK;
+  delete process.env.AGY_LANGUAGE_PACK;
+  try {
+    const current = await loadDomTranslations();
+    const overlay = createRuntimeOverlay(current);
+    const postedDictPayloads = [];
+    let failFirst = true;
+    const diskStore = {
+      exact: {},
+      titles: { "Saved External Chat": "已保存的项目外对话" },
+    };
+    const sentQueries = [];
+    const listeners = [];
+    const fakeStore = {
+      state: {
+        trajectorySummaries: {
+          summaries: {
+            "conv-x": { summary: "X Operations Skill Optimization (SKILL.md)", annotations: {} },
+            "conv-short": { summary: "Antigravity Title Bug", annotations: {} },
+            "conv-manual": { annotations: { title: "Manual English Title" } },
+          },
+          externalSummaries: {
+            "conv-ext": { summary: "Growing on x.com", annotations: {} },
+          },
+        },
+      },
+      getState() { return this.state; },
+      subscribe(fn) { listeners.push(fn); return () => {}; },
+    };
+
+    const sb = {
+      window: { location: { protocol: "https:" } },
+      document: { readyState: "loading", documentElement: { lang: "en" }, addEventListener() {} },
+      Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 },
+      MutationObserver: class { observe() {} },
+      fetch: async (url, opts) => {
+        const u = String(url);
+        if (u === "agy-zhcn://settings") {
+          return { ok: true, json: async () => ({ onlineTranslate: false, titleAutoTranslate: true, titleWriteBack: false }) };
+        }
+        if (u === "agy-zhcn://manual-titles") {
+          return { ok: true, json: async () => ({ ok: true, ids: ["conv-manual"], titles: ["Manual English Title"] }) };
+        }
+        if (u === "agy-zhcn://auto-dict") {
+          if (opts?.method === "POST") {
+            const payload = JSON.parse(opts.body);
+            postedDictPayloads.push(payload);
+            Object.assign(diskStore.exact, payload.entries || {});
+            Object.assign(diskStore.titles, payload.titles || {});
+            return { ok: true, json: async () => ({ ok: true }) };
+          }
+          return { ok: true, json: async () => ({ ok: true, supportsTitleBucket: true, exact: diskStore.exact, titles: diskStore.titles }) };
+        }
+        if (u.startsWith("agy-zhcn://translate?")) {
+          const params = new URLSearchParams(u.slice("agy-zhcn://translate?".length));
+          const kind = params.get("kind");
+          const q = params.get("q") || "";
+          sentQueries.push({ kind, q });
+          if (q.includes("Title Bug") && failFirst) {
+            failFirst = false;
+            return { ok: false };
+          }
+          return { ok: true, json: async () => ({ ok: true, translated: "译_" + q }) };
+        }
+        return { ok: false };
+      },
+      setTimeout,
+      clearTimeout,
+      Set, Map, WeakMap, RegExp, Object, Array, String, Number, Boolean, Math, Date, Promise,
+      URLSearchParams,
+    };
+    sb.globalThis = sb;
+    new vm.Script(overlay).runInContext(vm.createContext(sb));
+    await sb.__AGY_ZHCN_LOAD_SETTINGS__();
+    sb.__AGY_ZHCN_BIND_TITLE_WATCHER__(fakeStore, null);
+    await new Promise((r) => setTimeout(r, 80));
+
+    // 1. SKILL.md、x.com（externalSummaries）均应通过 kind=title 翻译且原词占位不被译乱，手动标题不动
+    assert.ok(!sentQueries.some((x) => x.q.includes("Manual English Title")), "手动改名标题绝对不能送去翻译");
+    assert.ok(sentQueries.some((x) => x.kind === "title" && x.q.includes("X Operations Skill Optimization")), "带 SKILL.md 的对话标题应正常翻译");
+    assert.ok(sentQueries.some((x) => x.kind === "title" && x.q.includes("Growing on")), "externalSummaries 项目外对话标题应正常翻译");
+    const zhSkillTitle = sb.__AGY_ZHCN_LOOKUP__("X Operations Skill Optimization (SKILL.md)");
+    assert.match(zhSkillTitle || "", /SKILL\.md/, "译后标题应原样保留 SKILL.md");
+    assert.equal(sb.__AGY_ZHCN_LOOKUP__("Growing on x.com")?.includes("x.com"), true, "译后标题应原样保留 x.com");
+
+    // 2. 等待持久化队列落盘，验证标题只写入 titles 桶且不污染 exact（UI）桶
+    await new Promise((r) => setTimeout(r, 400));
+    assert.ok(postedDictPayloads.length >= 1);
+    assert.equal(Object.keys(diskStore.exact).length, 0, "对话标题不得混入 UI 的 exact 字典中");
+    assert.ok(diskStore.titles["X Operations Skill Optimization (SKILL.md)"], "对话标题应存入独立 titles 桶");
+
+    // 3. 验证单次失败后不再永久锁死：跳过冷却窗口重扫后可成功恢复
+    assert.equal(sb.__AGY_ZHCN_LOOKUP__("Antigravity Title Bug"), undefined, "首次超时失败时未译出");
+    const origSbDate = sb.Date;
+    try {
+      const fakeNow = Date.now() + 20000;
+      sb.Date = { now: () => fakeNow };
+      for (const fn of listeners) fn();
+      await new Promise((r) => setTimeout(r, 400));
+      assert.match(sb.__AGY_ZHCN_LOOKUP__("Antigravity Title Bug") || "", /^译_/, "偶发超时失败后应允许重试并恢复汉化");
+    } finally {
+      sb.Date = origSbDate;
+    }
+
+    // 4. 验证 patcher.mjs 与 auto-learned-dict.mjs 独立标题桶接口导出就绪
+    const { patchCustomSchemeSource } = await import("../src/lib/patcher.mjs");
+    const { readAutoLearnedTitles, mergeAutoLearnedEntries } = await import("../src/lib/auto-learned-dict.mjs");
+    assert.equal(typeof patchCustomSchemeSource, "function");
+    assert.equal(typeof readAutoLearnedTitles, "function");
+    assert.equal(typeof mergeAutoLearnedEntries, "function");
+  } finally {
+    if (savedPack === undefined) delete process.env.AGY_LANGUAGE_PACK;
+    else process.env.AGY_LANGUAGE_PACK = savedPack;
   }
 });
