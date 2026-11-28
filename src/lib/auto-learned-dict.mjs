@@ -10,9 +10,21 @@ export const AUTO_LEARNED_DICT_FILENAME = "auto-learned-translations.json";
 // Keep in sync with __isObsoleteLearnedKey in translator.mjs (runtime overlay).
 export const OBSOLETE_LEARNED_KEY_PATTERNS = [
   /^(?:Remove shortcut|Shortcut)\s+\S+\s+for\s+/,
+  /^Add\s+shortcut\s+for\s+/,
   /^Install\s+\S/,
   /^Reset\s+.+\s+to\s+default$/,
   /,\s+\d+\s+turns?$/,
+  /^Waiting\s+for\s+.+?\s+timer(?:,|\s*\u00b7|\s*·)/i,
+  /^.+?\s+timer:\s*Timer\s+has\s+expired$/i,
+  /^No\s+more\s+older\s+messages,\s*showing\s+\d+\s+of\s+\d+$/i,
+  /^(?:Adding\.\.\.\s+\S|Plugin\s+installed:\s+\S)/,
+  /^Added\s+(?:Chrome DevTools|[A-Z][A-Za-z0-9 .+-]{1,40})$/,
+  /^(?:failed to get load code assist response:|This service has been disabled in this account for violation of Terms of Service)/i,
+  /(?:width|height|max-width|min-width|display|grid-template|margin|padding|border-radius|gap)\s*:/i,
+  /^(?:application|text|image|audio|video|font|multipart)\/[a-z0-9.+-]+$/i,
+  /\b(?:Set|Get|Remove|New|Add|Clear|Copy|Move|Test|Invoke|Start|Stop|Write|Read)-[A-Z][A-Za-z0-9]+\b|\bEnv:[A-Za-z0-9_]+\b/,
+  /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+\s+[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/,
+  /^[（(][A-Za-z0-9\s_-]+$/u,
   /^Thinking\s+effort$/i,
   /^GitHub\s+Release\s+/i,
   /^Load(?:ing)?\s+older\s+messages/i,
@@ -45,6 +57,8 @@ export const KEEP_ORIGINAL_NAMES = [
   "Atlassian Teamwork Graph CLI", "PandaDoc", "Base44", "Intercom", "Mobbin", "Bigin", "Browserbase",
   "Granola", "Stripe", "Wix", "Semrush", "Context7", "Cloudflare", "CodeRabbit", "Firebase", "WordPress",
   "Gmail", "Gemini API", "monday.com", "Science", "Robotics",
+  "Structural Biology", "Scientific Literature", "Science Overview", "Midpage Legal Research",
+  "Descrybe Legal Engine", "Kling AI", "Adspirer Marketing Analytics", "Passim AI", "Orca Security",
   "Google AI Pro", "Google AI Plus", "Google AI Ultra", "Google AI Free", "Thinking effort"
 ];
 const KEEP_ORIGINAL_SET = new Set(KEEP_ORIGINAL_NAMES);

@@ -215,6 +215,22 @@ export function translateDynamicDurationText(normalizedCore, lookupFn) {
     var d7 = formatDurationToChinese(m[1]);
     return d7 + (d7.endsWith("内") ? "过期" : "后过期");
   }
+  m = normalizedCore.match(/^Waiting for (.+?) timer,\s*(\d+)\s*tasks?\s*running$/i);
+  if (m && /\d/.test(m[1])) {
+    return "正在等待 " + formatDurationToChinese(m[1]) + "定时器，" + m[2] + " 个任务运行中";
+  }
+  m = normalizedCore.match(/^Waiting for (.+?) timer\s*(?:\u00b7|·)\s*(.+?)\s+left$/i);
+  if (m && /\d/.test(m[1]) && /\d/.test(m[2])) {
+    return "正在等待 " + formatDurationToChinese(m[1]) + "定时器 · 剩余 " + formatDurationToChinese(m[2]);
+  }
+  m = normalizedCore.match(/^(.+?) timer:\s*Timer has expired$/i);
+  if (m && /\d/.test(m[1])) {
+    return formatDurationToChinese(m[1]) + "定时器：定时器已到期";
+  }
+  m = normalizedCore.match(/^No more older messages,\s*showing\s*(\d+)\s*of\s*(\d+)$/i);
+  if (m) {
+    return "没有更多早期消息，已显示 " + m[1] + " / " + m[2] + " 条";
+  }
   m = normalizedCore.match(/^Select (project|model), current:\s*(.+)$/);
   if (m) {
     var cur = m[2];
@@ -1601,6 +1617,29 @@ export function createRuntimeOverlay(dictionary) {
       const action = __lookup(m[3]);
       if (action !== null) return leading + (m[1] === "Shortcut" ? "“" + action + "”的快捷键 " + m[2] : "删除“" + action + "”的快捷键 " + m[2]) + trailing;
     }
+    m = normalizedCore.match(/^Add shortcut\\s+for\\s+(.+)$/);
+    if (m) {
+      const action = __lookup(m[1]);
+      if (action !== null) return leading + "为“" + action + "”添加快捷键" + trailing;
+    }
+    m = normalizedCore.match(/^Adding\\.\\.\\.\\s+([A-Z0-9][A-Za-z0-9 .+-]{1,40})$/);
+    if (m && !/[.]/.test(m[1])) {
+      const nameZh = __PROTECTED_BRAND_SET.has(m[1]) ? m[1] : (__lookup(m[1]) ?? m[1]);
+      return leading + "正在添加 " + nameZh + "..." + trailing;
+    }
+    m = normalizedCore.match(/^Added\\s+(Chrome DevTools|[A-Z][A-Za-z0-9 .+-]{1,40})$/);
+    if (m && !/[.]/.test(m[1])) {
+      const nameZh = __PROTECTED_BRAND_SET.has(m[1]) ? m[1] : (__lookup(m[1]) ?? m[1]);
+      return leading + "已添加 " + nameZh + trailing;
+    }
+    m = normalizedCore.match(/^Plugin installed:\\s+(.{1,48})$/);
+    if (m && !/[\\\\/]/.test(m[1])) {
+      const pName = m[1].trim();
+      const nameZh = __PROTECTED_BRAND_SET.has(pName) ? pName : (__lookup(pName) ?? pName);
+      return leading + "已安装插件：" + nameZh + trailing;
+    }
+    m = normalizedCore.match(/^failed to get load code assist response:\\s*error getting token source:\\s*You are not logged into Antigravity\\.?$/i);
+    if (m) return leading + "获取代码辅助响应失败：无法获取令牌来源——你尚未登录 Antigravity。" + trailing;
     m = normalizedCore.match(/^Reset\\s+(.+?)\\s+to\\s+default$/);
     if (m) {
       const label = __lookup(m[1]);
@@ -2027,6 +2066,10 @@ export function createRuntimeOverlay(dictionary) {
     if (/^--[a-z0-9-]+$/i.test(t) || /^[.#][A-Za-z0-9_-]+(?:\\s+[.#]?[A-Za-z0-9_-]+)*$/.test(t) || /^["'].*["']$/.test(t)) return false;
     if (/[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+#\\d+/.test(t)) return false;
     if (/^Searching\\s+(?:marketplace\\s+for\\s+|github\\s+|["'\\x60])/i.test(t) || /^Searching\\s+.*(?:"|\\bOR\\b)/i.test(t)) return false;
+    if (/^(?:application|text|image|audio|video|font|multipart)\\/[a-z0-9.+-]+$/i.test(t)) return false;
+    if (/(?:width|height|max-width|min-width|display|grid-template|margin|padding|border-radius|gap)\\s*:/i.test(t) || /^(?=.*;)[a-z-]+:[^;]+(?:;[a-z-]+:[^;]*)+$/i.test(t)) return false;
+    if (/\\b(?:Set|Get|Remove|New|Add|Clear|Copy|Move|Test|Invoke|Start|Stop|Write|Read)-[A-Z][A-Za-z0-9]+\\b|\\bEnv:[A-Za-z0-9_]+\\b/.test(t)) return false;
+    if (/^[a-z][a-z0-9]*(?:-[a-z0-9]+)+\\s+[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/.test(t) || /^[（(][A-Za-z0-9\\s_-]+$/u.test(t)) return false;
     if (__PROTECTED_BRAND_SET.has(t)) return false;
     // Anything carrying a file name, link, path or inline code is (or quotes)
     // user content: never send it, wherever it appears in the string.
@@ -2187,9 +2230,21 @@ export function createRuntimeOverlay(dictionary) {
     /^Searching\\s+(?:marketplace\\s+for\\s+|github\\s+|["'\\x60])/i,
     /^Searching\\s+.*(?:"|\\bOR\\b)/i,
     /^(?:Remove shortcut|Shortcut)\\s+\\S+\\s+for\\s+/,
+    /^Add\\s+shortcut\\s+for\\s+/,
     /^Install\\s+\\S/,
     /^Reset\\s+.+\\s+to\\s+default$/,
     /,\\s+\\d+\\s+turns?$/,
+    /^Waiting\\s+for\\s+.+?\\s+timer(?:,|\\s*\\u00b7|\\s*·)/i,
+    /^.+?\\s+timer:\\s*Timer\\s+has\\s+expired$/i,
+    /^No\\s+more\\s+older\\s+messages,\\s*showing\\s+\\d+\\s+of\\s+\\d+$/i,
+    /^(?:Adding\\.\\.\\.\\s+\\S|Plugin\\s+installed:\\s+\\S)/,
+    /^Added\\s+(?:Chrome DevTools|[A-Z][A-Za-z0-9 .+-]{1,40})$/,
+    /^(?:failed to get load code assist response:|This service has been disabled in this account for violation of Terms of Service)/i,
+    /(?:width|height|max-width|min-width|display|grid-template|margin|padding|border-radius|gap)\\s*:/i,
+    /^(?:application|text|image|audio|video|font|multipart)\\/[a-z0-9.+-]+$/i,
+    /\\b(?:Set|Get|Remove|New|Add|Clear|Copy|Move|Test|Invoke|Start|Stop|Write|Read)-[A-Z][A-Za-z0-9]+\\b|\\bEnv:[A-Za-z0-9_]+\\b/,
+    /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+\\s+[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/,
+    /^[（(][A-Za-z0-9\\s_-]+$/u,
     /[a-z][a-z0-9+.-]*:\\/\\/|\\x60|(?:^|[\\s(])(?:~|\\.{1,2})?\\/[\\w.-]|[A-Za-z]:\\\\/i,
     /[\\w-]+\\.(?:txt|md|log|json|ya?ml|toml|lock|vbs|bat|cmd|ps1|sh|py|js|mjs|cjs|ts|tsx|jsx|csv|pdf|png|jpe?g|gif|webp|svg|zip|exe|dll|asar|pbtxt)\\b/i
   ];
@@ -2785,8 +2840,7 @@ export function createRuntimeOverlay(dictionary) {
         });
         if (!isAppDropdown) continue;
         const lastBtn = buttons[buttons.length - 1];
-        const ver = globalThis.__AGY_ZHCN_PACK_VERSION__ || "";
-        const label = ver ? ("汉化中心 v" + ver) : "汉化中心";
+        const label = "汉化中心";
         const row = (lastBtn.parentElement && lastBtn.parentElement !== popup)
           ? lastBtn.parentElement.cloneNode(true)
           : lastBtn.cloneNode(true);
@@ -3041,7 +3095,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   let sourceText = sourceBuffer.toString("utf8");
   const resolvedPackVersion = (typeof dictionary?.packVersion === "string" && dictionary.packVersion.trim()) || DEFAULT_PACK_VERSION;
 
-  // 左上角 Antigravity 下拉菜单：版本、检查更新、汉化中心 v...
+  // 左上角 Antigravity 下拉菜单：版本、检查更新、汉化中心（不带版本号，避免热更新或自动更新后与右下角面板版本显示不一致）
   sourceText = fastAnchorReplace(
     sourceText,
     '"Check for Updates"',
@@ -3049,7 +3103,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     (_, objVar, arrVar) =>
       `${objVar}?.appVersion&&${arrVar}.push({label:\`版本 \${${objVar}.appVersion}\`,onClick:()=>{},nonSelectable:!0});` +
       `${objVar}?.checkForUpdates&&${arrVar}.push({label:"检查更新",onClick:()=>{${objVar}.checkForUpdates?.()}});` +
-      `${arrVar}.push({label:"汉化中心 v${resolvedPackVersion}",onClick:()=>{globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__?.()}});` +
+      `${arrVar}.push({label:"汉化中心",onClick:()=>{globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__?.()}});` +
       `return ${arrVar}`
   );
 

@@ -14065,7 +14065,22 @@
     "You have exhausted your capacity on this model.": "你在此模型上的可用容量已用尽。",
     "You have exhausted your quota on this model.": "你在此模型上的配额已用尽。",
     "Your organization has run out of Antigravity funds. Prompt generation is paused until your administrator adds funds.": "你的组织 Antigravity 账户余额已用尽。管理员充值前将暂停生成回复。",
-    "Your quota for this model has been reached.": "你在此模型上的配额已达上限。"
+    "Your quota for this model has been reached.": "你在此模型上的配额已达上限。",
+    "Not available on your plan": "你当前的方案暂不可用",
+    ", not available, opens in your browser": "，当前不可用，将在浏览器中打开",
+    "(opens in your browser)": "（在浏览器中打开）",
+    "(opens in a new tab)": "（在新标签页中打开）",
+    "(opens in external browser)": "（在外部浏览器中打开）",
+    "Permissions cannot be changed while the agent is running": "智能体运行时无法更改权限",
+    "Modified in": "修改于",
+    "This service has been disabled in this account for violation of Terms of Service. Please submit an appeal to continue using this product.": "此账号因违反服务条款已被停用本服务。请提交申诉以继续使用本产品。",
+    "Open Chrome DevTools": "打开 Chrome DevTools",
+    "Toggle Chrome DevTools": "切换 Chrome DevTools",
+    "Close Swarm": "关闭蜂群",
+    "Close Review": "关闭审查",
+    "Artifact Viewer header": "工件查看器标题栏",
+    "Edit project name": "编辑项目名称",
+    "Close Homepage Layout Preview": "关闭主页布局预览"
   },
   "patterns": [
     {

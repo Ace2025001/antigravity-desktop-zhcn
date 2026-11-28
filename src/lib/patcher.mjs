@@ -210,7 +210,7 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
             if (!appSub || !Array.isArray(appSub.items)) return;
             const item = appSub.items.find((it) => it && it.id === 'agy-zhcn-pack-center');
             if (item) {
-                item.label = '汉化中心 v' + newVer;
+                item.label = '汉化中心';
                 electron_1.Menu.setApplicationMenu(appMenu);
             }
         } catch (_muErr) {}
@@ -771,12 +771,9 @@ const HANDLER_REPLACEMENT = `${HANDLER_ANCHOR}
                         return;
                     }
                     if (appSub.items.some((it) => it && it.id === 'agy-zhcn-pack-center')) return;
-                    const hook = await _zhReadPackHook();
-                    const localVer = await _zhResolveLocalVer(hook, '');
                     const checkIdx = appSub.items.findIndex((it) => it && (it.id === 'check-for-updates' || it.label === 'Check for Updates' || it.label === '检查更新'));
                     const insertPos = checkIdx >= 0 ? checkIdx + 1 : Math.min(2, appSub.items.length);
-                    const centerLabel = localVer ? ('汉化中心 v' + localVer) : '汉化中心';
-                    appSub.insert(insertPos, new electron_1.MenuItem({ id: 'agy-zhcn-pack-center', label: centerLabel, click: () => { _zhOpenMacPanel('update').catch(() => {}); } }));
+                    appSub.insert(insertPos, new electron_1.MenuItem({ id: 'agy-zhcn-pack-center', label: '汉化中心', click: () => { _zhOpenMacPanel('update').catch(() => {}); } }));
                     electron_1.Menu.setApplicationMenu(appMenu);
                 } catch (_macMenuErr) {}
             };
