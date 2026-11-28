@@ -4447,7 +4447,8 @@ test("左上角汉化中心兼容 2.36.0 换行构建，且在未命中编译期
   sb.__AGY_ZHCN_OPEN_PACK_PANEL__ = () => { openedPanel += 1; };
 
   assert.equal(appended.length, 1, "未命中编译期注入时，运行时应自动往 Antigravity 下拉菜单补挂汉化中心");
-  assert.equal(clonedSpan.textContent, "汉化中心 v3.1.9");
+  assert.equal(clonedSpan.textContent, "汉化中心 v" + sb.__AGY_ZHCN_PACK_VERSION__);
+  assert.match(clonedSpan.textContent, /^汉化中心 v\d+\.\d+\.\d+/);
   assert.equal(clonedBtn.getAttribute("data-agy-zhcn-pack-menu"), "1");
   assert.equal(clonedBtn.attrs.tabindex, undefined);
 

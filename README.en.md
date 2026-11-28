@@ -4,7 +4,7 @@
 [![Downloads](https://img.shields.io/github/downloads/Ace2025001/antigravity-desktop-zhcn/total)](https://github.com/Ace2025001/antigravity-desktop-zhcn/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%20x64%20%7C%20macOS%20Apple%20Silicon-blue)](#supported-platforms)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tested client](https://img.shields.io/badge/tested%20client-2.35.2-brightgreen)](#supported-platforms)
+[![Tested client](https://img.shields.io/badge/tested%20client-2.36.0-brightgreen)](#supported-platforms)
 
 A **Simplified Chinese (zh-CN) language pack / Chinese patch** for the **Google Antigravity Desktop** client. Works on Windows x64 and Apple Silicon Macs, runs straight from the extracted folder, re-localizes right after you click “Restart to update” in the client, and restores English anytime.
 
@@ -57,7 +57,7 @@ The first run asks setup questions; press Enter to accept the recommended values
 
 | Item | Notes |
 |---|---|
-| Windows x64 | Tested on Antigravity Desktop 2.32.2, 2.33.0, 2.34.0, 2.35.1 and 2.35.2; follows client updates automatically |
+| Windows x64 | Tested on Antigravity Desktop 2.32.2, 2.33.0, 2.34.0, 2.35.1, 2.35.2 and 2.36.0; follows client updates automatically |
 | Apple Silicon macOS | Keeps the official app and builds a locally signed Chinese copy; Intel Macs not verified |
 | Scope | Antigravity Desktop client only — **not** the Antigravity IDE extension |
 | Compatibility | The client's file structure is checked before every run; new versions are adapted automatically when possible, otherwise it stops and tells you |
