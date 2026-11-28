@@ -15,6 +15,8 @@
     "Actor logic '\u0000' not implemented in machine '\u0000'",
     "Actor terminated without satisfying predicate",
     "Actor with system ID '\u0000' already exists.",
+    "Add not supported on this collection",
+    "Add not supported on this list",
     "Add support for delim type '",
     "Added \u0000.",
     "Additional Wedge Space",

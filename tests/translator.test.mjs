@@ -3600,6 +3600,19 @@ test("Case 156: 插件市场全量目录/截断/Gemini 2.9.0 与 chrome-devtools
       translateDictionaryValue("Add a platform and period if you want, for example last 7 days.", current),
       null
     );
+    assert.equal(
+      translateDictionaryValue("Add a button to my sidebar", current),
+      null,
+      "未收录的英文短句不得被 ^Add (.+) 截断成半中半英"
+    );
+    assert.equal(
+      translateDictionaryValue("Adding a new feature to chat", current),
+      null,
+      "未收录的英文短句不得被 ^Adding (.+) 截断成半中半英"
+    );
+    assert.equal(translateDictionaryValue("Build me a web app", current), "帮我构建一个网页应用");
+    assert.equal(translateDictionaryValue("Add a Gemini feature to my app", current), "为我的应用添加 Gemini 功能");
+    assert.equal(translateDictionaryValue("Bring over my setup from other Agentic Developer Tools", current), "从其他 AI 开发工具迁移我的配置");
 
     // 2. ClickUp 与全部 28 个新增/改版插件市场卡片（全文与截断态）均完整汉化
     const clickUpFull = "Connect Antigravity to your ClickUp workspace — manage tasks, track time, and collaborate with your team without switching context.";
