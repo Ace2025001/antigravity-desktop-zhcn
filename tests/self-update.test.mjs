@@ -300,7 +300,7 @@ test("第一层版本曝光：汉化设置可查看当前版本、已适配最�
     assert.equal(readMaxCompatibleAppVersion(coreDir), "2.23.1");
     await writeFile(path.join(coreDir, "package.json"), JSON.stringify({ version: "3.1.7", maxSupportedClientVersion: "2.35.2" }), "utf8");
     assert.equal(readMaxCompatibleAppVersion(coreDir), "2.35.2");
-    assert.equal(readMaxCompatibleAppVersion(), "2.35.2", "仓库默认配置最高适配客户端应为 2.35.2");
+    assert.equal(readMaxCompatibleAppVersion(), "2.36.0", "仓库默认配置最高适配客户端应为 2.36.0");
 
     const stdin = new PassThrough();
     const stdout = new PassThrough();

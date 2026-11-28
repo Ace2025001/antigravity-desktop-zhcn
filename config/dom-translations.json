@@ -13905,7 +13905,167 @@
     "Where each worker is, by thread": "按线程展示每位工作者的位置",
     "No posts yet": "暂无留言",
     "The coordinator asked. Answer it in its chat.": "协调者已发起提问，请前往其对话窗口回复。",
-    "Resting": "休息中"
+    "Resting": "休息中",
+    "Add your API key or configuration to use this plugin.": "请添加你的 API 密钥或配置以使用此插件。",
+    "Agent execution terminated due to error.": "智能体执行因出错而终止。",
+    "Agents Options": "智能体选项",
+    "Allowed hosts": "允许的主机",
+    "Arize API Key": "Arize API 密钥",
+    "Ask anything": "随便问点什么",
+    "Ask for a follow-up…": "输入追问内容…",
+    "Attachments are currently disabled": "当前已禁用附件功能",
+    "At least one allowed host is required.": "至少需要填写一个允许的主机。",
+    "Auth format": "认证格式",
+    "Available directly inside your environment. Code running in the environment can read these values.": "在你的环境中直接可用。环境中运行的代码可以读取这些值。",
+    "Bundle installation is not available.": "当前无法安装组合包。",
+    "Bundle membership updates are not available.": "当前无法更新组合成员。",
+    "Close details": "关闭详情",
+    "Close search": "关闭搜索",
+    "Close search (Esc)": "关闭搜索 (Esc)",
+    "Cloud automation": "云端自动化",
+    "Cloud trigger": "云端触发器",
+    "Code in the environment can read this value directly. Use Network Secrets for API keys instead.": "环境中的代码可以直接读取此值。如需存放 API 密钥，请改用网络密钥。",
+    "Collapse panel": "收起面板",
+    "Comment on plan": "对计划发表评论",
+    "Configuration saved.": "配置已保存。",
+    "Configure global network secrets and environment variables for your remote environments.": "为你的远程环境配置全局网络密钥和环境变量。",
+    "Configure global network secrets for your remote environments.": "为你的远程环境配置全局网络密钥。",
+    "Conversation input": "对话输入框",
+    "Cookie name": "Cookie 名称",
+    "Couldn't load plugin configuration.": "无法加载插件配置。",
+    "Credential storage is not available.": "当前无法使用凭据存储。",
+    "Creates a git worktree of this repository, with a working copy of its own.": "为此仓库创建一个带独立工作副本的 Git 工作树。",
+    "Creating git worktree for the forked conversation...": "正在为分叉对话创建 Git 工作树...",
+    "Custom Header": "自定义请求头",
+    "Deliverable ready to review.": "可交付成果已准备好供评审。",
+    "Design Doc": "设计文档",
+    "Disabled by your organization": "已被你的组织禁用",
+    "Doc reviewed": "文档已评审",
+    "Document created and ready to review.": "文档已创建并准备好供评审。",
+    "Enter value (hidden after saving; multiline supported)": "输入值（保存后将隐藏；支持多行）",
+    "Env var": "环境变量",
+    "Env var (optional)": "环境变量（可选）",
+    "Environment error": "环境错误",
+    "Environment paused": "环境已暂停",
+    "Environment Variable": "环境变量",
+    "Environment variables": "环境变量",
+    "Everything here is handled. Switch back to All to see the rest of your stream.": "当前列表已全部处理完毕。切换回“全部”即可查看其余动态。",
+    "Expand full view": "展开完整视图",
+    "Expand panel": "展开面板",
+    "Failed to delete credential.": "删除凭据失败。",
+    "Failed to post voice frame": "发送语音帧失败",
+    "Failed to post voice open request": "发送语音开启请求失败",
+    "Failed to save configuration.": "保存配置失败。",
+    "Failed to save credential.": "保存凭据失败。",
+    "Filter agents…": "筛选智能体…",
+    "Filter feed": "筛选动态",
+    "Fork in Current Folder": "在当前文件夹中分叉",
+    "Fork in New Git Worktree": "在新建 Git 工作树中分叉",
+    "Full screen": "全屏",
+    "Global (all projects)": "全局（所有项目）",
+    "Google Doc": "Google 文档",
+    "Header name": "请求头名称",
+    "Header prefix (optional)": "请求头前缀（可选）",
+    "Hide from Sidebar": "从侧边栏隐藏",
+    "Hide link previews": "隐藏链接预览",
+    "Hide matching messages list": "隐藏匹配消息列表",
+    "In thread": "在线程中",
+    "Kept outside your environment and sent only on requests to allowed hosts.": "保存在环境外部，仅在请求允许的主机时发送。",
+    "Latest screenshot": "最新截图",
+    "Link copied to clipboard": "链接已复制到剪贴板",
+    "Load more results": "加载更多结果",
+    "Load older": "加载更早内容",
+    "Loading more results…": "正在加载更多结果…",
+    "Loading Remote Control QR code…": "正在加载远程控制二维码…",
+    "Mark done": "标为已完成",
+    "Marked done": "已标为完成",
+    "Mention suggestions": "提及建议",
+    "Name is required.": "名称不能为空。",
+    "Needs permission to continue.": "需要你的许可才能继续。",
+    "Network Secret": "网络密钥",
+    "Network secrets": "网络密钥",
+    "New Personal Agent": "新建个人智能体",
+    "New secret value": "新密钥值",
+    "New Team Agent": "新建团队智能体",
+    "New value": "新值",
+    "Next (newer) match (Enter)": "下一个匹配项 (Enter)",
+    "No global environment variables saved yet.": "尚未保存任何全局环境变量。",
+    "No global network secrets saved yet.": "尚未保存任何全局网络密钥。",
+    "No matches on this page.": "当前页面没有匹配项。",
+    "No network secrets saved for this project yet.": "此项目尚未保存任何网络密钥。",
+    "Nothing in this view": "当前视图暂无内容",
+    "Nothing needs your attention right now. New deliverables, docs, and agent updates will appear here.": "目前没有需要你处理的事项。新的交付物、文档和智能体动态会显示在这里。",
+    "Open linked conversation": "打开关联对话",
+    "Org recommended": "组织推荐",
+    "Org required": "组织要求",
+    "Organization prepaid wallet is empty": "组织预付余额已用尽",
+    "Our servers are experiencing high traffic right now, please try again in a minute.": "当前服务器访问量较大，请稍后再试。",
+    "Parent thread": "父级线程",
+    "Parse .env": "解析 .env",
+    "Paste .env": "粘贴 .env",
+    "Paste .env entries": "粘贴 .env 条目",
+    "Paste secret key (hidden after saving)": "粘贴密钥（保存后将隐藏）",
+    "Pick this back up…": "继续之前的话题…",
+    "Plugin installation is not available.": "当前无法安装插件。",
+    "Plugin removal is not available.": "当前无法移除插件。",
+    "Plugins are disabled by your organization.": "你的组织已禁用插件功能。",
+    "Plugins are unavailable until your organization's policy loads.": "组织策略加载完成前暂无法使用插件。",
+    "Previous (older) match (Shift+Enter)": "上一个匹配项 (Shift+Enter)",
+    "Published site ready to view.": "已发布站点，现在可查看。",
+    "Query param": "查询参数",
+    "Ready for your review and sign-off.": "已准备好供你审阅并签收。",
+    "Ready for your review.": "已准备好供你审阅。",
+    "Ready to review": "待审阅",
+    "Remove attachments before sending": "发送前请先移除附件",
+    "Remove or retry failed attachments before sending": "发送前请先移除或重试上传失败的附件",
+    "Replace Secret": "替换密钥",
+    "Replace Variable": "替换变量",
+    "Reply in thread": "在线程中回复",
+    "Reply in Thread": "在线程中回复",
+    "Reply, or approve with changes…": "回复或附带修改意见批准…",
+    "Required by your organization": "你的组织强制要求",
+    "Resize details panel": "调整详情面板大小",
+    "Run cleared": "已清除运行记录",
+    "Run error": "运行出错",
+    "Save Secret": "保存密钥",
+    "Save Variable": "保存变量",
+    "Saved securely. Secret values are hidden after saving.": "已安全保存。密钥值在保存后将隐藏显示。",
+    "Scheduled automation": "定时自动化",
+    "Scheduled automation is running now.": "定时自动化正在运行。",
+    "Scheduled run": "定时运行",
+    "Scheduled run finished.": "定时运行已完成。",
+    "Scheduled run is waiting for your input.": "定时运行正在等待你的输入。",
+    "Search by name or identity…": "按名称或身份搜索…",
+    "Search settings": "搜索设置",
+    "Secret value": "密钥值",
+    "Secret value is required.": "密钥值不能为空。",
+    "Select model, current": "选择模型，当前",
+    "Sending is currently disabled": "当前已禁用发送功能",
+    "Sent as a quiet FYI (delivered on next turn without waking agent)": "已作为静默提示发送（将在下一轮送达，不会唤醒智能体）",
+    "Settings search results": "设置搜索结果",
+    "Show link previews": "显示链接预览",
+    "Show matching messages list": "显示匹配消息列表",
+    "Side Question Conversation Log": "旁问对话记录",
+    "Skipped command": "已跳过命令",
+    "Steer while it works…": "运行中随时补充引导…",
+    "Subagent cleared": "已清除子智能体记录",
+    "Subagent is blocked and needs your decision.": "子智能体已暂停，需要你的决定。",
+    "Subagent stopped with an error before finishing.": "子智能体在完成前因出错而停止。",
+    "Subagent worker": "子智能体执行者",
+    "The plugin marketplace is disabled by your organization.": "你的组织已禁用插件市场。",
+    "Thread reply": "线程回复",
+    "Type a message or attach an image to send": "输入消息或添加图片后发送",
+    "Type a message to send": "输入要发送的消息",
+    "Unable to load preview media.": "无法加载预览媒体。",
+    "Upgrade for access": "升级以获取访问权限",
+    "Upload failed": "上传失败",
+    "Username (optional)": "用户名（可选）",
+    "View plan": "查看计划",
+    "Waiting for attachments to finish uploading…": "正在等待附件上传完成…",
+    "You have exhausted your capacity on this model.": "你在此模型上的可用容量已用尽。",
+    "You have exhausted your quota on this model.": "你在此模型上的配额已用尽。",
+    "Your organization has run out of Antigravity funds. Prompt generation is paused until your administrator adds funds.": "你的组织 Antigravity 账户余额已用尽。管理员充值前将暂停生成回复。",
+    "Your quota for this model has been reached.": "你在此模型上的配额已达上限。"
   },
   "patterns": [
     {
@@ -31436,6 +31596,186 @@
     {
       "source": "^([A-Za-z0-9_-]+) \\(you\\)$",
       "target": "$1（你）",
+      "flags": "u"
+    },
+    {
+      "source": "^Add environment variable: (.+)$",
+      "target": "添加环境变量：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Add network secret: (.+)$",
+      "target": "添加网络密钥：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Add (.+?): (.+?)$",
+      "target": "添加 $1：$2",
+      "flags": "u"
+    },
+    {
+      "source": "^Automation error: (.+)$",
+      "target": "自动化错误：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Copied link to (.+)$",
+      "target": "已复制指向 $1 的链接",
+      "flags": "u"
+    },
+    {
+      "source": "^Copy link to (.+)$",
+      "target": "复制指向 $1 的链接",
+      "flags": "u"
+    },
+    {
+      "source": "^Couldn't load plugin configuration: (.+)$",
+      "target": "无法加载插件配置：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Create plugin, (.+)$",
+      "target": "创建插件，$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Environment variable \"(.+?)\" is already used by (.+?) in this scope\\. Choose a different (.+?) or delete the existing credential\\.$",
+      "target": "环境变量“$1”已被当前作用域内的 $2 占用。请更换其他$3，或先删除现有凭据。",
+      "flags": "u"
+    },
+    {
+      "source": "^Hid (.+?) from sidebar$",
+      "target": "已从侧边栏隐藏 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Hid (.+)$",
+      "target": "已隐藏 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Maximum (\\S+) attachments reached$",
+      "target": "已达到附件数量上限（$1 个）",
+      "flags": "u"
+    },
+    {
+      "source": "^Model unavailable, retrying(.*)$",
+      "target": "模型暂不可用，正在重试$1",
+      "flags": "u"
+    },
+    {
+      "source": "^More for (.+)$",
+      "target": "更多：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^No settings match (.+)$",
+      "target": "未找到匹配 $1 的设置",
+      "flags": "u"
+    },
+    {
+      "source": "^Open video preview (.+?) of (.+?)$",
+      "target": "打开第 $1 个视频预览（共 $2 个）",
+      "flags": "u"
+    },
+    {
+      "source": "^Open image preview (.+?) of (.+?)$",
+      "target": "打开第 $1 个图片预览（共 $2 个）",
+      "flags": "u"
+    },
+    {
+      "source": "^Open (.+?) preview (.+?) of (.+?)$",
+      "target": "打开第 $2 个预览（共 $3 个）",
+      "flags": "u"
+    },
+    {
+      "source": "^Remove (.+?) reaction$",
+      "target": "移除 $1 回应",
+      "flags": "u"
+    },
+    {
+      "source": "^Replace environment variable: (.+)$",
+      "target": "替换环境变量：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Replace secret: (.+)$",
+      "target": "替换密钥：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Reply in thread to (.+)$",
+      "target": "在线程中回复 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Retry loading (.+?) configuration$",
+      "target": "重试加载 $1 配置",
+      "flags": "u"
+    },
+    {
+      "source": "^Retry uploading (.+)$",
+      "target": "重试上传 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Run failed: (.+)$",
+      "target": "运行失败：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Screenshot for (.+)$",
+      "target": "$1 的截图",
+      "flags": "u"
+    },
+    {
+      "source": "^Scroll to Bottom \\((.+?) unread\\)$",
+      "target": "滚动到底部（$1 条未读）",
+      "flags": "u"
+    },
+    {
+      "source": "^Show in Sidebar \\((.+?)\\/(.+?)\\)$",
+      "target": "在侧边栏显示（$1/$2）",
+      "flags": "u"
+    },
+    {
+      "source": "^Upload failed for (.+)$",
+      "target": "上传 $1 失败",
+      "flags": "u"
+    },
+    {
+      "source": "^Uploading (.+?)(?:\\.\\.\\.|…)$",
+      "target": "正在上传 $1…",
+      "flags": "u"
+    },
+    {
+      "source": "^View (.+?) full screen$",
+      "target": "全屏查看 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Voice open timed out after (.+?)ms$",
+      "target": "语音开启超时（已等待 $1 毫秒）",
+      "flags": "u"
+    },
+    {
+      "source": "^You reacted with (.+)$",
+      "target": "你已回应 $1",
+      "flags": "u"
+    },
+    {
+      "source": "^Your quota for (.+?) has been reached\\.$",
+      "target": "你在 $1 模型上的配额已达上限。",
+      "flags": "u"
+    },
+    {
+      "source": "^Your quota for (.+?) resets (.+?)\\.$",
+      "target": "你在 $1 模型上的配额将于 $2 重置。",
+      "flags": "u"
+    },
+    {
+      "source": "^Environment variable \"(.+?)\" is already used by (.+?) in this scope\\. Choose a different name or update the existing credential\\.$",
+      "target": "环境变量“$1”已被当前作用域内的 $2 占用。请更换其他名称，或更新现有凭据。",
       "flags": "u"
     }
   ],
