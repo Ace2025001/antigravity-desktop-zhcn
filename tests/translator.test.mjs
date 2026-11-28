@@ -4351,3 +4351,108 @@ test("冷启动/Ctrl+R 重载竞态：先加载已保存标题词典再扫描摘
     else process.env.AGY_LANGUAGE_PACK = savedPack;
   }
 });
+
+test("左上角汉化中心兼容 2.36.0 换行构建，且在未命中编译期注入时通过运行时 DOM 兜底不失效", async () => {
+  const current = await loadDomTranslations();
+  // 1. 验证 2.36.0 样式带换行符的 title-menu-bar 编译期注入可正常命中
+  const sample2360 = `var b=(0,F.useMemo)(()=>{var w=[];c?.appVersion&&w.push({label:\`Version \${c.appVersion}\`,\nonClick:()=>{},nonSelectable:!0});c?.checkForUpdates&&w.push({label:"Check for Updates",onClick:()=>{c.checkForUpdates?.()}});return w},[c]);`;
+  const bundle = createLocalizedBundle(Buffer.from(sample2360, "utf8"), { ...current, packVersion: "3.1.9" }, { skipCoverage: true });
+  const text = bundle.buffer.toString("utf8");
+  assert.match(text, /汉化中心 v3\.1\.9/, "2.36.0 带换行版本菜单应正常注入汉化中心");
+  assert.match(text, /"检查更新"/);
+
+  // 2. 验证即使未来版本编译期完全没命中，运行时 DOM 兜底也能把汉化中心挂到 Antigravity 下拉菜单中
+  const overlay = createRuntimeOverlay(current);
+  let openedPanel = 0;
+  let escaped = false;
+  const verSpan = { textContent: "Version 2.37.0" };
+  const updSpan = { textContent: "Check for Updates" };
+  const clonedSpan = { textContent: updSpan.textContent, remove() {} };
+  const listeners = {};
+  const clonedBtn = {
+    className: "w-full px-3 py-1.5 pointer-events-none",
+    attrs: { "data-testid": "title-menu-bar-option", tabindex: "-1" },
+    matches: (s) => s.includes("title-menu-bar-option"),
+    querySelectorAll: (s) => (s === "span" ? [clonedSpan] : []),
+    removeAttribute(k) { delete this.attrs[k]; },
+    setAttribute(k, v) { this.attrs[k] = v; },
+    getAttribute(k) { return this.attrs[k] ?? null; },
+    addEventListener(ev, fn) { (listeners[ev] ||= []).push(fn); },
+  };
+  const clonedRow = {
+    matches: () => false,
+    querySelector: (s) => (s.includes("button") || s.includes("title-menu-bar-option") ? clonedBtn : null),
+  };
+  const appended = [];
+  const popupEl = {
+    nodeType: 1,
+    dataset: {},
+    querySelector: (s) => (s === "[data-agy-zhcn-pack-menu]" ? (appended.length ? clonedRow : null) : null),
+    querySelectorAll(s) {
+      if (s.includes("button")) return appended.length ? [verBtn, updBtn, clonedBtn] : [verBtn, updBtn];
+      if (s.includes("title-menu-bar-option")) return appended.length ? [verBtn, updBtn, clonedBtn] : [verBtn, updBtn];
+      return [];
+    },
+    closest: () => null,
+    hasAttribute: () => false,
+    getAttribute: () => null,
+    appendChild(node) { appended.push(node); },
+  };
+  const rowWrap = (btn) => ({
+    parentElement: popupEl,
+    cloneNode: () => clonedRow,
+    btn,
+  });
+  const verBtn = {
+    nodeType: 1,
+    textContent: "Version 2.37.0",
+    parentElement: null,
+    matches: (s) => s.includes("title-menu-bar-option"),
+    closest: (s) => (s.includes("div.absolute") ? popupEl : null),
+  };
+  const updBtn = {
+    nodeType: 1,
+    textContent: "Check for Updates",
+    parentElement: null,
+    matches: (s) => s.includes("title-menu-bar-option"),
+    closest: (s) => (s.includes("div.absolute") ? popupEl : null),
+  };
+  verBtn.parentElement = rowWrap(verBtn);
+  updBtn.parentElement = rowWrap(updBtn);
+
+  const fakeDoc = {
+    readyState: "complete",
+    documentElement: {
+      nodeType: 1, lang: "en", dataset: {},
+      closest: () => null, querySelector: () => null, querySelectorAll: () => [verBtn, updBtn],
+      getAttribute: () => null, hasAttribute: () => false, setAttribute() {},
+    },
+    addEventListener() {},
+    dispatchEvent(ev) { if (ev?.key === "Escape") escaped = true; },
+    createTreeWalker: () => ({ nextNode: () => null }),
+  };
+  const sb = {
+    __AGY_ZHCN_PACK_VERSION__: "3.1.9",
+    window: { location: { protocol: "https:" } },
+    document: fakeDoc,
+    Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 },
+    NodeFilter: { SHOW_ELEMENT: 1, SHOW_TEXT: 4 },
+    KeyboardEvent: class { constructor(type, init) { this.type = type; this.key = init?.key; } },
+    MutationObserver: class { observe() {} },
+    fetch: async () => ({ ok: false }),
+    setTimeout, clearTimeout, queueMicrotask, Set, Map, WeakMap, RegExp, Object, Array, String, Number, Boolean, Math, Date, Promise, URLSearchParams,
+  };
+  sb.globalThis = sb;
+  new vm.Script(overlay).runInContext(vm.createContext(sb));
+  sb.__AGY_ZHCN_OPEN_PACK_PANEL__ = () => { openedPanel += 1; };
+
+  assert.equal(appended.length, 1, "未命中编译期注入时，运行时应自动往 Antigravity 下拉菜单补挂汉化中心");
+  assert.equal(clonedSpan.textContent, "汉化中心 v3.1.9");
+  assert.equal(clonedBtn.getAttribute("data-agy-zhcn-pack-menu"), "1");
+  assert.equal(clonedBtn.attrs.tabindex, undefined);
+
+  // 点击运行时插入的汉化中心菜单项应关闭下拉并打开面板
+  for (const fn of listeners.click || []) fn({ preventDefault() {}, stopPropagation() {} });
+  assert.equal(escaped, true);
+  assert.equal(openedPanel, 1);
+});

@@ -2749,6 +2749,78 @@ export function createRuntimeOverlay(dictionary) {
     element.dataset.agyZhcnDynamic = "done";
   }
 
+  function __ensurePackMenuEntry(root) {
+    if (typeof document === "undefined") return;
+    const scope = (root && root.nodeType === 1 && typeof root.querySelectorAll === "function") ? root : document;
+    const popups = [];
+    const seenPopups = new Set();
+    const addPopup = (popup) => {
+      if (popup && !seenPopups.has(popup)) {
+        seenPopups.add(popup);
+        popups.push(popup);
+      }
+    };
+    try {
+      if (root && root.nodeType === 1 && typeof root.closest === "function") {
+        const selfOpt = root.matches?.("[data-testid='title-menu-bar-option'], [role='menuitem']")
+          ? root
+          : root.querySelector?.("[data-testid='title-menu-bar-option'], [role='menuitem']");
+        if (selfOpt) addPopup(selfOpt.closest?.("div.absolute, [role='menu'], [data-browser-occluder]") || selfOpt.parentElement?.parentElement);
+      }
+      const candidates = scope.querySelectorAll("[data-testid='title-menu-bar-option'], [data-testid='title-menu-bar'] button, [role='menu'] [role='menuitem']");
+      for (const btn of candidates) {
+        addPopup(btn.closest?.("div.absolute, [role='menu'], [data-browser-occluder]") || btn.parentElement?.parentElement);
+      }
+    } catch (_) {}
+    for (const popup of popups) {
+      try {
+        const buttons = [...popup.querySelectorAll("button, [role='menuitem']")];
+        if (!buttons.length) continue;
+        if (popup.querySelector("[data-agy-zhcn-pack-menu]") || buttons.some((b) => (b.textContent || "").trim().startsWith("汉化中心"))) {
+          continue;
+        }
+        const isAppDropdown = buttons.some((b) => {
+          const txt = (b.textContent || "").trim();
+          return /^(?:Version|版本)\s+\S/i.test(txt) || /^(?:Check for Updates|检查更新)$/i.test(txt);
+        });
+        if (!isAppDropdown) continue;
+        const lastBtn = buttons[buttons.length - 1];
+        const ver = globalThis.__AGY_ZHCN_PACK_VERSION__ || "";
+        const label = ver ? ("汉化中心 v" + ver) : "汉化中心";
+        const row = (lastBtn.parentElement && lastBtn.parentElement !== popup)
+          ? lastBtn.parentElement.cloneNode(true)
+          : lastBtn.cloneNode(true);
+        const newBtn = (row.matches && row.matches("button, [role='menuitem']"))
+          ? row
+          : row.querySelector("button, [role='menuitem']");
+        if (!newBtn) continue;
+        newBtn.removeAttribute("tabindex");
+        newBtn.setAttribute("data-agy-zhcn-pack-menu", "1");
+        if (typeof newBtn.className === "string") {
+          newBtn.className = newBtn.className.replace(/\\bpointer-events-none\\b/g, "hover:bg-secondary");
+        }
+        const spans = newBtn.querySelectorAll("span");
+        if (spans.length > 0) {
+          spans[0].textContent = label;
+          for (let si = 1; si < spans.length; si += 1) spans[si].remove();
+        } else {
+          newBtn.textContent = label;
+        }
+        newBtn.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          try {
+            document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+          } catch (_) {}
+          try {
+            globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__?.();
+          } catch (_) {}
+        });
+        popup.appendChild(row);
+      } catch (_) {}
+    }
+  }
+
   function translateTree(root) {
     if (!root) return;
     if (root.nodeType === Node.TEXT_NODE) {
@@ -2758,6 +2830,7 @@ export function createRuntimeOverlay(dictionary) {
     if (root.nodeType !== Node.ELEMENT_NODE && root.nodeType !== Node.DOCUMENT_NODE) {
       return;
     }
+    __ensurePackMenuEntry(root);
     if (root.nodeType === Node.ELEMENT_NODE) {
       translateElementAttributes(root);
       translateDynamicElement(root);
@@ -2972,7 +3045,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = fastAnchorReplace(
     sourceText,
     '"Check for Updates"',
-    /([a-zA-Z0-9_$]+)\?\.appVersion&&([a-zA-Z0-9_$]+)\.push\(\{label:`Version \$\{\1\.appVersion\}`,onClick:\(\)=>\s*\{\},nonSelectable:!0\}\);\1\?\.checkForUpdates&&\2\.push\(\{label:"Check for Updates",onClick:\(\)=>\{\s*\1\.checkForUpdates\?\.\(\)\}\}\);return \2/g,
+    /([a-zA-Z0-9_$]+)\?\.appVersion&&([a-zA-Z0-9_$]+)\.push\(\{label:`Version \$\{\1\.appVersion\}`[\s\r\n]*,[\s\r\n]*onClick:\(\)=>[\s\r\n]*\{\},[\s\r\n]*nonSelectable:!0\}\);[\s\r\n]*\1\?\.checkForUpdates&&\2\.push\(\{label:"Check for Updates"[\s\r\n]*,[\s\r\n]*onClick:\(\)=>\{[\s\r\n]*\1\.checkForUpdates\?\.\(\)[\s\r\n]*\}\}\);[\s\r\n]*return \2/g,
     (_, objVar, arrVar) =>
       `${objVar}?.appVersion&&${arrVar}.push({label:\`版本 \${${objVar}.appVersion}\`,onClick:()=>{},nonSelectable:!0});` +
       `${objVar}?.checkForUpdates&&${arrVar}.push({label:"检查更新",onClick:()=>{${objVar}.checkForUpdates?.()}});` +
@@ -3451,7 +3524,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = fastAnchorReplace(
     sourceText,
     '"sidecar-list-empty"',
-    /([A-Za-z_$][A-Za-z0-9_$]*)\.createElement\("p",\{className:"px-2\.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"\},"No ",([A-Za-z_$][A-Za-z0-9_$]*)\.emptyMessagePlural,\s*" match \\u201c",([A-Za-z_$][A-Za-z0-9_$]*),"\\u201d\."\)/g,
+    /([A-Za-z_$][A-Za-z0-9_$]*)\.createElement\("p",\{className:"px-2\.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"\},[\s\r\n]*"No ",([A-Za-z_$][A-Za-z0-9_$]*)\.emptyMessagePlural,[\s\r\n]*" match \\u201c",([A-Za-z_$][A-Za-z0-9_$]*),"\\u201d\."\)/g,
     '$1.createElement("p",{className:"px-2.5 py-10 text-muted-foreground","data-testid":"sidecar-list-empty"},"未找到匹配“",$3,"”的",({"automations":"自动化","scheduled tasks":"定时任务"}[$2.emptyMessagePlural]||$2.emptyMessagePlural),"。")'
   );
   sourceText = fastAnchorReplace(
@@ -4456,7 +4529,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = fastAnchorReplace(
     sourceText,
     '" is managed by the"',
-    /([a-zA-Z0-9_$]+)\?([A-Za-z_$][\w$]*)\.createElement\("span",null,"This ",([a-zA-Z0-9_$]+)\.lowercase," is managed by the",\s*" ",\2\.createElement\("strong",null,([a-zA-Z0-9_$]+)\)," automation and can only be deleted by deleting that automation\."\):/g,
+    /([a-zA-Z0-9_$]+)\?([A-Za-z_$][\w$]*)\.createElement\("span",[\s\r\n]*null,"This ",([a-zA-Z0-9_$]+)\.lowercase," is managed by the",[\s\r\n]*" ",\2\.createElement\("strong",null,([a-zA-Z0-9_$]+)\)," automation and can only be deleted by deleting that automation\."\):/g,
     '$1?$2.createElement("span",null,"此",$3.lowercase==="workspace"?"工作区":"项目","由 ",$2.createElement("strong",null,$4)," 自动化统一管理，只能通过删除该自动化来删除。"):'
   );
 
@@ -4568,13 +4641,13 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = fastAnchorReplace(
     sourceText,
     '===void 0?"Inherit Global":',
-    /([a-zA-Z0-9_$]+)===void 0\?"Inherit Global":\1===!0\?"Enabled":"Disabled"/g,
+    /([a-zA-Z0-9_$]+)===void 0\?"Inherit Global":[\s\r\n]*\1===!0\?"Enabled":"Disabled"/g,
     '$1===void 0?"继承全局":$1===!0?"已启用":"已禁用"'
   );
   sourceText = fastAnchorReplace(
     sourceText,
     '==="use_global"?"Inherit Global":',
-    /([a-zA-Z0-9_$]+)==="use_global"\?"Inherit Global":\1==="turbo"\?"Always Proceed":"Always Ask"/g,
+    /([a-zA-Z0-9_$]+)==="use_global"\?"Inherit Global":[\s\r\n]*\1==="turbo"\?"Always Proceed":"Always Ask"/g,
     '$1==="use_global"?"继承全局":$1==="turbo"?"始终继续":"始终询问"'
   );
   sourceText = fastAnchorReplace(
@@ -4640,7 +4713,7 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   sourceText = fastAnchorReplace(
     sourceText,
     'id:"local",label:"This Computer"',
-    /\[\{id:"local",label:"This Computer"\},\{id:"cloud",label:"Remote"\}\]/g,
+    /\[\{id:"local",label:"This Computer"\},[\s\r\n]*\{id:"cloud",label:"Remote"\}\]/g,
     '[{id:"local",label:"本机"},{id:"cloud",label:"远程"}]'
   );
   const permissionRowDefs = [
@@ -5832,6 +5905,30 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
       .replace('"No commits to push"', '"没有待推送的提交"')
       .replace('"Not on a branch"', '"当前不在分支上"')
       .replace('"Pushing..."', '"正在推送..."')
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Hide non-admin ("',
+    /"Hide non-admin \(",[\s\r\n]*([a-zA-Z0-9_$]+\.length),[\s\r\n]*"\)"/g,
+    '"隐藏非管理员 (",$1,")"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Show all ("',
+    /"Show all \(",[\s\r\n]*([a-zA-Z0-9_$]+\.length),[\s\r\n]*"\)"/g,
+    '"显示全部 (",$1,")"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '"Show all ("',
+    /"Show all \(",[\s\r\n]*([a-zA-Z0-9_$]+),[\s\r\n]*" hidden\)"/g,
+    '"显示全部 (",$1," 个已隐藏)"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'docKindLabel:`Google Doc',
+    /docKindLabel:`Google Doc\$\{(\/\\bprd\\b\/i\.test\([a-zA-Z0-9_$]+\)\?[\s\r\n]*" \\u00b7 PRD":\/design\\s\*doc\|\\brfc\\b\/i\.test\([a-zA-Z0-9_$]+\)\?)" \\u00b7 Design Doc":(""\})`/g,
+    'docKindLabel:`Google 文档${$1" \\u00b7 设计文档":$2`'
   );
 
   const overlay = createRuntimeOverlay(dictionary);
