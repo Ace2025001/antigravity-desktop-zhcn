@@ -2608,16 +2608,43 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     assert.equal(tv("Install monday.com"), "安装 monday.com");
     assert.equal(tv("Install the CLI to continue"), null);
     assert.equal(tv("Fixing bugs, 14 turns"), "修复错误，14 轮对话");
+    assert.equal(tv("Add shortcut for Open Settings"), "为“打开设置”添加快捷键");
+    assert.equal(tv("Add shortcut for Unknown Action"), null);
+    assert.equal(tv("Waiting for 30s timer, 1 task running"), "正在等待 30 秒定时器，1 个任务运行中");
+    assert.equal(tv("Waiting for 10s timer · 5s left"), "正在等待 10 秒定时器 · 剩余 5 秒");
+    assert.equal(tv("45s timer: Timer has expired"), "45 秒定时器：定时器已到期");
+    assert.equal(tv("No more older messages, showing 47 of 47"), "没有更多早期消息，已显示 47 / 47 条");
+    assert.equal(tv("Adding... Chrome DevTools"), "正在添加 Chrome DevTools...");
+    assert.equal(tv("Added Chrome DevTools"), "已添加 Chrome DevTools");
+    assert.equal(tv("Plugin installed: Chrome DevTools"), "已安装插件：Chrome DevTools");
+    assert.equal(tv("failed to get load code assist response: error getting token source: You are not logged into Antigravity."), "获取代码辅助响应失败：无法获取令牌来源——你尚未登录 Antigravity。");
   }
   {
     const { isObsoleteLearnedKey } = await import("../src/lib/auto-learned-dict.mjs");
     assert.equal(isObsoleteLearnedKey("Shortcut Ctrl+Shift+. for Next Side Panel Tab"), true);
+    assert.equal(isObsoleteLearnedKey("Add shortcut for Submit Prompt (Alternate to Enter)"), true);
+    assert.equal(isObsoleteLearnedKey("Waiting for 10s timer · 5s left"), true);
+    assert.equal(isObsoleteLearnedKey("45s timer: Timer has expired"), true);
+    assert.equal(isObsoleteLearnedKey("No more older messages, showing 47 of 47"), true);
+    assert.equal(isObsoleteLearnedKey("Adding... Chrome DevTools"), true);
+    assert.equal(isObsoleteLearnedKey("Added Chrome DevTools"), true);
+    assert.equal(isObsoleteLearnedKey("Plugin installed: Chrome DevTools"), true);
+    assert.equal(isObsoleteLearnedKey("width:100%;height:auto;border-radius:6px"), true);
+    assert.equal(isObsoleteLearnedKey("application/ld+json"), true);
+    assert.equal(isObsoleteLearnedKey("Remove-Item Env:AGY_LANGUAGE_PACK"), true);
+    assert.equal(isObsoleteLearnedKey("Kling AI"), true, "市场品牌名的旧机翻要丢弃");
+    assert.equal(isObsoleteLearnedKey("Orca Security"), true, "市场品牌名的旧机翻要丢弃");
     assert.equal(isObsoleteLearnedKey("Install Stripe"), true);
     assert.equal(isObsoleteLearnedKey("Close package-usage.txt"), true);
     assert.equal(isObsoleteLearnedKey("Fixing bugs, 2 turns"), true);
     assert.equal(isObsoleteLearnedKey("Copied sign-in link to clipboard"), false);
     assert.equal(isObsoleteLearnedKey("Better Stack"), true, "品牌名的旧机翻要丢弃");
     assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Grafana Cloud", null, false, false), false, "界面文本中的品牌名不联网");
+    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Kling AI", null, false, false), false, "插件市场品牌名不联网");
+    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("width:100%;height:auto;border-radius:6px", null, false, false), false, "CSS 内联样式不联网");
+    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("application/xml", null, false, false), false, "MIME 类型不联网");
+    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("Remove-Item Env:AGY_LANGUAGE_PACK", null, false, false), false, "PowerShell 命令不联网");
+    assert.equal(sandbox.__AGY_ZHCN_IS_ONLINE_ELIGIBLE__("mode-tab is-active", null, false, false), false, "CSS 类名组合不联网");
     // 账号卡片（头像 + 邮箱）里的姓名不联网；用虚构姓名测试，公开仓库不写真实个人信息
     {
       const card = {
@@ -3928,15 +3955,16 @@ test("左上角 Antigravity 菜单合并为三项极简入口，并可在旧补�
 
   assert.match(text, /label:`版本 \$\{c\.appVersion\}`/);
   assert.match(text, /label:"检查更新"/);
-  assert.match(text, /label:"汉化中心 v3\.1\.99"/);
+  assert.match(text, /label:"汉化中心"/);
+  assert.doesNotMatch(text, /label:"汉化中心 v\d/);
   const idxAppVersion = text.indexOf("label:`版本 ${c.appVersion}`");
   const idxAppUpdate = text.indexOf('label:"检查更新"');
-  const idxPackCenter = text.indexOf('label:"汉化中心 v3.1.99"');
+  const idxPackCenter = text.indexOf('label:"汉化中心"');
   assert.ok(
     idxAppVersion !== -1 &&
       idxAppVersion < idxAppUpdate &&
       idxAppUpdate < idxPackCenter,
-    "顶部 Antigravity 菜单顺序应依次为：版本、检查更新、汉化中心 v3.1.99",
+    "顶部 Antigravity 菜单顺序应依次为：版本、检查更新、汉化中心",
   );
   assert.ok(!text.includes('label:"汉化包版本 '), "不应再有单独的汉化包版本只读项");
   assert.ok(!text.includes('label:"检查汉化包更新"'), "不应再有重复的检查更新入口");
@@ -4358,7 +4386,8 @@ test("左上角汉化中心兼容 2.36.0 换行构建，且在未命中编译期
   const sample2360 = `var b=(0,F.useMemo)(()=>{var w=[];c?.appVersion&&w.push({label:\`Version \${c.appVersion}\`,\nonClick:()=>{},nonSelectable:!0});c?.checkForUpdates&&w.push({label:"Check for Updates",onClick:()=>{c.checkForUpdates?.()}});return w},[c]);`;
   const bundle = createLocalizedBundle(Buffer.from(sample2360, "utf8"), { ...current, packVersion: "3.1.9" }, { skipCoverage: true });
   const text = bundle.buffer.toString("utf8");
-  assert.match(text, /汉化中心 v3\.1\.9/, "2.36.0 带换行版本菜单应正常注入汉化中心");
+  assert.match(text, /label:"汉化中心"/, "2.36.0 带换行版本菜单应正常注入汉化中心");
+  assert.doesNotMatch(text, /label:"汉化中心 v\d/, "顶部菜单不拼接固定版本号");
   assert.match(text, /"检查更新"/);
 
   // 2. 验证即使未来版本编译期完全没命中，运行时 DOM 兜底也能把汉化中心挂到 Antigravity 下拉菜单中
@@ -4447,8 +4476,7 @@ test("左上角汉化中心兼容 2.36.0 换行构建，且在未命中编译期
   sb.__AGY_ZHCN_OPEN_PACK_PANEL__ = () => { openedPanel += 1; };
 
   assert.equal(appended.length, 1, "未命中编译期注入时，运行时应自动往 Antigravity 下拉菜单补挂汉化中心");
-  assert.equal(clonedSpan.textContent, "汉化中心 v" + sb.__AGY_ZHCN_PACK_VERSION__);
-  assert.match(clonedSpan.textContent, /^汉化中心 v\d+\.\d+\.\d+/);
+  assert.equal(clonedSpan.textContent, "汉化中心");
   assert.equal(clonedBtn.getAttribute("data-agy-zhcn-pack-menu"), "1");
   assert.equal(clonedBtn.attrs.tabindex, undefined);
 
