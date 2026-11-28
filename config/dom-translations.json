@@ -14084,7 +14084,10 @@
     "(ADC)": "（ADC）",
     "Grant permission": "授予权限",
     "Credentials expiring soon. Refresh credentials to keep this automation running": "凭据即将过期。请刷新凭据以保持此自动化继续运行",
-    "Credentials expired. This automation will not run until credentials are refreshed": "凭据已过期。刷新凭据前，此自动化将不会运行"
+    "Credentials expired. This automation will not run until credentials are refreshed": "凭据已过期。刷新凭据前，此自动化将不会运行",
+    "Build me a web app": "帮我构建一个网页应用",
+    "Add a Gemini feature to my app": "为我的应用添加 Gemini 功能",
+    "Bring over my setup from other Agentic Developer Tools": "从其他 AI 开发工具迁移我的配置"
   },
   "patterns": [
     {
@@ -14603,12 +14606,12 @@
       "flags": "u"
     },
     {
-      "source": "^Adding ((?!plugins?\\s+from\\b|your\\b|more\\b|support\\b|new\\s+)(?!.*(?:\\.\\.\\.|…)$)[^.!?;:—,\\n]{1,38})$",
+      "source": "^Adding ((?!plugins?\\s+from\\b|your\\b|more\\b|support\\b|new\\s+|(?:a|an|the|my|this|that|some|any|custom|extra|additional|another)\\s+|.+\\s+(?:to|into|from|for|with|on|in)\\s+(?:my|your|the|this|a|an)\\b)(?!.*(?:\\.\\.\\.|…)$)[^.!?;:—,\\n]{1,38})$",
       "target": "正在添加 $1",
       "flags": "u"
     },
     {
-      "source": "^Add ((?!\\d+\\s+plugins?\\s+from\\b|a\\s+platform\\b|your\\b|more\\b|support\\b)(?!.*(?:\\.\\.\\.|…)$)[^.!?;:—,\\n]{1,38})$",
+      "source": "^Add ((?!\\d+\\s+plugins?\\s+from\\b|your\\b|more\\b|support\\b|new\\s+|shortcut\\s+for\\b|(?:a|an|the|my|this|that|some|any|custom|extra|additional|another)\\s+|.+\\s+(?:to|into|from|for|with|on|in)\\s+(?:my|your|the|this|a|an)\\b)(?!.*(?:\\.\\.\\.|…)$)[^.!?;:—,\\n]{1,38})$",
       "target": "添加 $1",
       "flags": "u"
     },
@@ -31830,6 +31833,11 @@
     {
       "source": "^upload file size \\((.+?) bytes\\) exceeds 52428800-byte \\(50 MiB\\) limit$",
       "target": "上传文件大小（$1 字节）超过 52428800 字节（50 MiB）上限",
+      "flags": "u"
+    },
+    {
+      "source": "^Add shortcut for (.+)$",
+      "target": "为 $1 添加快捷键",
       "flags": "u"
     }
   ],
