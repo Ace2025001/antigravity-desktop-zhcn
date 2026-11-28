@@ -2617,6 +2617,8 @@ test("Case 145: 3-tier funnel anti-MT auto-translation, persistent auto-learned 
     assert.equal(tv("Adding... Chrome DevTools"), "正在添加 Chrome DevTools...");
     assert.equal(tv("Added Chrome DevTools"), "已添加 Chrome DevTools");
     assert.equal(tv("Plugin installed: Chrome DevTools"), "已安装插件：Chrome DevTools");
+    assert.equal(tv("Open Settings (disabled by admin)"), "打开设置（已被管理员禁用）");
+    assert.equal(tv("Disable search tool for Context7"), "禁用 Context7 中的 search 工具");
     assert.equal(tv("failed to get load code assist response: error getting token source: You are not logged into Antigravity."), "获取代码辅助响应失败：无法获取令牌来源——你尚未登录 Antigravity。");
   }
   {
@@ -4151,11 +4153,122 @@ test("左上角 Antigravity 菜单合并为三项极简入口，并可在旧补�
       const onlineOnBtn = allElements.find((e) => e.attrs["data-setting-key"] === "onlineTranslate" && e.attrs["data-setting-val"] === "true");
       await onlineOnBtn.onclick();
       assert.equal(savedState.onlineTranslate, true, "界面联网补充开关应成功提交并写入");
+
+      // 头部常驻“刷新界面”按钮、诊断折叠区与手动重扫/复制诊断反馈
+      const headReloadBtn = findBtn("刷新界面");
+      assert.ok(headReloadBtn, "面板头部应有常驻“刷新界面”按钮");
+      const diagBtn = findBtn("运行状态与诊断");
+      assert.ok(diagBtn, "面板底部应有折叠式“运行状态与诊断”按钮");
+      diagBtn.onclick();
+      assert.match(allElements.map((e) => e.textContent).join("\n"), /核心词库：\d+\s*条精确/);
+      findBtn("重扫本页").onclick();
+      assert.match(allElements.map((e) => e.textContent).join("\n"), /已重扫/);
     } finally {
       timers.forEach((id) => clearTimeout(id));
       timers.clear();
     }
   }
+
+  // 场景 3：检查反馈（“检查中…”过渡、时间/耗时、3分钟防重查节流、检查期间设置不卡死、Esc 关闭）
+  {
+    let checkCount = 0;
+    let resolveCheck;
+    let savedSettingWhileChecking = false;
+    const docListeners = {};
+    let clipboardText = "";
+    const { sb, timers, allElements, getPanel } = makeMockSandbox(async (url, opts = {}) => {
+      const u = String(url);
+      if (u.startsWith("agy-zhcn://settings")) {
+        if (opts.method === "POST") {
+          savedSettingWhileChecking = true;
+          return { headers: { get: () => "application/json" }, json: async () => ({ ok: true }) };
+        }
+        return {
+          headers: { get: () => "application/json" },
+          json: async () => ({ packAutoUpdate: "auto", autoFollow: "auto", onlineTranslate: true, titleAutoTranslate: true, writable: true, hasHook: true, platform: "win32" }),
+        };
+      }
+      if (u.startsWith("agy-zhcn://pack-update-check")) {
+        checkCount += 1;
+        if (checkCount === 2) {
+          await new Promise((r) => { resolveCheck = r; });
+        }
+        return {
+          headers: { get: () => "application/json" },
+          json: async () => ({ ok: true, handled: true, status: "up-to-date", currentVersion: "3.1.99", latestVersion: "3.1.99", maxAppVersion: "2.36.0", hasHook: true, platform: "win32" }),
+        };
+      }
+      return { headers: { get: () => "application/json" }, json: async () => ({ ok: true }) };
+    });
+    sb.document.addEventListener = (ev, fn) => { (docListeners[ev] ||= []).push(fn); };
+    sb.document.removeEventListener = (ev, fn) => {
+      if (docListeners[ev]) docListeners[ev] = docListeners[ev].filter((f) => f !== fn);
+    };
+    sb.navigator = { clipboard: { writeText: async (t) => { clipboardText = t; } } };
+    try {
+      new vm.Script(overlay).runInContext(vm.createContext(sb));
+      await sb.__AGY_ZHCN_OPEN_PACK_PANEL__();
+      assert.equal(checkCount, 1);
+      assert.match(allElements.map((e) => e.textContent).join("\n"), /✓ 当前汉化包已是最新版本 v3\.1\.99（.+已核对，用时 .+ 秒）/);
+
+      // 3分钟内重开面板直接复用结果，不再重复请求 GitHub
+      await sb.__AGY_ZHCN_OPEN_PACK_PANEL__();
+      assert.equal(checkCount, 1, "短时间内重新打开面板不应重复发起 GitHub 检查");
+
+      // 点击“重新检查”：立即呈现“检查中…”，且设置按钮保持可用
+      const recheckBtn = allElements.find((e) => e.tagName === "BUTTON" && e.textContent === "重新检查");
+      const pendingCheck = recheckBtn.onclick();
+      await Promise.resolve();
+      assert.equal(recheckBtn.textContent, "⟳ 检查中…");
+      assert.equal(recheckBtn.disabled, true);
+      const offTitleBtn = allElements.find((e) => e.attrs["data-setting-key"] === "titleAutoTranslate" && e.attrs["data-setting-val"] === "false");
+      assert.equal(offTitleBtn.disabled, false, "检查更新期间不应锁死设置开关");
+      await offTitleBtn.onclick();
+      assert.equal(savedSettingWhileChecking, true);
+
+      resolveCheck();
+      await pendingCheck;
+      assert.equal(checkCount, 2);
+      assert.equal(recheckBtn.textContent, "重新检查");
+
+      // 复制诊断
+      allElements.find((e) => e.tagName === "BUTTON" && e.textContent.includes("运行状态与诊断")).onclick();
+      await allElements.find((e) => e.tagName === "BUTTON" && e.textContent === "复制诊断").onclick();
+      assert.match(clipboardText, /Antigravity 汉化包：v3\.1\.99/);
+
+      // Esc 键关闭面板并清理全局监听
+      for (const fn of [...(docListeners.keydown || [])]) fn({ key: "Escape" });
+  assert.equal(getPanel(), null, "按 Esc 应关闭汉化中心面板");
+      assert.equal((docListeners.keydown || []).length, 0, "关闭面板后应清理 keydown 监听");
+    } finally {
+      timers.forEach((id) => clearTimeout(id));
+      timers.clear();
+    }
+  }
+});
+
+test("2.36.0 其他权限与订阅账号分支源码替换与复合规则全部有效", async () => {
+  const current = await loadDomTranslations();
+  const sample = Buffer.from([
+    'const dIb=(a,b,c,d,f,g)=>{if(g)return a=a?.trim()||"this model",b&&(b=new Date(b),!Number.isNaN(b.getTime()))?`Your quota for ${a} will reset on ${b.toLocaleString()}. Switch to another available model to continue.`:`Your quota for ${a} has been reached. Switch to another available model to continue.`;g="";var h=d!==void 0;h&&c&&(f===void 0||d<f)&&(g=`You need ${f?"at least "+f:"more"} AI Credits to send messages. To continue using ${a||"this model"} now, purchase more AI Credits.`);if(b)try{let k=\n(new Date(b)).toLocaleString();g+=` Your plan\'s baseline quota will refresh on ${k}.`}catch(k){console.warn("Failed to parse quota reset timestamp",k)}h&&!c&&(g+=" To continue using this model now, enable AI Credit overages.");return g};',
+    'var fa={summary:g?zbc(ca)?`${T4(aa.memberCount)}. Managed by your organization.`:`${T4(aa.memberCount)}. Managed by your organization. Disabling the bundle turns off its plugins.`:ha?`${T4(aa.memberCount)}. Disabling or removing the bundle applies only to the ones it installed.`:""};',
+    'switch(a){case "expiring_soon":return b?`Credentials expire in ${b}. Refresh credentials to keep this automation running`:"Credentials expiring soon. Refresh credentials to keep this automation running";case "expired":return"Credentials expired. This automation will not run until credentials are refreshed"}',
+    'var E=A&&B?`${z} (disabled by admin)`:z;var P=R&&H&&" (ADC)";',
+    'var xa=u?{label:"Administrator access (UAC)",detail:xa?.reason||"Grant one-time administrator access",canInlineApprove:!0}:{label:`Permission: ${za}`,detail:(ta?.target??"")||"Grant permission",canInlineApprove:!0};',
+    'Gb(`upload file size (${String(Dd)} bytes) exceeds 52428800-byte (50 MiB) limit`);Gb(`total upload size (${Ua} bytes) exceeds 104857600-byte (100 MiB) limit`);Gb(`total upload size (${Wb.totalBytes} bytes) exceeds 104857600-byte (100 MiB) limit`);',
+  ].join("\n"), "utf8");
+  const out = createLocalizedBundle(sample, current, { skipCoverage: true }).buffer.toString("utf8");
+  assert.match(out, /购买更多 AI 点数/);
+  assert.match(out, /你的方案基线配额将于 \$\{k\} 刷新/);
+  assert.match(out, /请启用 AI 点数超额使用/);
+  assert.match(out, /由你的组织托管/);
+  assert.match(out, /凭证将于 \$\{b\} 后过期/);
+  assert.match(out, /凭证已过期，刷新凭证前/);
+  assert.match(out, /（已被管理员禁用）/);
+  assert.match(out, /"（ADC）"/);
+  assert.match(out, /label:`权限：\$\{za\}`/);
+  assert.match(out, /"授予权限"/);
+  assert.match(out, /100 MiB）上限/);
 });
 
 test("对话标题独立规则：带后缀/域名/产品名照常翻译，分桶存储不污染 UI，覆盖 externalSummaries 且失败不永久锁死", async () => {
