@@ -14080,7 +14080,11 @@
     "Close Review": "关闭审查",
     "Artifact Viewer header": "工件查看器标题栏",
     "Edit project name": "编辑项目名称",
-    "Close Homepage Layout Preview": "关闭主页布局预览"
+    "Close Homepage Layout Preview": "关闭主页布局预览",
+    "(ADC)": "（ADC）",
+    "Grant permission": "授予权限",
+    "Credentials expiring soon. Refresh credentials to keep this automation running": "凭据即将过期。请刷新凭据以保持此自动化继续运行",
+    "Credentials expired. This automation will not run until credentials are refreshed": "凭据已过期。刷新凭据前，此自动化将不会运行"
   },
   "patterns": [
     {
@@ -31791,6 +31795,41 @@
     {
       "source": "^Environment variable \"(.+?)\" is already used by (.+?) in this scope\\. Choose a different name or update the existing credential\\.$",
       "target": "环境变量“$1”已被当前作用域内的 $2 占用。请更换其他名称，或更新现有凭据。",
+      "flags": "u"
+    },
+    {
+      "source": "^Permission: (.+)$",
+      "target": "权限：$1",
+      "flags": "u"
+    },
+    {
+      "source": "^Credentials expire in (.+?)\\. Refresh credentials to keep this automation running$",
+      "target": "凭据将在 $1 后过期。请刷新凭据以保持此自动化继续运行",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)\\. Managed by your organization\\.$",
+      "target": "$1。由你的组织托管。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)\\. Managed by your organization\\. Disabling the bundle turns off its plugins\\.$",
+      "target": "$1。由你的组织托管。停用此组合包将关闭其包含的插件。",
+      "flags": "u"
+    },
+    {
+      "source": "^(.+?)\\. Disabling or removing the bundle applies only to the ones it installed\\.$",
+      "target": "$1。停用或移除此组合包仅作用于它所安装的插件。",
+      "flags": "u"
+    },
+    {
+      "source": "^total upload size \\((.+?) bytes\\) exceeds 104857600-byte \\(100 MiB\\) limit$",
+      "target": "总上传大小（$1 字节）超过 104857600 字节（100 MiB）上限",
+      "flags": "u"
+    },
+    {
+      "source": "^upload file size \\((.+?) bytes\\) exceeds 52428800-byte \\(50 MiB\\) limit$",
+      "target": "上传文件大小（$1 字节）超过 52428800 字节（50 MiB）上限",
       "flags": "u"
     }
   ],

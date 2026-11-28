@@ -1070,7 +1070,8 @@ export function createRuntimeOverlay(dictionary) {
   globalThis.__AGY_ZHCN_TRANSLATE_MODEL_DESC__ = __translateModelTagDesc;
   globalThis.__AGY_ZHCN_PACK_VERSION__ = ${JSON.stringify(packVersion)};
   globalThis.__AGY_ZHCN_MAX_APP_VERSION__ = ${JSON.stringify(maxAppVersion)};
-  let __packPanelBusy = false;
+  let __packCheckBusy = false;
+  let __packSaveBusy = false;
   let __packPanelState = {
     cur: ${JSON.stringify(packVersion)},
     maxApp: ${JSON.stringify(maxAppVersion)},
@@ -1085,9 +1086,24 @@ export function createRuntimeOverlay(dictionary) {
     writable: false,
     settingsLoaded: false,
     settingsMsg: "",
+    settingsMsgOk: false,
+    lastCheckAt: 0,
+    lastCheckMs: 0,
+    lastCheckTimeStr: "",
+    diagOpen: false,
+    diagMsg: "",
     settings: { packAutoUpdate: "auto", autoFollow: "auto", onlineTranslate: false, titleAutoTranslate: true },
   };
   let __packUiRefs = null;
+  const __fmtTimeNow = () => {
+    try {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+    } catch {
+      return "";
+    }
+  };
   const __renderPackPanel = () => {
     if (!__packUiRefs) return;
     const r = __packUiRefs;
@@ -1096,6 +1112,9 @@ export function createRuntimeOverlay(dictionary) {
       ? ("当前版本：v" + (st.cur || "未知") + "  ·  已适配最高客户端：" + st.maxApp)
       : ("当前版本：v" + (st.cur || "未知"));
     r.statusLine.textContent = st.statusText;
+    r.statusLine.style.color = st.statusKind === "latest" || st.statusKind === "updated"
+      ? "#16a34a"
+      : (st.statusKind === "error" ? "#dc2626" : "inherit");
     if (st.notes && st.statusKind === "available") {
       r.notesBox.style.display = "block";
       r.notesBox.textContent = st.notes;
@@ -1103,35 +1122,58 @@ export function createRuntimeOverlay(dictionary) {
       r.notesBox.style.display = "none";
       r.notesBox.textContent = "";
     }
-    const busy = __packPanelBusy;
+    const cBusy = __packCheckBusy;
+    const sBusy = __packSaveBusy;
     r.btnCheck.style.display = (st.statusKind === "legacy" || st.statusKind === "updating") ? "none" : "inline-flex";
-    r.btnCheck.disabled = busy;
-    r.btnCheck.textContent = st.statusKind === "idle" ? "检查更新" : "重新检查";
+    r.btnCheck.disabled = cBusy;
+    r.btnCheck.style.opacity = cBusy ? "0.62" : "1";
+    r.btnCheck.style.cursor = cBusy ? "wait" : "pointer";
+    r.btnCheck.textContent = cBusy
+      ? "⟳ 检查中…"
+      : (st.statusKind === "idle" ? "检查更新" : "重新检查");
     const showAvail = st.statusKind === "available" && st.hasHook;
     r.btnApply.style.display = showAvail ? "inline-flex" : "none";
-    r.btnApply.disabled = busy;
+    r.btnApply.disabled = cBusy;
+    r.btnApply.style.opacity = cBusy ? "0.62" : "1";
+    r.btnApply.style.cursor = cBusy ? "wait" : "pointer";
     r.btnSkip.style.display = showAvail ? "inline-flex" : "none";
-    r.btnSkip.disabled = busy;
+    r.btnSkip.disabled = cBusy;
+    r.btnSkip.style.opacity = cBusy ? "0.62" : "1";
+    r.btnSkip.style.cursor = cBusy ? "wait" : "pointer";
     r.btnReload.style.display = (st.statusKind === "updated" && st.hot) ? "inline-flex" : "none";
     r.linkRelease.href = "https://github.com/Ace2025001/antigravity-desktop-zhcn";
 
     if (!st.settingsLoaded) {
       r.settingsTip.textContent = "正在读取设置…";
+      r.settingsTip.style.color = "inherit";
     } else if (st.settingsMsg) {
       r.settingsTip.textContent = st.settingsMsg;
+      r.settingsTip.style.color = st.settingsMsgOk ? "#16a34a" : "#dc2626";
     } else {
       r.settingsTip.textContent = st.writable ? "点击即可保存生效" : "只读预览（更新并重启后可改）";
+      r.settingsTip.style.color = "inherit";
     }
     const isWin = !st.platform || st.platform === "win32";
     r.rowAutoFollow.style.display = isWin ? "flex" : "none";
     for (const grp of r.settingButtons) {
       const active = st.settings[grp.key] === grp.val;
-      grp.btn.disabled = !st.writable || busy;
-      grp.btn.style.opacity = st.writable ? "1" : "0.55";
-      grp.btn.style.cursor = st.writable ? "pointer" : "default";
+      grp.btn.disabled = !st.writable || sBusy;
+      grp.btn.style.opacity = !st.writable ? "0.55" : (sBusy ? "0.7" : "1");
+      grp.btn.style.cursor = !st.writable ? "default" : (sBusy ? "wait" : "pointer");
       grp.btn.style.background = active ? "var(--primary,#2563eb)" : "transparent";
       grp.btn.style.color = active ? "#ffffff" : "inherit";
       grp.btn.style.borderColor = active ? "var(--primary,#2563eb)" : "var(--border,rgba(127,127,127,.28))";
+    }
+    if (r.diagToggle && r.diagBody) {
+      r.diagToggle.textContent = (st.diagOpen ? "▾ " : "▸ ") + "运行状态与诊断";
+      r.diagBody.style.display = st.diagOpen ? "block" : "none";
+      if (st.diagOpen && r.diagText) {
+        r.diagText.textContent =
+          "核心词库：" + exactTranslations.size + " 条精确 + " + patternTranslations.length + " 条动态\\n" +
+          "本页已汉化：" + stats.translatedTextNodes + " 处文本 / " + stats.translatedAttributes + " 处属性\\n" +
+          "智能缓存：界面补充 " + __learnedUiTranslations.size + " 条 · 标题翻译 " + __learnedTitleTranslations.size + " 条 · 手动保留 " + __manualTitleIds.size + " 个";
+      }
+      if (r.diagMsg) r.diagMsg.textContent = st.diagMsg || "";
     }
     if (r.hideTipIfTargetHidden) r.hideTipIfTargetHidden();
   };
@@ -1144,7 +1186,7 @@ export function createRuntimeOverlay(dictionary) {
       const wrap = document.createElement("div");
       wrap.setAttribute("data-agy-zhcn-pack-toast", "1");
       wrap.setAttribute("data-agy-zhcn-pack-panel", "1");
-      wrap.style.cssText = "position:fixed;right:20px;bottom:20px;z-index:2147483647;width:392px;max-width:calc(100vw - 32px);padding:14px 16px;border-radius:12px;border:1px solid var(--border,rgba(127,127,127,.28));background:var(--background,#ffffff);color:var(--foreground,#18181b);box-shadow:0 12px 34px rgba(0,0,0,.22);font-size:13px;line-height:1.5;";
+      wrap.style.cssText = "position:fixed;right:20px;bottom:20px;z-index:2147483647;width:396px;max-width:calc(100vw - 32px);padding:14px 16px;border-radius:12px;border:1px solid var(--border,rgba(127,127,127,.28));background:var(--background,#ffffff);color:var(--foreground,#18181b);box-shadow:0 12px 34px rgba(0,0,0,.22);font-size:13px;line-height:1.5;user-select:none;";
 
       const tipBox = document.createElement("div");
       tipBox.setAttribute("data-agy-zhcn-pack-tooltip", "1");
@@ -1180,7 +1222,7 @@ export function createRuntimeOverlay(dictionary) {
           tipBox.style.top = Math.round(top) + "px";
         } catch {}
       };
-      const __bindPackTip = (el, tipTextOrFn) => {
+      const __bindPackTip = (el, tipTextOrFn, onHoverChange) => {
         const getTip = () => {
           const t = typeof tipTextOrFn === "function" ? tipTextOrFn() : tipTextOrFn;
           return typeof t === "string" ? t.trim() : "";
@@ -1194,10 +1236,12 @@ export function createRuntimeOverlay(dictionary) {
         };
         syncMeta();
         el.onmouseenter = () => {
+          if (typeof onHoverChange === "function") onHoverChange(true);
           const t = syncMeta();
           if (t) __showPackTip(el, t);
         };
         el.onmouseleave = () => {
+          if (typeof onHoverChange === "function") onHoverChange(false);
           if (__tipTarget === el) __hidePackTip();
         };
         el.onfocus = () => {
@@ -1205,32 +1249,70 @@ export function createRuntimeOverlay(dictionary) {
           if (t) __showPackTip(el, t);
         };
         el.onblur = () => {
+          if (typeof onHoverChange === "function") onHoverChange(false);
           if (__tipTarget === el) __hidePackTip();
         };
       };
+      const __bindBtnPress = (el, primary = false, isActiveFn = null) => {
+        el.style.transition = "background .14s ease, transform .08s ease, opacity .14s ease, border-color .14s ease, filter .14s ease";
+        const onHover = (entered) => {
+          if (el.disabled) return;
+          if (primary) {
+            el.style.filter = entered ? "brightness(1.08)" : "";
+          } else {
+            const active = typeof isActiveFn === "function" && isActiveFn();
+            if (!active) el.style.background = entered ? "rgba(127,127,127,0.12)" : "transparent";
+          }
+        };
+        el.onmousedown = () => {
+          if (!el.disabled) el.style.transform = "scale(0.97)";
+        };
+        el.onmouseup = () => {
+          el.style.transform = "";
+        };
+        return onHover;
+      };
       wrap.onmouseleave = __hidePackTip;
 
+      let __cleanupGlobal = () => {};
+      const __closePanel = () => {
+        __cleanupGlobal();
+        __hidePackTip();
+        wrap.remove();
+        __packUiRefs = null;
+      };
+
       const head = document.createElement("div");
-      head.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;";
+      head.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;cursor:move;";
       const title = document.createElement("div");
       title.style.cssText = "font-weight:600;font-size:14px;";
       title.textContent = "Antigravity 汉化中心";
+      const headActions = document.createElement("div");
+      headActions.style.cssText = "display:flex;align-items:center;gap:6px;cursor:default;";
+      const btnHeadReload = document.createElement("button");
+      btnHeadReload.type = "button";
+      btnHeadReload.textContent = "刷新界面";
+      btnHeadReload.style.cssText = "padding:2px 7px;border-radius:5px;border:1px solid var(--border,rgba(127,127,127,.28));background:transparent;color:inherit;font-size:11px;cursor:pointer;opacity:.85;";
+      __bindPackTip(btnHeadReload, "立即刷新当前客户端窗口（Ctrl+R），使配置与词库改动生效", __bindBtnPress(btnHeadReload, false));
+      btnHeadReload.onclick = (ev) => { try { ev?.stopPropagation?.(); location.reload(); } catch {} };
       const btnClose = document.createElement("button");
       btnClose.type = "button";
       btnClose.textContent = "×";
-      btnClose.style.cssText = "border:none;background:transparent;color:inherit;font-size:18px;line-height:1;cursor:pointer;opacity:.7;padding:0 4px;";
-      __bindPackTip(btnClose, "关闭汉化中心面板");
-      btnClose.onclick = () => { __hidePackTip(); wrap.remove(); __packUiRefs = null; };
+      btnClose.style.cssText = "border:none;background:transparent;color:inherit;font-size:18px;line-height:1;cursor:pointer;opacity:.7;padding:0 4px;border-radius:4px;";
+      __bindPackTip(btnClose, "关闭汉化中心面板（Esc）", __bindBtnPress(btnClose, false));
+      btnClose.onclick = (ev) => { ev?.stopPropagation?.(); __closePanel(); };
+      headActions.appendChild(btnHeadReload);
+      headActions.appendChild(btnClose);
       head.appendChild(title);
-      head.appendChild(btnClose);
+      head.appendChild(headActions);
 
       const verLine = document.createElement("div");
       verLine.style.cssText = "font-size:12px;opacity:.82;margin-bottom:10px;";
 
       const updCard = document.createElement("div");
-      updCard.style.cssText = "padding:10px 12px;border-radius:8px;border:1px solid var(--border,rgba(127,127,127,.22));margin-bottom:10px;";
+      updCard.style.cssText = "padding:10px 12px;border-radius:8px;border:1px solid var(--border,rgba(127,127,127,.22));margin-bottom:10px;transition:border-color .25s ease, background .25s ease;";
       const statusLine = document.createElement("div");
-      statusLine.style.cssText = "font-size:12.5px;white-space:pre-line;";
+      statusLine.style.cssText = "font-size:12.5px;white-space:pre-line;transition:color .2s ease;";
       const notesBox = document.createElement("div");
       notesBox.style.cssText = "display:none;margin-top:8px;padding:6px 8px;border-radius:6px;border:1px solid var(--border,rgba(127,127,127,.18));font-size:11.5px;opacity:.85;max-height:96px;overflow-y:auto;white-space:pre-wrap;";
       const actions = document.createElement("div");
@@ -1241,9 +1323,14 @@ export function createRuntimeOverlay(dictionary) {
         b.type = "button";
         b.textContent = label;
         b.style.cssText = primary
-          ? "padding:4px 10px;border-radius:6px;border:1px solid var(--primary,#2563eb);background:var(--primary,#2563eb);color:#ffffff;cursor:pointer;font-size:12px;"
-          : "padding:4px 10px;border-radius:6px;border:1px solid var(--border,rgba(127,127,127,.28));background:transparent;color:inherit;cursor:pointer;font-size:12px;";
-        if (tip) __bindPackTip(b, tip);
+          ? "display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;border:1px solid var(--primary,#2563eb);background:var(--primary,#2563eb);color:#ffffff;cursor:pointer;font-size:12px;"
+          : "display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;border:1px solid var(--border,rgba(127,127,127,.28));background:transparent;color:inherit;cursor:pointer;font-size:12px;";
+        const hoverCb = __bindBtnPress(b, primary);
+        if (tip) __bindPackTip(b, tip, hoverCb);
+        else {
+          b.onmouseenter = () => hoverCb(true);
+          b.onmouseleave = () => hoverCb(false);
+        }
         return b;
       };
       const btnCheck = mkBtn("检查更新", false, "联网核对 GitHub 最新汉化包版本与适配说明");
@@ -1273,7 +1360,7 @@ export function createRuntimeOverlay(dictionary) {
       setTitle.style.cssText = "font-weight:600;font-size:12.5px;";
       setTitle.textContent = "汉化设置";
       const settingsTip = document.createElement("div");
-      settingsTip.style.cssText = "font-size:11px;opacity:.7;";
+      settingsTip.style.cssText = "font-size:11px;opacity:.78;transition:color .2s ease;";
       setHead.appendChild(setTitle);
       setHead.appendChild(settingsTip);
       setBox.appendChild(setHead);
@@ -1295,7 +1382,8 @@ export function createRuntimeOverlay(dictionary) {
           b.setAttribute("data-setting-key", key);
           b.setAttribute("data-setting-val", String(val));
           b.style.cssText = "padding:2px 7px;border-radius:5px;border:1px solid var(--border,rgba(127,127,127,.28));background:transparent;color:inherit;font-size:11.5px;cursor:pointer;";
-          if (btnTip) __bindPackTip(b, btnTip);
+          const hoverCb = __bindBtnPress(b, false, () => __packPanelState.settings[key] === val);
+          if (btnTip) __bindPackTip(b, btnTip, hoverCb);
           b.onclick = () => __savePackSetting(key, val, txt);
           grp.appendChild(b);
           settingButtons.push({ key, val, btn: b });
@@ -1344,12 +1432,150 @@ export function createRuntimeOverlay(dictionary) {
         ],
       );
 
+      const diagWrap = document.createElement("div");
+      diagWrap.style.cssText = "margin-top:10px;padding-top:8px;border-top:1px solid var(--border,rgba(127,127,127,.18));";
+      const diagHead = document.createElement("div");
+      diagHead.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:8px;";
+      const diagToggle = document.createElement("button");
+      diagToggle.type = "button";
+      diagToggle.textContent = "▸ 运行状态与诊断";
+      diagToggle.style.cssText = "border:none;background:transparent;color:inherit;font-size:11.5px;opacity:.78;cursor:pointer;padding:2px 4px;border-radius:4px;";
+      __bindPackTip(diagToggle, "展开或收起词库数量、本页汉化计数及快速操作", __bindBtnPress(diagToggle, false));
+      diagToggle.onclick = () => {
+        __packPanelState.diagOpen = !__packPanelState.diagOpen;
+        __packPanelState.diagMsg = "";
+        __renderPackPanel();
+      };
+      const diagMsg = document.createElement("span");
+      diagMsg.style.cssText = "font-size:11px;color:#16a34a;";
+      diagHead.appendChild(diagToggle);
+      diagHead.appendChild(diagMsg);
+
+      const diagBody = document.createElement("div");
+      diagBody.style.cssText = "display:none;margin-top:6px;padding:8px 10px;border-radius:8px;border:1px solid var(--border,rgba(127,127,127,.18));font-size:11.5px;line-height:1.55;";
+      const diagText = document.createElement("div");
+      diagText.style.cssText = "white-space:pre-line;opacity:.88;";
+      const diagActions = document.createElement("div");
+      diagActions.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;";
+      const btnRescan = mkBtn("重扫本页", false, "重新扫描当前页面 DOM 与对话标题列表，并刷新上方计数");
+      btnRescan.style.fontSize = "11.5px";
+      btnRescan.style.padding = "2px 8px";
+      btnRescan.onclick = () => {
+        const prev = stats.translatedTextNodes + stats.translatedAttributes;
+        try { if (typeof document !== "undefined" && document.documentElement) translateTree(document.documentElement); } catch {}
+        try { if (typeof __rescanConvTitlesFn === "function") __rescanConvTitlesFn(); } catch {}
+        const diff = (stats.translatedTextNodes + stats.translatedAttributes) - prev;
+        __packPanelState.diagMsg = diff > 0 ? ("已重扫，新处理 " + diff + " 处") : "已重扫本页";
+        __renderPackPanel();
+      };
+      const btnCopyDiag = mkBtn("复制诊断", false, "复制版本、设置与当前覆盖统计到剪贴板，方便排查问题");
+      btnCopyDiag.style.fontSize = "11.5px";
+      btnCopyDiag.style.padding = "2px 8px";
+      btnCopyDiag.onclick = async () => {
+        const info = [
+          "Antigravity 汉化包：v" + (__packPanelState.cur || "未知") + "（适配 " + (__packPanelState.maxApp || "未知") + "）",
+          "系统平台：" + (__packPanelState.platform || "未知"),
+          "词库规模：" + exactTranslations.size + " 条精确 + " + patternTranslations.length + " 条动态",
+          "本页替换：" + stats.translatedTextNodes + " 文本 / " + stats.translatedAttributes + " 属性",
+          "缓存统计：UI=" + __learnedUiTranslations.size + ", 标题=" + __learnedTitleTranslations.size + ", 手动保留=" + __manualTitleIds.size,
+          "设置状态：" + JSON.stringify(__packPanelState.settings),
+        ].join("\\n");
+        try {
+          if (typeof navigator !== "undefined" && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+            await navigator.clipboard.writeText(info);
+            __packPanelState.diagMsg = "已复制诊断信息";
+          } else {
+            __packPanelState.diagMsg = "当前环境不支持剪贴板写入";
+          }
+        } catch {
+          __packPanelState.diagMsg = "复制失败";
+        }
+        __renderPackPanel();
+      };
+      diagActions.appendChild(btnRescan);
+      diagActions.appendChild(btnCopyDiag);
+      diagBody.appendChild(diagText);
+      diagBody.appendChild(diagActions);
+      diagWrap.appendChild(diagHead);
+      diagWrap.appendChild(diagBody);
+
       wrap.appendChild(head);
       wrap.appendChild(verLine);
       wrap.appendChild(updCard);
       wrap.appendChild(setBox);
+      wrap.appendChild(diagWrap);
       wrap.appendChild(tipBox);
       document.body.appendChild(wrap);
+
+      try {
+        wrap.animate?.(
+          [{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "translateY(0)" }],
+          { duration: 130, easing: "ease-out" },
+        );
+      } catch {}
+
+      let dragging = false;
+      let dragOffX = 0;
+      let dragOffY = 0;
+      head.onmousedown = (ev) => {
+        if (!ev || ev.button !== 0) return;
+        const t = ev.target;
+        if (t && typeof t.closest === "function" && t.closest("button, a")) return;
+        const rect = wrap.getBoundingClientRect?.();
+        if (!rect) return;
+        dragging = true;
+        dragOffX = ev.clientX - rect.left;
+        dragOffY = ev.clientY - rect.top;
+        wrap.style.left = Math.round(rect.left) + "px";
+        wrap.style.top = Math.round(rect.top) + "px";
+        wrap.style.right = "auto";
+        wrap.style.bottom = "auto";
+        __hidePackTip();
+        ev.preventDefault?.();
+      };
+
+      const onDocMouseMove = (ev) => {
+        if (!dragging || !ev) return;
+        const rect = wrap.getBoundingClientRect?.();
+        const w = rect?.width || 396;
+        const h = rect?.height || 300;
+        const vw = globalThis.innerWidth || document.documentElement?.clientWidth || 1280;
+        const vh = globalThis.innerHeight || document.documentElement?.clientHeight || 800;
+        const nx = Math.max(8, Math.min(ev.clientX - dragOffX, vw - w - 8));
+        const ny = Math.max(8, Math.min(ev.clientY - dragOffY, vh - h - 8));
+        wrap.style.left = Math.round(nx) + "px";
+        wrap.style.top = Math.round(ny) + "px";
+      };
+      const onDocMouseUp = () => { dragging = false; };
+      const onDocKeyDown = (ev) => {
+        if (ev?.key !== "Escape") return;
+        const ae = document.activeElement;
+        if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable)) return;
+        __closePanel();
+      };
+      let ignoreInitialOutside = true;
+      setTimeout(() => { ignoreInitialOutside = false; }, 0);
+      const onDocMouseDownOutside = (ev) => {
+        if (ignoreInitialOutside || !ev?.target) return;
+        if (typeof wrap.contains === "function" && !wrap.contains(ev.target)) {
+          __closePanel();
+        }
+      };
+      if (typeof document.addEventListener === "function") {
+        document.addEventListener("mousemove", onDocMouseMove);
+        document.addEventListener("mouseup", onDocMouseUp);
+        document.addEventListener("keydown", onDocKeyDown);
+        document.addEventListener("mousedown", onDocMouseDownOutside);
+      }
+      __cleanupGlobal = () => {
+        dragging = false;
+        if (typeof document.removeEventListener === "function") {
+          document.removeEventListener("mousemove", onDocMouseMove);
+          document.removeEventListener("mouseup", onDocMouseUp);
+          document.removeEventListener("keydown", onDocKeyDown);
+          document.removeEventListener("mousedown", onDocMouseDownOutside);
+        }
+      };
 
       btnCheck.onclick = () => __runPanelCheck();
       btnApply.onclick = () => __runPanelApply();
@@ -1357,8 +1583,23 @@ export function createRuntimeOverlay(dictionary) {
       btnReload.onclick = () => { try { location.reload(); } catch {} };
 
       __packUiRefs = {
-        wrap, verLine, statusLine, notesBox, btnCheck, btnApply, btnSkip, btnReload, linkRelease,
-        settingsTip, rowAutoFollow, settingButtons, tipBox,
+        wrap, verLine, updCard, statusLine, notesBox, btnCheck, btnApply, btnSkip, btnReload, linkRelease,
+        settingsTip, rowAutoFollow, settingButtons, tipBox, diagToggle, diagBody, diagText, diagMsg,
+        flashCard: (color = "var(--primary,#2563eb)") => {
+          try {
+            if (typeof updCard.animate !== "function") return;
+            updCard.style.borderColor = color;
+            updCard.animate(
+              [{ backgroundColor: "rgba(37,99,235,0.08)" }, { backgroundColor: "transparent" }],
+              { duration: 520, easing: "ease-out" },
+            );
+            setTimeout(() => {
+              if (__packUiRefs?.updCard === updCard) {
+                updCard.style.borderColor = "var(--border,rgba(127,127,127,.22))";
+              }
+            }, 560);
+          } catch {}
+        },
         hideTipIfTargetHidden: () => {
           if (__tipTarget && (__tipTarget.style?.display === "none" || __tipTarget.disabled)) __hidePackTip();
         },
@@ -1389,8 +1630,9 @@ export function createRuntimeOverlay(dictionary) {
     __renderPackPanel();
   };
   const __savePackSetting = async (key, val, txt) => {
-    if (__packPanelBusy || !__packPanelState.writable) return;
-    __packPanelBusy = true;
+    if (__packSaveBusy || !__packPanelState.writable) return;
+    __packSaveBusy = true;
+    __packPanelState.settingsMsgOk = true;
     __packPanelState.settingsMsg = "正在保存…";
     __renderPackPanel();
     try {
@@ -1404,22 +1646,26 @@ export function createRuntimeOverlay(dictionary) {
       const data = await resp.json().catch(() => null);
       if (data && data.ok) {
         __packPanelState.settings[key] = val;
+        __packPanelState.settingsMsgOk = true;
         __packPanelState.settingsMsg = (key === "onlineTranslate" || key === "titleAutoTranslate")
-          ? ("已设为「" + txt + "」（部分已开页面刷新后生效）")
-          : ("已保存：「" + txt + "」");
+          ? ("✓ 已设为「" + txt + "」（部分已开页面可点右上角“刷新界面”生效）")
+          : ("✓ 已保存：「" + txt + "」");
       } else {
+        __packPanelState.settingsMsgOk = false;
         __packPanelState.settingsMsg = "保存失败，请重新打开客户端后再试";
       }
     } catch {
+      __packPanelState.settingsMsgOk = false;
       __packPanelState.settingsMsg = "保存失败，请重新打开客户端后再试";
     } finally {
-      __packPanelBusy = false;
+      __packSaveBusy = false;
       __renderPackPanel();
     }
   };
   const __runPanelCheck = async () => {
-    if (__packPanelBusy) return;
-    __packPanelBusy = true;
+    if (__packCheckBusy) return;
+    __packCheckBusy = true;
+    const t0 = Date.now();
     __packPanelState.statusKind = "checking";
     __packPanelState.statusText = "正在连接 GitHub 检查最新版本…";
     __packPanelState.notes = "";
@@ -1439,6 +1685,8 @@ export function createRuntimeOverlay(dictionary) {
         __packPanelState.statusText = "未能完成更新检查，请稍后重试或点右侧 GitHub 主页查看。";
         return;
       }
+      const elapsedSec = Math.max(0.1, (Date.now() - t0) / 1000).toFixed(1);
+      const timeStr = __fmtTimeNow();
       if (data.currentVersion) {
         __packPanelState.cur = data.currentVersion;
         globalThis.__AGY_ZHCN_PACK_VERSION__ = data.currentVersion;
@@ -1451,30 +1699,39 @@ export function createRuntimeOverlay(dictionary) {
       if (typeof data.hasHook === "boolean") __packPanelState.hasHook = data.hasHook;
       if (data.platform) __packPanelState.platform = data.platform;
       if (data.status === "up-to-date") {
+        __packPanelState.lastCheckAt = Date.now();
+        __packPanelState.lastCheckMs = Date.now() - t0;
+        __packPanelState.lastCheckTimeStr = timeStr;
         __packPanelState.statusKind = "latest";
-        __packPanelState.statusText = "当前汉化包已是最新版本 v" + (__packPanelState.cur || data.latestVersion);
+        __packPanelState.statusText = "✓ 当前汉化包已是最新版本 v" + (__packPanelState.cur || data.latestVersion) + "（" + timeStr + " 已核对，用时 " + elapsedSec + " 秒）";
+        __packUiRefs?.flashCard?.("#16a34a");
       } else if (data.status === "update-available") {
+        __packPanelState.lastCheckAt = Date.now();
+        __packPanelState.lastCheckMs = Date.now() - t0;
+        __packPanelState.lastCheckTimeStr = timeStr;
         __packPanelState.statusKind = "available";
         __packPanelState.latestVer = data.latestVersion || "";
         __packPanelState.notes = data.notes || "";
         __packPanelState.statusText = data.hasHook
-          ? ("发现新版本 v" + data.latestVersion + "，可点击下方按钮下载校验并更新。")
-          : ("发现新版本 v" + data.latestVersion + "（请点右侧 GitHub 主页下载新版覆盖）。");
+          ? ("发现新版本 v" + data.latestVersion + "（" + timeStr + " 核对），可点击下方按钮下载校验并更新。")
+          : ("发现新版本 v" + data.latestVersion + "（" + timeStr + " 核对，请点右侧 GitHub 主页下载新版覆盖）。");
+        __packUiRefs?.flashCard?.("var(--primary,#2563eb)");
       } else {
         __packPanelState.statusKind = "error";
-        __packPanelState.statusText = "暂时无法获取最新版本（" + (data.reason || "网络异常") + "），请稍后重试。";
+        __packPanelState.statusText = "暂时无法获取最新版本（" + (data.reason || "网络异常") + "，" + timeStr + " 尝试），请稍后重试。";
+        __packUiRefs?.flashCard?.("#dc2626");
       }
     } catch {
       __packPanelState.statusKind = "legacy";
       __packPanelState.statusText = "暂时无法在当前窗口检查更新，请重新运行“启动中文”或点右侧 GitHub 主页查看。";
     } finally {
-      __packPanelBusy = false;
+      __packCheckBusy = false;
       __renderPackPanel();
     }
   };
   const __runPanelApply = async () => {
-    if (__packPanelBusy) return;
-    __packPanelBusy = true;
+    if (__packCheckBusy) return;
+    __packCheckBusy = true;
     __packPanelState.statusKind = "updating";
     __packPanelState.statusText = "正在下载并校验 SHA-256，请勿关闭窗口…";
     __renderPackPanel();
@@ -1493,8 +1750,9 @@ export function createRuntimeOverlay(dictionary) {
         __packPanelState.hot = Boolean(data.hot);
         __packPanelState.statusKind = "updated";
         __packPanelState.statusText = data.hot
-          ? ("已更新至 v" + (__packPanelState.cur || "") + "！中文界面已更新，点下方按钮立即刷新（其余部分在下次退出客户端时自动完成）。")
-          : ("已更新至 v" + (__packPanelState.cur || "") + "！已完成 SHA-256 校验，按 ⌘Q 退出后，重新打开一次“启动中文.command”即可完成更新。");
+          ? ("✓ 已更新至 v" + (__packPanelState.cur || "") + "！中文界面已更新，点下方按钮立即刷新（其余部分在下次退出客户端时自动完成）。")
+          : ("✓ 已更新至 v" + (__packPanelState.cur || "") + "！已完成 SHA-256 校验，按 ⌘Q 退出后，重新打开一次“启动中文.command”即可完成更新。");
+        __packUiRefs?.flashCard?.("#16a34a");
       } else {
         __packPanelState.statusKind = "error";
         __packPanelState.statusText = "这次更新没有完成，可以运行“启动中文”重试，或点右侧 GitHub 主页下载。";
@@ -1503,13 +1761,13 @@ export function createRuntimeOverlay(dictionary) {
       __packPanelState.statusKind = "error";
       __packPanelState.statusText = "更新请求异常，可以运行“启动中文”重试，或点右侧 GitHub 主页下载。";
     } finally {
-      __packPanelBusy = false;
+      __packCheckBusy = false;
       __renderPackPanel();
     }
   };
   const __runPanelSkip = async () => {
-    if (__packPanelBusy || !__packPanelState.latestVer) return;
-    __packPanelBusy = true;
+    if (__packCheckBusy || !__packPanelState.latestVer) return;
+    __packCheckBusy = true;
     try {
       await fetch("agy-zhcn://pack-update-skip", {
         method: "POST",
@@ -1518,9 +1776,10 @@ export function createRuntimeOverlay(dictionary) {
       });
       __packPanelState.statusKind = "idle";
       __packPanelState.notes = "";
+      __packPanelState.lastCheckAt = 0;
       __packPanelState.statusText = "已跳过 v" + __packPanelState.latestVer + "（启动时不再提醒此版本，你随时可点下方重新检查）。";
     } catch {} finally {
-      __packPanelBusy = false;
+      __packCheckBusy = false;
       __renderPackPanel();
     }
   };
@@ -1529,7 +1788,9 @@ export function createRuntimeOverlay(dictionary) {
     __packPanelState.cur = globalThis.__AGY_ZHCN_PACK_VERSION__ || __packPanelState.cur;
     __packPanelState.maxApp = globalThis.__AGY_ZHCN_MAX_APP_VERSION__ || __packPanelState.maxApp;
     __packPanelState.settingsMsg = "";
-    if (!__packPanelBusy) {
+    __packPanelState.diagMsg = "";
+    const recentlyChecked = __packPanelState.lastCheckAt > 0 && (Date.now() - __packPanelState.lastCheckAt) < 180000;
+    if (!__packCheckBusy && !recentlyChecked) {
       __packPanelState.statusKind = "idle";
       __packPanelState.notes = "";
       __packPanelState.statusText = "正在读取设置与版本状态…";
@@ -1537,12 +1798,13 @@ export function createRuntimeOverlay(dictionary) {
     __renderPackPanel();
     await __loadPackSettings();
     if (__packPanelState.settings.packAutoUpdate === "off") {
-      if (!__packPanelBusy && __packPanelState.statusKind === "idle") {
+      if (!__packCheckBusy && __packPanelState.statusKind === "idle") {
         __packPanelState.statusText = "已关闭自动检查更新，可点击下方“检查更新”手动核对，或直接在下方调整汉化设置。";
         __renderPackPanel();
       }
       return;
     }
+    if (recentlyChecked || __packPanelState.statusKind === "updated") return;
     await __runPanelCheck();
   };
   globalThis.__AGY_ZHCN_OPEN_PACK_PANEL__ = __openPackControlPanel;
@@ -1637,6 +1899,15 @@ export function createRuntimeOverlay(dictionary) {
       const pName = m[1].trim();
       const nameZh = __PROTECTED_BRAND_SET.has(pName) ? pName : (__lookup(pName) ?? pName);
       return leading + "已安装插件：" + nameZh + trailing;
+    }
+    m = normalizedCore.match(/^(.+?)\\s*\\(disabled by admin\\)$/);
+    if (m) {
+      const optZh = __lookup(m[1]);
+      return leading + (optZh ?? m[1]) + "（已被管理员禁用）" + trailing;
+    }
+    m = normalizedCore.match(/^(Disable|Enable)\\s+(.+?)\\s+tool\\s+for\\s+(.+)$/);
+    if (m) {
+      return leading + (m[1] === "Disable" ? "禁用 " : "启用 ") + m[3] + " 中的 " + m[2] + " 工具" + trailing;
     }
     m = normalizedCore.match(/^failed to get load code assist response:\\s*error getting token source:\\s*You are not logged into Antigravity\\.?$/i);
     if (m) return leading + "获取代码辅助响应失败：无法获取令牌来源——你尚未登录 Antigravity。" + trailing;
@@ -5111,9 +5382,9 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
   );
   sourceText = fastAnchorReplace(
     sourceText,
-    '=(a,b,c,d,f,g)=>{if(g)return a=a||"this model"',
-    /([a-zA-Z0-9_$]+)=\(a,b,c,d,f,g\)=>\{if\(g\)return a=a\|\|"this model",b&&\(b=new Date\(b\),!Number\.isNaN\(b\.getTime\(\)\)\)\?`Your quota for \$\{a\} will reset on \$\{b\.toLocaleString\(\)\}\. (?:Switch to another available model to continue\.|请切换到其他可用模型以继续。)`:`Your quota for \$\{a\} has been reached\. (?:Switch to another available model to continue\.|请切换到其他可用模型以继续。)`;g="";var h=d!==void 0;h&&c&&\(f===void 0\|\|d<f\)&&\(g=`You need \$\{f\?"at least "\+f:"more"\} AI Credits to send messages\. To continue using \$\{a\|\|"this model"\} now, purchase more AI Credits\.`\);if\(b\)try\{let k=\(new Date\(b\)\)\.toLocaleString\(\);\s*g\+=` (?:Your plan's baseline quota will refresh on|你的方案基线配额将于) \$\{k\}(?:\.| 刷新。)`\}catch\(k\)\{console\.warn\("Failed to parse quota reset timestamp",k\)\}h&&!c&&\(g\+=" (?:To continue using this model now, enable AI Credit overages\.|若要立即继续使用此模型，请启用 AI 点数超额使用。)"\);return g\};/g,
-    '$1=(a,b,c,d,f,g)=>{if(g)return a=a||"此模型",b&&(b=new Date(b),!Number.isNaN(b.getTime()))?`你的 ${a} 配额将于 ${b.toLocaleString()} 重置。请切换到其他可用模型以继续。`:`你的 ${a} 配额已达上限。请切换到其他可用模型以继续。`;g="";var h=d!==void 0;h&&c&&(f===void 0||d<f)&&(g=`你还需要 ${f?"至少 "+f:"更多"} AI 点数才能继续发送消息。若要立即继续使用${a||"此模型"}，请购买更多 AI 点数。`);if(b)try{let k=(new Date(b)).toLocaleString();g+=` 你的方案基线配额将于 ${k} 刷新。`}catch(k){console.warn("Failed to parse quota reset timestamp",k)}h&&!c&&(g+=" 若要立即继续使用此模型，请启用 AI 点数超额使用。");return g};'
+    '=(a,b,c,d,f,g)=>{if(g)return a=',
+    /([a-zA-Z0-9_$]+)=\(a,b,c,d,f,g\)=>\{if\(g\)return a=a(?:\?\.trim\(\))?\|\|"this model",b&&\(b=new Date\(b\),!Number\.isNaN\(b\.getTime\(\)\)\)\?`Your quota for \$\{a\} will reset on \$\{b\.toLocaleString\(\)\}\. (?:Switch to another available model to continue\.|请切换到其他可用模型以继续。)`:`Your quota for \$\{a\} has been reached\. (?:Switch to another available model to continue\.|请切换到其他可用模型以继续。)`;g="";var h=d!==void 0;h&&c&&\(f===void 0\|\|d<f\)&&\(g=`You need \$\{f\?"at least "\+f:"more"\} AI Credits to send messages\. To continue using \$\{a\|\|"this model"\} now, purchase more AI Credits\.`\);if\(b\)try\{let k=[\s\r\n]*\(new Date\(b\)\)\.toLocaleString\(\);[\s\r\n]*g\+=` (?:Your plan's baseline quota will refresh on|你的方案基线配额将于) \$\{k\}(?:\.| 刷新。)`\}catch\(k\)\{console\.warn\("Failed to parse quota reset timestamp",k\)\}h&&!c&&\(g\+=" (?:To continue using this model now, enable AI Credit overages\.|若要立即继续使用此模型，请启用 AI 点数超额使用。)"\);return g\};/g,
+    '$1=(a,b,c,d,f,g)=>{if(g)return a=a?.trim()||"此模型",b&&(b=new Date(b),!Number.isNaN(b.getTime()))?`你的 ${a} 配额将于 ${b.toLocaleString()} 重置。请切换到其他可用模型以继续。`:`你的 ${a} 配额已达上限。请切换到其他可用模型以继续。`;g="";var h=d!==void 0;h&&c&&(f===void 0||d<f)&&(g=`你还需要 ${f?"至少 "+f:"更多"} AI 点数才能继续发送消息。若要立即继续使用${a||"此模型"}，请购买更多 AI 点数。`);if(b)try{let k=(new Date(b)).toLocaleString();g+=` 你的方案基线配额将于 ${k} 刷新。`}catch(k){console.warn("Failed to parse quota reset timestamp",k)}h&&!c&&(g+=" 若要立即继续使用此模型，请启用 AI 点数超额使用。");return g};'
   );
 
   // [核心修复 7] 首次引导最后一步弹窗（模块化拆分，容忍换行/变量名变更与遥测文案差异）
@@ -5983,6 +6254,38 @@ export function createLocalizedBundle(sourceBuffer, dictionary, { skipCoverage =
     'docKindLabel:`Google Doc',
     /docKindLabel:`Google Doc\$\{(\/\\bprd\\b\/i\.test\([a-zA-Z0-9_$]+\)\?[\s\r\n]*" \\u00b7 PRD":\/design\\s\*doc\|\\brfc\\b\/i\.test\([a-zA-Z0-9_$]+\)\?)" \\u00b7 Design Doc":(""\})`/g,
     'docKindLabel:`Google 文档${$1" \\u00b7 设计文档":$2`'
+  );
+
+  // 9.16 其他订阅方案、企业组织托管、管理员策略与自动化凭据提示
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Managed by your organization.',
+    /`\$\{([a-zA-Z0-9_$]+\([a-zA-Z0-9_$.]+\))\}\. Managed by your organization\.`:`\$\{\1\}\. Managed by your organization\. Disabling the bundle turns off its plugins\.`:[\s\r\n]*([a-zA-Z0-9_$]+)\?`\$\{\1\}\. Disabling or removing the bundle applies only to the ones it installed\.`/g,
+    '`${$1}。由你的组织托管。`:`${$1}。由你的组织托管。停用此组合包将关闭其包含的插件。`:$2?`${$1}。停用或移除此组合包仅作用于它所安装的插件。`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '(disabled by admin)',
+    /`\$\{([a-zA-Z0-9_$]+)\} \(disabled by admin\)`/g,
+    '`${$1}（已被管理员禁用）`'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '" (ADC)"',
+    /&&" \(ADC\)"/g,
+    '&&"（ADC）"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    'Grant permission',
+    /"Administrator access \(UAC\)",detail:([a-zA-Z0-9_$]+)\?\.reason\|\|"Grant one-time administrator access",canInlineApprove:!0\}:\{label:`Permission: \$\{([a-zA-Z0-9_$]+)\}`,detail:\(([a-zA-Z0-9_$]+)\?\.target\?\?""\)\|\|"Grant permission"/g,
+    '"管理员权限 (UAC)",detail:$1?.reason||"授予一次性管理员权限",canInlineApprove:!0}:{label:`权限：${$2}`,detail:($3?.target??"")||"授予权限"'
+  );
+  sourceText = fastAnchorReplace(
+    sourceText,
+    '104857600-byte',
+    /`upload file size \(\$\{String\(([a-zA-Z0-9_$]+)\)\} bytes\) exceeds 52428800-byte \(50 MiB\) limit`([\s\S]{0,120}?)`total upload size \(\$\{([a-zA-Z0-9_$]+)\} bytes\) exceeds 104857600-byte \(100 MiB\) limit`([\s\S]{0,160}?)`total upload size \(\$\{([a-zA-Z0-9_$.]+)\} bytes\) exceeds 104857600-byte \(100 MiB\) limit`/g,
+    '`上传文件大小（${String($1)} 字节）超过 52428800 字节（50 MiB）上限`$2`总上传大小（${$3} 字节）超过 104857600 字节（100 MiB）上限`$4`总上传大小（${$5} 字节）超过 104857600 字节（100 MiB）上限`'
   );
 
   const overlay = createRuntimeOverlay(dictionary);
